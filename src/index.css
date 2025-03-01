@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  
+  body {
+    @apply bg-black text-white;
+  }
+  :root {
+    --radius: 0.5rem;
+ 
+  }
+}
+
+.ql-editor {
+  background-color: #ffffff; 
+  color: #000000;
+}
+
+.ql-toolbar {
+  background-color: #ffffff; 
+  border: none;
+}
