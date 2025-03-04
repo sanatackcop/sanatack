@@ -6,6 +6,7 @@ import gsap from "gsap";
 import Topics from "@/components/Topics";
 import ProgramsSection from "@/components/ProgramsSection";
 import StarBorder from "@/components/blocks/Animations/StarBorder/StarBorder";
+import WhyUs from "@/components/WhyUs";
 
 export default function LandingPage() {
   useEffect(() => {
@@ -85,6 +86,7 @@ export default function LandingPage() {
 
             <div className="bg-[#0C0C0C] rounded-[4rem] w-full py-20 px-32">
               <ProgramsSection />
+              <WhyUs />
             </div>
           </main>
         </div>
