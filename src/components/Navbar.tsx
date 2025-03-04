@@ -3,6 +3,7 @@ import { navItems } from "@/utils/navList";
 import { Button } from "./ui/button";
 import { Link } from "react-router-dom";
 import LogoLight from "../assets/logo.svg";
+import { CircleArrowLeft } from "lucide-react";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -51,11 +52,11 @@ const Navbar = () => {
             <Link
               key={item.title}
               to={item.isActive ? item.href : ""}
-              className={`text-white hover:text-[#888888] text-sm font-medium ${
+              className={`text-white hover:text-[#888888] text-sm font-medium text-nowrap ${
                 !item.isActive ? "text-gray-600 text-opacity-50" : ""
               } hover:text-gray-300 transition-colors cursor-pointer ${
                 index === navItems.length - 1
-                  ? "bg-[#181818] border text-[#888888] border-[#2B2B2B] rounded-full h-10 w-24 gap-2 flex items-center justify-center"
+                  ? "bg-[#181818] border text-[#888888] border-[#2B2B2B] text-nowrap rounded-full h-10 w-32 gap-2 flex items-center justify-center"
                   : ""
               }`}
             >
@@ -117,41 +118,25 @@ const Navbar = () => {
               <MoonIcon className="text-black w-5 h-5 bg-none" />
             )}
           </Button> */}
-          {/* <div
+          <div
             className="flex items-center bg-black border
              border-[#9191915b] group rounded-full relative"
-            style={{ width: "170px", height: "40px" }}
+            style={{ width: "120px", height: "50px" }}
           >
-            <div
-              className="rounded-full border-[#919191] border flex items-center justify-center transition-transform duration-300"
-              style={{
-                width: "50%",
-                height: "100%",
-                backgroundColor: "#0C0C0C",
-                boxShadow: "inset 0 4px 6px rgba(0, 0, 0, 0.5)",
-              }}
-            >
-              <Button className="w-full h-full text-center dark:bg-transparent dark:hover:bg-transparent text-white text-sm font-medium rounded-full hover:opacity-75 flex items-center justify-center transition-transform duration-300">
-                <Link to={"/signup"} className="flex items-center text-white">
-                  اشترك
-                </Link>
-              </Button>
-            </div>
-
             <Button
               className="w-full h-full bg-none dark:bg-transparent transition-all
               ease-in-out duration-700 dark:hover:bg-transparent dark:hover:opacity-50
               rounded-full bg-transparent"
             >
-              <Link to={"/login"} className="flex items-center text-white">
+              <Link to={"/login"} className="flex items-center gap-2 text-white">
                 التسجيل
                 <CircleArrowLeft
                   className="transition-transform 
                 duration-300 group-hover:rotate-45"
                 />
               </Link>
-          </Button>
-          </div> */}
+            </Button>
+          </div>
         </div>
       </div>
 

@@ -1,11 +1,12 @@
 /** @type {import('tailwindcss').Config} */
 
-// add the light mode here
 export default {
-  // darkMode: ["class"],
   content: ["./index.html", "./src/**/*.{ts,tsx,js,jsx}"],
   theme: {
     extend: {
+      fontFamily: {
+        rubik: ["Rubik", "sans-serif"],
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
@@ -13,17 +14,28 @@ export default {
       },
       colors: {},
       animation: {
-        wave: "wave 5s infinite ease-in-out",
-        "caret-blink": "caret-blink 1.25s ease-out infinite",
+        shine: "shine 5s linear infinite",
+        scroll: "scroll 20s linear infinite",
+        "star-movement-bottom":
+          "star-movement-bottom linear infinite alternate",
+        "star-movement-top": "star-movement-top linear infinite alternate",
       },
       keyframes: {
-        wave: {
-          "0%, 100%": { transform: "translateY(0)" },
-          "50%": { transform: "translateY(10px)" },
+        "star-movement-bottom": {
+          "0%": { transform: "translate(0%, 0%)", opacity: "1" },
+          "100%": { transform: "translate(-100%, 0%)", opacity: "0" },
         },
-        "caret-blink": {
-          "0%,70%,100%": { opacity: "1" },
-          "20%,50%": { opacity: "0" },
+        "star-movement-top": {
+          "0%": { transform: "translate(0%, 0%)", opacity: "1" },
+          "100%": { transform: "translate(100%, 0%)", opacity: "0" },
+        },
+        shine: {
+          "0%": { "background-position": "100%" },
+          "100%": { "background-position": "-100%" },
+        },
+        scroll: {
+          from: { transform: "translateX(0%)" },
+          to: { transform: "translateX(40%)" },
         },
       },
     },

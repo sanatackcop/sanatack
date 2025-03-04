@@ -6,22 +6,38 @@
   html {
     font-family: system-ui, -apple-system, sans-serif;
   }
-  
+
   body {
     @apply bg-black text-white;
   }
   :root {
     --radius: 0.5rem;
- 
   }
 }
 
 .ql-editor {
-  background-color: #ffffff; 
+  background-color: #ffffff;
   color: #000000;
 }
 
 .ql-toolbar {
-  background-color: #ffffff; 
+  background-color: #ffffff;
   border: none;
+}
+
+@layer utilities {
+  @keyframes shine {
+    0% {
+      background-position: -200% center;
+    }
+    100% {
+      background-position: 200% center;
+    }
+  }
+
+  .animate-shine {
+    animation: shine 2s linear infinite;
+    background-position: -200% center; /* starting position */
+    background-repeat: no-repeat;
+  }
 }
