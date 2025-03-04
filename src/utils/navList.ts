@@ -1,4 +1,3 @@
-import { PencilIcon } from "lucide-react";
 import { navItem } from "./types";
 
 export type navList = navItem[];
@@ -13,6 +12,6 @@ export const navItems: navList = [
     title: "انضم مجانا",
     isActive: true,
     href: "/singup",
-    // icon: PencilIcon, 
+    // icon: PencilIcon,
   },
 ];
