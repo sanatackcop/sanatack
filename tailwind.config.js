@@ -59,7 +59,7 @@ export default {
   					transform: 'translateX(0%)'
   				},
   				to: {
-  					transform: 'translateX(160%)'
+  					transform: 'translateX(100%)'
   				}
   			},
   			'accordion-down': {
