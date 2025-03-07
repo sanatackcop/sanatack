@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { navItems } from "@/utils/navList";
 import { Button } from "./ui/button";
 import { Link } from "react-router-dom";
@@ -6,44 +5,13 @@ import LogoLight from "../assets/logo.svg";
 import { CircleArrowLeft } from "lucide-react";
 
 const Navbar = () => {
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    return localStorage.getItem("theme") === "dark";
-  });
-  const [language] = useState(() => {
-    return localStorage.getItem("language") || "en";
-  });
-
-  // Function to toggle dark mode
-  const toggleDarkMode = () => {
-    setIsDarkMode((prevMode) => {
-      const newMode = !prevMode;
-      localStorage.setItem("theme", newMode ? "dark" : "light");
-      document.documentElement.classList.toggle("dark", newMode);
-      return newMode;
-    });
-  };
-
-  console.log(toggleDarkMode);
-  useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, [isDarkMode]);
-
-  useEffect(() => {
-    document.documentElement.lang = language;
-    localStorage.setItem("language", language);
-  }, [language]);
-
   return (
     <nav className=" lg:px-0">
       <div className="max-w-full mx-auto flex justify-around items-center">
-        <div className="bg-white  bg-opacity-5 w-full md:!bg-transparent lg:!bg-transparent">
+        <div className="flex-shrink-0">
           <img
-            className="w-[120px] md:w-[180px] lg:w-[180px] cursor-pointer"
-            src={isDarkMode ? String(LogoLight) : String(LogoLight)}
+            className="w-[120px] md:w-[180px] cursor-pointer"
+            src={String(LogoLight)}
             alt="logo"
           />
         </div>

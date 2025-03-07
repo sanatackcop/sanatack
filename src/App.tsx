@@ -1,5 +1,5 @@
 // import { UserProvider } from "./context/UserContext";
-import { SettingsProvider } from "./context/SettingsContexts";
+// import { SettingsProvider } from "./context/SettingsContexts";
 import ErrorBoundary from "./utils/ErrorBoundary";
 import Router from "./utils/router";
 
@@ -15,12 +15,12 @@ function App() {
             backgroundBlendMode: "overlay",
           }}
         />
-        <SettingsProvider>
-          {/* <UserProvider> */}
-          <ErrorBoundary>
-            <Router />
-          </ErrorBoundary>
-        </SettingsProvider>
+        {/* <SettingsProvider> */}
+        {/* <UserProvider> */}
+        <ErrorBoundary>
+          <Router />
+        </ErrorBoundary>
+        {/* </SettingsProvider> */}
         {/* </UserProvider> */}
       </div>
     </div>
