@@ -39,13 +39,15 @@ const Navbar = () => {
   }, [language]);
 
   return (
-    <nav className="bg-transparent px-6 lg:px-0">
+    <nav className=" lg:px-0">
       <div className="max-w-full mx-auto flex justify-around items-center">
-        <img
-          src={isDarkMode ? String(LogoLight) : String(LogoLight)}
-          alt="logo"
-          width={180}
-        />
+        <div className="bg-white  bg-opacity-5 w-full md:!bg-transparent lg:!bg-transparent">
+          <img
+            className="w-[120px] md:w-[180px] lg:w-[180px] cursor-pointer"
+            src={isDarkMode ? String(LogoLight) : String(LogoLight)}
+            alt="logo"
+          />
+        </div>
 
         <div className="hidden md:flex items-center space-x-5 space-x-reverse bg-[#0C0C0C] border border-[#222222] rounded-full h-14 pr-5 pl-2">
           {navItems.map((item, index) => (
@@ -65,59 +67,7 @@ const Navbar = () => {
           ))}
         </div>
 
-        <Button
-          className="md:hidden text-white"
-          onClick={() => setMenuOpen(!menuOpen)}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={2}
-            stroke="currentColor"
-            className="w-6 h-6"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M4 6h16M4 12h16M4 18h16"
-            />
-          </svg>
-        </Button>
-
         <div className="hidden md:flex pl-10 items-center justify-center pr-4">
-          {/* Language toggle button */}
-          {/* <Button
-            onClick={toggleLanguage}
-            className="flex items-center justify-center hover:opacity-75 bg-none hover:bg-transparent dark:bg-transparent bg-transparent border-none
-            text-sm font-medium rounded-full h-10 w-10 dark:hover:bg-transparent dark:hover:opacity-75
-            transition-colors duration-500 shadow-none"
-            aria-label="Toggle Language"
-          >
-            <div className="text-black dark:text-white flex pr-2 pl-5 items-center gap-1">
-              <Globe className="w-5 h-5 mr-2" />{" "}
-              {language === "en" ? (
-                <p className="">AR</p>
-              ) : (
-                <p className="">EN</p>
-              )}
-            </div>
-          </Button> */}
-
-          {/* Dark mode toggle button */}
-          {/* <Button
-            onClick={toggleDarkMode}
-            className="flex items-center justify-center hover:opacity-75 bg-none hover:bg-transparent dark:bg-transparent bg-transparent border-none
-            text-sm font-medium rounded-full h-10 w-10 dark:hover:bg-transparent dark:hover:opacity-75
-            transition-colors duration-500 shadow-none"
-            aria-label="Toggle Dark Mode"
-          >
-            {isDarkMode ? (
-              <SunIcon className="text-white w-5 h-5" />
-            ) : (
-              <MoonIcon className="text-black w-5 h-5 bg-none" />
-            )}
-          </Button> */}
           <div
             className="flex items-center bg-black border
              border-[#9191915b] group rounded-full relative"
@@ -128,7 +78,10 @@ const Navbar = () => {
               ease-in-out duration-700 dark:hover:bg-transparent dark:hover:opacity-50
               rounded-full bg-transparent"
             >
-              <Link to={"/login"} className="flex items-center gap-2 text-white">
+              <Link
+                to={"/login"}
+                className="flex items-center gap-2 text-white"
+              >
                 التسجيل
                 <CircleArrowLeft
                   className="transition-transform 
@@ -139,22 +92,6 @@ const Navbar = () => {
           </div>
         </div>
       </div>
-
-      {menuOpen && (
-        <div className="md:hidden mt-4 bg-[#0C0C0C] border border-[#222222] rounded-lg p-4 space-y-2">
-          {navItems.map((item) => (
-            <Link
-              key={item.title}
-              to={item.isActive ? item.href : ""}
-              className={`block text-white hover:text-[#888888] text-sm font-medium ${
-                !item.isActive ? "text-gray-600 text-opacity-50" : ""
-              } hover:text-gray-300 transition-colors`}
-            >
-              {item.title}
-            </Link>
-          ))}
-        </div>
-      )}
     </nav>
   );
 };

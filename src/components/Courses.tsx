@@ -1,26 +1,156 @@
-const Courses = () => {
-  const courses = [
-    { title: 'تصميم النظام', subtitle: 'System Design' },
-    { title: 'هندسة الذكاء الاصطناعي', subtitle: 'AI Engineering' },
-    { title: 'هندسة البرمجيات', subtitle: 'Software Engineering' },
-    { title: 'هندسة البيانات', subtitle: 'Data Engineering' },
+import { CardContent } from "@/components/ui/card";
+import {
+  BarChart,
+  Book,
+  Triangle,
+  Hourglass,
+  AlignVerticalDistributeCenter,
+} from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import SpotlightCard from "./blocks/Components/SpotlightCard/SpotlightCard";
+
+export default function CoursesCard() {
+  const coursesCard = [
+    {
+      cardType: "مسار المهارات",
+      heroImage: <BarChart className="h-12 w-12 mt-5 text-black" />,
+      englishTitle: "Parallel Programming",
+      arabicTitle: "البرمجة المتوازية",
+      unites: "20",
+      description:
+        "لتحليل البيانات والأدوات الشائعة المستخدمة في هذا المجال. سيتعرف المتدربون على كيفية جمع البيانات وتنظيفها ومعالجتها بطرق منهجية، بالإضافة إلى استكشاف مختلف أساليب التحليل الإحصائي واستخدام البرمجيات المساعدة مثل بايثون أو آر (R).",
+      level: { hard: "صعب" },
+      durition: "3 شهور",
+      tag: [
+        {
+          title: "Analysis",
+          icon: (
+            <AlignVerticalDistributeCenter className="h-4 w-4 text-blue-700" />
+          ),
+        },
+      ],
+    },
+    {
+      cardType: "مسار المهارات",
+      heroImage: <BarChart className="h-12 w-12 mt-5 text-black" />,
+      englishTitle: "Parallel Programming",
+      arabicTitle: "البرمجة المتوازية",
+      unites: "20",
+      description:
+        "لتحليل البيانات والأدوات الشائعة المستخدمة في هذا المجال. سيتعرف المتدربون على كيفية جمع البيانات وتنظيفها ومعالجتها بطرق منهجية، بالإضافة إلى استكشاف مختلف أساليب التحليل الإحصائي واستخدام البرمجيات المساعدة مثل بايثون أو آر (R).",
+      level: { hard: "صعب" },
+      durition: "3 شهور",
+      tag: [
+        {
+          title: "Analysis",
+          icon: (
+            <AlignVerticalDistributeCenter className="h-4 w-4 text-blue-700" />
+          ),
+        },
+      ],
+    },
+    {
+      cardType: "مسار المهارات",
+      heroImage: <BarChart className="h-12 w-12 mt-5 text-black" />,
+      englishTitle: "Parallel Programming",
+      arabicTitle: "البرمجة المتوازية",
+      unites: "20",
+      description:
+        "لتحليل البيانات والأدوات الشائعة المستخدمة في هذا المجال. سيتعرف المتدربون على كيفية جمع البيانات وتنظيفها ومعالجتها بطرق منهجية، بالإضافة إلى استكشاف مختلف أساليب التحليل الإحصائي واستخدام البرمجيات المساعدة مثل بايثون أو آر (R).",
+      level: { hard: "صعب" },
+      durition: "3 شهور",
+      tag: [
+        {
+          title: "Analysis",
+          icon: (
+            <AlignVerticalDistributeCenter className="h-4 w-4 text-blue-700" />
+          ),
+        },
+      ],
+    },
+    {
+      cardType: "مسار المهارات",
+      heroImage: <BarChart className="h-12 w-12 mt-5 text-black" />,
+      englishTitle: "Parallel Programming",
+      arabicTitle: "البرمجة المتوازية",
+      unites: "20",
+      description:
+        "لتحليل البيانات والأدوات الشائعة المستخدمة في هذا المجال. سيتعرف المتدربون على كيفية جمع البيانات وتنظيفها ومعالجتها بطرق منهجية، بالإضافة إلى استكشاف مختلف أساليب التحليل الإحصائي واستخدام البرمجيات المساعدة مثل بايثون أو آر (R).",
+      level: { hard: "صعب" },
+      durition: "3 شهور",
+      tag: [
+        {
+          title: "Analysis",
+          icon: (
+            <AlignVerticalDistributeCenter className="h-4 w-4 text-blue-700" />
+          ),
+        },
+      ],
+    },
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-12">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {courses.map((course) => (
-          <div
-            key={course.title}
-            className="bg-gray-900 p-6 rounded-lg hover:bg-gray-800 transition-colors cursor-pointer"
-          >
-            <h3 className="text-white text-xl font-semibold mb-2">{course.title}</h3>
-            <p className="text-gray-400">{course.subtitle}</p>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-4 md:px-8">
+      {coursesCard.map((feature, index) => (
+        <SpotlightCard
+          key={index}
+          className="max-w-md w-full !border !border-white   
+          mx-auto overflow-hidden rounded-none border-none cursor-pointer
+           !p-0 bg-[#FAFFFD] bg-opacity-5"
+        >
+          <div className="bg-teal-800 border rounded-md rounded-bl-none rounded-br-none border-white border-opacity-20 text-white text-center py-2 font-semibold text-lg">
+            {feature.cardType}
           </div>
-        ))}
-      </div>
+          <CardContent className="p-4 md:p-6 text-center bg-white rounded-bl-md rounded-br-md">
+            <div className="flex justify-center mb-5">{feature.heroImage}</div>
+          </CardContent>
+          <div className="px-4 py-6">
+            <h2 className="text-xl md:text-2xl font-bold text-white mb-2 text-right">
+              {feature.arabicTitle}
+              <br />
+              <span className="text-xl md:text-2xl font-bold text-white">
+                {feature.englishTitle}
+              </span>
+            </h2>
+            <p className="text-[#FAFFFD] text-opacity-50 text-xs md:text-sm leading-relaxed mb-4 text-right">
+              {feature.description}
+            </p>
+          </div>
+
+          <div className="mt-3">
+            <Separator />
+            <div className="flex flex-col sm:flex-row justify-between items-center p-3 gap-2">
+              <div className="flex items-center gap-2">
+                <Book className="h-4 w-4" />
+                <p className="text-xs md:text-sm">وحده {feature.unites}</p>
+              </div>
+            </div>
+
+            <Separator />
+            <div className="flex flex-col sm:flex-row justify-start items-center p-3 gap-2">
+              <div className="flex items-center gap-1">
+                <Triangle className="h-4 w-4 text-red-600" />
+                <p className="text-xs md:text-sm">{feature.level.hard}</p>
+              </div>
+
+              <div className="flex items-center gap-1">
+                <Hourglass className="h-4 w-4" />
+                <p className="text-xs md:text-sm">{feature.durition}</p>
+              </div>
+
+              {feature.tag.map((tag, i) => (
+                <span
+                  key={i}
+                  className="flex items-center gap-1 px-1 py-1 pt-2 text-xs md:text-sm"
+                >
+                  {tag.icon}
+                  {tag.title}
+                </span>
+              ))}
+            </div>
+          </div>
+        </SpotlightCard>
+      ))}
     </div>
   );
-};
-
-export default Courses;
+}
