@@ -6,7 +6,6 @@ import LogoLight from "../assets/logo.svg";
 import { CircleArrowLeft } from "lucide-react";
 
 const Navbar = () => {
-  const [menuOpen, setMenuOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(() => {
     return localStorage.getItem("theme") === "dark";
   });
