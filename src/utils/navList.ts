@@ -4,7 +4,7 @@ export type navList = navItem[];
 
 export const navItems: navList = [
   { title: "الرئيسية", isActive: true, href: "/" },
-  { title: "الكورسات", isActive: true, href: "/articles/list" },
+  { title: "الكورسات", isActive: false, href: "/articles/list" },
   { title: "المسارات", isActive: false, href: "/tracks" },
   { title: "المسار الوظيفي", isActive: false, href: "/courses" },
   { title: "MicroDegree", isActive: false, href: "/about" },
