@@ -10,7 +10,7 @@ export default function Topics() {
     { title: "علوم الحاسب", icon: <Cpu className="text-black" /> },
   ];
 
-  const duplicatedTopics = [...topics, ...topics].reverse();
+  const duplicatedTopics = [...topics, ...topics, ...topics];
 
   return (
     <div className="w-full  py-10 overflow-hidden">

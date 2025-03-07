@@ -86,12 +86,15 @@ export default function LandingPage() {
 
             <Topics />
 
-            <div className="bg-[#0C0C0C] rounded-[4rem] w-full py-10 md:py-20 px-4 md:px-32 mx-auto max-w-screen-xl">
+            <div
+              className="bg-[#0C0C0C] rounded-[4rem] w-full py-10 md:py-20 
+             md:px-32 mx-auto"
+            >
               <ProgramsSection />
               <WhyUs />
             </div>
 
-            <div className="px-4 md:px-32 py-2 max-w-screen-xl mx-auto">
+            <div className="px-4 md:px-32 py-2  mx-auto">
               <div className="flex flex-col sm:flex-row justify-between items-center">
                 <h1 className="text-2xl mb-2 md:text-4xl font-bold text-center sm:text-left">
                   برامج موصى بها لك
@@ -103,7 +106,6 @@ export default function LandingPage() {
 
               <CoursesCard />
             </div>
-            <Separator className="!bg-white !bg-opacity-20" />
 
             <div className="mt-5 bg-white rounded-tl-[4rem] rounded-tr-[4rem] md:rounded-tl-[10rem] md:rounded-tr-[10rem] h-full w-full relative px-4 py-8 md:px-0">
               <Subscription />

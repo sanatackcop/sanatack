@@ -1,7 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 
 export default {
-    darkMode: ["class"],
+    // darkMode: ["class"],
     content: ["./index.html", "./src/**/*.{ts,tsx,js,jsx}"],
   theme: {
   	extend: {
@@ -19,7 +19,7 @@ export default {
   		colors: {},
   		animation: {
   			shine: 'shine 5s linear infinite',
-  			scroll: 'scroll 10s infinite',
+  			scroll: 'scroll 10s linear infinite',
   			'star-movement-bottom': 'star-movement-bottom linear infinite alternate',
   			'star-movement-top': 'star-movement-top linear infinite alternate',
   			'accordion-down': 'accordion-down 0.2s ease-out',
