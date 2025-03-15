@@ -12,6 +12,5 @@ export const navItems: navList = [
     title: "انضم مجانا",
     isActive: true,
     href: "/singup",
-    // icon: PencilIcon,
-  },
+   },
 ];

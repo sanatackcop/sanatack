@@ -1,51 +1,56 @@
 import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import {
-  ArticlesList,
-  HomePAGE,
-  ArticlePage,
-  LoginPage,
-  SingupPage,
-} from "./index";
-import WritePage from "@/pages/articles/WritePage";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { DashboardPage, HomePAGE, LoginPage, SingupPage } from "./index";
+import Storage from "@/lib/Storage";
 
 const publicRoutes = [
   { path: "/", element: <HomePAGE /> },
-  { path: "/articles/list", element: <ArticlesList /> },
-  { path: "/article/:id", element: <ArticlePage /> },
-  { path: "/write", element: <WritePage /> },
   { path: "/login", element: <LoginPage /> },
   { path: "/singup", element: <SingupPage /> },
 ];
 
-// const privateRoutes = [
-//   // { path: "/dashboard", element: <Dashboard /> },
-// ];
+const privateRoutes: any[] = [
+  { path: "/dashboard", element: <DashboardPage /> },
+];
 
-// const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
-//   const isAuthenticated = !!localStorage.getItem("token");
-//   return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
-// };
+const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
+  const auth = Storage.get("auth");
+  return auth?.user.isVerify ? (
+    <>{children}</>
+  ) : (
+    <Navigate to="/login" replace />
+  );
+};
+
+const PublicRoute = ({ children }: { children: React.ReactNode }) => {
+  const auth = Storage.get("auth");
+  return auth?.user.isVerify ? (
+    <Navigate to="/dashboard" replace />
+  ) : (
+    <>{children}</>
+  );
+};
 
 const Router: React.FC = () => {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public Routes */}
         {publicRoutes.map(({ path, element }) => (
-          <Route key={path} path={path} element={element} />
+          <Route
+            key={path}
+            path={path}
+            element={<PublicRoute>{element}</PublicRoute>}
+          />
         ))}
 
-        {/* Private Routes */}
-        {/* {privateRoutes.map(({ path, element }) => (
+        {privateRoutes.map(({ path, element }) => (
           <Route
             key={path}
             path={path}
             element={<PrivateRoute>{element}</PrivateRoute>}
           />
-        ))} */}
+        ))}
 
-        {/* Fallback Route */}
         <Route path="*" element={<h1>404 - Page Not Found</h1>} />
       </Routes>
     </BrowserRouter>
