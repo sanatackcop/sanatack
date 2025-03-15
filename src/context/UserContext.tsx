@@ -1,50 +1,160 @@
-// import React, { createContext, useContext, useState, useEffect } from "react";
-// import { createClient } from "@supabase/supabase-js";
+import {
+  FC,
+  useState,
+  createContext,
+  Context,
+  ReactNode,
+  useEffect,
+} from "react";
+import Storage from "@/lib/Storage";
+interface User {
+  id: string;
+  email: string;
+  mobile: string;
+  first_name: string;
+  last_name: string;
+}
 
-// const supabaseUrl = "https://your-supabase-url.supabase.co";
-// const supabaseAnonKey = "your-anon-key";
-// const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export enum ContextType {
+  ADMIN = "admin-context",
+  STUDENT = "student-context",
+}
 
-// interface UserContextProps {
-//   user: any;
-//   login: (email: string, password: string) => Promise<void>;
-//   logout: () => Promise<void>;
-// }
+interface Auth {
+  user: User;
+  role: "admin" | "student";
+  type: ContextType | undefined;
+}
 
-// const UserContext = createContext<UserContextProps | null>(null);
+const initialUserState: User = {
+  id: "",
+  first_name: "",
+  last_name: "",
+  mobile: "",
+  email: "",
+};
 
-// export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-//   const [user, setUser] = useState(null);
+const initialAuth: Auth = {
+  user: initialUserState,
+  role: "student",
+  type: undefined,
+};
 
-//   useEffect(() => {
-//     const session = supabase.auth.session();
-//     setUser(session?.user || null);
+type Props = {
+  children: ReactNode;
+};
 
-//     const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-//       setUser(session?.user || null);
-//     });
+type LoginPayload = {
+  user: string;
+  refresh_token: string;
+  type: ContextType;
+  role: "admin" | "student";
+};
 
-//     return () => {
-//       authListener?.unsubscribe();
-//     };
-//   }, []);
+export type UserContextType = {
+  isLoggedIn: () => boolean;
+  logout: () => void;
+  login: (payload: LoginPayload) => void;
+  auth: Auth;
+};
 
-//   const login = async (email: string, password: string) => {
-//     const { user, error } = await supabase.auth.signIn({ email, password });
-//     if (error) throw error;
-//     setUser(user);
-//   };
+const UserContext: Context<UserContextType | null> =
+  createContext<UserContextType | null>(null);
 
-//   const logout = async () => {
-//     await supabase.auth.signOut();
-//     setUser(null);
-//   };
+export const UserContextProvider: FC<Props> = ({ children }: Props) => {
+  const [refreshAccess, setRefreshAccess] = useState(false);
+  const [auth, setAuth] = useState<Auth>(initialAuth);
 
-//   return (
-//     <UserContext.Provider value={{ user, login, logout }}>
-//       {children}
-//     </UserContext.Provider>
-//   );
-// };
+  const getTokens = (): { accessToken: string; refreshToken: string } => {
+    return {
+      accessToken:
+        Storage.get("access_token") || Storage.get("accessToken") || "",
+      refreshToken:
+        Storage.get("refresh_token") || Storage.get("refreshToken") || "",
+    };
+  };
 
-// export const useUser = () => useContext(UserContext);
+  const decodeJWT = (
+    jwt: string,
+    type: ContextType,
+    role: "admin" | "student"
+  ): Auth => {
+    const tokenParts = jwt.split(".");
+    if (tokenParts.length < 2) {
+      throw new Error("Invalid token format");
+    }
+    const token = tokenParts[1];
+
+    const base64 = token.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
+    );
+
+    const payload = JSON.parse(jsonPayload);
+    return { user: payload, type: type, role: role };
+  };
+
+  // const setActiveAccount = ({ userId }: { userId: string }) => {
+  //   Storage.set("userId", userId);
+  //   setRefreshAccess((prevState: boolean) => !prevState);
+  //   window.location.replace("/");
+  // };
+
+  const isLoggedIn = () => {
+    return getTokens().accessToken.length ? true : false;
+  };
+
+  const getAuth = () => {
+    const auth = Storage.get("auth");
+    if (auth) {
+      setAuth(auth);
+      if (!auth?.role) setAuth((prev) => ({ ...prev, role: "student" }));
+    }
+    return auth;
+  };
+
+  const logout = () => {
+    localStorage.clear();
+    setRefreshAccess((prevState) => !prevState);
+  };
+
+  const login = ({ user, type, role, refresh_token }: LoginPayload) => {
+    try {
+      const decodedAuth = decodeJWT(user, type, role);
+      Storage.set("refreshToken", refresh_token);
+      Storage.set("auth", decodedAuth);
+
+      setAuth({
+        user: decodedAuth?.user,
+        role: role || "student",
+        type: type as ContextType,
+      });
+
+      setRefreshAccess((prevState) => !prevState);
+    } catch (error) {
+      console.error("Login failed", error);
+    }
+  };
+
+  useEffect(() => {
+    getAuth();
+  }, [refreshAccess]);
+
+  return (
+    <UserContext.Provider
+      value={{
+        isLoggedIn,
+        auth,
+        logout,
+        login,
+      }}
+    >
+      {children}
+    </UserContext.Provider>
+  );
+};
+
+export default UserContext;

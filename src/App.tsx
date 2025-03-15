@@ -1,5 +1,4 @@
-// import { UserProvider } from "./context/UserContext";
-// import { SettingsProvider } from "./context/SettingsContexts";
+import { UserContextProvider } from "./context/UserContext";
 import ErrorBoundary from "./utils/ErrorBoundary";
 import Router from "./utils/router";
 
@@ -16,12 +15,12 @@ function App() {
           }}
         />
         {/* <SettingsProvider> */}
-        {/* <UserProvider> */}
-        <ErrorBoundary>
-          <Router />
-        </ErrorBoundary>
+        <UserContextProvider>
+          <ErrorBoundary>
+            <Router />
+          </ErrorBoundary>
+        </UserContextProvider>
         {/* </SettingsProvider> */}
-        {/* </UserProvider> */}
       </div>
     </div>
   );
