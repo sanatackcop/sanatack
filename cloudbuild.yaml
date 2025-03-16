@@ -27,7 +27,7 @@ images:
   - 'gcr.io/$PROJECT_ID/nestjs-app:$SHORT_SHA'
 
 substitutions:
-  _CLUSTER_NAME: 'core-app'
+  _CLUSTER_NAME: 'core-cluster'
   _CLUSTER_ZONE: 'me-central1'
 
 options:
