@@ -28,5 +28,17 @@ services:
     ports:
       - '6379:6379'
 
+  core_app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      - main_db
+      - redis
+    networks:
+      - backend-network
 volumes:
   postgres_data: {}
