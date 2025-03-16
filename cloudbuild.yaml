@@ -17,7 +17,7 @@ steps:
       - '-c'
       - |
         # Authenticate with GKE
-        gcloud container clusters get-credentials $CLUSTER_NAME --zone $CLUSTER_ZONE --project $PROJECT_ID
+        gcloud container clusters get-credentials $_CLUSTER_NAME --zone $_CLUSTER_ZONE --project $PROJECT_ID
 
         # Update the deployment with the new image.
         kubectl set image deployment/nestjs-deployment \
@@ -25,6 +25,10 @@ steps:
 
 images:
   - 'gcr.io/$PROJECT_ID/nestjs-app:$SHORT_SHA'
+
+substitutions:
+  _CLUSTER_NAME: 'core-app'
+  _CLUSTER_ZONE: 'me-central1'
 
 options:
   defaultLogsBucketBehavior: REGIONAL_USER_OWNED_BUCKET
