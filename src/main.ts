@@ -1,3 +1,7 @@
+if (typeof global.crypto === 'undefined') {
+  global.crypto = require('crypto');
+}
+
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 
