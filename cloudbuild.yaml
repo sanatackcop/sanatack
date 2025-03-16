@@ -21,7 +21,7 @@ steps:
 
         # Update the deployment with the new image.
         kubectl set image deployment/core-app \
-          nestjs-container=gcr.io/$PROJECT_ID/nestjs-app:$SHORT_SHA
+          nginx-1=gcr.io/$PROJECT_ID/nestjs-app:$SHORT_SHA
 
 images:
   - 'gcr.io/$PROJECT_ID/nestjs-app:$SHORT_SHA'
