@@ -3,7 +3,6 @@ import {
   AlignVerticalSpaceBetween,
   Home,
   Inbox,
-  Search,
   Bell,
 } from "lucide-react";
 import LogoLight from "@/assets/logo.svg";

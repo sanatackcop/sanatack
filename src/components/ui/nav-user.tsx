@@ -1,15 +1,6 @@
 "use client";
 
-import {
-  BadgeCheck,
-  Bell,
-  ChevronsUpDown,
-  CreditCard,
-  LogOut,
-  Sparkles,
-} from "lucide-react";
-import UserContext, { ContextType } from "@/context/UserContext";
-import { useContext } from "react";
+import { BadgeCheck, Bell, CreditCard, LogOut } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -37,14 +28,6 @@ export function NavUser({
   };
 }) {
   const { isMobile } = useSidebar();
-  // const userContext = useContext(UserContext);
-  // const auth = userContext?.auth;
-  // const isLoggedIn = userContext?.isLoggedIn;
-  // const logout = userContext?.logout;
-
-  // if (!auth) {
-  //   return null; // Ensure the user is logged in
-  // }
   return (
     <SidebarMenu>
       <SidebarMenuItem>

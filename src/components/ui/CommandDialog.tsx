@@ -1,24 +1,15 @@
-import * as React from "react";
 import { Search } from "lucide-react";
-import {
-  Command,
-  CommandDialog,
-  CommandShortcut,
-  CommandInput,
-  CommandList,
-  CommandEmpty,
-  CommandGroup,
-  CommandItem,
-} from "@/components/ui/command";
+import { Command, CommandInput } from "@/components/ui/command";
+import { useEffect, useState } from "react";
 
 export function CommandMenu() {
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        setOpen((open) => !open);
+        setOpen(!open);
       }
     };
     document.addEventListener("keydown", down);
