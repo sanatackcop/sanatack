@@ -1,6 +1,12 @@
-import { Calendar, Home, Inbox, Search, Settings } from "lucide-react";
+import {
+  Calendar,
+  AlignVerticalSpaceBetween,
+  Home,
+  Inbox,
+  Bell,
+} from "lucide-react";
 import LogoLight from "@/assets/logo.svg";
-
+import { useLocation } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -9,19 +15,33 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarFooter,
+  SidebarRail,
 } from "@/components/ui/sidebar";
+import { NavUser } from "@/components/ui/nav-user";
 import { Separator } from "@/components/ui/separator";
+import { CommandMenu } from "@/components/ui/CommandDialog";
 
+const sampleUser = {
+  name: "Username",
+  email: "user@example.com",
+  avatar: "https://i.pravatar.cc/150?img=56",
+};
 const items = [
   {
-    title: "دورات",
-    url: "#",
+    title: "الرئيسية",
+    url: "/dashboard",
     icon: Home,
+  },
+  {
+    title: "الدورات",
+    url: "#",
+    icon: Inbox,
   },
   {
     title: "المسارات",
     url: "#",
-    icon: Inbox,
+    icon: AlignVerticalSpaceBetween,
   },
   {
     title: "المشاريع",
@@ -29,74 +49,99 @@ const items = [
     icon: Calendar,
   },
 ];
-
 export function AppSidebar() {
+  const location = useLocation();
+  const activePath = location.pathname;
+
   return (
     <Sidebar
       side="right"
-      className="!bg-[#0C0C0C] border-l-1 !border-l-[#8D8D8D] border-opacity-20"
+      className="!bg-[#0C0C0C] border-l border-gray-500 border-opacity-20 w-full sm:w-64"
     >
+      {/* <TopNavbar /> */}
       <header></header>
       <SidebarContent className="!bg-[#0C0C0C]">
-        <div className="flex-shrink-0">
+        <div className="flex justify-normal">
           <img
-            className="w-[90px] md:w-[120px] cursor-pointer"
             src={String(LogoLight)}
             alt="logo"
+            className="w-[200px] max-w-full -mt-6 -mb-10 -mr-6 "
           />
         </div>
-        <Separator />
+        <Separator className="bg-gray-500 opacity-20" />
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <a href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+            <SidebarMenu className="space-y-1">
+              {items.map((item) => {
+                const isActive = item.url === activePath;
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      className={
+                        isActive ? "bg-[#273145] text-white" : "text-gray-500"
+                      }
+                    >
+                      <a href={item.url}>
+                        <item.icon
+                          className={
+                            isActive ? "text-[#4D94F8]" : "text-gray-400"
+                          }
+                          size={20}
+                        />
+                        <span>{item.title}</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        <Separator className="bg-gray-500 opacity-20" />
       </SidebarContent>
+      <SidebarFooter className="bg-[#273145] text-[#3573DB] h-[50px]">
+        <NavUser user={sampleUser} />
+      </SidebarFooter>
+      <SidebarRail />
     </Sidebar>
   );
 }
-
-
-
-
 
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
 export function DashboardNavbar() {
   return (
-    <nav className="flex items-center justify-between px-4 py-3 border-b border-[#8D8D8D] border-opacity-20 !bg-[#0C0C0C]">
-      <div className="flex items-center space-x-2">
+    <nav className=" h-[69px] flex items-center justify-between px-2 py-3 border-b border-[#8D8D8D] border-opacity-20 !bg-[#0C0C0C]">
+      <div className="flex items-center  ">
         <SidebarTrigger>
-          <button className="hover:opacity-75">
-            <Search />
-          </button>
+          <button className="hover:opacity-75"></button>
         </SidebarTrigger>
-        <span className="text-white text-sm">لوحة القيادة</span>
+        <a href="" className="mx-3">
+          <Bell
+            size={18}
+            className="text-gray-500 hover:text-gray-700"
+            style={{
+              stroke: "white", // Outline color
+              fill: "#1A1A1A", // Inside color
+            }}
+          />
+        </a>
+        <CommandMenu />
       </div>
 
-      {/* Right section: icons, settings, user profile, etc. */}
+      {/* Right section: icons, settings, user profile, etc.
       <div className="flex items-center space-x-3">
         <button className="hover:opacity-75">
           <Settings />
         </button>
-        {/* You could also add a user avatar here */}
+        You could also add a user avatar here
         <img
           src="https://via.placeholder.com/32"
           alt="User avatar"
           className="rounded-full w-8 h-8"
         />
-      </div>
+      </div> */}
     </nav>
   );
 }
