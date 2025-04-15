@@ -11,6 +11,10 @@ import CoursesCard from "@/components/Courses";
 import Subscription from "@/components/Subscription";
 import { Separator } from "@/components/ui/separator";
 
+
+// import { Input } from "@/components/ui/input";
+
+
 export default function LandingPage() {
   useEffect(() => {
     gsap.fromTo(
@@ -111,6 +115,11 @@ export default function LandingPage() {
               <Subscription />
             </div>
           </main>
+
+
+
+        
+{/* 
           <footer className="bg-white w-full">
             <Separator className="!bg-gray-200" />
             <div className="flex flex-col sm:flex-row justify-between items-center px-4 md:px-40 py-5">
@@ -120,7 +129,67 @@ export default function LandingPage() {
               </div>
               <p className="text-[#808080] font-bold">Sanatack@</p>
             </div>
-          </footer>
+            
+          </footer> */}
+
+
+
+
+
+
+    <footer className="relative w-full bg-white overflow-hidden">
+      {/* Background Shapes */}
+      <img
+        src="../src/assets/blueGalaxy.svg"
+        alt="Blue Galaxy"
+        className="absolute top-20 left-0 w-1/2 sm:w-1/4 z-0"
+      />
+      <img
+        src="../src/assets/orangeGalaxy.svg"
+        alt="Orange Galaxy"
+        className="absolute top-20 right-0 w-1/2 sm:w-1/4 z-0"
+      />
+
+      {/* Center Content */}
+      <div className="relative z-10 flex flex-col items-center justify-center text-center py-24 px-4">
+        <h2 className="text-4xl font-bold text-gray-800 ">Sanatack</h2>
+        <p className="mt-2 mb-6 text-sm text-gray-700">To Make New Tech Skills</p>
+        
+
+        <div className="flex flex-col sm:flex-row items-center gap-2">
+
+        <button className="border border-black px-4 py-2 rounded-md text-sm font-medium text-gray-950 hover:bg-gray-100">
+            Join The Newsletter
+          </button>
+
+          <input
+            placeholder="name@email.com"
+            className="bg-gray-300 px-4 py-2 rounded-md text-sm text-gray-600 w-64 outline-none"
+          />
+          
+        </div>
+      </div>
+
+
+
+      
+
+      {/* Footer Bottom Row */}
+      <div className="relative z-10 flex flex-col sm:flex-row justify-around items-center px-4 md:px-12 py-4 border-t border-gray-200">
+        
+      <div className="flex gap-4 mt-2 sm:mt-0">
+          <Linkedin className="text-[#808080] h-4 w-4" />
+          <Twitter className="text-[#808080] h-4 w-4" />
+        </div>
+        
+        <p className="text-gray-500 text-xs font-light">© 2025 sanatack Inc.</p>
+
+        
+      </div>
+    </footer>          
+
+
+
         </div>
       </div>
     </>
