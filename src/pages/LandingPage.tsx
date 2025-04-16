@@ -137,56 +137,45 @@ export default function LandingPage() {
 
 
 
-    <footer className="relative w-full bg-white overflow-hidden">
-      {/* Background Shapes */}
-      <img
-        src="../src/assets/blueGalaxy.svg"
-        alt="Blue Galaxy"
-        className="absolute top-20 left-0 w-1/2 sm:w-1/4 z-0"
+<footer className="relative w-full bg-white overflow-hidden">
+  {/* Background Shapes */}
+  <img
+    src="../src/assets/blueGalaxy.svg"
+    alt="Blue Galaxy"
+    className="absolute top-20 left-0 w-1/3 sm:w-1/4 z-0"
+  />
+  <img
+    src="../src/assets/orangeGalaxy.svg"
+    alt="Orange Galaxy"
+    className="absolute top-20 right-0 w-1/3 sm:w-1/4 z-0"
+  />
+
+  {/* Center Content */}
+  <div className="relative z-10 flex flex-col items-center justify-center text-center py-16 sm:py-24 px-4 sm:px-8">
+    <h2 className="text-4xl font-bold text-gray-800">Sanatack</h2>
+    <p className="mt-2 mb-6 text-sm text-gray-700">To Make New Tech Skills</p>
+
+    <div className="flex flex-col sm:flex-row items-center gap-2">
+      <input
+        placeholder="name@email.com"
+        className="bg-gray-300 px-4 py-2 rounded-md text-sm text-gray-600 w-64 outline-none"
       />
-      <img
-        src="../src/assets/orangeGalaxy.svg"
-        alt="Orange Galaxy"
-        className="absolute top-20 right-0 w-1/2 sm:w-1/4 z-0"
-      />
+      <button className="border border-black px-4 py-2 rounded-md text-sm font-medium text-gray-950 hover:bg-gray-100">
+        Join The Newsletter
+      </button>
+    </div>
+  </div>
 
-      {/* Center Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center text-center py-24 px-4">
-        <h2 className="text-4xl font-bold text-gray-800 ">Sanatack</h2>
-        <p className="mt-2 mb-6 text-sm text-gray-700">To Make New Tech Skills</p>
+  {/* Footer Bottom */}
+  <div className="relative z-10 flex flex-col sm:flex-row justify-between items-center gap-2 px-4 md:px-12 py-4 border-t border-gray-200">
+    <div className="flex gap-4">
+      <Linkedin className="text-[#808080] h-4 w-4" />
+      <Twitter className="text-[#808080] h-4 w-4" />
+    </div>
+    <p className="text-gray-500 text-xs font-light">© 2025 sanatack Inc.</p>
+  </div>
+</footer>
         
-
-        <div className="flex flex-col sm:flex-row items-center gap-2">
-
-        <button className="border border-black px-4 py-2 rounded-md text-sm font-medium text-gray-950 hover:bg-gray-100">
-            Join The Newsletter
-          </button>
-
-          <input
-            placeholder="name@email.com"
-            className="bg-gray-300 px-4 py-2 rounded-md text-sm text-gray-600 w-64 outline-none"
-          />
-          
-        </div>
-      </div>
-
-
-
-      
-
-      {/* Footer Bottom Row */}
-      <div className="relative z-10 flex flex-col sm:flex-row justify-around items-center px-4 md:px-12 py-4 border-t border-gray-200">
-        
-      <div className="flex gap-4 mt-2 sm:mt-0">
-          <Linkedin className="text-[#808080] h-4 w-4" />
-          <Twitter className="text-[#808080] h-4 w-4" />
-        </div>
-        
-        <p className="text-gray-500 text-xs font-light">© 2025 sanatack Inc.</p>
-
-        
-      </div>
-    </footer>          
 
 
 

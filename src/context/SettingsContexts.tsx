@@ -1,4 +1,7 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import {
+  createContext, useContext, useState, useEffect, ReactNode} from "react";
+
+
 
 interface SettingsContextProps {
   darkMode: boolean;
@@ -11,9 +14,17 @@ const SettingsContext = createContext<SettingsContextProps | undefined>(
 
 export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const [darkMode, setDarkMode] = useState(() => {
-    // Retrieve initial state from localStorage or default to false
     return localStorage.getItem("darkMode") === "true";
   });
+
+  //  أضفنا useEffect عشان نتحكم في كلاس "dark" على <html>
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [darkMode]);
 
   const toggleDarkMode = () => {
     setDarkMode((prev) => {
@@ -37,3 +48,6 @@ export const useSettings = () => {
   }
   return context;
 };
+
+
+
