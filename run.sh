@@ -1,2 +1,3 @@
+exec npm run start
 echo "Running the Docker..."
-docker compose up --build
+exec docker compose up --build

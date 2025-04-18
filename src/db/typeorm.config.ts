@@ -4,11 +4,30 @@ import { config } from 'dotenv';
 import { migrationFiles } from './migrations';
 import { User } from 'src/modules/users/entities/user.entity';
 import { Token } from 'src/modules/auth/entities/token.entity';
+import { Course } from 'src/modules/courses/entities/courses.entity';
+import { Module } from 'src/modules/courses/entities/module.entity';
+import { CourseMapper } from 'src/modules/courses/entities/courses-maper.entity';
+import { LessonMapper } from 'src/modules/courses/entities/lessons-maper.entity';
+import { Lesson } from 'src/modules/courses/entities/lessons.entity';
+import { Resource } from 'src/modules/courses/entities/resource.entity';
+import { Quiz } from 'src/modules/courses/entities/quiz.entity';
+import { VideoResource } from 'src/modules/courses/entities/video-lessons.entity';
 
 config();
 
 const configService = new ConfigService();
-export const entities = [User, Token];
+export const entities = [
+  User,
+  Token,
+  Course,
+  Module,
+  CourseMapper,
+  LessonMapper,
+  Lesson,
+  Resource,
+  Quiz,
+  VideoResource,
+];
 
 const mainDataSource = new DataSource({
   type: 'postgres',
