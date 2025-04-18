@@ -3,8 +3,11 @@ import { Button } from "./ui/button";
 import { Link } from "react-router-dom";
 import LogoLight from "../assets/logo.svg";
 import { CircleArrowLeft } from "lucide-react";
+import { useSettings } from "../context/SettingsContexts";
 
 const Navbar = () => {
+  const { darkMode, toggleDarkMode } = useSettings();
+
   return (
     <nav className=" lg:px-0">
       <div className="max-w-full mx-auto flex justify-around items-center">
@@ -34,7 +37,7 @@ const Navbar = () => {
           ))}
         </div>
 
-        <div className="hidden md:flex pl-10 items-center justify-center pr-4">
+        {/* <div className="hidden md:flex pl-10 items-center justify-center pr-4">
           <div
             className="flex items-center bg-black border
              border-[#9191915b] group rounded-full relative"
@@ -57,8 +60,39 @@ const Navbar = () => {
               </Link>
             </Button>
           </div>
-        </div>
+        </div> */}
+
+<div className="hidden md:flex pl-10 items-center justify-center pr-4 gap-4">
+  {/* زر التسجيل */}
+  <div
+    className="flex items-center bg-black border border-[#9191915b] group rounded-full relative"
+    style={{ width: "120px", height: "50px" }}
+  >
+    <Button
+      className="w-full h-full bg-none dark:bg-transparent transition-all
+      ease-in-out duration-700 dark:hover:bg-transparent dark:hover:opacity-50
+      rounded-full bg-transparent"
+    >
+      <Link to={"/login"} className="flex items-center gap-2 text-white">
+        التسجيل
+        <CircleArrowLeft className="transition-transform duration-300 group-hover:rotate-45" />
+      </Link>
+    </Button>
+  </div>
+
+  {/* زر الوضع الليلي */}
+  <button
+    onClick={toggleDarkMode}
+    className="px-4 py-2 rounded-full bg-gray-200 dark:bg-gray-700 
+             text-sm text-black dark:text-white transition"
+  >
+    {darkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
+  </button>
+</div>
+
       </div>
+
+      
     </nav>
   );
 };
