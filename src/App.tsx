@@ -1,8 +1,9 @@
 import { UserContextProvider } from "./context/UserContext";
 import ErrorBoundary from "./utils/ErrorBoundary";
 import Router from "./utils/router";
+import { DASHBOARDTYPE } from "./utils/types/platfrom";
 
-function App() {
+function App({ switch_dashboard }: { switch_dashboard: DASHBOARDTYPE }) {
   return (
     <div className="font-rubik min-h-screen bg-white dark:bg-black" dir="rtl">
       <div className="relative min-h-screen">
@@ -14,13 +15,11 @@ function App() {
             backgroundBlendMode: "overlay",
           }}
         />
-        {/* <SettingsProvider> */}
         <UserContextProvider>
           <ErrorBoundary>
-            <Router />
+            <Router switch_dashboard={switch_dashboard} />
           </ErrorBoundary>
         </UserContextProvider>
-        {/* </SettingsProvider> */}
       </div>
     </div>
   );
