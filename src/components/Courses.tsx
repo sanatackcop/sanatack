@@ -9,7 +9,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Book, Triangle, Hourglass } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CourseInterface } from "@/types/courses";
+import { CourseInterface, LevelEnum } from "@/types/courses";
 
 export default function CoursesCard() {
   const coursesCard: CourseInterface[] = Array.from({ length: 6 }, (_, i) => ({
@@ -18,13 +18,13 @@ export default function CoursesCard() {
     description:
       "أطلق حياتك المهنية كمطور للواجهات الأمامية مع هذا المسار الشامل. ستتعلم أحدث الممارسات الأفضل لتطوير الويب الحديث، وستبرز من بين المرشحين الآخرين...",
     unitesNum: 70 + i,
-    hardLevel: "مبتدئ",
+    level: LevelEnum.BEGINNER,
     durition: `${100 + i * 10} ساعة`,
     courseType: "Frontend",
   }));
 
   return (
-    <div className="px-4 md:px-8">
+    <>
       <div className="mb-6 w-3/4 text-center">
         <h1 className="text-3xl font-bold flex justify-normal mt-2">الدورات</h1>
         <p className="text-lg text-gray-500 text-right mt-2">
@@ -64,12 +64,12 @@ export default function CoursesCard() {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="all">
-          <div dir="rtl" className="grid grid-cols-3 gap-6 ">
+          <div dir="rtl" className="grid md:grid-cols-3 gap-6 sm:grid-cols-1">
             {coursesCard.map((feature, index) => (
               <Card
                 key={index}
-                className={`bg-[#111111]  text-white border-white/20 rounded-xl shadow-xl flex flex-col justify-between ${
-                  index === 0 ? "col-span-2" : ""
+                className={`bg-[#111111]  text-white border-[#282D3D] rounded-xl shadow-xl flex flex-col justify-between ${
+                  index === 0 ? "md:col-span-2 sm:col-span-1" : ""
                 }`}
               >
                 <CardHeader className="relative pb-0">
@@ -98,18 +98,12 @@ export default function CoursesCard() {
                     </div>
                     <div className="flex items-center gap-1">
                       <Triangle className="h-4 w-4 text-red-500" />
-                      <span>{feature.hardLevel}</span>
+                      <span>{feature.level}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Hourglass className="h-4 w-4 text-white" />
                       <span>{feature.durition}</span>
                     </div>
-                    {/* {feature.tag.map((tag, i) => (
-                      <div key={i} className="flex items-center gap-1">
-                        {tag.icon}
-                        <span>{tag.title}</span>
-                      </div>
-                    ))} */}
                   </div>
                 </CardFooter>
               </Card>
@@ -117,6 +111,6 @@ export default function CoursesCard() {
           </div>
         </TabsContent>
       </Tabs>
-    </div>
+    </>
   );
 }

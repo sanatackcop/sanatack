@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import DashboardLayout from "./layout";
+import CardList from "./courses/Index";
 
 export default function MainDashboard() {
   return (
@@ -14,7 +15,7 @@ export default function MainDashboard() {
           }
         />
 
-        <Route path="courses" element={<> COURSES</>} />
+        <Route path="courses" element={<CardList />} />
         <Route path="tracks" element={<> roadmas</>} />
 
         <Route
