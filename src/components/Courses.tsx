@@ -1,156 +1,122 @@
-import { CardContent } from "@/components/ui/card";
 import {
-  BarChart,
-  Book,
-  Triangle,
-  Hourglass,
-  AlignVerticalDistributeCenter,
-} from "lucide-react";
-import { Separator } from "@/components/ui/separator";
-import SpotlightCard from "./blocks/Components/SpotlightCard/SpotlightCard";
+  Card,
+  CardHeader,
+  CardFooter,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Book, Triangle, Hourglass } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CourseInterface } from "@/types/courses";
 
 export default function CoursesCard() {
-  const coursesCard = [
-    {
-      cardType: "مسار المهارات",
-      heroImage: <BarChart className="h-12 w-12 mt-5 text-black" />,
-      englishTitle: "Parallel Programming",
-      arabicTitle: "البرمجة المتوازية",
-      unites: "20",
-      description:
-        "لتحليل البيانات والأدوات الشائعة المستخدمة في هذا المجال. سيتعرف المتدربون على كيفية جمع البيانات وتنظيفها ومعالجتها بطرق منهجية، بالإضافة إلى استكشاف مختلف أساليب التحليل الإحصائي واستخدام البرمجيات المساعدة مثل بايثون أو آر (R).",
-      level: { hard: "صعب" },
-      durition: "3 شهور",
-      tag: [
-        {
-          title: "Analysis",
-          icon: (
-            <AlignVerticalDistributeCenter className="h-4 w-4 text-blue-700" />
-          ),
-        },
-      ],
-    },
-    {
-      cardType: "مسار المهارات",
-      heroImage: <BarChart className="h-12 w-12 mt-5 text-black" />,
-      englishTitle: "Parallel Programming",
-      arabicTitle: "البرمجة المتوازية",
-      unites: "20",
-      description:
-        "لتحليل البيانات والأدوات الشائعة المستخدمة في هذا المجال. سيتعرف المتدربون على كيفية جمع البيانات وتنظيفها ومعالجتها بطرق منهجية، بالإضافة إلى استكشاف مختلف أساليب التحليل الإحصائي واستخدام البرمجيات المساعدة مثل بايثون أو آر (R).",
-      level: { hard: "صعب" },
-      durition: "3 شهور",
-      tag: [
-        {
-          title: "Analysis",
-          icon: (
-            <AlignVerticalDistributeCenter className="h-4 w-4 text-blue-700" />
-          ),
-        },
-      ],
-    },
-    {
-      cardType: "مسار المهارات",
-      heroImage: <BarChart className="h-12 w-12 mt-5 text-black" />,
-      englishTitle: "Parallel Programming",
-      arabicTitle: "البرمجة المتوازية",
-      unites: "20",
-      description:
-        "لتحليل البيانات والأدوات الشائعة المستخدمة في هذا المجال. سيتعرف المتدربون على كيفية جمع البيانات وتنظيفها ومعالجتها بطرق منهجية، بالإضافة إلى استكشاف مختلف أساليب التحليل الإحصائي واستخدام البرمجيات المساعدة مثل بايثون أو آر (R).",
-      level: { hard: "صعب" },
-      durition: "3 شهور",
-      tag: [
-        {
-          title: "Analysis",
-          icon: (
-            <AlignVerticalDistributeCenter className="h-4 w-4 text-blue-700" />
-          ),
-        },
-      ],
-    },
-    {
-      cardType: "مسار المهارات",
-      heroImage: <BarChart className="h-12 w-12 mt-5 text-black" />,
-      englishTitle: "Parallel Programming",
-      arabicTitle: "البرمجة المتوازية",
-      unites: "20",
-      description:
-        "لتحليل البيانات والأدوات الشائعة المستخدمة في هذا المجال. سيتعرف المتدربون على كيفية جمع البيانات وتنظيفها ومعالجتها بطرق منهجية، بالإضافة إلى استكشاف مختلف أساليب التحليل الإحصائي واستخدام البرمجيات المساعدة مثل بايثون أو آر (R).",
-      level: { hard: "صعب" },
-      durition: "3 شهور",
-      tag: [
-        {
-          title: "Analysis",
-          icon: (
-            <AlignVerticalDistributeCenter className="h-4 w-4 text-blue-700" />
-          ),
-        },
-      ],
-    },
-  ];
+  const coursesCard: CourseInterface[] = Array.from({ length: 6 }, (_, i) => ({
+    englishTitle: "",
+    arabicTitle: `مسار مهنة مطور الواجهة الأمامية Frontend ${i + 1}`,
+    description:
+      "أطلق حياتك المهنية كمطور للواجهات الأمامية مع هذا المسار الشامل. ستتعلم أحدث الممارسات الأفضل لتطوير الويب الحديث، وستبرز من بين المرشحين الآخرين...",
+    unitesNum: 70 + i,
+    hardLevel: "مبتدئ",
+    durition: `${100 + i * 10} ساعة`,
+    courseType: "Frontend",
+  }));
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 px-4 md:px-8">
-      {coursesCard.map((feature, index) => (
-        <SpotlightCard
-          key={index}
-          className="max-w-md w-full !border !border-white   
-          mx-auto overflow-hidden rounded-none border-none cursor-pointer
-           !p-0 bg-[#FAFFFD] bg-opacity-5"
-        >
-          <div className="bg-teal-800 border rounded-md rounded-bl-none rounded-br-none border-white border-opacity-20 text-white text-center py-2 font-semibold text-lg">
-            {feature.cardType}
+    <div className="px-4 md:px-8">
+      <div className="mb-6 w-3/4 text-center">
+        <h1 className="text-3xl font-bold flex justify-normal mt-2">الدورات</h1>
+        <p className="text-lg text-gray-500 text-right mt-2">
+          حسّن مهاراتك في هندسه البرمجيات و بيانات باستخدام مجموعة متنوعة من
+          اللغات والأطر، بما في ذلك HTML، CSS، JavaScript، React، TypeScript،
+          وطرق الذكاء الاصطناعي المتقدمة.
+        </p>
+      </div>
+      <Tabs defaultValue="all" dir="rtl" className="w-full">
+        <TabsList className="!bg-[#0C0C0C]  text-right mb-4">
+          <TabsTrigger value="all">
+            تصفح{" "}
+            <Badge
+              variant="secondary"
+              className="flex h-5 w-5 items-center justify-center rounded-full "
+            >
+              3
+            </Badge>
+          </TabsTrigger>
+          <TabsTrigger value="started">
+            بدأت{" "}
+            <Badge
+              variant="secondary"
+              className="flex h-5 w-5 items-center justify-center rounded-full "
+            >
+              0
+            </Badge>
+          </TabsTrigger>
+          <TabsTrigger value="done">
+            اكتملت{" "}
+            <Badge
+              variant="secondary"
+              className="flex h-5 w-5 items-center justify-center rounded-full "
+            >
+              0
+            </Badge>
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="all">
+          <div dir="rtl" className="grid grid-cols-3 gap-6 ">
+            {coursesCard.map((feature, index) => (
+              <Card
+                key={index}
+                className={`bg-[#111111]  text-white border-white/20 rounded-xl shadow-xl flex flex-col justify-between ${
+                  index === 0 ? "col-span-2" : ""
+                }`}
+              >
+                <CardHeader className="relative pb-0">
+                  <CardDescription className="text-xs text-gray-300 mt-2">
+                    {feature.courseType}
+                  </CardDescription>
+                  <CardTitle className="text-sm text-blue-200 mt-2">
+                    {feature.englishTitle}
+                  </CardTitle>
+                  <h2 className="text-xl font-bold text-white mt-1 ">
+                    {feature.arabicTitle}
+                  </h2>
+                </CardHeader>
+
+                <CardContent className="text-right px-5 mt-2">
+                  <p className="text-xs text-gray-400 leading-relaxed mb-3">
+                    {feature.description}
+                  </p>
+                </CardContent>
+
+                <CardFooter className="flex flex-col gap-2 text-xs border-t border-white/10 px-5 pt-3 pb-4">
+                  <div className="flex flex-wrap justify-between items-center gap-y-2 text-sm">
+                    <div className="flex items-center gap-1">
+                      <Book className="h-4 w-4 text-white" />
+                      <span>وحده {feature.unitesNum}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Triangle className="h-4 w-4 text-red-500" />
+                      <span>{feature.hardLevel}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Hourglass className="h-4 w-4 text-white" />
+                      <span>{feature.durition}</span>
+                    </div>
+                    {/* {feature.tag.map((tag, i) => (
+                      <div key={i} className="flex items-center gap-1">
+                        {tag.icon}
+                        <span>{tag.title}</span>
+                      </div>
+                    ))} */}
+                  </div>
+                </CardFooter>
+              </Card>
+            ))}
           </div>
-          <CardContent className="p-4 md:p-6 text-center bg-white rounded-bl-md rounded-br-md">
-            <div className="flex justify-center mb-5">{feature.heroImage}</div>
-          </CardContent>
-          <div className="px-4 py-6">
-            <h2 className="text-xl md:text-2xl font-bold text-white mb-2 text-right">
-              {feature.arabicTitle}
-              <br />
-              <span className="text-xl md:text-2xl font-bold text-white">
-                {feature.englishTitle}
-              </span>
-            </h2>
-            <p className="text-[#FAFFFD] text-opacity-50 text-xs md:text-sm leading-relaxed mb-4 text-right">
-              {feature.description}
-            </p>
-          </div>
-
-          <div className="mt-3">
-            <Separator />
-            <div className="flex flex-col sm:flex-row justify-between items-center p-3 gap-2">
-              <div className="flex items-center gap-2">
-                <Book className="h-4 w-4" />
-                <p className="text-xs md:text-sm">وحده {feature.unites}</p>
-              </div>
-            </div>
-
-            <Separator />
-            <div className="flex flex-col sm:flex-row justify-start items-center p-3 gap-2">
-              <div className="flex items-center gap-1">
-                <Triangle className="h-4 w-4 text-red-600" />
-                <p className="text-xs md:text-sm">{feature.level.hard}</p>
-              </div>
-
-              <div className="flex items-center gap-1">
-                <Hourglass className="h-4 w-4" />
-                <p className="text-xs md:text-sm">{feature.durition}</p>
-              </div>
-
-              {feature.tag.map((tag, i) => (
-                <span
-                  key={i}
-                  className="flex items-center gap-1 px-1 py-1 pt-2 text-xs md:text-sm"
-                >
-                  {tag.icon}
-                  {tag.title}
-                </span>
-              ))}
-            </div>
-          </div>
-        </SpotlightCard>
-      ))}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
