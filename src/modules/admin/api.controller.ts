@@ -1,7 +1,8 @@
-import { Controller, Get } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req } from '@nestjs/common';
 import { CoursesService } from '../courses/courses.service';
+import { CreateNewCourseDto } from '../courses/dto';
 
-@Controller({ path: 'api', version: '1' })
+@Controller('admin')
 export class ApiController {
   constructor(private readonly coursesService: CoursesService) {}
 
@@ -10,8 +11,19 @@ export class ApiController {
     return await this.coursesService.list();
   }
 
-  @Get('/courses/create')
-  async uploadCourse() {
-    return await this.coursesService.createNewCourse();
+  @Post('/courses/new-course')
+  async uploadCourse(
+    @Req() req,
+    @Body()
+    { title, description, tags, level, isPublish, modules }: CreateNewCourseDto
+  ) {
+    return await this.coursesService.createNewCourse({
+      title,
+      description,
+      tags,
+      level,
+      isPublish,
+      modules,
+    });
   }
 }
