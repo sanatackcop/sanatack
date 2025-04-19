@@ -1,14 +1,17 @@
 /* eslint-disable no-unused-vars */
-import axios, { AxiosRequestConfig } from "axios";
+import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 
 let baseURL = import.meta.env.VITE_REACT_APP_BASEURL;
 
 const baseApi = axios.create({
   baseURL,
-  // withCredentials: true,
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
+    "X-Requested-With": "XMLHttpRequest",
+    Connection: "keep-alive",
   },
+  timeout: 30000,
 });
 
 export const refreshApi = axios.create({
@@ -18,22 +21,34 @@ export const refreshApi = axios.create({
   },
 });
 
-const Api = async (config: AxiosRequestConfig) => {
+export const Api = async <T = unknown>(
+  config: AxiosRequestConfig
+): Promise<AxiosResponse<T>> => {
   try {
-    const response = await baseApi(config);
-    return response;
-  } catch (e: any) {
-    const errors = e?.response?.data;
+    return await baseApi(config);
+  } catch (err: any) {
+    const errorData = err?.response?.data;
 
-    if ("message" in errors)
+    if (errorData && typeof errorData === "object") {
+      if ("message" in errorData) {
+        throw { error: { type: "validationError", body: errorData.message } };
+      }
+
+      if ("solution" in errorData) {
+        throw { error: { type: "niceError", body: errorData } };
+      }
+    }
+
+    if (err.code === "ECONNABORTED" || err.message === "Network Error") {
       throw {
-        error: { type: "validationError", body: errors?.message },
-      } as any;
+        error: {
+          type: "network",
+          body: "Request failed. Please check your connection.",
+        },
+      };
+    }
 
-    if ("solution" in errors)
-      throw { error: { type: "niceError", body: errors } } as any;
-
-    throw e;
+    throw err;
   }
 };
 

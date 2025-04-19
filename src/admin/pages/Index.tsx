@@ -20,6 +20,7 @@ interface Course {
   id: string;
   title: string;
   description: string;
+  isPublish: boolean;
 }
 
 export default function AdminDashboard() {
@@ -42,7 +43,6 @@ export default function AdminDashboard() {
   useEffect(() => {
     fetchCourses();
   }, []);
-
   return (
     <div className="p-6 space-y-6 text-black">
       <div className="flex items-center justify-between">
@@ -52,10 +52,9 @@ export default function AdminDashboard() {
         </Button>
         <h1 className="text-3xl font-bold">Courses</h1>
       </div>
-
       <Card className="shadow-xl">
         <CardHeader>
-          <CardTitle>Course List</CardTitle>
+          <CardTitle className="text-left text-xl">Course List</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -66,6 +65,7 @@ export default function AdminDashboard() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>isPublish</TableHead>
                   <TableHead>Description</TableHead>
                   <TableHead>Title</TableHead>
                   <TableHead>Id</TableHead>
@@ -74,6 +74,9 @@ export default function AdminDashboard() {
               <TableBody className="text-left">
                 {courses.map((c, index) => (
                   <TableRow key={index}>
+                    <TableCell>
+                      {String(c.isPublish).toLocaleUpperCase()}
+                    </TableCell>
                     <TableCell>{c.description}</TableCell>
                     <TableCell className="font-medium">{c.title}</TableCell>
                     <TableCell className="font-medium">{c.id}</TableCell>
