@@ -32,7 +32,9 @@ export default function AdminDashboard() {
     setLoading(true);
     try {
       const res = await getListCoursesApi({});
-      setCourses(res);
+      if (res) {
+        setCourses(res as Course[]);
+      }
     } catch (err) {
       console.error(err);
     } finally {

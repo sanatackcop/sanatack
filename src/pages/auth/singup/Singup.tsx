@@ -37,7 +37,7 @@ const SignupFormSchema = z.object({
 });
 type SignupFormData = z.infer<typeof SignupFormSchema>;
 
-// TODO: fix 
+// TODO: fix
 const Signup = () => {
   const navigate = useNavigate();
   const formRef = useRef<HTMLDivElement>(null);
@@ -72,7 +72,7 @@ const Signup = () => {
   const onSubmit = async (values: SignupFormData) => {
     setError(null);
     try {
-      const result = await signupApi({
+      const result: any = await signupApi({
         first_name: values.first_name,
         last_name: values.last_name,
         phone: values.phone,
@@ -104,7 +104,7 @@ const Signup = () => {
 
   const verifyOtp = async () => {
     try {
-      const result = await verifyOtpApi({
+      const result: any = await verifyOtpApi({
         otp: otp.join(""),
         user_id: auth!.user.id,
       });

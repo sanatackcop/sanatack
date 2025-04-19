@@ -58,8 +58,6 @@ export function AppSidebar() {
       side="right"
       className="!bg-[#0C0C0C] border-l border-gray-500 border-opacity-20 w-full sm:w-64"
     >
-      {/* <TopNavbar /> */}
-      <header></header>
       <SidebarContent className="!bg-[#0C0C0C]">
         <div className="flex justify-normal">
           <img
