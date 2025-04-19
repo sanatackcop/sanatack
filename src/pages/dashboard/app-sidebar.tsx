@@ -6,7 +6,7 @@ import {
   Bell,
 } from "lucide-react";
 import LogoLight from "@/assets/logo.svg";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -27,28 +27,18 @@ const sampleUser = {
   email: "user@example.com",
   avatar: "https://i.pravatar.cc/150?img=56",
 };
+
 const items = [
-  {
-    title: "الرئيسية",
-    url: "/dashboard",
-    icon: Home,
-  },
-  {
-    title: "الدورات",
-    url: "#",
-    icon: Inbox,
-  },
+  { title: "الرئيسية", url: "/dashboard/overview", icon: Home },
+  { title: "الدورات", url: "/dashboard/courses", icon: Inbox },
   {
     title: "المسارات",
-    url: "#",
+    url: "/dashboard/tracks",
     icon: AlignVerticalSpaceBetween,
   },
-  {
-    title: "المشاريع",
-    url: "#",
-    icon: Calendar,
-  },
+  { title: "المشاريع", url: "/dashboard/projects", icon: Calendar },
 ];
+
 export function AppSidebar() {
   const location = useLocation();
   const activePath = location.pathname;
@@ -56,6 +46,7 @@ export function AppSidebar() {
   return (
     <Sidebar
       side="right"
+      collapsible="offcanvas"
       className="!bg-[#0C0C0C] border-l border-gray-500 border-opacity-20 w-full sm:w-64"
     >
       <SidebarContent className="!bg-[#0C0C0C]">
@@ -80,15 +71,10 @@ export function AppSidebar() {
                         isActive ? "bg-[#273145] text-white" : "text-gray-500"
                       }
                     >
-                      <a href={item.url}>
-                        <item.icon
-                          className={
-                            isActive ? "text-[#4D94F8]" : "text-gray-400"
-                          }
-                          size={20}
-                        />
+                      <Link to={item.url}>
+                        <item.icon size={20} />
                         <span>{item.title}</span>
-                      </a>
+                      </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );

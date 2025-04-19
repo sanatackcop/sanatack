@@ -1,9 +1,10 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { DashboardPage, HomePAGE, LoginPage, SingupPage } from "./index";
+import { HomePAGE, LoginPage, SingupPage } from "./index";
 import Storage from "@/lib/Storage";
 import AdminDashboard from "@/admin/pages/Index";
 import { DASHBOARDTYPE } from "./types/platfrom";
+import MainDashboard from "@/pages/dashboard/Index";
 
 const publicRoutes = [
   { path: "/", element: <HomePAGE /> },
@@ -11,8 +12,7 @@ const publicRoutes = [
   { path: "/singup", element: <SingupPage /> },
 ];
 
-const privateRoutes = [{ path: "/dashboard", element: <DashboardPage /> }];
-
+const privateRoutes = [{ path: "/dashboard/*", element: <MainDashboard /> }];
 const adminRoutes = [{ path: "/admin", element: <AdminDashboard /> }];
 
 type Auth = {
