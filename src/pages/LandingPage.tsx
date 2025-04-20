@@ -139,42 +139,50 @@ export default function LandingPage() {
 
 <footer className="relative w-full bg-white overflow-hidden">
   {/* Background Shapes */}
-  <img
-    src="../src/assets/blueGalaxy.svg"
-    alt="Blue Galaxy"
-    className="absolute top-20 left-0 w-1/3 sm:w-1/4 z-0"
-  />
-  <img
-    src="../src/assets/orangeGalaxy.svg"
-    alt="Orange Galaxy"
-    className="absolute top-20 right-0 w-1/3 sm:w-1/4 z-0"
-  />
+<img
+  src="../src/assets/blueGalaxy.svg"
+  alt="Blue Galaxy"
+  className="hidden sm:block absolute top-10 left-0 w-1/2 sm:w-1/3 md:w-1/4 z-0"
+/>
+<img
+  src="../src/assets/orangeGalaxy.svg"
+  alt="Orange Galaxy"
+  className="hidden sm:block md:block absolute top-10 right-0 w-1/2 sm:w-1/3 md:w-1/4 z-0"
+/>
 
   {/* Center Content */}
-  <div className="relative z-10 flex flex-col items-center justify-center text-center py-16 sm:py-24 px-4 sm:px-8">
-    <h2 className="text-4xl font-bold text-gray-800">Sanatack</h2>
-    <p className="mt-2 mb-6 text-sm text-gray-700">To Make New Tech Skills</p>
+  <div className="relative z-10 flex flex-col items-center justify-center text-center py-12 sm:py-16 px-4 sm:px-8">
+    <h2 className="text-3xl sm:text-4xl font-bold text-gray-800">Sanatack</h2>
+    <p className="mt-2 mb-6 text-sm sm:text-base text-gray-700">
+      To Make New Tech Skills
+    </p>
 
-    <div className="flex flex-col sm:flex-row items-center gap-2">
-      <input
-        placeholder="name@email.com"
-        className="bg-gray-300 px-4 py-2 rounded-md text-sm text-gray-600 w-64 outline-none"
-      />
-      <button className="border border-black px-4 py-2 rounded-md text-sm font-medium text-gray-950 hover:bg-gray-100">
+    <div className="flex flex-col sm:flex-row items-center gap-2 w-full max-w-md ">
+      
+    <button className="border border-black px-4 py-2 rounded-md text-sm font-medium text-gray-950 hover:bg-gray-100 sm:w-64">
         Join The Newsletter
       </button>
+      
+      <input
+        placeholder="name@email.com"
+        className="bg-gray-300 px-4 py-2 rounded-md text-sm text-gray-600 w-full sm:w-auto flex-1 outline-none"
+      />
+      
     </div>
   </div>
 
   {/* Footer Bottom */}
-  <div className="relative z-10 flex flex-col sm:flex-row justify-between items-center gap-2 px-4 md:px-12 py-4 border-t border-gray-200">
+  <div className="relative z-10 flex flex-col sm:flex-row justify-between items-center gap-4 px-4 md:px-12 py-4  border-gray-200">
     <div className="flex gap-4">
-      <Linkedin className="text-[#808080] h-4 w-4" />
-      <Twitter className="text-[#808080] h-4 w-4" />
+      <Linkedin className="text-[#808080] h-5 w-5 hover:text-black transition-colors" />
+      <Twitter className="text-[#808080] h-5 w-5 hover:text-black transition-colors" />
     </div>
-    <p className="text-gray-500 text-xs font-light">© 2025 sanatack Inc.</p>
+    <p className="text-gray-500 text-xs font-light text-center sm:text-right">
+      © 2025 Sanatack Inc.
+    </p>
   </div>
 </footer>
+
         
 
 
