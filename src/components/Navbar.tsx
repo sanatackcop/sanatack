@@ -1,24 +1,35 @@
+import { useState } from "react";
 import { navItems } from "@/utils/navList";
-import { Button } from "./ui/button";
 import { Link } from "react-router-dom";
 import LogoLight from "../assets/logo.svg";
+import LogoDark from "../assets/lightmood.svg";
+import Dark from "../assets/logodark2.png";
+import Logo from "../assets/logo1.png";
 import { CircleArrowLeft } from "lucide-react";
 import { useSettings } from "../context/SettingsContexts";
 
 const Navbar = () => {
   const { darkMode, toggleDarkMode } = useSettings();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <nav className=" lg:px-0">
-      <div className="max-w-full mx-auto flex justify-around items-center">
+    <nav className=" relative w-full lg:px-0 z-50 bg-white dark:bg-[#0C0C0C]">
+      <div className="max-w-full mx-auto flex justify-between items-center px-4 py-3 md:py-5">
+        
+        {/* Logo */}
         <div className="flex-shrink-0">
           <img
-            className="w-[120px] md:w-[180px] cursor-pointer"
-            src={String(LogoLight)}
+            src={darkMode ? String(Dark) : String(LogoDark)}
             alt="logo"
+            className={`object-contain transition-all duration-300 ${
+              darkMode
+                ? "h-[90px] md:h-[150px]"
+                : "h-[90px] md:h-[150px]"
+            }`}
           />
         </div>
 
+        {/* Desktop Menu */}
         <div className="hidden md:flex items-center space-x-5 space-x-reverse bg-[#0C0C0C] border border-[#222222] rounded-full h-14 pr-5 pl-2">
           {navItems.map((item, index) => (
             <Link
@@ -37,62 +48,104 @@ const Navbar = () => {
           ))}
         </div>
 
-        {/* <div className="hidden md:flex pl-10 items-center justify-center pr-4">
-          <div
-            className="flex items-center bg-black border
-             border-[#9191915b] group rounded-full relative"
-            style={{ width: "120px", height: "50px" }}
+        {/* Desktop Buttons */}
+        <div className="hidden md:flex pl-10 items-center justify-center pr-4 gap-4">
+          <Link to="/login">
+            <div className="flex items-center gap-2 px-6 py-2 bg-[#181818] border border-[#2B2B2B] 
+                            text-white rounded-full hover:bg-[#2B2B2B] transition duration-300 shadow-md">
+              <span className="text-sm font-medium">التسجيل</span>
+              <CircleArrowLeft className="h-4 w-4 transition-transform duration-300 group-hover:rotate-45" />
+            </div>
+          </Link>
+
+          <button
+            onClick={toggleDarkMode}
+            className="w-10 h-10 flex items-center justify-center rounded-full 
+                       bg-gray-200 dark:bg-[#2B2B2B] text-black dark:text-white 
+                       hover:scale-105 hover:shadow-md transition-all duration-300"
+            aria-label="Toggle Dark Mode"
           >
-            <Button
-              className="w-full h-full bg-none dark:bg-transparent transition-all
-              ease-in-out duration-700 dark:hover:bg-transparent dark:hover:opacity-50
-              rounded-full bg-transparent"
-            >
-              <Link
-                to={"/login"}
-                className="flex items-center gap-2 text-white"
+            {darkMode ? "☀️" : "🌙"}
+          </button>
+        </div>
+
+        {/* Mobile Menu Button */}
+        <div className="md:hidden ">
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="text-black dark:text-white focus:outline-none"
+          >
+            {isMenuOpen ? (
+              // Icon: X
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
               >
-                التسجيل
-                <CircleArrowLeft
-                  className="transition-transform 
-                duration-300 group-hover:rotate-45"
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
                 />
-              </Link>
-            </Button>
-          </div>
-        </div> */}
-
-<div className="hidden md:flex pl-10 items-center justify-center pr-4 gap-4">
-  {/* زر التسجيل */}
-  <div
-    className="flex items-center bg-black border border-[#9191915b] group rounded-full relative"
-    style={{ width: "120px", height: "50px" }}
-  >
-    <Button
-      className="w-full h-full bg-none dark:bg-transparent transition-all
-      ease-in-out duration-700 dark:hover:bg-transparent dark:hover:opacity-50
-      rounded-full bg-transparent"
-    >
-      <Link to={"/login"} className="flex items-center gap-2 text-white">
-        التسجيل
-        <CircleArrowLeft className="transition-transform duration-300 group-hover:rotate-45" />
-      </Link>
-    </Button>
-  </div>
-
-  {/* زر الوضع الليلي */}
-  <button
-    onClick={toggleDarkMode}
-    className="px-4 py-2 rounded-full bg-gray-200 dark:bg-gray-700 
-             text-sm text-black dark:text-white transition"
-  >
-    {darkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
-  </button>
-</div>
-
+              </svg>
+            ) : (
+              // Icon: Hamburger
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+            )}
+          </button>
+        </div>
       </div>
 
-      
+      {/* Mobile Dropdown Menu */}
+      {isMenuOpen && (
+        <div className="md:hidden  w-full bg-white dark:bg-[#0C0C0C] shadow-md py-4 z-999 border-t border-gray-200 dark:border-[#222]">
+          <div className="flex flex-col items-center gap-4">
+            {navItems.map((item) => (
+              <Link
+                key={item.title}
+                to={item.href}
+                onClick={() => setIsMenuOpen(false)}
+                className={`text-black dark:text-white hover:text-gray-500 text-sm font-medium ${
+                  !item.isActive ? "text-gray-400" : ""
+                }`}
+              >
+                {item.title}
+              </Link>
+            ))}
+
+            <Link to="/login" onClick={() => setIsMenuOpen(false)}>
+              <div className="px-6 py-2 bg-black text-white rounded-full">
+                التسجيل
+              </div>
+            </Link>
+
+            <button
+              onClick={toggleDarkMode}
+              className="w-10 h-10 flex items-center justify-center rounded-full 
+                         bg-gray-200 dark:bg-[#2B2B2B] text-black dark:text-white 
+                         hover:scale-105 hover:shadow-md transition-all duration-300"
+            >
+              {darkMode ? "☀️" : "🌙"}
+            </button>
+          </div>
+        </div>
+      )}
     </nav>
   );
 };

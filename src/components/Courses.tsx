@@ -101,18 +101,18 @@ export default function CoursesCard() {
           <div className="bg-teal-800 border rounded-md rounded-bl-none rounded-br-none border-white border-opacity-20 text-white text-center py-2 font-semibold text-lg">
             {feature.cardType}
           </div>
-          <CardContent className="p-4 md:p-6 text-center bg-white rounded-bl-md rounded-br-md">
+          <CardContent className="p-4 md:p-6 text-center bg-white rounded-bl-md rounded-br-md ">
             <div className="flex justify-center mb-5">{feature.heroImage}</div>
           </CardContent>
           <div className="px-4 py-6">
-            <h2 className="text-xl md:text-2xl font-bold text-white mb-2 text-right">
+            <h2 className="text-xl md:text-2xl font-bold  mb-2 text-right text-black dark:text-white ">
               {feature.arabicTitle}
               <br />
-              <span className="text-xl md:text-2xl font-bold text-white">
+              <span className="text-xl md:text-2xl font-bold  text-black dark:text-white">
                 {feature.englishTitle}
               </span>
             </h2>
-            <p className="text-[#FAFFFD] text-opacity-50 text-xs md:text-sm leading-relaxed mb-4 text-right">
+            <p className="text-gray-800 dark:text-gray-300/80  text-opacity-50 text-xs md:text-sm leading-relaxed mb-4 text-right ">
               {feature.description}
             </p>
           </div>
@@ -121,8 +121,8 @@ export default function CoursesCard() {
             <Separator />
             <div className="flex flex-col sm:flex-row justify-between items-center p-3 gap-2">
               <div className="flex items-center gap-2">
-                <Book className="h-4 w-4" />
-                <p className="text-xs md:text-sm">وحده {feature.unites}</p>
+                <Book className="h-4 w-4 text-black dark:text-white" />
+                <p className="text-xs md:text-sm text-black dark:text-white">وحده {feature.unites}</p>
               </div>
             </div>
 
@@ -130,18 +130,18 @@ export default function CoursesCard() {
             <div className="flex flex-col sm:flex-row justify-start items-center p-3 gap-2">
               <div className="flex items-center gap-1">
                 <Triangle className="h-4 w-4 text-red-600" />
-                <p className="text-xs md:text-sm">{feature.level.hard}</p>
+                <p className="text-xs md:text-sm text-black dark:text-white">{feature.level.hard}</p>
               </div>
 
               <div className="flex items-center gap-1">
-                <Hourglass className="h-4 w-4" />
-                <p className="text-xs md:text-sm">{feature.durition}</p>
+                <Hourglass className="h-4 w-4 text-black dark:text-white" />
+                <p className="text-xs md:text-sm text-black dark:text-white ">{feature.durition}</p>
               </div>
 
               {feature.tag.map((tag, i) => (
                 <span
                   key={i}
-                  className="flex items-center gap-1 px-1 py-1 pt-2 text-xs md:text-sm"
+                  className="flex items-center gap-1 px-1 py-1 pt-2 text-xs md:text-sm text-black dark:text-white"
                 >
                   {tag.icon}
                   {tag.title}
@@ -152,5 +152,8 @@ export default function CoursesCard() {
         </SpotlightCard>
       ))}
     </div>
+
+
+
   );
 }

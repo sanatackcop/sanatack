@@ -149,8 +149,8 @@ export default function Subscription() {
   return (
     <section className="relative px-4 md:px-8 ">
       <div className="text-center mb-2">
-        <span className="inline-block px-6 md:px-14 py-2 font-medium text-black border border-black border-opacity-20 rounded-full text-sm">
-          <div className="flex gap-2">
+        <span className="inline-block px-6 md:px-14 py-2 font-medium text-black border border-black border-opacity-20 rounded-full text-sm ">
+          <div className="flex gap-2 ">
             Boost your knowledge
             <SparkleIcon className="h-5 w-5" fill="gold" />
           </div>
@@ -158,7 +158,7 @@ export default function Subscription() {
       </div>
 
       <div className="text-center mb-8">
-        <h2 className="text-black text-3xl md:text-[48px] font-bold">
+        <h2 className="text-black text-3xl md:text-[48px] font-bold ">
           اختر الخطة التي تناسبك.
         </h2>
       </div>

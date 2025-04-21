@@ -12,9 +12,6 @@ import Subscription from "@/components/Subscription";
 import { Separator } from "@/components/ui/separator";
 
 
-// import { Input } from "@/components/ui/input";
-
-
 export default function LandingPage() {
   useEffect(() => {
     gsap.fromTo(
@@ -52,7 +49,7 @@ export default function LandingPage() {
           <header className="navbar">
             <Navbar />
           </header>
-          <main className="flex-grow relative z-10 text-white text-center space-y-4 mt-4">
+          <main className="flex-grow relative z-0 text-white text-center space-y-4 mt-4 ">
             <div className="flex flex-col pt-5 items-center justify-center space-y-4">
               <div className="bg-black border border-[#9191915b] flex items-center justify-center gap-2 transition-transform duration-300 group rounded-full w-52 h-7">
                 <SparkleIcon className="text-[#8280D6] h-4 w-4" />
@@ -62,7 +59,7 @@ export default function LandingPage() {
               </div>
 
               <div className="pt-4">
-                <h1 className="hero-text text-2xl md:text-5xl font-bold leading-tight">
+                <h1 className="hero-text text-2xl md:text-5xl font-bold leading-tight text-black dark:text-white">
                   ارتقِ بمسيرتك إلى آفاق جديدة
                 </h1>
                 <p className="mt-4 text-base md:text-lg text-[#6B737D] font-bold">
@@ -91,12 +88,14 @@ export default function LandingPage() {
             <Topics />
 
             <div
-              className="bg-[#0C0C0C] rounded-[4rem] w-full py-10 md:py-20 
-             md:px-32 mx-auto"
+              className="bg-[#f4f4f4] dark:bg-[#0C0C0C] 
+              rounded-[4rem] w-full py-10 md:py-20 
+              md:px-32 mx-auto transition-colors duration-500"
             >
               <ProgramsSection />
               <WhyUs />
             </div>
+
 
             <div className="px-4 md:px-32 py-2  mx-auto">
               <div className="flex flex-col sm:flex-row justify-between items-center">
@@ -111,73 +110,52 @@ export default function LandingPage() {
               <CoursesCard />
             </div>
 
-            <div className="mt-5 bg-white rounded-tl-[4rem] rounded-tr-[4rem] md:rounded-tl-[10rem] md:rounded-tr-[10rem] h-full w-full relative px-4 py-8 md:px-0">
-              <Subscription />
+            <div className="mt-5 bg-white  rounded-tl-[4rem] rounded-tr-[4rem] md:rounded-tl-[10rem] md:rounded-tr-[10rem] h-full w-full relative px-4 py-8 md:px-0">
+             <Subscription />
             </div>
-          </main>
+</main>
 
-
-
-        
-{/* 
-          <footer className="bg-white w-full">
-            <Separator className="!bg-gray-200" />
-            <div className="flex flex-col sm:flex-row justify-between items-center px-4 md:px-40 py-5">
-              <div className="flex gap-2 mb-4 sm:mb-0">
-                <Linkedin className="text-[#808080] h-5 w-5" />
-                <Twitter className="text-[#808080] h-5 w-5" />
-              </div>
-              <p className="text-[#808080] font-bold">Sanatack@</p>
-            </div>
-            
-          </footer> */}
-
-
-
-
-
-
-<footer className="relative w-full bg-white overflow-hidden">
+<footer className="relative w-full bg-white  overflow-hidden">
   {/* Background Shapes */}
-<img
-  src="../src/assets/blueGalaxy.svg"
-  alt="Blue Galaxy"
-  className="hidden sm:block absolute top-10 left-0 w-1/2 sm:w-1/3 md:w-1/4 z-0"
-/>
-<img
-  src="../src/assets/orangeGalaxy.svg"
-  alt="Orange Galaxy"
-  className="hidden sm:block md:block absolute top-10 right-0 w-1/2 sm:w-1/3 md:w-1/4 z-0"
-/>
+  <img
+    src="../src/assets/blueGalaxy.svg"
+    alt="Blue Galaxy"
+    className="hidden sm:block absolute top-10 left-0 w-1/2 sm:w-1/3 md:w-1/4 z-0"
+  />
+  <img
+    src="../src/assets/orangeGalaxy.svg"
+    alt="Orange Galaxy"
+    className="hidden sm:block md:block absolute top-10 right-0 w-1/2 sm:w-1/3 md:w-1/4 z-0"
+  />
 
   {/* Center Content */}
   <div className="relative z-10 flex flex-col items-center justify-center text-center py-12 sm:py-16 px-4 sm:px-8">
-    <h2 className="text-3xl sm:text-4xl font-bold text-gray-800">Sanatack</h2>
-    <p className="mt-2 mb-6 text-sm sm:text-base text-gray-700">
+    <h2 className="text-3xl sm:text-4xl font-bold text-gray-800 ">
+      Sanatack
+    </h2>
+    <p className="mt-2 mb-6 text-sm sm:text-base text-gray-700 ">
       To Make New Tech Skills
     </p>
 
-    <div className="flex flex-col sm:flex-row items-center gap-2 w-full max-w-md ">
-      
-    <button className="border border-black px-4 py-2 rounded-md text-sm font-medium text-gray-950 hover:bg-gray-100 sm:w-64">
+    <div className="flex flex-col sm:flex-row items-center gap-2 w-full max-w-md">
+      <button className="border border-black  px-4 py-2 rounded-md text-sm font-medium text-gray-950  hover:bg-gray-100  sm:w-64">
         Join The Newsletter
       </button>
-      
+
       <input
         placeholder="name@email.com"
-        className="bg-gray-300 px-4 py-2 rounded-md text-sm text-gray-600 w-full sm:w-auto flex-1 outline-none"
+        className="bg-gray-300 px-4 py-2 rounded-md text-sm text-gray-600  w-full sm:w-auto flex-1 outline-none"
       />
-      
     </div>
   </div>
 
   {/* Footer Bottom */}
-  <div className="relative z-10 flex flex-col sm:flex-row justify-between items-center gap-4 px-4 md:px-12 py-4  border-gray-200">
+  <div className="relative z-10 flex flex-col sm:flex-row justify-between items-center gap-4 px-4 md:px-12 py-4  border-gray-200 dark:border-[#333333]">
     <div className="flex gap-4">
-      <Linkedin className="text-[#808080] h-5 w-5 hover:text-black transition-colors" />
-      <Twitter className="text-[#808080] h-5 w-5 hover:text-black transition-colors" />
+      <Linkedin className="text-[#808080] hover:text-black dark:hover:text-white transition-colors h-5 w-5" />
+      <Twitter className="text-[#808080] hover:text-black dark:hover:text-white transition-colors h-5 w-5" />
     </div>
-    <p className="text-gray-500 text-xs font-light text-center sm:text-right">
+    <p className="text-gray-500 dark:text-gray-400 text-xs font-light text-center sm:text-right">
       © 2025 Sanatack Inc.
     </p>
   </div>

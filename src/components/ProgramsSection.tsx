@@ -55,7 +55,7 @@ export default function ProgramsSection() {
 
   return (
     <div className="bg-[#111111] border border-white border-opacity-20
-     rounded-[70px] px-4 py-8 w-full max-w-screen-xl mx-auto">
+     rounded-[70px] px-12 py-12 w-full max-w-screen-xl mx-auto">
       <div className="text-center mb-2">
         <span
           className="inline-block px-4 py-2 font-medium text-white 
