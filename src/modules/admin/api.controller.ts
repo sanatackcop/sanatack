@@ -8,7 +8,7 @@ export class ApiController {
 
   @Get('/courses')
   async getCourses() {
-    return await this.coursesService.list();
+    return await this.coursesService.list({});
   }
 
   @Post('/courses/new-course')
