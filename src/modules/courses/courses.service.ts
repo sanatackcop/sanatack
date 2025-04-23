@@ -1,10 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { createQueryBuilder, DataSource, Repository } from 'typeorm';
 import { Course } from './entities/courses.entity';
 import { CourseResponse } from '../admin/dto';
 import { Module } from './entities/module.entity';
-import { AllCourses, CourseDetails, CreateNewCourseDto } from './dto';
+import { CourseDetails, Courses, CreateNewCourseDto } from './dto';
 import { CourseMapper } from './entities/courses-maper.entity';
 import { Quiz } from './entities/quiz.entity';
 import { Resource } from './entities/resource.entity';
@@ -35,9 +35,10 @@ export class CoursesService {
     return res;
   }
 
-  async AllCourses(): Promise<AllCourses[]> {
+  async courses(): Promise<Courses[]> {
     const courses = await this.courseRepository.find({
       where: { isPublished: true },
+      order: {createdAt: 'DESC'}
     });
   
     return courses.map((course) => ({
@@ -49,58 +50,62 @@ export class CoursesService {
     }));
   }
 
-  async CourseDetails(id: number):Promise<CourseDetails>{
-    const course = await this.courseRepository.findOne({
-      where: { id , isPublished: true },
-      relations: ['courseMappers', 'courseMappers.module','courseMappers.module.lessonMappers',
-    'courseMappers.module.lessonMappers.lesson','courseMappers.module.lessonMappers.lesson.resources',
-      'courseMappers.module.lessonMappers.lesson.quizzes',
-      'courseMappers.module.lessonMappers.lesson.videos'] 
-    });
-  
+  async courseDetails(id: number) : Promise<CourseDetails>{
+    const course = await this.courseRepository.createQueryBuilder('course')
+    .innerJoinAndSelect('course.courseMappers','mapper')
+    .innerJoinAndSelect('mapper.module','module')
+    .innerJoinAndSelect('module.lessonMappers','lessonmapper')
+    .innerJoinAndSelect('lessonmapper.lesson','lesson')
+    .innerJoinAndSelect('lesson.resources','resources')
+    .innerJoinAndSelect('lesson.quizzes','quizzes')
+    .innerJoinAndSelect('lesson.videos','videos')
+    .where('course.id = :cid',{cid: id})
+    .getOne();
+
     if (!course) {
-      throw new NotFoundException(`Course with ID ${id} not found`);
+      throw new NotFoundException('Course not found');
     }
+
     return {
-      id: course.id,
-      title: course.title,
-      description: course.description,
-      level: course.level,
-      tags: course.tags,
-      modules: course.courseMappers.map((mapper) => {
-        const module = mapper.module;
-        return {
-          id: module.id,
-          title: module.title,
-          order: mapper.order,
-          lessons: module.lessonMappers?.map((lm) => {
-            const lesson = lm.lesson;
+          id: course.id,
+          title: course.title,
+          description: course.description,
+          level: course.level,
+          tags: course.tags,
+          modules: course.courseMappers.map((mapper) => {
+            const module = mapper.module;
             return {
-              id: lesson.id,
-              name: lesson.name,
-              description: lesson.description,
-              order: lesson.order,
-              resources: lesson.resources?.map((r) => ({
-                id: r.id,
-                title: r.title,
-                url: r.url,
-                content: r.content
-              })) || [],
-              quizzes: lesson.quizzes?.map((q) => ({
-                id: q.id
-              })) || [],
-              videos: lesson.videos?.map((v) => ({
-                id: v.id,
-                title: v.title,
-                description: v.description,
-                duration: v.duration,
-              })) || [],
+              id: module.id,
+              title: module.title,
+              lessons: module.lessonMappers?.map((lessonmapper) => {
+                const lesson = lessonmapper.lesson;
+                return {
+                  id: lesson.id,
+                  name: lesson.name,
+                  description: lesson.description,
+                  order: lesson.order,
+                  resources: lesson.resources?.map((resource) => ({
+                    id: resource.id,
+                    title: resource.title,
+                    url: resource.url,
+                    content: resource.content
+                  })) || [],
+                  quizzes: lesson.quizzes?.map((quiz) => ({
+                    id: quiz.id
+                  })) || [],
+                  videos: lesson.videos?.map((video) => ({
+                    id: video.id,
+                    title: video.title,
+                    description: video.description,
+                    duration: video.duration,
+                  })) || [],
+                };
+              }) || [],
             };
-          }) || [],
+          }),
         };
-      }),
-    };
-  }
+      }
+
   
 
   async createNewCourse({

@@ -58,7 +58,7 @@ export class CreateNewCourseDto {
   modules: CreateModuleDto[];
 }
 
-export class AllCourses{
+export class Courses{
   id: number;
   title: string;
   description: string;
@@ -68,7 +68,7 @@ export class AllCourses{
   };
 }
 
-export class CourseDetails extends AllCourses{
+export class CourseDetails extends Courses{
   modules: ModuleDetailsDto[];
 }
 
