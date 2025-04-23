@@ -113,19 +113,6 @@ export function DashboardNavbar() {
         </a>
         <CommandMenu />
       </div>
-
-      {/* Right section: icons, settings, user profile, etc.
-      <div className="flex items-center space-x-3">
-        <button className="hover:opacity-75">
-          <Settings />
-        </button>
-        You could also add a user avatar here
-        <img
-          src="https://via.placeholder.com/32"
-          alt="User avatar"
-          className="rounded-full w-8 h-8"
-        />
-      </div> */}
     </nav>
   );
 }

@@ -7,11 +7,11 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <SidebarProvider className="!bg-[#0C0C0C] h-screen w-screen">
-      <div className="flex w-screen h-screen">
+    <SidebarProvider className="min-h-screen bg-[#0C0C0C] ">
+      <div className="flex h-full  ">
         <AppSidebar />
-        <div className="flex w-screen">
-          <main className="flex-1 !bg-[#0C0C0C] text-white">
+        <div>
+          <main className="flex-1 bg-[#0C0C0C] text-white  ">
             <DashboardNavbar />
             {children}
           </main>
