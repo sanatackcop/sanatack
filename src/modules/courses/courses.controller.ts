@@ -1,30 +1,27 @@
-import { Controller, Get, NotFoundException, Param, Req } from '@nestjs/common';
+import { Controller, Get, HttpException, Param, Req } from '@nestjs/common';
 import { CoursesService } from './courses.service';
-import { Courses, CourseDetails } from './dto';
-import { Course } from './entities/courses.entity';
+import { CoursesContext, RequestType } from './dto';
 
 @Controller('courses')
 export class CoursesController {
-    constructor(private readonly courseService: CoursesService){}
+  constructor(private readonly courseService: CoursesService) {}
 
-    @Get('/list')
-    async getAllCourses(@Req() req): Promise<Courses[]>{
-        try{
-            return await this.courseService.courses();}
-        catch(error){
-            console.log(error);
-        }
+  @Get('/list')
+  async getAllCourses(@Req() req: RequestType): Promise<CoursesContext[]> {
+    try {
+      const userId = req.user.id;
+      return await this.courseService.list({ userId });
+    } catch (error) {
+      throw new HttpException(error, 500);
     }
+  }
 
-    @Get('/:id')
-    async getCourseDetails(@Param('id') id: number){
-        try{
-            return await this.courseService.courseDetails(id);}
-        catch(error){
-            console.log(error);
-        }
+  @Get('/:id')
+  async getCourseDetails(@Param('id') id: number) {
+    try {
+      return await this.courseService.courseDetails(id);
+    } catch (error) {
+      throw new HttpException(error, 500);
     }
-
-    }
-
-
+  }
+}

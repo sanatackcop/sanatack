@@ -1,4 +1,4 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export enum Level {
   'BEGINNER' = 'BEGINNER',
@@ -58,7 +58,7 @@ export class CreateNewCourseDto {
   modules: CreateModuleDto[];
 }
 
-export class Courses{
+export class CoursesContext {
   id: number;
   title: string;
   description: string;
@@ -68,7 +68,7 @@ export class Courses{
   };
 }
 
-export class CourseDetails extends Courses{
+export class CourseDetails extends CoursesContext {
   modules: ModuleDetailsDto[];
 }
 
@@ -93,7 +93,7 @@ export class ResourceDto {
   title: string;
   description?: string;
   url?: string;
-  content?: string
+  content?: string;
 }
 
 export class QuizDto {
@@ -112,4 +112,10 @@ export class VideoDto {
   duration?: number;
 }
 
+export interface User {
+  id: string;
+}
 
+export interface RequestType {
+  user: User;
+}

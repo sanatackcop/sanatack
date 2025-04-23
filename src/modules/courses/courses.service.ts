@@ -1,10 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { createQueryBuilder, DataSource, Repository } from 'typeorm';
+import { DataSource, FindOptionsWhere, Repository } from 'typeorm';
 import { Course } from './entities/courses.entity';
-import { CourseResponse } from '../admin/dto';
 import { Module } from './entities/module.entity';
-import { CourseDetails, Courses, CreateNewCourseDto } from './dto';
+import { CourseDetails, CoursesContext, CreateNewCourseDto } from './dto';
 import { CourseMapper } from './entities/courses-maper.entity';
 import { Quiz } from './entities/quiz.entity';
 import { Resource } from './entities/resource.entity';
@@ -20,93 +19,87 @@ export class CoursesService {
     private readonly dataSource: DataSource
   ) {}
 
-  async list(): Promise<CourseResponse[]> {
-    const courses = await this.courseRepository.find();
+  async list({ userId }: { userId?: string }): Promise<CoursesContext[]> {
+    const where: FindOptionsWhere<Course> = {};
 
-    const res = courses.map((course) => {
-      return {
-        id: course.id,
-        title: course.title.toUpperCase(),
-        description: course.description?.substring(0, 100),
-        isPublish: course.isPublished,
-      };
-    });
+    if (userId) where.isPublished = true;
 
-    return res;
-  }
-
-  async courses(): Promise<Courses[]> {
     const courses = await this.courseRepository.find({
-      where: { isPublished: true },
-      order: {createdAt: 'DESC'}
+      where,
+      order: { createdAt: 'DESC' },
     });
-  
-    return courses.map((course) => ({
+
+    const response = courses.map((course) => ({
       id: course.id,
       title: course.title,
       description: course.description?.substring(0, 100),
       level: course.level,
       tags: course.tags,
     }));
+
+    return response;
   }
 
-  async courseDetails(id: number) : Promise<CourseDetails>{
-    const course = await this.courseRepository.createQueryBuilder('course')
-    .innerJoinAndSelect('course.courseMappers','mapper')
-    .innerJoinAndSelect('mapper.module','module')
-    .innerJoinAndSelect('module.lessonMappers','lessonmapper')
-    .innerJoinAndSelect('lessonmapper.lesson','lesson')
-    .innerJoinAndSelect('lesson.resources','resources')
-    .innerJoinAndSelect('lesson.quizzes','quizzes')
-    .innerJoinAndSelect('lesson.videos','videos')
-    .where('course.id = :cid',{cid: id})
-    .getOne();
+  async courseDetails(id: number): Promise<CourseDetails> {
+    const course = await this.courseRepository
+      .createQueryBuilder('course')
+      .innerJoinAndSelect('course.courseMappers', 'mapper')
+      .innerJoinAndSelect('mapper.module', 'module')
+      .innerJoinAndSelect('module.lessonMappers', 'lessonmapper')
+      .innerJoinAndSelect('lessonmapper.lesson', 'lesson')
+      .innerJoinAndSelect('lesson.resources', 'resources')
+      .innerJoinAndSelect('lesson.quizzes', 'quizzes')
+      .innerJoinAndSelect('lesson.videos', 'videos')
+      .where('course.id = :cid', { cid: id })
+      .getOne();
 
     if (!course) {
-      throw new NotFoundException('Course not found');
+      throw new Error('Course not found');
     }
 
     return {
-          id: course.id,
-          title: course.title,
-          description: course.description,
-          level: course.level,
-          tags: course.tags,
-          modules: course.courseMappers.map((mapper) => {
-            const module = mapper.module;
-            return {
-              id: module.id,
-              title: module.title,
-              lessons: module.lessonMappers?.map((lessonmapper) => {
-                const lesson = lessonmapper.lesson;
-                return {
-                  id: lesson.id,
-                  name: lesson.name,
-                  description: lesson.description,
-                  order: lesson.order,
-                  resources: lesson.resources?.map((resource) => ({
+      id: course.id,
+      title: course.title,
+      description: course.description,
+      level: course.level,
+      tags: course.tags,
+      modules: course.courseMappers.map((mapper) => {
+        const module = mapper.module;
+        return {
+          id: module.id,
+          title: module.title,
+          lessons:
+            module.lessonMappers?.map((lessonmapper) => {
+              const lesson = lessonmapper.lesson;
+              return {
+                id: lesson.id,
+                name: lesson.name,
+                description: lesson.description,
+                order: lesson.order,
+                resources:
+                  lesson.resources?.map((resource) => ({
                     id: resource.id,
                     title: resource.title,
                     url: resource.url,
-                    content: resource.content
+                    content: resource.content,
                   })) || [],
-                  quizzes: lesson.quizzes?.map((quiz) => ({
-                    id: quiz.id
+                quizzes:
+                  lesson.quizzes?.map((quiz) => ({
+                    id: quiz.id,
                   })) || [],
-                  videos: lesson.videos?.map((video) => ({
+                videos:
+                  lesson.videos?.map((video) => ({
                     id: video.id,
                     title: video.title,
                     description: video.description,
                     duration: video.duration,
                   })) || [],
-                };
-              }) || [],
-            };
-          }),
+              };
+            }) || [],
         };
-      }
-
-  
+      }),
+    };
+  }
 
   async createNewCourse({
     title,
@@ -173,7 +166,7 @@ export class CoursesService {
               let video: VideoResource;
 
               video = manager.create(VideoResource, {
-                title:  'Lesson video',
+                title: 'Lesson video',
                 // source: vDto.source,
                 // description: vDto.description,
                 // duration: vDto.duration,
