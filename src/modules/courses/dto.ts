@@ -57,3 +57,59 @@ export class CreateNewCourseDto {
   isPublish: boolean;
   modules: CreateModuleDto[];
 }
+
+export class Courses{
+  id: number;
+  title: string;
+  description: string;
+  level: Level;
+  tags: {
+    durtionsHours: number;
+  };
+}
+
+export class CourseDetails extends Courses{
+  modules: ModuleDetailsDto[];
+}
+
+export class ModuleDetailsDto {
+  id: string;
+  title: string;
+  lessons: LessonDetailsDto[];
+}
+
+export class LessonDetailsDto {
+  id: string;
+  name: string;
+  description?: string;
+  order: number;
+  resources?: ResourceDto[];
+  quizzes?: QuizDto[];
+  videos?: VideoDto[];
+}
+
+export class ResourceDto {
+  id: string;
+  title: string;
+  description?: string;
+  url?: string;
+  content?: string
+}
+
+export class QuizDto {
+  id: string;
+  question?: string;
+  options?: string[];
+  correctAnswer?: string;
+  explanation?: string;
+}
+
+export class VideoDto {
+  id: string;
+  url?: string;
+  title?: string;
+  description?: string;
+  duration?: number;
+}
+
+
