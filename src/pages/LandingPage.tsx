@@ -116,7 +116,7 @@ export default function LandingPage() {
 </main>
 
 <footer className="relative w-full bg-white  overflow-hidden">
-  {/* Background Shapes */}
+  
   <img
     src="../src/assets/blueGalaxy.svg"
     alt="Blue Galaxy"
@@ -128,7 +128,7 @@ export default function LandingPage() {
     className="hidden sm:block md:block absolute top-10 right-0 w-1/2 sm:w-1/3 md:w-1/4 z-0"
   />
 
-  {/* Center Content */}
+  
   <div className="relative z-10 flex flex-col items-center justify-center text-center py-12 sm:py-16 px-4 sm:px-8">
     <h2 className="text-3xl sm:text-4xl font-bold text-gray-800 ">
       Sanatack
@@ -149,7 +149,7 @@ export default function LandingPage() {
     </div>
   </div>
 
-  {/* Footer Bottom */}
+  
   <div className="relative z-10 flex flex-col sm:flex-row justify-between items-center gap-4 px-4 md:px-12 py-4  border-gray-200 dark:border-[#333333]">
     <div className="flex gap-4">
       <Linkedin className="text-[#808080] hover:text-black dark:hover:text-white transition-colors h-5 w-5" />

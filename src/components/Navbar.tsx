@@ -5,7 +5,7 @@ import LogoLight from "../assets/logo.svg";
 import LogoDark from "../assets/lightmood.svg";
 import Dark from "../assets/logodark2.png";
 import Logo from "../assets/logo1.png";
-import { CircleArrowLeft } from "lucide-react";
+import { CircleArrowLeft, Moon, Sun } from "lucide-react";
 import { useSettings } from "../context/SettingsContexts";
 
 const Navbar = () => {
@@ -13,10 +13,10 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <nav className=" relative w-full lg:px-0 z-50 bg-white dark:bg-[#0C0C0C]">
-      <div className="max-w-full mx-auto flex justify-between items-center px-4 py-3 md:py-5">
+    <nav className=" relative w-full lg:px-0 z-50 bg-white dark:bg-black">
+      <div className="max-w-full mx-auto flex justify-between items-center px-4  ">
         
-        {/* Logo */}
+      
         <div className="flex-shrink-0">
           <img
             src={darkMode ? String(Dark) : String(LogoDark)}
@@ -29,7 +29,7 @@ const Navbar = () => {
           />
         </div>
 
-        {/* Desktop Menu */}
+       
         <div className="hidden md:flex items-center space-x-5 space-x-reverse bg-[#0C0C0C] border border-[#222222] rounded-full h-14 pr-5 pl-2">
           {navItems.map((item, index) => (
             <Link
@@ -48,8 +48,26 @@ const Navbar = () => {
           ))}
         </div>
 
-        {/* Desktop Buttons */}
+       
         <div className="hidden md:flex pl-10 items-center justify-center pr-4 gap-4">
+  
+        <button
+            onClick={toggleDarkMode}
+            className="flex items-center gap-2 px-4 py-2 rounded-full  
+                        
+                      
+                      text-gray-800 dark:text-white 
+                      hover:transition-all duration-900"
+            aria-label="Toggle Dark Mode"
+          >
+          
+            <span className="text-lg">
+              {darkMode ? <Sun/> : <Moon/>}
+            </span>
+          </button>
+
+
+ 
           <Link to="/login">
             <div className="flex items-center gap-2 px-6 py-2 bg-[#181818] border border-[#2B2B2B] 
                             text-white rounded-full hover:bg-[#2B2B2B] transition duration-300 shadow-md">
@@ -57,26 +75,17 @@ const Navbar = () => {
               <CircleArrowLeft className="h-4 w-4 transition-transform duration-300 group-hover:rotate-45" />
             </div>
           </Link>
-
-          <button
-            onClick={toggleDarkMode}
-            className="w-10 h-10 flex items-center justify-center rounded-full 
-                       bg-gray-200 dark:bg-[#2B2B2B] text-black dark:text-white 
-                       hover:scale-105 hover:shadow-md transition-all duration-300"
-            aria-label="Toggle Dark Mode"
-          >
-            {darkMode ? "☀️" : "🌙"}
-          </button>
         </div>
 
-        {/* Mobile Menu Button */}
+
+       
         <div className="md:hidden ">
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="text-black dark:text-white focus:outline-none"
           >
             {isMenuOpen ? (
-              // Icon: X
+              
               <svg
                 className="w-6 h-6"
                 fill="none"
@@ -92,7 +101,7 @@ const Navbar = () => {
                 />
               </svg>
             ) : (
-              // Icon: Hamburger
+              
               <svg
                 className="w-6 h-6"
                 fill="none"
@@ -112,7 +121,7 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Dropdown Menu */}
+      
       {isMenuOpen && (
         <div className="md:hidden  w-full bg-white dark:bg-[#0C0C0C] shadow-md py-4 z-999 border-t border-gray-200 dark:border-[#222]">
           <div className="flex flex-col items-center gap-4">
@@ -141,7 +150,7 @@ const Navbar = () => {
                          bg-gray-200 dark:bg-[#2B2B2B] text-black dark:text-white 
                          hover:scale-105 hover:shadow-md transition-all duration-300"
             >
-              {darkMode ? "☀️" : "🌙"}
+              {darkMode ? <Sun/> : <Moon/>}
             </button>
           </div>
         </div>
