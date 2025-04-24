@@ -1,5 +1,3 @@
-"use client";
-
 import GenericTabs from "@/components/tabs";
 import GenericCard from "@/components/card";
 import GenericSection from "@/components/section";
