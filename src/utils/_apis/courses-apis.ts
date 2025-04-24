@@ -8,7 +8,7 @@ export const getAllCoursesApi = async (): Promise<CourseInterface[]> => {
     const response = await trackPromise(
       Api({
         method: "get",
-        url: "https://6808dda1942707d722e01e2e.mockapi.io/courses/allCourses",
+        url: "courses/list",
         withCredentials: false,
       }) as Promise<{ data: CourseInterface[] }>
     );
