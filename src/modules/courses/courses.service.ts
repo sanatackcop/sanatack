@@ -20,13 +20,18 @@ export class CoursesService {
     private readonly dataSource: DataSource
   ) {}
 
-
-  async list({ userId, courseStatus }: { userId?: string , courseStatus?: any}): Promise<CoursesContext[]> {
+  async list({
+    userId,
+    courseStatus,
+  }: {
+    userId?: string;
+    courseStatus?: any;
+  }): Promise<CoursesContext[]> {
     const where: FindOptionsWhere<Course> = {};
     if (userId) where.isPublished = true;
 
-    if(courseStatus){
-      const courses = this.getProgressCourses(userId,courseStatus);
+    if (courseStatus) {
+      const courses = this.getProgressCourses(userId, courseStatus);
       return courses;
     }
     const courses = await this.courseRepository.find({
@@ -44,21 +49,27 @@ export class CoursesService {
 
     return response;
   }
-  private async getProgressCourses(userId: string, courseStatus): Promise<CoursesContext[]> {
+  private async getProgressCourses(
+    userId: string,
+    courseStatus
+  ): Promise<CoursesContext[]> {
+    const query = this.dataSource
+      .getRepository(CourseProgress)
+      .createQueryBuilder('progress')
+      .innerJoinAndSelect('progress.course', 'course')
+      .where('progress.userId = :userId', { userId })
+      .orderBy('course.createdAt', 'DESC');
 
-    const query = this.dataSource.getRepository(CourseProgress)
-    .createQueryBuilder('progress')
-    .innerJoinAndSelect('progress.course', 'course')
-    .where('progress.userId = :userId', { userId })
-    .orderBy('course.createdAt', 'DESC')
-    
     if (courseStatus === 'done') {
       query.andWhere('progress.progress = :progress', { progress: 100 });
-  } else if (courseStatus === 'inProgress') {
-      query.andWhere('progress.progress > :progressMin AND progress.progress < :progressMax', { progressMin: 0, progressMax: 100 }); 
-  }
+    } else if (courseStatus === 'inProgress') {
+      query.andWhere(
+        'progress.progress > :progressMin AND progress.progress < :progressMax',
+        { progressMin: 0, progressMax: 100 }
+      );
+    }
 
-  const courses = await query.getMany();
+    const courses = await query.getMany();
 
     const progressCourses = courses.map(({ course }) => ({
       id: course.id,
@@ -70,7 +81,6 @@ export class CoursesService {
 
     return progressCourses;
   }
-
 
   async courseDetails(id: number): Promise<CourseDetails> {
     const course = await this.courseRepository
