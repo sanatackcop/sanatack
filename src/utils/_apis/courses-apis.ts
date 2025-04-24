@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { trackPromise } from "react-promise-tracker";
 import Api from "./api";
 import { CourseInterface } from "@/types/courses";
@@ -12,7 +11,6 @@ export const getAllCoursesApi = async (): Promise<CourseInterface[]> => {
         withCredentials: false,
       }) as Promise<{ data: CourseInterface[] }>
     );
-    console.log(response.data);
     return response.data;
   } catch (e: any) {
     console.error("getAllCoursesApi error:", e);

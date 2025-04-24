@@ -1,4 +1,3 @@
-//GenericCard component
 import {
   Card,
   CardHeader,
@@ -7,21 +6,9 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
+import { GenericCardProps } from "@/utils/types";
+
 import React from "react";
-
-type FooterItem = {
-  icon?: React.ReactNode;
-  text: string;
-};
-
-type GenericCardProps = {
-  type?: string;
-  title?: string;
-  subtitle?: string;
-  description?: string;
-  footerItems?: FooterItem[];
-  className?: string;
-};
 
 const GenericCard: React.FC<GenericCardProps> = ({
   type,

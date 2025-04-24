@@ -1,21 +1,9 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import React from "react";
-
-type TabType = {
-  label: string;
-  value: string;
-  count?: number;
-};
-
-type GenericTabsProps<T> = {
-  tabs: TabType[];
-  activeTab: string;
-  onChange: (value: string) => void;
-  data: Record<string, T[]>;
-  renderItem: (item: T, index: number) => React.ReactNode;
-};
+import { Loader2 } from "lucide-react";
+import ShowErrorMessage from "@/utils/ErrorMessage";
+import { GenericTabsProps, TabType } from "@/utils/types";
 
 export default function GenericTabs<T>({
   tabs,
@@ -23,20 +11,23 @@ export default function GenericTabs<T>({
   onChange,
   data,
   renderItem,
+  loading = false,
+  error = null,
+  onRetry,
 }: GenericTabsProps<T>) {
   return (
     <Tabs
       dir="rtl"
       value={activeTab}
-      onValueChange={onChange}
-      className="w-full "
+      onValueChange={(value: string) => onChange(value as TabType)}
+      className="w-full"
     >
-      <TabsList className="bg-transparent text-right pb-0 ">
+      <TabsList className="bg-transparent text-right pb-0">
         {tabs.map((tab) => (
           <TabsTrigger
             key={tab.value}
             value={tab.value}
-            className="relative text-md text-white data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-[#5286D2] data-[state=active]:bg-transparent rounded-none "
+            className="relative text-md text-white data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-[#5286D2] data-[state=active]:bg-transparent rounded-none"
           >
             {tab.label}
             {tab.count !== undefined && (
@@ -50,15 +41,26 @@ export default function GenericTabs<T>({
           </TabsTrigger>
         ))}
       </TabsList>
+
       <Separator className="bg-gray-500 opacity-20" />
 
-      {tabs.map((tab) => (
-        <TabsContent key={tab.value} value={tab.value}>
-          <div className="grid md:grid-cols-3 gap-6 sm:grid-cols-1">
-            {data[tab.value]?.map((item, index) => renderItem(item, index))}
-          </div>
-        </TabsContent>
-      ))}
+      {loading ? (
+        <div className="flex justify-center items-center py-20">
+          <Loader2 className="animate-spin h-6 w-6 text-primary" />
+        </div>
+      ) : error ? (
+        <div className="py-20">
+          <ShowErrorMessage message={error} onRetry={onRetry} />
+        </div>
+      ) : (
+        tabs.map((tab) => (
+          <TabsContent key={tab.value} value={tab.value}>
+            <div className="grid md:grid-cols-3 gap-6 sm:grid-cols-1">
+              {data[tab.value]?.map((item, index) => renderItem(item, index))}
+            </div>
+          </TabsContent>
+        ))
+      )}
     </Tabs>
   );
 }
