@@ -7,10 +7,13 @@ export class CoursesController {
   constructor(private readonly courseService: CoursesService) {}
 
   @Get('/list')
-  async getAllCourses(@Req() req: RequestType): Promise<CoursesContext[]> {
+  async getAllCourses(
+    @Req() req: RequestType,
+    @Param() courseStatus: {inProgress?: string, done?: string}
+  ): Promise<CoursesContext[]> {
     try {
       const userId = req.user.id;
-      return await this.courseService.list({ userId });
+      return await this.courseService.list({courseStatus});
     } catch (error) {
       throw new HttpException(error, 500);
     }

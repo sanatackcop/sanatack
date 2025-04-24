@@ -10,6 +10,7 @@ import { Resource } from './entities/resource.entity';
 import { Lesson } from './entities/lessons.entity';
 import { LessonMapper } from './entities/lessons-maper.entity';
 import { VideoResource } from './entities/video-lessons.entity';
+import { CourseProgress } from './entities/course-progress';
 
 @Injectable()
 export class CoursesService {
@@ -19,11 +20,15 @@ export class CoursesService {
     private readonly dataSource: DataSource
   ) {}
 
-  async list({ userId }: { userId?: string }): Promise<CoursesContext[]> {
-    const where: FindOptionsWhere<Course> = {};
 
+  async list({ userId, courseStatus }: { userId?: string , courseStatus?: any}): Promise<CoursesContext[]> {
+    const where: FindOptionsWhere<Course> = {};
     if (userId) where.isPublished = true;
 
+    if(courseStatus){
+      const courses = this.getProgressCourses(userId,courseStatus);
+      return courses;
+    }
     const courses = await this.courseRepository.find({
       where,
       order: { createdAt: 'DESC' },
@@ -39,6 +44,33 @@ export class CoursesService {
 
     return response;
   }
+  private async getProgressCourses(userId: string, courseStatus): Promise<CoursesContext[]> {
+
+    const query = this.dataSource.getRepository(CourseProgress)
+    .createQueryBuilder('progress')
+    .innerJoinAndSelect('progress.course', 'course')
+    .where('progress.userId = :userId', { userId })
+    .orderBy('course.createdAt', 'DESC')
+    
+    if (courseStatus === 'done') {
+      query.andWhere('progress.progress = :progress', { progress: 100 });
+  } else if (courseStatus === 'inProgress') {
+      query.andWhere('progress.progress > :progressMin AND progress.progress < :progressMax', { progressMin: 0, progressMax: 100 }); 
+  }
+
+  const courses = await query.getMany();
+
+    const progressCourses = courses.map(({ course }) => ({
+      id: course.id,
+      title: course.title,
+      description: course.description?.substring(0, 100),
+      level: course.level,
+      tags: course.tags,
+    }));
+
+    return progressCourses;
+  }
+
 
   async courseDetails(id: number): Promise<CourseDetails> {
     const course = await this.courseRepository

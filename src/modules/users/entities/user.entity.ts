@@ -1,5 +1,6 @@
 import { Token } from 'src/modules/auth/entities/token.entity';
 import { decrypt, encrypt } from 'src/modules/auth/helper';
+import { CourseProgress } from 'src/modules/courses/entities/course-progress';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -48,6 +49,9 @@ export class User {
 
   @OneToMany(() => Token, (token) => token.user)
   tokens: Token[];
+
+  @OneToMany(() => CourseProgress, (user) => user.user)
+  courseProgress: CourseProgress[];
 
   @CreateDateColumn()
   createdAt: Date;

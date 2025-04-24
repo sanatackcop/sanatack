@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { Level } from '../dto';
 import { CourseMapper } from './courses-maper.entity';
+import { CourseProgress } from './course-progress';
 
 @Entity({ name: 'courses' })
 export class Course {
@@ -33,6 +34,9 @@ export class Course {
 
   @OneToMany(() => CourseMapper, (mapper) => mapper.course)
   courseMappers: CourseMapper[];
+
+  @OneToMany(() => CourseProgress, (course) => course.course)
+  courseProgress: CourseProgress[];
 
   @CreateDateColumn()
   createdAt: Date;

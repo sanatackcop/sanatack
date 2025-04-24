@@ -12,6 +12,7 @@ import { Lesson } from 'src/modules/courses/entities/lessons.entity';
 import { Resource } from 'src/modules/courses/entities/resource.entity';
 import { Quiz } from 'src/modules/courses/entities/quiz.entity';
 import { VideoResource } from 'src/modules/courses/entities/video-lessons.entity';
+import { CourseProgress } from 'src/modules/courses/entities/course-progress';
 
 config();
 
@@ -27,6 +28,7 @@ export const entities = [
   Resource,
   Quiz,
   VideoResource,
+  CourseProgress,
 ];
 
 const mainDataSource = new DataSource({
