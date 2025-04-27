@@ -81,7 +81,7 @@ export default function CoursesCard() {
                   text: ` ${course.unitesNum}وحده`,
                 },
                 {
-                  icon: getCourseTypeIcon(course.courseType),
+                  icon: getCourseTypeIcon(course?.courseType),
                   text: course.courseType,
                 },
               ]}

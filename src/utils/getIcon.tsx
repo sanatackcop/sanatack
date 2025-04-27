@@ -27,6 +27,7 @@ const courseTypeIcons: Record<string, JSX.Element> = {
 };
 
 export const getCourseTypeIcon = (type: string) => {
+  if(!type) return;
   return (
     courseTypeIcons[type.toLowerCase()] || (
       <Code2 className="h-4 w-4 text-blue-400" />
