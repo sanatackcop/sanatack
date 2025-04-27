@@ -19,3 +19,23 @@ export const getAllCoursesApi = async (): Promise<CourseInterface[]> => {
     throw e;
   }
 };
+
+export const getSingleCoursesApi = async ({
+  courseId,
+}: {
+  courseId: string;
+}): Promise<CourseInterface> => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "get",
+        url: `courses/${courseId}`,
+        withCredentials: false,
+      }) as Promise<{ data: CourseInterface }>
+    );
+    return response.data;
+  } catch (e: any) {
+    console.error("getAllCoursesApi error:", e);
+    throw e;
+  }
+};

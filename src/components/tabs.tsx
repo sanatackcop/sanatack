@@ -52,13 +52,19 @@ export default function GenericTabs<T>({
       </TabsList>
       <Separator className="bg-gray-500 opacity-20" />
 
-      {tabs.map((tab) => (
-        <TabsContent key={tab.value} value={tab.value}>
-          <div className="grid md:grid-cols-3 gap-6 sm:grid-cols-1">
-            {data[tab.value]?.map((item, index) => renderItem(item, index))}
-          </div>
-        </TabsContent>
-      ))}
+      {tabs.map((tab) => {
+        const raw = data[tab.value];
+
+        const list = Array.isArray(raw) ? raw : raw ? [raw] : [];
+
+        return (
+          <TabsContent key={tab.value} value={tab.value}>
+            <div className="grid md:grid-cols-3 gap-6 sm:grid-cols-1">
+              {list.map((item, index) => renderItem(item, index))}
+            </div>
+          </TabsContent>
+        );
+      })}
     </Tabs>
   );
 }
