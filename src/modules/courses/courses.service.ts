@@ -43,13 +43,13 @@ export class CoursesService {
   async courseDetails(id: number): Promise<CourseDetails> {
     const course = await this.courseRepository
       .createQueryBuilder('course')
-      .innerJoinAndSelect('course.courseMappers', 'mapper')
-      .innerJoinAndSelect('mapper.module', 'module')
-      .innerJoinAndSelect('module.lessonMappers', 'lessonmapper')
-      .innerJoinAndSelect('lessonmapper.lesson', 'lesson')
-      .innerJoinAndSelect('lesson.resources', 'resources')
-      .innerJoinAndSelect('lesson.quizzes', 'quizzes')
-      .innerJoinAndSelect('lesson.videos', 'videos')
+      .leftJoinAndSelect('course.courseMappers', 'mapper')
+      .leftJoinAndSelect('mapper.module', 'module')
+      .leftJoinAndSelect('module.lessonMappers', 'lessonmapper')
+      .leftJoinAndSelect('lessonmapper.lesson', 'lesson')
+      .leftJoinAndSelect('lesson.resources', 'resources')
+      .leftJoinAndSelect('lesson.quizzes', 'quizzes')
+      .leftJoinAndSelect('lesson.videos', 'videos')
       .where('course.id = :cid', { cid: id })
       .getOne();
 
