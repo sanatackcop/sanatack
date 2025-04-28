@@ -1,9 +1,8 @@
 import GenericTabs from "@/components/tabs";
 import GenericCard from "@/components/card";
 import GenericSection from "@/components/section";
-import { Book, Hourglass, Loader2 } from "lucide-react";
-import { CourseInterface, LevelEnum } from "@/types/courses";
-import { getLevelIcon, getCourseTypeIcon } from "@/utils/getIcon";
+import { Loader2 } from "lucide-react";
+import { CourseInterface } from "@/types/courses";
 import { getAllCoursesApi } from "@/utils/_apis/courses-apis";
 import ShowErrorMessage from "@/utils/ErrorMessage";
 import { useEffect, useState } from "react";
