@@ -11,6 +11,8 @@ import { Lesson } from './entities/lessons.entity';
 import { LessonMapper } from './entities/lessons-maper.entity';
 import { VideoResource } from './entities/video-lessons.entity';
 import { CourseProgress } from './entities/course-progress';
+import { Enrollment } from './entities/enrollment';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class CoursesService {
@@ -82,7 +84,42 @@ export class CoursesService {
     return progressCourses;
   }
 
-  async courseDetails(id: number): Promise<CourseDetails> {
+  async enroll(userId: string, courseId: number) {
+    return this.dataSource.transaction(async (manager) => {
+      const course = await manager.findOne(Course, { where: { id: courseId } });
+
+      if (!course) {
+        throw new Error('Course not found');
+      }
+      const user = await manager.findOne(User, { where: { id: userId } });
+
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      const isEnrolled = await manager
+        .createQueryBuilder(Enrollment, 'enrollment')
+        .leftJoin('enrollment.course', 'course')
+        .leftJoin('enrollment.user', 'user')
+        .where('course.id = :courseId', { courseId })
+        .andWhere('user.userId = :userId', { userId })
+        .getOne();
+
+      if (isEnrolled) {
+        throw new Error('User is already enrolled in this course');
+      }
+
+      const enrollment = manager.create(Enrollment, {
+        user: user,
+        course: course,
+      });
+      await manager.save(enrollment);
+
+      return enrollment;
+    });
+  }
+
+  async courseDetails(id: string): Promise<CourseDetails> {
     const course = await this.courseRepository
       .createQueryBuilder('course')
       .innerJoinAndSelect('course.courseMappers', 'mapper')

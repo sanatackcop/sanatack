@@ -11,6 +11,7 @@ import { Resource } from './entities/resource.entity';
 import { VideoResource } from './entities/video-lessons.entity';
 import { Module as ModuleEntity } from './entities/module.entity';
 import { CourseProgress } from './entities/course-progress';
+import { Enrollment } from './entities/enrollment';
 
 @Module({
   imports: [
@@ -23,7 +24,8 @@ import { CourseProgress } from './entities/course-progress';
       Resource,
       Quiz,
       VideoResource,
-      CourseProgress
+      CourseProgress,
+      Enrollment,
     ]),
   ],
   controllers: [CoursesController],
