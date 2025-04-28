@@ -41,9 +41,10 @@ export class CoursesController {
     @Param('courseId') courseId: number
   ) {
     try {
-      const userId = req.user.id;
+      const userId = '8e4fad5c-a491-49c3-87c4-5a3339be1474';
       return await this.courseService.enroll(userId, courseId);
     } catch (error) {
+      console.log(error);
       throw new HttpException(error, 500);
     }
   }

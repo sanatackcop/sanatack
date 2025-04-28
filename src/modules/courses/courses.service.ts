@@ -85,7 +85,7 @@ export class CoursesService {
   }
 
   async enroll(userId: string, courseId: number) {
-    return this.dataSource.transaction(async (manager) => {
+    const result = await this.dataSource.transaction(async (manager) => {
       const course = await manager.findOne(Course, { where: { id: courseId } });
 
       if (!course) {
@@ -102,7 +102,7 @@ export class CoursesService {
         .leftJoin('enrollment.course', 'course')
         .leftJoin('enrollment.user', 'user')
         .where('course.id = :courseId', { courseId })
-        .andWhere('user.userId = :userId', { userId })
+        .andWhere('user.id = :userId', { userId })
         .getOne();
 
       if (isEnrolled) {
