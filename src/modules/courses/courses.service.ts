@@ -10,6 +10,9 @@ import { Resource } from './entities/resource.entity';
 import { Lesson } from './entities/lessons.entity';
 import { LessonMapper } from './entities/lessons-maper.entity';
 import { VideoResource } from './entities/video-lessons.entity';
+import { CourseProgress } from './entities/course-progress';
+import { Enrollment } from './entities/enrollment';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class CoursesService {
@@ -19,11 +22,20 @@ export class CoursesService {
     private readonly dataSource: DataSource
   ) {}
 
-  async list({ userId }: { userId?: string }): Promise<CoursesContext[]> {
+  async list({
+    userId,
+    courseStatus,
+  }: {
+    userId?: string;
+    courseStatus?: any;
+  }): Promise<CoursesContext[]> {
     const where: FindOptionsWhere<Course> = {};
-
     if (userId) where.isPublished = true;
 
+    if (courseStatus) {
+      const courses = this.getProgressCourses(userId, courseStatus);
+      return courses;
+    }
     const courses = await this.courseRepository.find({
       where,
       order: { createdAt: 'DESC' },
@@ -39,8 +51,75 @@ export class CoursesService {
 
     return response;
   }
+  private async getProgressCourses(
+    userId: string,
+    courseStatus
+  ): Promise<CoursesContext[]> {
+    const query = this.dataSource
+      .getRepository(CourseProgress)
+      .createQueryBuilder('progress')
+      .innerJoinAndSelect('progress.course', 'course')
+      .where('progress.userId = :userId', { userId })
+      .orderBy('course.createdAt', 'DESC');
 
-  async courseDetails(id: number): Promise<CourseDetails> {
+    if (courseStatus === 'done') {
+      query.andWhere('progress.progress = :progress', { progress: 100 });
+    } else if (courseStatus === 'inProgress') {
+      query.andWhere(
+        'progress.progress > :progressMin AND progress.progress < :progressMax',
+        { progressMin: 0, progressMax: 100 }
+      );
+    }
+
+    const courses = await query.getMany();
+
+    const progressCourses = courses.map(({ course }) => ({
+      id: course.id,
+      title: course.title,
+      description: course.description?.substring(0, 100),
+      level: course.level,
+      tags: course.tags,
+    }));
+
+    return progressCourses;
+  }
+
+  async enroll(userId: string, courseId: number) {
+    const result = await this.dataSource.transaction(async (manager) => {
+      const course = await manager.findOne(Course, { where: { id: courseId } });
+
+      if (!course) {
+        throw new Error('Course not found');
+      }
+      const user = await manager.findOne(User, { where: { id: userId } });
+
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      const isEnrolled = await manager
+        .createQueryBuilder(Enrollment, 'enrollment')
+        .leftJoin('enrollment.course', 'course')
+        .leftJoin('enrollment.user', 'user')
+        .where('course.id = :courseId', { courseId })
+        .andWhere('user.id = :userId', { userId })
+        .getOne();
+
+      if (isEnrolled) {
+        throw new Error('User is already enrolled in this course');
+      }
+
+      const enrollment = manager.create(Enrollment, {
+        user: user,
+        course: course,
+      });
+      await manager.save(enrollment);
+
+      return enrollment;
+    });
+  }
+
+  async courseDetails(id: string): Promise<CourseDetails> {
     const course = await this.courseRepository
       .createQueryBuilder('course')
       .innerJoinAndSelect('course.courseMappers', 'mapper')
