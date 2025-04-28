@@ -8,19 +8,30 @@ import {
 } from "@/components/ui/card";
 import { GenericCardProps } from "@/utils/types";
 
-import React from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const GenericCard: React.FC<GenericCardProps> = ({
   type,
   title,
   subtitle,
   description,
-  footerItems = [],
+  children,
   className = "",
+  id,
 }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleClick = () => {
+    if (id) {
+      navigate(`${location.pathname}/${id}`);
+    }
+  };
+
   return (
     <Card
       className={`bg-[#111111] text-white border-[#282D3D] rounded-xl shadow-xl flex flex-col justify-between ${className}`}
+      onClick={handleClick}
     >
       <CardHeader className="relative pb-0">
         {type && (
@@ -34,30 +45,21 @@ const GenericCard: React.FC<GenericCardProps> = ({
           </CardTitle>
         )}
         {title && (
-          <h2 className="text-xl font-bold text-white mt-1">{title}</h2>
+          <h2 className="sm:text-xl font-bold text-white mt-1">{title}</h2>
         )}
       </CardHeader>
 
       {description && (
         <CardContent className="text-right px-5 mt-2">
-          <p className="text-md text-gray-400 leading-relaxed mb-2">
+          <p className="text-sm sm:text-md text-gray-400 leading-relaxed mb-2">
             {description}
           </p>
         </CardContent>
       )}
 
-      {footerItems.length > 0 && (
-        <CardFooter className="flex flex-col gap-2 text-xs border-t border-white/10 px-5 pt-3 pb-4">
-          <div className="flex flex-wrap justify-start items-center gap-y-2 text-sm  text-right justify-start">
-            {footerItems.map((item, i) => (
-              <div key={i} className="flex items-center px-2 text-gray-500  ">
-                {item.icon}
-                <span>{item.text}</span>
-              </div>
-            ))}
-          </div>
-        </CardFooter>
-      )}
+      <CardFooter className="flex flex-col gap-2 text-xs border-t border-white/10 px-5 pt-3 pb-4">
+        {children && <div className="mt-4">{children}</div>}
+      </CardFooter>
     </Card>
   );
 };

@@ -1,4 +1,4 @@
-import { useReducer, useRef, useCallback, useState } from "react";
+import React, { useReducer, useRef, useCallback, useState } from "react";
 import { nanoid } from "nanoid";
 import {
   Dialog,
@@ -19,7 +19,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Loader2, Plus } from "lucide-react";
-import React from "react";
 import {
   Action,
   CourseForm,
@@ -122,9 +121,12 @@ const createEmptyModule = (): ModuleInput => ({
 
 export default function CourseModal({ showDialog, setShowDialog }: Props) {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const [submitting, setSubmitting] = React.useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
   const tagInputRef = useRef<HTMLInputElement>(null);
-  const existingModules = useState<any>([]);
+
+  const [existingModules] = useState<ModuleInput[]>([]);
+
   const handleTagKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === "Enter") {
@@ -140,33 +142,27 @@ export default function CourseModal({ showDialog, setShowDialog }: Props) {
     dispatch({ type: "ADD_MODULE", module: createEmptyModule() });
   }, []);
 
-  const assignExistingModule = useCallback((moduleId: string) => {
-    const selected = existingModules.find((m: any) => m.id === moduleId);
-    if (!selected) return;
-    dispatch({
-      type: "ADD_MODULE",
-      module: {
-        id: selected.id,
-        title: selected.title,
-        description: "",
-        lessons: [],
-        isExisting: true,
-      },
-    });
-  }, []);
+  const assignExistingModule = useCallback(
+    (moduleId: string) => {
+      const selected = existingModules.find((m) => m.id === moduleId);
+      if (!selected) return;
+      dispatch({
+        type: "ADD_MODULE",
+        module: { ...selected, isExisting: true },
+      });
+    },
+    [existingModules]
+  );
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
     try {
-      if (state) {
-        await createNewCourseApi({
-          title: state.title,
-          level: state.level,
-          description: state.description,
-          tags: state.tags,
-          isPublish: state.isPublish,
-          modules: state.modules,
-        });
-      }
+      await createNewCourseApi({
+        ...state,
+        modules: state.modules,
+      });
       dispatch({ type: "RESET" });
       setShowDialog(false);
     } finally {
@@ -176,7 +172,7 @@ export default function CourseModal({ showDialog, setShowDialog }: Props) {
 
   return (
     <Dialog open={showDialog} onOpenChange={setShowDialog}>
-      <DialogContent className="max-w-7xl max-h-screen">
+      <DialogContent className="max-w-7xl max-h-screen overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-black">Upload New Course</DialogTitle>
         </DialogHeader>
@@ -190,7 +186,6 @@ export default function CourseModal({ showDialog, setShowDialog }: Props) {
               <Label htmlFor="title">Course Title</Label>
               <Input
                 id="title"
-                className="text-left"
                 value={state.title}
                 onChange={(e) =>
                   dispatch({
@@ -215,9 +210,9 @@ export default function CourseModal({ showDialog, setShowDialog }: Props) {
                   <SelectValue placeholder="Select level" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="beginner">Beginner</SelectItem>
-                  <SelectItem value="intermediate">Intermediate</SelectItem>
-                  <SelectItem value="advanced">Advanced</SelectItem>
+                  <SelectItem value="BEGINNER">Beginner</SelectItem>
+                  <SelectItem value="INTERMEDIATE">Intermediate</SelectItem>
+                  <SelectItem value="ADVANCED">Advanced</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -253,7 +248,7 @@ export default function CourseModal({ showDialog, setShowDialog }: Props) {
             />
           </div>
 
-          <div className="flex items-center gap-4 text-left">
+          <div className="flex items-center gap-4">
             <Label htmlFor="publish">Publish immediately</Label>
             <Switch
               id="publish"
@@ -281,7 +276,7 @@ export default function CourseModal({ showDialog, setShowDialog }: Props) {
                       <SelectValue placeholder="Assign Module" />
                     </SelectTrigger>
                     <SelectContent>
-                      {existingModules.map((m: any) => (
+                      {existingModules.map((m) => (
                         <SelectItem key={m.id} value={m.id}>
                           {m.title}
                         </SelectItem>
@@ -307,12 +302,7 @@ export default function CourseModal({ showDialog, setShowDialog }: Props) {
             )}
           </section>
 
-          <Button
-            type="submit"
-            disabled={submitting}
-            onClick={handleSubmit}
-            className="w-full"
-          >
+          <Button type="submit" disabled={submitting} className="w-full">
             {submitting && <Loader2 className="animate-spin w-4 h-4 mr-2" />}{" "}
             Submit
           </Button>

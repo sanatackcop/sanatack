@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Loader2 } from "lucide-react";
 import ShowErrorMessage from "@/utils/ErrorMessage";
-import { GenericTabsProps, TabType } from "@/utils/types";
+import { GenericTabsProps } from "@/utils/types";
 
 export default function GenericTabs<T>({
   tabs,
@@ -19,7 +19,7 @@ export default function GenericTabs<T>({
     <Tabs
       dir="rtl"
       value={activeTab}
-      onValueChange={(value: string) => onChange(value as TabType)}
+      onValueChange={(value: string) => onChange(value)}
       className="w-full"
     >
       <TabsList className="bg-transparent text-right pb-0">

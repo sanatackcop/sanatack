@@ -35,7 +35,7 @@ export default function CourseDetailsContent({
                   </span>
                 </div>
 
-                <div className="bg-[#1E2127] w-5 h-5 md:w-20 md:h-20 text-white grid place-items-center md:text-2xl font-black">
+                <div className="bg-[#1E2127] w-5 h-5 sm:w-10 sm:h-10 md:w-20 md:h-20 text-white grid place-items-center md:text-2xl font-black">
                   {idx + 1}
                 </div>
               </div>

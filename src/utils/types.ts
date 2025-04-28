@@ -1,3 +1,5 @@
+import { ReactNode } from "react";
+
 export type navItem = {
   title: string;
   isActive?: boolean;
@@ -13,24 +15,24 @@ export type FooterItem = {
 
 export type GenericCardProps = {
   type?: string;
+  id?: string;
   title?: string;
   subtitle?: string;
   description?: string;
-  footerItems?: FooterItem[];
+  children?: ReactNode;
   className?: string;
 };
-export type TabType = "all" | "started" | "done";
+
 export type Tab = {
   label: string;
-  value: TabType;
+  value: string;
   count?: number;
 };
-
 export type GenericTabsProps<T> = {
   tabs: Tab[];
-  activeTab: TabType;
-  onChange: (value: TabType) => void;
-  data: Record<TabType, T[]>;
+  activeTab: string;
+  onChange: (value: string) => void;
+  data: Record<string, T[]>;
   renderItem: (item: T, index: number) => React.ReactNode;
   loading?: boolean;
   error?: string | null;

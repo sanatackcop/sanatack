@@ -62,7 +62,7 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1">
               {items.map((item) => {
-                const isActive = item.url === activePath;
+                const isActive = activePath.startsWith(item.url);
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
@@ -106,8 +106,8 @@ export function DashboardNavbar() {
             size={18}
             className="text-gray-500 hover:text-gray-700"
             style={{
-              stroke: "white", // Outline color
-              fill: "#1A1A1A", // Inside color
+              stroke: "white",
+              fill: "#1A1A1A",
             }}
           />
         </a>

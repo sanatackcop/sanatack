@@ -91,7 +91,7 @@ export default function CourseView() {
   }
 
   const data = {
-    content: course,
+    content: course ? [course] : [],
     started: [],
     done: [],
   };

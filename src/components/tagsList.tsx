@@ -44,14 +44,14 @@ export const CourseTags = ({
     },
     {
       icon: getLevelIcon(level as LevelEnum),
-      text: level,
+      text: `${level}`,
     },
     {
       icon: <Book className="h-3 w-3 text-green-500" />,
       text: unitesNum || `Unites`,
     },
     {
-      icon: getCourseTypeIcon(courseType),
+      icon: getCourseTypeIcon(`${courseType}`),
       text: courseType || `Type`,
     },
   ];
