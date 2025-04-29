@@ -6,6 +6,7 @@ import { CircleArrowLeft, Moon, Sun, Menu, X } from "lucide-react";
 import { useSettings } from "@/context/SettingsContexts";
 import { Button } from "./ui/button";
 
+// TODO: refime the design 
 const Navbar = () => {
   const { darkMode, toggleDarkMode } = useSettings();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
