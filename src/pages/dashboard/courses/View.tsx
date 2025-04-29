@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useContext } from "react";
-import UserContext from "@/context/UserContext";
 import { RefreshCcw, GitBranchPlus, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,7 +19,6 @@ const Skeleton = ({ className = "" }: { className?: string }) => (
 );
 
 export default function CourseView() {
-  const { auth } = useContext(UserContext)!;
   const { id } = useParams<{ id: string }>();
   const [course, setCourse] = useState<CourseDetails | any>();
   const [status, setStatus] = useState<
@@ -49,11 +46,9 @@ export default function CourseView() {
   }, []);
 
   const handleStartCourse = async () => {
-    if (!id || !auth?.user?.id) return;
     try {
       const response = await enrollCoursesApi({
-        courseId: id,
-        userId: auth.user.id,
+        courseId: `36ef47f6-8042-42e7-a11f-fc83b407f55d`,
       });
       console.log("Start Course Response:", response);
     } catch (error) {
@@ -146,7 +141,7 @@ export default function CourseView() {
             key={index}
             className={
               index === 0
-                ? "flex flex-col justify-between md:col-span-5 sm:col-span-1"
+                ? "relative flex flex-col justify-between md:col-span-5 sm:col-span-1"
                 : ""
             }
           />

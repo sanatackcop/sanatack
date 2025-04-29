@@ -25,12 +25,12 @@ export default function CourseDetailsContent({
           <AccordionItem
             key={module.id}
             value={module.id.toString()}
-            className="border-0 overflow-hidden"
+            className="border-0 overflow-hidden "
           >
-            <AccordionTrigger className="px-2 py-2 md:px-6 md:py-4 hover:bg-slate-800/50 transition lg:px-8">
+            <AccordionTrigger className="group px-2 py-2 md:px-6 md:py-4 hover:bg-slate-800/50 transition lg:px-8">
               <div className="flex items-center gap-4 w-full justify-between">
                 <div className="flex flex-col min-w-0 pr-5">
-                  <span className="truncate ml-2 font-semibold text-xs sm:text-sm md:text-md lg:text-lg mb-1">
+                  <span className="truncate ml-2 font-semibold text-xs sm:text-sm md:text-md mb-1">
                     {module.title}
                   </span>
                 </div>
@@ -41,7 +41,7 @@ export default function CourseDetailsContent({
               </div>
             </AccordionTrigger>
 
-            <AccordionContent className=" px-6 pb-6 pt-2 space-y-4 lg:px-8">
+            <AccordionContent className=" px-2 pb-2  space-y-2">
               <Accordion type="multiple" className="md:space-y-2">
                 {module.lessons.map((lesson) => (
                   <AccordionItem
@@ -49,17 +49,17 @@ export default function CourseDetailsContent({
                     value={lesson.id.toString()}
                     className="border-0 overflow-hidden"
                   >
-                    <AccordionTrigger className="px-6 py-4 hover:bg-slate-800/50 transition">
+                    <AccordionTrigger className="group px-6 py-4 hover:bg-slate-800/50 transition">
                       <div className="flex items-center gap-4 w-full">
                         <div className="flex flex-col min-w-0 pr-5">
-                          <span className="truncate ml-2 font-semibold text-xs sm:text-sm md:text-md lg:text-lg mb-1">
+                          <span className="truncate ml-2 font-semibold text-xs sm:text-sm md:text-md  mb-1">
                             {lesson.order}. {lesson.name}
                           </span>
                         </div>
                       </div>
                     </AccordionTrigger>
 
-                    <AccordionContent className="px-6 py-4 space-y-4">
+                    <AccordionContent className="px-2 pb-2  space-y-2">
                       {lesson.description && (
                         <p className="text-slate-400 leading-6 mb-1">
                           {lesson.description}

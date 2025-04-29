@@ -41,7 +41,7 @@ export function NavUser({
                 <AvatarImage src={user.avatar} alt={user.name} />
                 <AvatarFallback className="rounded-lg">CN</AvatarFallback>
               </Avatar>
-              <div className="grid flex-1 text-right text-sm leading-tight ">
+              <div className="grid flex-1 text-start text-sm leading-tight ">
                 <span className="truncate font-semibold">{user.name}</span>
               </div>
             </SidebarMenuButton>

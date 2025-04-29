@@ -50,7 +50,7 @@ const GenericCard: React.FC<GenericCardProps> = ({
       </CardHeader>
 
       {description && (
-        <CardContent className="text-right px-5 mt-2">
+        <CardContent className="text-start px-5 mt-2">
           <p className="text-sm sm:text-md text-gray-400 leading-relaxed mb-2">
             {description}
           </p>

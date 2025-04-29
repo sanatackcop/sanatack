@@ -40,27 +40,17 @@ export const getSingleCoursesApi = async ({
   }
 };
 
-export const enrollCoursesApi = async ({
-  courseId,
-  userId,
-}: {
-  courseId: string;
-  userId: string;
-}): Promise<CourseInterface> => {
+export const enrollCoursesApi = async ({ courseId }: { courseId: string }) => {
   try {
-    const response = await trackPromise(
-      Api({
-        method: "post",
-        url: `courses/enroll/${courseId}`,
-        withCredentials: false,
-        params: {
-          user_id: userId,
-        },
-      }) as Promise<{ data: CourseInterface }>
-    );
-    return response.data;
+    const response = await Api({
+      method: "post",
+      url: `courses/enroll/${courseId}`,
+      withCredentials: false,
+    });
+
+    return response;
   } catch (e: any) {
-    console.error("enrollCoursesApi error:", e);
+    console.error("enrollCoursesApi error:", e.message);
     throw e;
   }
 };

@@ -22,7 +22,7 @@ export default function GenericTabs<T>({
       onValueChange={(value: string) => onChange(value)}
       className="w-full"
     >
-      <TabsList className="bg-transparent text-right pb-0">
+      <TabsList className="bg-transparent text-start pb-0">
         {tabs.map((tab) => (
           <TabsTrigger
             key={tab.value}
