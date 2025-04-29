@@ -1,6 +1,7 @@
 import { Level } from "@/utils/types/adminTypes";
 
 export interface CourseInterface {
+  id: number;
   title: string;
   description: string;
   unitesNum: number;
@@ -8,6 +9,7 @@ export interface CourseInterface {
   duration: string;
   courseType: string;
 }
+export type TabType = "all" | "started" | "done";
 
 export interface CoursesContext {
   id: number;
@@ -18,7 +20,12 @@ export interface CoursesContext {
     durtionsHours: number;
   };
 }
-
+export interface tagsInterface {
+  unitesNum?: number;
+  level?: Level;
+  duration?: string;
+  courseType?: string;
+}
 export enum LevelEnum {
   "BEGINNER" = "BEGINNER",
   "INTERMEDIATE" = "INTERMEDIATE",

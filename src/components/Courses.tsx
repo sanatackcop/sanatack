@@ -1,12 +1,12 @@
 import GenericTabs from "@/components/tabs";
 import GenericCard from "@/components/card";
 import GenericSection from "@/components/section";
-import { Book, Hourglass, Loader2 } from "lucide-react";
-import { CourseInterface, LevelEnum } from "@/types/courses";
-import { getLevelIcon, getCourseTypeIcon } from "@/utils/getIcon";
+import { Loader2 } from "lucide-react";
+import { CourseInterface } from "@/types/courses";
 import { getAllCoursesApi } from "@/utils/_apis/courses-apis";
 import ShowErrorMessage from "@/utils/ErrorMessage";
 import { useEffect, useState } from "react";
+import { CourseTags } from "./tagsList";
 
 export default function CoursesCard() {
   const [tab, setTab] = useState("all");
@@ -63,29 +63,19 @@ export default function CoursesCard() {
           data={data}
           renderItem={(course, index) => (
             <GenericCard
+              id={`${course.id}`}
               key={index}
               title={course.title}
               description={course.description}
-              className={index === 0 ? "md:col-span-2 sm:col-span-1 " : ""}
-              footerItems={[
-                {
-                  icon: <Hourglass className="h-3 w-3 text-gray-500" />,
-                  text: course.duration,
-                },
-                {
-                  icon: getLevelIcon(LevelEnum.BEGINNER as LevelEnum),
-                  text: LevelEnum.BEGINNER,
-                },
-                {
-                  icon: <Book className="h-3 w-3 text-gray-500" />,
-                  text: ` ${course.unitesNum}وحده`,
-                },
-                {
-                  icon: getCourseTypeIcon(course?.courseType),
-                  text: course.courseType,
-                },
-              ]}
-            />
+              className={index === 0 ? "md:col-span-2 sm:col-span-1" : ""}
+            >
+              <CourseTags
+                duration={course?.duration}
+                unitesNum={course?.unitesNum}
+                level={course?.level}
+                courseType={course?.courseType}
+              />
+            </GenericCard>
           )}
         />
       )}

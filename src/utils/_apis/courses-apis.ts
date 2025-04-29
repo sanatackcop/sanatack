@@ -8,7 +8,7 @@ export const getAllCoursesApi = async (): Promise<CourseInterface[]> => {
     const response = await trackPromise(
       Api({
         method: "get",
-        url: "courses/list",
+        url: "admin/courses",
         withCredentials: false,
       }) as Promise<{ data: CourseInterface[] }>
     );
@@ -36,6 +36,21 @@ export const getSingleCoursesApi = async ({
     return response.data;
   } catch (e: any) {
     console.error("getAllCoursesApi error:", e);
+    throw e;
+  }
+};
+
+export const enrollCoursesApi = async ({ courseId }: { courseId: string }) => {
+  try {
+    const response = await Api({
+      method: "post",
+      url: `courses/enroll/${courseId}`,
+      withCredentials: false,
+    });
+
+    return response;
+  } catch (e: any) {
+    console.error("enrollCoursesApi error:", e.message);
     throw e;
   }
 };

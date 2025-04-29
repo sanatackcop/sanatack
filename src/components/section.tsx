@@ -11,15 +11,15 @@ interface GenericSectionProps {
 export default function GenericSection({
   title,
   description,
-  titleClassName = "text-3xl font-bold flex justify-normal mt-2",
-  descriptionClassName = "text-lg text-gray-500 text-right mt-2",
+  titleClassName = "text-lg sm:text-3xl font-bold flex justify-normal mt-2",
+  descriptionClassName = "sm:text-lg text-gray-500 text-right mt-2",
   children,
 }: GenericSectionProps) {
   return (
-    <div className="mb-6 w-3/4 text-center">
+    <div className="mb-6 w-3/4">
       <h1 className={titleClassName}>{title}</h1>
-      <p className={descriptionClassName}>{description}</p>
       {children && <div className="mt-4">{children}</div>}
+      <p className={descriptionClassName}>{description}</p>
     </div>
   );
 }
