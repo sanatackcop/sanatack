@@ -14,6 +14,7 @@ import { Quiz } from 'src/modules/courses/entities/quiz.entity';
 import { VideoResource } from 'src/modules/courses/entities/video-lessons.entity';
 import { CourseProgress } from 'src/modules/courses/entities/course-progress';
 import { Enrollment } from 'src/modules/courses/entities/enrollment';
+import { MaterialMapper } from 'src/modules/courses/entities/material-mapper';
 
 config();
 
@@ -30,7 +31,8 @@ export const entities = [
   Quiz,
   VideoResource,
   CourseProgress,
-  Enrollment
+  Enrollment,
+  MaterialMapper
 ];
 
 const mainDataSource = new DataSource({
