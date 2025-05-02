@@ -59,7 +59,7 @@ export class CreateNewCourseDto {
 }
 
 export class CoursesContext {
-  id: number;
+  id: string;
   title: string;
   description: string;
   level: Level;
@@ -69,6 +69,7 @@ export class CoursesContext {
 }
 
 export class CourseDetails extends CoursesContext {
+  isEnrolled: boolean;
   modules: ModuleDetailsDto[];
 }
 
@@ -106,7 +107,7 @@ export class QuizDto {
 
 export class VideoDto {
   id: string;
-  url?: string;
+  youtubeId?: string;
   title?: string;
   description?: string;
   duration?: number;

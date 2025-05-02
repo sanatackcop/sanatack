@@ -27,9 +27,13 @@ export class CoursesController {
   }
 
   @Get('/:id')
-  async getCourseDetails(@Param('id') id: string) {
+  async getCourseDetails(
+    @Req() req: RequestType,
+    @Param('id') courseId: string
+  ) {
     try {
-      return await this.courseService.courseDetails(id);
+      const userId = '8e4fad5c-a491-49c3-87c4-5a3339be1474';
+      return await this.courseService.courseDetails(courseId, userId);
     } catch (error) {
       throw new HttpException(error, 500);
     }
@@ -38,7 +42,7 @@ export class CoursesController {
   @Post('enroll/:courseId')
   async enrollInCourse(
     @Req() req: RequestType,
-    @Param('courseId') courseId: number
+    @Param('courseId') courseId: string
   ) {
     try {
       const userId = '8e4fad5c-a491-49c3-87c4-5a3339be1474';

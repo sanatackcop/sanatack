@@ -13,12 +13,19 @@ import { VideoResource } from './entities/video-lessons.entity';
 import { CourseProgress } from './entities/course-progress';
 import { Enrollment } from './entities/enrollment';
 import { User } from '../users/entities/user.entity';
+import { MaterialType } from './entities/material-mapper';
 
 @Injectable()
 export class CoursesService {
   constructor(
     @InjectRepository(Course)
     private readonly courseRepository: Repository<Course>,
+    @InjectRepository(Quiz)
+    private readonly quizRepository: Repository<Quiz>,
+    @InjectRepository(VideoResource)
+    private readonly videoRepository: Repository<VideoResource>,
+    @InjectRepository(Resource)
+    private readonly resourceRepository: Repository<Resource>,
     private readonly dataSource: DataSource
   ) {}
 
@@ -84,7 +91,7 @@ export class CoursesService {
     return progressCourses;
   }
 
-  async enroll(userId: string, courseId: number) {
+  async enroll(userId: string, courseId: string) {
     const result = await this.dataSource.transaction(async (manager) => {
       const course = await manager.findOne(Course, { where: { id: courseId } });
 
@@ -119,16 +126,28 @@ export class CoursesService {
     });
   }
 
-  async courseDetails(id: string): Promise<CourseDetails> {
+  private async enrollmentCheck(userId: string, courseId: string) {
+    const isEnrolled = await this.courseRepository
+      .createQueryBuilder('course')
+      .leftJoin('course.enrollment', 'enrollment')
+      .leftJoin('enrollment.user', 'user')
+      .where('course.id = :courseId', { courseId })
+      .andWhere('user.id = :userId', { userId })
+      .getOne();
+
+    return isEnrolled;
+  }
+
+  async courseDetails(id: string, userId: string): Promise<CourseDetails> {
+    const isEnrolled = await this.enrollmentCheck(userId, id);
+
     const course = await this.courseRepository
       .createQueryBuilder('course')
-      .innerJoinAndSelect('course.courseMappers', 'mapper')
-      .innerJoinAndSelect('mapper.module', 'module')
-      .innerJoinAndSelect('module.lessonMappers', 'lessonmapper')
-      .innerJoinAndSelect('lessonmapper.lesson', 'lesson')
-      .innerJoinAndSelect('lesson.resources', 'resources')
-      .innerJoinAndSelect('lesson.quizzes', 'quizzes')
-      .innerJoinAndSelect('lesson.videos', 'videos')
+      .leftJoinAndSelect('course.courseMappers', 'mapper')
+      .leftJoinAndSelect('mapper.module', 'module')
+      .leftJoinAndSelect('module.lessonMappers','lessonMapper')
+      .leftJoinAndSelect('lessonMapper.lesson','lesson')
+      .innerJoinAndSelect('lesson.materialMapper','materialMapper')
       .where('course.id = :cid', { cid: id })
       .getOne();
 
@@ -138,45 +157,61 @@ export class CoursesService {
 
     return {
       id: course.id,
+      isEnrolled: !!isEnrolled,
       title: course.title,
       description: course.description,
       level: course.level,
       tags: course.tags,
-      modules: course.courseMappers.map((mapper) => {
-        const module = mapper.module;
-        return {
-          id: module.id,
-          title: module.title,
-          lessons:
-            module.lessonMappers?.map((lessonmapper) => {
-              const lesson = lessonmapper.lesson;
-              return {
-                id: lesson.id,
-                name: lesson.name,
-                description: lesson.description,
-                order: lesson.order,
-                resources:
-                  lesson.resources?.map((resource) => ({
-                    id: resource.id,
-                    title: resource.title,
-                    url: resource.url,
-                    content: resource.content,
-                  })) || [],
-                quizzes:
-                  lesson.quizzes?.map((quiz) => ({
-                    id: quiz.id,
-                  })) || [],
-                videos:
-                  lesson.videos?.map((video) => ({
-                    id: video.id,
-                    title: video.title,
-                    description: video.description,
-                    duration: video.duration,
-                  })) || [],
-              };
-            }) || [],
-        };
-      }),
+      modules: course.courseMappers.map((mapper) => ({
+        id: mapper.module.id,
+        title: mapper.module.title,
+        lessons: mapper.module.lessonMappers?.map((lessonMapper) => ({
+          id: lessonMapper.lesson.id,
+          name: lessonMapper.lesson.name,
+          description: lessonMapper.lesson.description,
+          order: lessonMapper.lesson.order,
+          materials: lessonMapper.lesson.materialMapper?.map(async (material) => {
+            if (material.material_type == MaterialType.QUIZ) {
+              const quiz = await this.quizRepository.findOne({ where: { id: material.material_id } });
+              return quiz ? {
+                type: MaterialType.QUIZ,
+                quiz: {
+                  id: quiz.id,
+                  question: quiz.question,
+                  options: quiz.options,
+                  correctAnswer: quiz.correctAnswer,
+                  explanation: quiz.explanation,
+                },
+              } : null;
+            } else if (material.material_type == MaterialType.VIDEO) {
+              const video = await this.videoRepository.findOne({ where: { id: material.material_id } });
+              return video ? {
+                type: MaterialType.VIDEO,
+                video: {
+                  id: video.id,
+                  title: video.title,
+                  youtubeId: video.youtubeId,
+                  duration: video.duration,
+                  description: video.description,
+                },
+              } : null;
+            } else if (material.material_type == MaterialType.RESOURCE) {
+              const resource = await this.resourceRepository.findOne({ where: { id: material.material_id } });
+              return resource ? {
+                type: MaterialType.RESOURCE,
+                resource: {
+                  id: resource.id,
+                  title: resource.title,
+                  url: resource.url,
+                  content: resource.content,
+                  description: resource.description,
+                },
+              } : null;
+            }
+            return null;
+          }),
+        })),
+      })),
     };
   }
 
