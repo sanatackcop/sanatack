@@ -1,8 +1,10 @@
 import {
+  Body,
   Controller,
   Get,
   HttpException,
   Param,
+  Patch,
   Post,
   Req,
 } from '@nestjs/common';
@@ -26,26 +28,52 @@ export class CoursesController {
     }
   }
 
-  @Get('/:id')
-  async getCourseDetails(@Param('id') id: string) {
+  @Get('/current')
+  async getCurrent(@Req() req: any) {
     try {
-      return await this.courseService.courseDetails(id);
+      const userId = req.headers.user_id;
+      return this.courseService.getCurrentCoursesForUser(userId);
     } catch (error) {
+      console.log(error);
+    }
+  }
+
+  @Get('/:id')
+  async getCourseDetails(@Req() req, @Param('id') id: string) {
+    try {
+      const userId = req.headers.user_id;
+      return await this.courseService.courseDetails(id, userId);
+    } catch (error) {
+      console.log({ error });
       throw new HttpException(error, 500);
     }
   }
 
-  @Post('enroll/:courseId')
-  async enrollInCourse(
-    @Req() req: RequestType,
-    @Param('courseId') courseId: number
-  ) {
+  @Post('/enroll/:courseId')
+  async enrollInCourse(@Req() req: any, @Param('courseId') courseId: string) {
     try {
-      const userId = '8e4fad5c-a491-49c3-87c4-5a3339be1474';
+      const userId = req.headers.user_id;
       return await this.courseService.enroll(userId, courseId);
     } catch (error) {
       console.log(error);
-      throw new HttpException(error, 500);
+      throw new HttpException({ message: error }, 500);
     }
+  }
+
+  @Get('/progress/:courseId')
+  async get(@Req() req: any, @Param('courseId') courseId: string) {
+    const userId = req.headers.user_id;
+    return { progress: await this.courseService.get(userId, courseId) };
+  }
+
+  @Patch('/progress/:courseId')
+  async update(
+    @Req() req,
+    @Param('courseId') courseId: string,
+    @Body() dto: any
+  ) {
+    const userId = req.headers.user_id;
+    await this.courseService.update(userId, courseId, dto.progress);
+    return { success: true };
   }
 }

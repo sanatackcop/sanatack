@@ -24,6 +24,7 @@ async function bootstrap() {
       'Accept-Version',
       'Content-Length',
       'Content-MD5',
+      'user_id'
     ],
     exposedHeaders: ['Authorization', 'X-Request-Id'],
     credentials: true,

@@ -1,6 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, FindOptionsWhere, Repository } from 'typeorm';
+import {
+  DataSource,
+  Equal,
+  FindOptionsWhere,
+  LessThan,
+  Repository,
+} from 'typeorm';
 import { Course } from './entities/courses.entity';
 import { Module } from './entities/module.entity';
 import { CourseDetails, CoursesContext, CreateNewCourseDto } from './dto';
@@ -19,7 +25,9 @@ export class CoursesService {
   constructor(
     @InjectRepository(Course)
     private readonly courseRepository: Repository<Course>,
-    private readonly dataSource: DataSource
+    private readonly dataSource: DataSource,
+    @InjectRepository(CourseProgress)
+    private courseProgressRepo: Repository<CourseProgress>
   ) {}
 
   async list({
@@ -51,6 +59,7 @@ export class CoursesService {
 
     return response;
   }
+
   private async getProgressCourses(
     userId: string,
     courseStatus
@@ -84,7 +93,7 @@ export class CoursesService {
     return progressCourses;
   }
 
-  async enroll(userId: string, courseId: number) {
+  async enroll(userId: string, courseId: string) {
     const result = await this.dataSource.transaction(async (manager) => {
       const course = await manager.findOne(Course, { where: { id: courseId } });
 
@@ -104,9 +113,8 @@ export class CoursesService {
         .where('course.id = :courseId', { courseId })
         .andWhere('user.id = :userId', { userId })
         .getOne();
-
       if (isEnrolled) {
-        throw new Error('User is already enrolled in this course');
+        return isEnrolled;
       }
 
       const enrollment = manager.create(Enrollment, {
@@ -119,16 +127,33 @@ export class CoursesService {
     });
   }
 
-  async courseDetails(id: string): Promise<CourseDetails> {
+  private async enrollmentCheck(
+    userId: string,
+    courseId: string
+  ): Promise<boolean> {
+    const isEnrolled = await this.courseRepository
+      .createQueryBuilder('course')
+      .leftJoin('course.enrollment', 'enrollment')
+      .leftJoin('enrollment.user', 'user')
+      .where('course.id = :courseId', { courseId })
+      .andWhere('user.id = :userId', { userId })
+      .getOne();
+
+    return !!isEnrolled;
+  }
+
+  async courseDetails(id: string, userId: string): Promise<CourseDetails> {
+    const isEnrolled = await this.enrollmentCheck(userId, id);
+
     const course = await this.courseRepository
       .createQueryBuilder('course')
-      .innerJoinAndSelect('course.courseMappers', 'mapper')
-      .innerJoinAndSelect('mapper.module', 'module')
-      .innerJoinAndSelect('module.lessonMappers', 'lessonmapper')
-      .innerJoinAndSelect('lessonmapper.lesson', 'lesson')
-      .innerJoinAndSelect('lesson.resources', 'resources')
-      .innerJoinAndSelect('lesson.quizzes', 'quizzes')
-      .innerJoinAndSelect('lesson.videos', 'videos')
+      .leftJoinAndSelect('course.courseMappers', 'mapper')
+      .leftJoinAndSelect('mapper.module', 'module')
+      .leftJoinAndSelect('module.lessonMappers', 'lessonmapper')
+      .leftJoinAndSelect('lessonmapper.lesson', 'lesson')
+      .leftJoinAndSelect('lesson.resources', 'resources')
+      .leftJoinAndSelect('lesson.quizzes', 'quizzes')
+      .leftJoinAndSelect('lesson.videos', 'videos')
       .where('course.id = :cid', { cid: id })
       .getOne();
 
@@ -142,6 +167,7 @@ export class CoursesService {
       description: course.description,
       level: course.level,
       tags: course.tags,
+      isEnrolled,
       modules: course.courseMappers.map((mapper) => {
         const module = mapper.module;
         return {
@@ -169,6 +195,7 @@ export class CoursesService {
                 videos:
                   lesson.videos?.map((video) => ({
                     id: video.id,
+                    url: video.youtubeId,
                     title: video.title,
                     description: video.description,
                     duration: video.duration,
@@ -306,5 +333,52 @@ export class CoursesService {
 
       return course;
     });
+  }
+
+  async update(userId: string, courseId: string, progress: number) {
+    let rec = await this.courseProgressRepo.findOne({
+      where: { user: { id: userId }, course: { id: courseId } },
+    });
+    if (!rec) {
+      const course = await this.courseRepository.findOneByOrFail({
+        id: courseId,
+      });
+      rec = this.courseProgressRepo.create({
+        course,
+        user: { id: userId } as any,
+        progress,
+      });
+    } else {
+      rec.progress = progress;
+    }
+    return this.courseProgressRepo.save(rec);
+  }
+
+  async get(userId: string, courseId: string) {
+    const rec = await this.courseProgressRepo.findOne({
+      where: { user: { id: userId }, course: { id: courseId } },
+    });
+    return rec?.progress ?? 0;
+  }
+
+  async getCurrentCoursesForUser(userId: string) {
+    const currentCourese = await this.courseProgressRepo.find({
+      where: {
+        user: { id: Equal(userId) },
+        progress: LessThan(100),
+      },
+      relations: ['course'],
+      order: { updatedAt: 'DESC' },
+    });
+
+    const response = currentCourese.map((course) => ({
+      id: course.id,
+      title: course.course.title,
+      description: course.course.description?.substring(0, 100),
+      level: course.course.level,
+      tags: course.course.tags,
+      progress: course.progress,
+    }));
+    return response;
   }
 }

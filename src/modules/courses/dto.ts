@@ -59,7 +59,7 @@ export class CreateNewCourseDto {
 }
 
 export class CoursesContext {
-  id: number;
+  id: string;
   title: string;
   description: string;
   level: Level;
@@ -70,6 +70,7 @@ export class CoursesContext {
 
 export class CourseDetails extends CoursesContext {
   modules: ModuleDetailsDto[];
+  isEnrolled: boolean;
 }
 
 export class ModuleDetailsDto {
