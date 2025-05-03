@@ -1,10 +1,4 @@
-import {
-  Calendar,
-  AlignVerticalSpaceBetween,
-  Home,
-  Inbox,
-  Bell,
-} from "lucide-react";
+import { Home, Inbox, Bell } from "lucide-react";
 import LogoLight from "@/assets/logo.svg";
 import { Link, useLocation } from "react-router-dom";
 import {
@@ -24,12 +18,6 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 const items = [
   { title: "الرئيسية", url: "/dashboard/overview", icon: Home },
   { title: "الدورات", url: "/dashboard/courses", icon: Inbox },
-  {
-    title: "المسارات",
-    url: "/dashboard/tracks",
-    icon: AlignVerticalSpaceBetween,
-  },
-  { title: "المشاريع", url: "/dashboard/projects", icon: Calendar },
 ];
 
 export function AppSidebar() {
@@ -83,7 +71,6 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
-
 
 export function DashboardNavbar() {
   return (
