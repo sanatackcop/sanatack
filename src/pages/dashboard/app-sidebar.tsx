@@ -15,18 +15,11 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarFooter,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { NavUser } from "@/components/ui/nav-user";
 import { Separator } from "@/components/ui/separator";
 import { CommandMenu } from "@/components/ui/CommandDialog";
-
-const sampleUser = {
-  name: "Username",
-  email: "user@example.com",
-  avatar: "https://i.pravatar.cc/150?img=56",
-};
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 const items = [
   { title: "الرئيسية", url: "/dashboard/overview", icon: Home },
@@ -68,7 +61,9 @@ export function AppSidebar() {
                     <SidebarMenuButton
                       asChild
                       className={
-                        isActive ? "bg-[#273145] text-white" : "text-gray-500"
+                        isActive
+                          ? "bg-[#293546] bg-opacity-40 h-10 px-2 text-white hover:bg-opacity-40"
+                          : "text-gray-500"
                       }
                     >
                       <Link to={item.url}>
@@ -84,15 +79,11 @@ export function AppSidebar() {
         </SidebarGroup>
         <Separator className="bg-gray-500 opacity-20" />
       </SidebarContent>
-      <SidebarFooter className="bg-[#273145] text-[#3573DB] h-[50px]">
-        <NavUser user={sampleUser} />
-      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );
 }
 
-import { SidebarTrigger } from "@/components/ui/sidebar";
 
 export function DashboardNavbar() {
   return (

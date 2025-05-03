@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
+import Storage from "@/lib/Storage";
 
 let baseURL = import.meta.env.VITE_REACT_APP_BASEURL;
 
@@ -13,6 +14,30 @@ const baseApi = axios.create({
   },
   timeout: 30000,
 });
+
+const getAuth = (): any => Storage.get("auth");
+
+baseApi.interceptors.request.use(
+  async (config: any) => {
+    try {
+      const auth: any = await getAuth();
+      if (auth.user.id) {
+        config.headers = {
+          ...config.headers,
+          user_id: auth.user.id,
+        };
+        config.params = {
+          ...(config.params || {}),
+          user_id: auth.user.id,
+        };
+      }
+    } catch (error) {
+      console.error("Error fetching auth data:", error);
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 export const refreshApi = axios.create({
   baseURL,

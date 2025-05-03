@@ -4,7 +4,7 @@ import { HomePAGE, LoginPage, SingupPage } from "./index";
 import Storage from "@/lib/Storage";
 import AdminDashboard from "@/admin/pages/Index";
 import { DASHBOARDTYPE } from "./types/platfrom";
-import MainDashboard from "@/pages/dashboard/Index";
+import MainDashboard from "@/pages/dashboard/MainDashboard";
 
 const publicRoutes = [
   { path: "/", element: <HomePAGE /> },

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { RefreshCcw, GitBranchPlus, Play } from "lucide-react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { RefreshCcw, GitBranchPlus, Play, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   enrollCoursesApi,
@@ -25,7 +25,10 @@ export default function CourseView() {
     "idle" | "loading" | "success" | "error"
   >("idle");
   const [error, setError] = useState<string | null>(null);
+  const [isEnroll, setIsEnroll] = useState<boolean>(false);
   const [selectedTab, setSelectedTab] = useState("content");
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const fetchCourse = async () => {
     if (!id) return;
@@ -33,6 +36,7 @@ export default function CourseView() {
     try {
       setStatus("loading");
       const response = await getSingleCoursesApi({ courseId: id });
+      setIsEnroll(response.isEnrolled || false);
       setCourse(response);
       setStatus("success");
     } catch (err: any) {
@@ -47,11 +51,10 @@ export default function CourseView() {
 
   const handleStartCourse = async () => {
     try {
-      const response = await enrollCoursesApi({
-        courseId: `36ef47f6-8042-42e7-a11f-fc83b407f55d`,
-      });
-      console.log("Start Course Response:", response);
+      await enrollCoursesApi({ courseId: id as string });
+      navigate(`${location.pathname}/${course.title}`);
     } catch (error) {
+      console.log(error);
       console.error("Error starting course:", error);
     }
   };
@@ -111,13 +114,23 @@ export default function CourseView() {
       <div className="w-full mt-5 mb-5 ">
         <div className="flex flex-wrap sm:justify-between sm:gap-4 md:gap-6 gap-1 sm-gap-3">
           <Button
-            className="gap-2 px-2 py-2 sm:px-4 sm:py-4  sm:text-lg text-[#2CD195] font-medium bg-[#1B3731] bg-opacity-80 hover:bg-white hover:bg-opacity-45 hover:text-black duration-500 transition-all ease-in-out"
             onClick={handleStartCourse}
+            className={`
+    gap-2 px-2 py-2 sm:px-4 sm:py-4 sm:text-lg font-medium duration-500 transition-all ease-in-out
+    ${
+      isEnroll
+        ? "text-white bg-[#2c32d1] hover:bg-[#16185c]"
+        : "text-[#2CD195] bg-[#1B3731] bg-opacity-80 hover:bg-white hover:bg-opacity-45 hover:text-black"
+    }
+  `}
           >
-            <GitBranchPlus className="w-4 h-4" />
-            ابدأ الدورة
+            {isEnroll ? (
+              <ArrowLeft className="w-4 h-4" />
+            ) : (
+              <GitBranchPlus className="w-4 h-4" />
+            )}
+            {isEnroll ? "اكمل الدوره" : "ابدأ الدورة"}
           </Button>
-
           <div className="flex flex-wrap justify-end gap-1 sm:gap-4">
             <Button className="bg-[#0C0C0C] px-2 py-2 sm:px-4 sm:py-4 sm:text-md text-white font-medium border-[#282D3D] border-2">
               <Play style={{ fill: "white" }} className="w-4 h-4" />

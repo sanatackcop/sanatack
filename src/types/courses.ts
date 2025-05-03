@@ -8,6 +8,7 @@ export interface CourseInterface {
   level: Level;
   duration: string;
   courseType: string;
+  isEnrolled?: boolean;
 }
 export type TabType = "all" | "started" | "done";
 

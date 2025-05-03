@@ -54,3 +54,64 @@ export const enrollCoursesApi = async ({ courseId }: { courseId: string }) => {
     throw e;
   }
 };
+
+interface UpdateCourseProgressArgs {
+  courseId: string;
+  progress: number;
+}
+
+interface GetCourseProgressArgs {
+  courseId: string;
+}
+
+export const updateCourseProgressApi = async ({
+  courseId,
+  progress,
+}: UpdateCourseProgressArgs) => {
+  try {
+    const { data } = await Api({
+      method: "patch",
+      url: `courses/progress/${courseId}`,
+      data: { progress },
+      withCredentials: false,
+    });
+
+    return data;
+  } catch (e: any) {
+    console.error("updateCourseProgressApi error:", e.message);
+    throw e;
+  }
+};
+
+export const getCourseProgressApi = async ({
+  courseId,
+}: GetCourseProgressArgs) => {
+  try {
+    const { data } = await Api({
+      method: "get",
+      url: `courses/progress/${courseId}`,
+      withCredentials: false,
+    });
+
+    return data;
+  } catch (e: any) {
+    console.error("getCourseProgressApi error:", e.message);
+    throw e;
+  }
+};
+
+export const getCurrentCoursesApi = async (): Promise<CourseInterface[]> => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "get",
+        url: "courses/current",
+        withCredentials: false,
+      }) as Promise<{ data: CourseInterface[] }>
+    );
+    return response.data;
+  } catch (e: any) {
+    console.error("getAllCoursesApi error:", e);
+    throw e;
+  }
+};

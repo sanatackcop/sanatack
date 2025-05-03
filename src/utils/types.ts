@@ -22,6 +22,7 @@ export type GenericCardProps = {
   description?: string;
   children?: ReactNode;
   className?: string;
+  progress?: number;
 };
 
 export type Tab = {
