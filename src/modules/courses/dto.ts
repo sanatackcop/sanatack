@@ -71,6 +71,7 @@ export class CoursesContext {
 export class CourseDetails extends CoursesContext {
   isEnrolled: boolean;
   modules: ModuleDetailsDto[];
+  isEnrolled: boolean;
 }
 
 export class ModuleDetailsDto {
