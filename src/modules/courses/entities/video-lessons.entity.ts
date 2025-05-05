@@ -2,10 +2,8 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Lesson } from './lessons.entity';
 
 @Entity({ name: 'video_resource' })
 export class VideoResource {
@@ -23,9 +21,6 @@ export class VideoResource {
 
   @Column({ type: 'int', nullable: true })
   duration: number;
-
-  @ManyToOne(() => Lesson, (lesson) => lesson.videos)
-  lesson: Lesson;
 
   @CreateDateColumn()
   createdAt: Date;

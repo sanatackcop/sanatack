@@ -19,6 +19,7 @@ import { VideoResource } from './entities/video-lessons.entity';
 import { CourseProgress } from './entities/course-progress';
 import { Enrollment } from './entities/enrollment';
 import { User } from '../users/entities/user.entity';
+import { MaterialType } from './entities/material-mapper';
 
 @Injectable()
 export class CoursesService {
@@ -163,6 +164,7 @@ export class CoursesService {
 
     return {
       id: course.id,
+      isEnrolled: !!isEnrolled,
       title: course.title,
       description: course.description,
       level: course.level,

@@ -49,6 +49,7 @@ export class CoursesController {
     }
   }
 
+
   @Post('/enroll/:courseId')
   async enrollInCourse(@Req() req: any, @Param('courseId') courseId: string) {
     try {

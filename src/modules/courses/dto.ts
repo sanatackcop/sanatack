@@ -69,6 +69,7 @@ export class CoursesContext {
 }
 
 export class CourseDetails extends CoursesContext {
+  isEnrolled: boolean;
   modules: ModuleDetailsDto[];
   isEnrolled: boolean;
 }
@@ -107,7 +108,7 @@ export class QuizDto {
 
 export class VideoDto {
   id: string;
-  url?: string;
+  youtubeId?: string;
   title?: string;
   description?: string;
   duration?: number;

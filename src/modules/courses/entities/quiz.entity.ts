@@ -2,10 +2,8 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Lesson } from './lessons.entity';
 
 @Entity({ name: 'quiz' })
 export class Quiz {
@@ -23,9 +21,6 @@ export class Quiz {
 
   @Column({ type: 'text', nullable: true })
   explanation: string;
-
-  @ManyToOne(() => Lesson, (lesson) => lesson.quizzes)
-  lesson: Lesson;
 
   @CreateDateColumn()
   createdAt: Date;

@@ -9,6 +9,7 @@ import { Quiz } from './quiz.entity';
 import { Resource } from './resource.entity';
 import { VideoResource } from './video-lessons.entity';
 import { LessonMapper } from './lessons-maper.entity';
+import { MaterialMapper } from './material-mapper';
 
 @Entity({ name: 'lesson' })
 export class Lesson {
@@ -24,17 +25,11 @@ export class Lesson {
   @Column({ type: 'int', nullable: false })
   order: number;
 
-  @OneToMany(() => Resource, (resource) => resource.lesson)
-  resources: Resource[];
-
-  @OneToMany(() => Quiz, (quiz) => quiz.lesson)
-  quizzes: Quiz[];
-
-  @OneToMany(() => VideoResource, (video) => video.lesson)
-  videos: VideoResource[];
-
   @OneToMany(() => LessonMapper, (mapper) => mapper.lesson)
   lessonMapper: LessonMapper[];
+
+  @OneToMany(() => MaterialMapper, (mapper) => mapper.lesson)
+  materialMapper: MaterialMapper[];
 
   @CreateDateColumn()
   createdAt: Date;
