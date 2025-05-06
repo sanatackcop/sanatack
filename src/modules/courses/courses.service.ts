@@ -1,6 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, FindOptionsWhere, Repository } from 'typeorm';
+import {
+  DataSource,
+  Equal,
+  FindOptionsWhere,
+  LessThan,
+  Repository,
+} from 'typeorm';
 import { Course } from './entities/courses.entity';
 import { Module } from './entities/module.entity';
 import { CourseDetails, CoursesContext, CreateNewCourseDto } from './dto';
@@ -20,13 +26,15 @@ export class CoursesService {
   constructor(
     @InjectRepository(Course)
     private readonly courseRepository: Repository<Course>,
+    private readonly dataSource: DataSource,
+    @InjectRepository(CourseProgress)
+    private courseProgressRepo: Repository<CourseProgress>,
     @InjectRepository(Quiz)
     private readonly quizRepository: Repository<Quiz>,
     @InjectRepository(VideoResource)
     private readonly videoRepository: Repository<VideoResource>,
     @InjectRepository(Resource)
     private readonly resourceRepository: Repository<Resource>,
-    private readonly dataSource: DataSource
   ) {}
 
   async list({
@@ -58,6 +66,7 @@ export class CoursesService {
 
     return response;
   }
+
   private async getProgressCourses(
     userId: string,
     courseStatus
@@ -107,7 +116,7 @@ export class CoursesService {
       const isEnrolled = this.enrollmentCheck(userId,courseId);
 
       if (isEnrolled) {
-        throw new Error('User is already enrolled in this course');
+        return isEnrolled;
       }
 
       const enrollment = manager.create(Enrollment, {
@@ -120,7 +129,10 @@ export class CoursesService {
     });
   }
 
-  private async enrollmentCheck(userId: string, courseId: string) {
+  private async enrollmentCheck(
+    userId: string,
+    courseId: string
+  ): Promise<boolean> {
     const isEnrolled = await this.courseRepository
       .createQueryBuilder('course')
       .leftJoin('course.enrollment', 'enrollment')
@@ -168,6 +180,7 @@ export class CoursesService {
             if (material.material_type === MaterialType.QUIZ) {
               const quiz = await this.quizRepository.findOne({ where: { id: material.material_id } });
               return quiz ? {
+                order: material.order,
                 type: MaterialType.QUIZ,
                 quiz: {
                   id: quiz.id,
@@ -182,6 +195,7 @@ export class CoursesService {
               return video ? {
                 type: MaterialType.VIDEO,
                 video: {
+                  order: material.order,
                   id: video.id,
                   title: video.title,
                   youtubeId: video.youtubeId,
@@ -192,6 +206,7 @@ export class CoursesService {
             } else if (material.material_type === MaterialType.RESOURCE) {
               const resource = await this.resourceRepository.findOne({ where: { id: material.material_id } });
               return resource ? {
+                order: material.order,
                 type: MaterialType.RESOURCE,
                 resource: {
                   id: resource.id,
@@ -336,5 +351,52 @@ export class CoursesService {
 
       return course;
     });
+  }
+
+  async update(userId: string, courseId: string, progress: number) {
+    let rec = await this.courseProgressRepo.findOne({
+      where: { user: { id: userId }, course: { id: courseId } },
+    });
+    if (!rec) {
+      const course = await this.courseRepository.findOneByOrFail({
+        id: courseId,
+      });
+      rec = this.courseProgressRepo.create({
+        course,
+        user: { id: userId } as any,
+        progress,
+      });
+    } else {
+      rec.progress = progress;
+    }
+    return this.courseProgressRepo.save(rec);
+  }
+
+  async get(userId: string, courseId: string) {
+    const rec = await this.courseProgressRepo.findOne({
+      where: { user: { id: userId }, course: { id: courseId } },
+    });
+    return rec?.progress ?? 0;
+  }
+
+  async getCurrentCoursesForUser(userId: string) {
+    const currentCourese = await this.courseProgressRepo.find({
+      where: {
+        user: { id: Equal(userId) },
+        progress: LessThan(100),
+      },
+      relations: ['course'],
+      order: { updatedAt: 'DESC' },
+    });
+
+    const response = currentCourese.map((course) => ({
+      id: course.id,
+      title: course.course.title,
+      description: course.course.description?.substring(0, 100),
+      level: course.course.level,
+      tags: course.course.tags,
+      progress: course.progress,
+    }));
+    return response;
   }
 }
