@@ -28,7 +28,13 @@ export class CoursesService {
     private readonly courseRepository: Repository<Course>,
     private readonly dataSource: DataSource,
     @InjectRepository(CourseProgress)
-    private courseProgressRepo: Repository<CourseProgress>
+    private courseProgressRepo: Repository<CourseProgress>,
+    @InjectRepository(Quiz)
+    private readonly quizRepository: Repository<Quiz>,
+    @InjectRepository(VideoResource)
+    private readonly videoRepository: Repository<VideoResource>,
+    @InjectRepository(Resource)
+    private readonly resourceRepository: Repository<Resource>,
   ) {}
 
   async list({
@@ -107,13 +113,8 @@ export class CoursesService {
         throw new Error('User not found');
       }
 
-      const isEnrolled = await manager
-        .createQueryBuilder(Enrollment, 'enrollment')
-        .leftJoin('enrollment.course', 'course')
-        .leftJoin('enrollment.user', 'user')
-        .where('course.id = :courseId', { courseId })
-        .andWhere('user.id = :userId', { userId })
-        .getOne();
+      const isEnrolled = this.enrollmentCheck(userId,courseId);
+
       if (isEnrolled) {
         return isEnrolled;
       }
@@ -150,11 +151,9 @@ export class CoursesService {
       .createQueryBuilder('course')
       .leftJoinAndSelect('course.courseMappers', 'mapper')
       .leftJoinAndSelect('mapper.module', 'module')
-      .leftJoinAndSelect('module.lessonMappers', 'lessonmapper')
-      .leftJoinAndSelect('lessonmapper.lesson', 'lesson')
-      .leftJoinAndSelect('lesson.resources', 'resources')
-      .leftJoinAndSelect('lesson.quizzes', 'quizzes')
-      .leftJoinAndSelect('lesson.videos', 'videos')
+      .leftJoinAndSelect('module.lessonMappers','lessonMapper')
+      .leftJoinAndSelect('lessonMapper.lesson','lesson')
+      .leftJoinAndSelect('lesson.materialMapper','materialMapper')
       .where('course.id = :cid', { cid: id })
       .getOne();
 
@@ -164,49 +163,66 @@ export class CoursesService {
 
     return {
       id: course.id,
-      isEnrolled: !!isEnrolled,
+      isEnrolled: isEnrolled,
       title: course.title,
       description: course.description,
       level: course.level,
       tags: course.tags,
-      isEnrolled,
-      modules: course.courseMappers.map((mapper) => {
-        const module = mapper.module;
-        return {
-          id: module.id,
-          title: module.title,
-          lessons:
-            module.lessonMappers?.map((lessonmapper) => {
-              const lesson = lessonmapper.lesson;
-              return {
-                id: lesson.id,
-                name: lesson.name,
-                description: lesson.description,
-                order: lesson.order,
-                resources:
-                  lesson.resources?.map((resource) => ({
-                    id: resource.id,
-                    title: resource.title,
-                    url: resource.url,
-                    content: resource.content,
-                  })) || [],
-                quizzes:
-                  lesson.quizzes?.map((quiz) => ({
-                    id: quiz.id,
-                  })) || [],
-                videos:
-                  lesson.videos?.map((video) => ({
-                    id: video.id,
-                    url: video.youtubeId,
-                    title: video.title,
-                    description: video.description,
-                    duration: video.duration,
-                  })) || [],
-              };
-            }) || [],
-        };
-      }),
+      modules: await Promise.all(course.courseMappers.map(async (mapper) => ({
+        id: mapper.module.id,
+        title: mapper.module.title,
+        lessons: await Promise.all(mapper.module.lessonMappers?.map(async (lessonMapper) => ({
+          id: lessonMapper.lesson.id,
+          name: lessonMapper.lesson.name,
+          description: lessonMapper.lesson.description,
+          order: lessonMapper.lesson.order,
+          materials: await Promise.all(lessonMapper.lesson.materialMapper?.map(async (material) => {
+            if (material.material_type === MaterialType.QUIZ) {
+              const quiz = await this.quizRepository.findOne({ where: { id: material.material_id } });
+              return quiz ? {
+                order: material.order,
+                type: MaterialType.QUIZ,
+                quiz: {
+                  id: quiz.id,
+                  question: quiz.question,
+                  options: quiz.options,
+                  correctAnswer: quiz.correctAnswer,
+                  explanation: quiz.explanation,
+                },
+              } : null;
+            } else if (material.material_type === MaterialType.VIDEO) {
+              const video = await this.videoRepository.findOne({ where: { id: material.material_id } });
+              return video ? {
+                type: MaterialType.VIDEO,
+                video: {
+                  order: material.order,
+                  id: video.id,
+                  title: video.title,
+                  youtubeId: video.youtubeId,
+                  duration: video.duration,
+                  description: video.description,
+                },
+              } : null;
+            } else if (material.material_type === MaterialType.RESOURCE) {
+              const resource = await this.resourceRepository.findOne({ where: { id: material.material_id } });
+              return resource ? {
+                order: material.order,
+                type: MaterialType.RESOURCE,
+                resource: {
+                  id: resource.id,
+                  title: resource.title,
+                  url: resource.url,
+                  content: resource.content,
+                  description: resource.description,
+                },
+              } : null;
+            }
+            return null;
+          }) ?? []),
+        })) ?? []),
+      })) ?? []),
     };
+    
   }
 
   async createNewCourse({
