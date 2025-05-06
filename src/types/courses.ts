@@ -13,13 +13,17 @@ export interface CourseInterface {
 export type TabType = "all" | "started" | "done";
 
 export interface CoursesContext {
-  id: number;
+  id: string;
   title: string;
   description: string;
   level: Level;
   tags: {
     durtionsHours: number;
   };
+  isEnrolled?: boolean;
+}
+export interface CourseDetails extends CoursesContext {
+  modules: ModuleDetailsDto[];
 }
 export interface tagsInterface {
   unitesNum?: number;
@@ -31,10 +35,6 @@ export enum LevelEnum {
   "BEGINNER" = "BEGINNER",
   "INTERMEDIATE" = "INTERMEDIATE",
   "ADVANCED" = "ADVANCED",
-}
-
-export interface CourseDetails extends CoursesContext {
-  modules: ModuleDetailsDto[];
 }
 
 export interface ModuleDetailsDto {
@@ -55,7 +55,7 @@ export interface LessonDetailsDto {
 
 export interface ResourceDto {
   id: string;
-  title: string;
+  title?: string;
   description?: string;
   url?: string;
   content?: string;
