@@ -104,13 +104,7 @@ export class CoursesService {
         throw new Error('User not found');
       }
 
-      const isEnrolled = await manager
-        .createQueryBuilder(Enrollment, 'enrollment')
-        .leftJoin('enrollment.course', 'course')
-        .leftJoin('enrollment.user', 'user')
-        .where('course.id = :courseId', { courseId })
-        .andWhere('user.id = :userId', { userId })
-        .getOne();
+      const isEnrolled = this.enrollmentCheck(userId,courseId);
 
       if (isEnrolled) {
         throw new Error('User is already enrolled in this course');
@@ -135,7 +129,7 @@ export class CoursesService {
       .andWhere('user.id = :userId', { userId })
       .getOne();
 
-    return isEnrolled;
+    return !!isEnrolled;
   }
 
   async courseDetails(id: string, userId: string): Promise<CourseDetails> {
@@ -147,7 +141,7 @@ export class CoursesService {
       .leftJoinAndSelect('mapper.module', 'module')
       .leftJoinAndSelect('module.lessonMappers','lessonMapper')
       .leftJoinAndSelect('lessonMapper.lesson','lesson')
-      .innerJoinAndSelect('lesson.materialMapper','materialMapper')
+      .leftJoinAndSelect('lesson.materialMapper','materialMapper')
       .where('course.id = :cid', { cid: id })
       .getOne();
 
@@ -157,21 +151,21 @@ export class CoursesService {
 
     return {
       id: course.id,
-      isEnrolled: !!isEnrolled,
+      isEnrolled: isEnrolled,
       title: course.title,
       description: course.description,
       level: course.level,
       tags: course.tags,
-      modules: course.courseMappers.map((mapper) => ({
+      modules: await Promise.all(course.courseMappers.map(async (mapper) => ({
         id: mapper.module.id,
         title: mapper.module.title,
-        lessons: mapper.module.lessonMappers?.map((lessonMapper) => ({
+        lessons: await Promise.all(mapper.module.lessonMappers?.map(async (lessonMapper) => ({
           id: lessonMapper.lesson.id,
           name: lessonMapper.lesson.name,
           description: lessonMapper.lesson.description,
           order: lessonMapper.lesson.order,
-          materials: lessonMapper.lesson.materialMapper?.map(async (material) => {
-            if (material.material_type == MaterialType.QUIZ) {
+          materials: await Promise.all(lessonMapper.lesson.materialMapper?.map(async (material) => {
+            if (material.material_type === MaterialType.QUIZ) {
               const quiz = await this.quizRepository.findOne({ where: { id: material.material_id } });
               return quiz ? {
                 type: MaterialType.QUIZ,
@@ -183,7 +177,7 @@ export class CoursesService {
                   explanation: quiz.explanation,
                 },
               } : null;
-            } else if (material.material_type == MaterialType.VIDEO) {
+            } else if (material.material_type === MaterialType.VIDEO) {
               const video = await this.videoRepository.findOne({ where: { id: material.material_id } });
               return video ? {
                 type: MaterialType.VIDEO,
@@ -195,7 +189,7 @@ export class CoursesService {
                   description: video.description,
                 },
               } : null;
-            } else if (material.material_type == MaterialType.RESOURCE) {
+            } else if (material.material_type === MaterialType.RESOURCE) {
               const resource = await this.resourceRepository.findOne({ where: { id: material.material_id } });
               return resource ? {
                 type: MaterialType.RESOURCE,
@@ -209,10 +203,11 @@ export class CoursesService {
               } : null;
             }
             return null;
-          }),
-        })),
-      })),
+          }) ?? []),
+        })) ?? []),
+      })) ?? []),
     };
+    
   }
 
   async createNewCourse({
