@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { trackPromise } from "react-promise-tracker";
 import Api from "./api";
-import { CourseInterface } from "@/types/courses";
+import { CourseDetails, CourseInterface } from "@/types/courses";
 
 export const getAllCoursesApi = async (): Promise<CourseInterface[]> => {
   try {
@@ -24,14 +24,14 @@ export const getSingleCoursesApi = async ({
   courseId,
 }: {
   courseId: string;
-}): Promise<CourseInterface> => {
+}): Promise<CourseDetails> => {
   try {
     const response = await trackPromise(
       Api({
         method: "get",
         url: `courses/${courseId}`,
         withCredentials: false,
-      }) as Promise<{ data: CourseInterface }>
+      }) as Promise<{ data: CourseDetails }>
     );
     return response.data;
   } catch (e: any) {
@@ -112,6 +112,22 @@ export const getCurrentCoursesApi = async (): Promise<CourseInterface[]> => {
     return response.data;
   } catch (e: any) {
     console.error("getAllCoursesApi error:", e);
+    throw e;
+  }
+};
+
+export const getCoursesContentApi = async ({ id }: CourseDetails) => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "get",
+        url: `courses/${id}`,
+        withCredentials: false,
+      }) as Promise<{ data: CourseDetails[] }>
+    );
+    return response.data;
+  } catch (e: any) {
+    console.error("getCourseContentApi error:", e);
     throw e;
   }
 };

@@ -64,7 +64,7 @@ const GenericCard: React.FC<GenericCardProps> = ({
         )}
 
         {!progress && (
-          <CardFooter className="mt-auto flex flex-col gap-2 border-t border-white/10 p-5 text-xs">
+          <CardFooter className="mt-auto flex flex-col items-start gap-2 border-t border-white/10 p-5 text-xs">
             {children && <div>{children}</div>}
           </CardFooter>
         )}

@@ -1,10 +1,6 @@
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { CourseDetails } from "@/types/courses";
+import TimeLine from "@/components/timeLine";
+import { CourseDetails, LessonDetailsDto } from "@/types/courses";
+import { getLessonResourceIcon } from "@/utils/getIcon";
 
 export default function CourseDetailsContent({
   course,
@@ -13,66 +9,66 @@ export default function CourseDetailsContent({
   course: CourseDetails;
   className?: string;
 }) {
+  const renderResources = (lesson: LessonDetailsDto) => {
+    const allResources = [
+      ...(lesson.resources || []).map((r: any) => ({ ...r, type: "resource" })),
+      ...(lesson.videos || []).map((r: any) => ({ ...r, type: "video" })),
+      ...(lesson.quizzes || []).map((r: any) => ({ ...r, type: "quiz" })),
+    ];
+
+    return (
+      <ul>
+        {allResources.map((res, index) => {
+          const isLast = index === allResources.length - 1;
+          const title = res.type === "quiz" ? "Quiz" : res.title;
+          return (
+            <li
+              key={`${res.type}-${res.id}`}
+              className="group relative w-fit py-1"
+            >
+              <a href={res.url} target="_blank" rel="noopener noreferrer">
+                {getLessonResourceIcon(res.type)}
+                {res.title || title}
+                {!isLast && (
+                  <div className="absolute right-5 sm:right-7 top-8 sm:top-10 h-full w-px bg-white/30 transition-all duration-300" />
+                )}
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    );
+  };
+
   return (
-    <div className={`${className}`}>
-      <Accordion
-        type="single"
-        collapsible
-        className="sm:space-y-4 bg-[#282D3D] text-[#949DB2] "
-        dir="rtl"
-      >
-        {course.modules.map((module, idx) => (
-          <AccordionItem
-            key={module.id}
-            value={module.id.toString()}
-            className="border-0 overflow-hidden "
-          >
-            <AccordionTrigger className="group px-2 py-2 md:px-6 md:py-4 hover:bg-slate-800/50 transition lg:px-8">
-              <div className="flex items-center gap-4 w-full justify-between">
-                <div className="flex flex-col min-w-0 pr-5">
-                  <span className="truncate ml-2 font-semibold text-xs sm:text-sm md:text-md mb-1">
-                    {module.title}
+    <div className={className}>
+      <TimeLine
+        data={course.modules}
+        getId={(module) => module.id.toString()}
+        getTitle={(module) => module.title}
+        renderContent={(module) => (
+          <TimeLine
+            data={module.lessons}
+            className="mr-2"
+            getId={(lesson) => lesson.id.toString()}
+            getTitle={(lesson) => (
+              <div className="group relative w-fit">
+                <span>{lesson.name}</span>
+                {lesson.description && (
+                  <span className="absolute right-full top-1/2 -translate-y-1/2 mr-2 bg-white text-xs text-muted-foreground p-2 rounded shadow-md opacity-0 group-hover:opacity-100 transition-opacity z-10 w-52 text-right">
+                    {lesson.description}
                   </span>
-                </div>
-
-                <div className="bg-[#1E2127] w-5 h-5 sm:w-10 sm:h-10 md:w-20 md:h-20 text-white grid place-items-center md:text-2xl font-black">
-                  {idx + 1}
-                </div>
+                )}
               </div>
-            </AccordionTrigger>
-
-            <AccordionContent className=" px-2 pb-2  space-y-2">
-              <Accordion type="multiple" className="md:space-y-2">
-                {module.lessons.map((lesson) => (
-                  <AccordionItem
-                    key={lesson.id}
-                    value={lesson.id.toString()}
-                    className="border-0 overflow-hidden"
-                  >
-                    <AccordionTrigger className="group px-6 py-4 hover:bg-slate-800/50 transition">
-                      <div className="flex items-center gap-4 w-full">
-                        <div className="flex flex-col min-w-0 pr-5">
-                          <span className="truncate ml-2 font-semibold text-xs sm:text-sm md:text-md  mb-1">
-                            {lesson.order}. {lesson.name}
-                          </span>
-                        </div>
-                      </div>
-                    </AccordionTrigger>
-
-                    <AccordionContent className="px-2 pb-2  space-y-2">
-                      {lesson.description && (
-                        <p className="text-slate-400 leading-6 mb-1">
-                          {lesson.description}
-                        </p>
-                      )}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </AccordionContent>
-          </AccordionItem>
-        ))}
-      </Accordion>
+            )}
+            renderContent={(lesson) => (
+              <div className="space-y-4 mr-2 sm:mr-4">
+                {renderResources(lesson)}
+              </div>
+            )}
+          />
+        )}
+      />
     </div>
   );
 }
