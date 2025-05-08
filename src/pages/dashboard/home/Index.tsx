@@ -23,25 +23,23 @@ interface Props {
 }
 
 const HeroSection = () => (
-  <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-600 via-gray-600 to-gray-700 p-8 text-white shadow-xl">
+  <section className="relative overflow-hidden rounded-2xl bg-[#eaeaea] dark:bg-[#2A2D3D] p-8 text-white shadow-xl">
     <div className="relative z-10 space-y-5">
-      <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold leading-tight">
+      <h1 className="text-md sm:text-lg md:text-2xl text-[#34363F] dark:text-white font-extrabold leading-tight">
         ارتقِ بمهاراتك إلى المستوى التالي
       </h1>
-      <p className="max-w-2xl text-base sm:text-lg md:text-xl opacity-90">
+      <p className="max-w-2xl text-base sm:text-sm md:text-xl opacity-90 text-[#565863]">
         اكتشف أفضل الدورات المصممة لتطوير قدراتك المهنية والشخصية مع خبراء
         المجال.
       </p>
 
       <div className="flex flex-wrap gap-4">
-        <a className="rounded-full bg-white/10 px-6 py-3 text-sm font-semibold backdrop-blur transition hover:bg-white/20">
-          <Link
-            to="/dashboard/courses"
-            className="flex items-center gap-1 text-white  rounded-full px-4 py-2"
-          >
-            تصفح الدورات
-          </Link>
-        </a>
+        <Link
+          to="/dashboard/courses"
+          className="flex items-center gap-1 text-[#34363F] dark:text-white rounded-full px-6 py-3 bg-[#999999] dark:bg-white/10 backdrop-blur transition"
+        >
+          تصفح الدورات
+        </Link>
       </div>
     </div>
 
@@ -90,7 +88,6 @@ export default function DashboardHome() {
     <AppLayout>
       <div className="space-y-10">
         <HeroSection />
-
         <GenericSection
           title="تابع دوراتك الحالية"
           description="أكمل ما بدأته وارتقِ بمهاراتك."
@@ -101,14 +98,15 @@ export default function DashboardHome() {
               <GenericCard
                 key={p.id}
                 title={p.title}
-                id={p.id}
+                link={`/dashboard/courses/${p.id}/${p.title}`}
+                className=" h-[400px] w-[350px]"
                 progress={p.progress}
                 description={p.description}
               />
             ))}
         </div>
 
-        <GenericSection title="موصى به لك" description="تعلم افضل المهرات" />
+        <GenericSection title="موصى به لك" description="تعلم افضل المهارات" />
         <div
           className={clsx(
             "grid gap-5",
@@ -121,6 +119,7 @@ export default function DashboardHome() {
               key={course.id}
               title={course.title}
               description={course.description}
+              link={`/dashboard/courses/${course.id}/${course.title}`}
               className={clsx(
                 "flex flex-col",
                 index === 0 && "md:col-span-2 lg:col-span-2"

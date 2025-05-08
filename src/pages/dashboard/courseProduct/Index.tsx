@@ -5,10 +5,13 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { useSettings } from "@/context/SettingsContexts";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
+import LogoDark from "@/assets/dark_logo.svg";
+
 import {
   getCourseProgressApi,
   getSingleCoursesApi,
@@ -74,7 +77,6 @@ export default function CourseLearningPage({
   const { id: routeCourseId } = useParams();
   const navigate = useNavigate();
   const courseId = explicitCourseId ?? routeCourseId!;
-
   const [modules, setModules] = useState<CourseModule[] | null>(
     initialModules?.length ? initialModules : null
   );
@@ -186,12 +188,14 @@ export default function CourseLearningPage({
   const nextMaterial =
     currentIndex > -1 ? flatMaterials[currentIndex + 1] : null;
 
+  const { darkMode } = useSettings();
+
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-[#0C0C0C] text-white">
-      <aside className="hidden md:flex w-96 shrink-0 flex-col border-l border-white/10 bg-[#0C0C0C]">
+    <div className="flex h-screen w-full overflow-hidden bg-[#eaeaea] dark:bg-[#0C0C0C] text-white">
+      <aside className="hidden md:flex w-96 shrink-0 flex-col border-l border-white/10 bg-[#eaeaea] dark:bg-[#0C0C0C]">
         <div className="flex items-center justify-between p-4">
           <img
-            src={String(LogoLight)}
+            src={darkMode ? String(LogoLight) : String(LogoDark)}
             alt="logo"
             className="w-24 transition-all duration-300 hover:opacity-90"
           />
@@ -199,7 +203,7 @@ export default function CourseLearningPage({
             size="icon"
             variant="ghost"
             onClick={onBack ?? (() => navigate(-1))}
-            className="text-white/70 hover:text-black"
+            className="text-black dark:text-white hover:text-black"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -207,10 +211,10 @@ export default function CourseLearningPage({
         <Separator className="bg-white/10" />
 
         <div className="px-4 py-3 space-y-2">
-          <span className="text-sm text-muted-foreground block text-right">
+          <span className="text-sm text-muted-foreground block text-black dark:text-white text-right">
             التقدم: {progressPercent}%
           </span>
-          <Progress value={progressPercent} className="h-2 bg-white/20" />
+          <Progress value={progressPercent} className="h-2 dark:bg-white/20" />
         </div>
         <Separator className="bg-white/10" />
 
@@ -222,7 +226,7 @@ export default function CourseLearningPage({
                 value={mod.id}
                 className="bg-none border-none"
               >
-                <div className="border-t border-b border-white/5">
+                <div className="border-t border-b border-white/5 text-[#34363F] dark:text-white">
                   <AccordionTrigger className="px-3 h-14 text-right font-medium hover:bg-white/5">
                     {mod.title}
                   </AccordionTrigger>
@@ -286,12 +290,13 @@ export default function CourseLearningPage({
         </nav>
       </aside>
 
-      <main className="flex flex-1 flex-col items-center justify-center overflow-auto p-4 bg-[#131313] gap-4">
+      <main className="flex flex-1 flex-col items-center justify-center overflow-auto p-4 bg-white dark:bg-[#131313] gap-4">
         <MaterialViewer material={currentMaterial} onComplete={markComplete} />
 
         <div className="flex justify-end w-full max-w-4xl">
           <Button
             disabled={!nextMaterial}
+            className=" text-[#34363F]  dark:text-white bg-[#999999] dark:bg-white/10"
             onClick={() => nextMaterial && setCurrentMaterial(nextMaterial)}
           >
             التالي

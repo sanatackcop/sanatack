@@ -1,5 +1,5 @@
 import { Level } from "@/utils/types/adminTypes";
-
+export type TabType = "all" | "started" | "done";
 export interface CourseInterface {
   id: number;
   title: string;
@@ -10,8 +10,6 @@ export interface CourseInterface {
   courseType: string;
   isEnrolled?: boolean;
 }
-export type TabType = "all" | "started" | "done";
-
 export interface CoursesContext {
   id: string;
   title: string;
@@ -36,7 +34,13 @@ export enum LevelEnum {
   "INTERMEDIATE" = "INTERMEDIATE",
   "ADVANCED" = "ADVANCED",
 }
-
+export interface MaterialDto {
+  type: "quiz" | "video" | "resource";
+  order?: number;
+  quiz?: QuizDto;
+  video?: VideoDto;
+  resource?: ResourceDto;
+}
 export interface ModuleDetailsDto {
   id: string;
   title: string;
@@ -48,9 +52,7 @@ export interface LessonDetailsDto {
   name: string;
   description?: string;
   order: number;
-  resources?: ResourceDto[];
-  quizzes?: QuizDto[];
-  videos?: VideoDto[];
+  materials: MaterialDto[];
 }
 
 export interface ResourceDto {
@@ -71,7 +73,7 @@ export interface QuizDto {
 
 export interface VideoDto {
   id: string;
-  url?: string;
+  youtubeId?: string;
   title?: string;
   description?: string;
   duration?: number;

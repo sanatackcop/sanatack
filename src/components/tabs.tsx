@@ -20,20 +20,20 @@ export default function GenericTabs<T>({
       dir="rtl"
       value={activeTab}
       onValueChange={(value: string) => onChange(value)}
-      className="w-full"
+      className="w-full bg-transparent"
     >
-      <TabsList className="bg-transparent text-start pb-0">
+      <TabsList className=" text-start pb-0">
         {tabs.map((tab) => (
           <TabsTrigger
             key={tab.value}
             value={tab.value}
-            className="relative text-md text-white data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-[#5286D2] data-[state=active]:bg-transparent rounded-none"
+            className="relative text-md text-black dark:text-white data-[state=active]:border-b-2 data-[state=active]:border-[#5286D2] rounded-none"
           >
             {tab.label}
             {tab.count !== undefined && (
               <Badge
                 variant="secondary"
-                className="bg-[#252C36B2] text-[#6B737D] flex h-4 w-4 text-xs items-center justify-center mx-1 mt-2 rounded-10"
+                className=" bg-[#eaeaea] dark:text-[#6B737D] flex h-4 w-4 text-xs items-center justify-center mx-1 mt-2 rounded-10"
               >
                 {tab.count}
               </Badge>
