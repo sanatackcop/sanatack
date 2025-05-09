@@ -46,23 +46,25 @@ export default function GenericAccordion<T>({
               </div>
             </AccordionTrigger>
             <AccordionContent className="px-2 mr-5 pb-2 space-y-2">
-              <svg
-                className="absolute top-9 right-9 sm:right-12 w-10 h-12 z-0"
-                viewBox="0 0 40 40"
-                preserveAspectRatio="none"
-              >
-                <path
-                  d="M40,0 Q20,20 20,40"
-                  stroke="gray"
-                  strokeWidth="1"
-                  fill="none"
-                />
-              </svg>
+              {renderContent(item) && (
+                <svg
+                  className="absolute top-9 right-9 sm:right-12 w-10 h-12 z-0"
+                  viewBox="0 0 40 40"
+                  preserveAspectRatio="none"
+                >
+                  <path
+                    d="M40,0 Q20,20 20,40"
+                    stroke="gray"
+                    strokeWidth="1"
+                    fill="none"
+                  />
+                </svg>
+              )}
               {renderContent(item)}
             </AccordionContent>
           </AccordionItem>
           {idx !== data.length - 1 && (
-            <div className="absolute right-6 sm:right-7 top-10 sm:top-12 h-full w-px bg-white/30 transition-all duration-300" />
+            <div className="absolute right-6 sm:right-7 top-10 sm:top-12 h-full w-px bg-gray-700 transition-all duration-300" />
           )}
         </div>
       ))}

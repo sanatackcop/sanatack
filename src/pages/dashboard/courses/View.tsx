@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { RefreshCcw, GitBranchPlus, Play, ArrowLeft } from "lucide-react";
+import { GitBranchPlus, Play, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   enrollCoursesApi,
@@ -14,16 +14,10 @@ import CourseDetailsContent from "./_course_content";
 import { CourseTags } from "@/components/tagsList";
 import { Tab } from "@/utils/types";
 
-const Skeleton = ({ className = "" }: { className?: string }) => (
-  <div className={`animate-pulse rounded-lg bg-slate-700/40 ${className}`} />
-);
-
 export default function CourseView() {
   const { id } = useParams<{ id: string }>();
   const [course, setCourse] = useState<CourseDetails | any>();
-  const [status, setStatus] = useState<
-    "idle" | "loading" | "success" | "error"
-  >("idle");
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isEnroll, setIsEnroll] = useState<boolean>(false);
   const [selectedTab, setSelectedTab] = useState("content");
@@ -32,16 +26,15 @@ export default function CourseView() {
 
   const fetchCourse = async () => {
     if (!id) return;
-
     try {
-      setStatus("loading");
+      setLoading(true);
       const response = await getSingleCoursesApi({ courseId: id });
       setIsEnroll(response.isEnrolled || false);
       setCourse(response);
-      setStatus("success");
+      setLoading(false);
     } catch (err: any) {
       setError(err?.message || "حدث خطأ أثناء جلب بيانات الدورة، حاول مجددًا.");
-      setStatus("error");
+      setLoading(false);
     }
   };
 
@@ -58,35 +51,6 @@ export default function CourseView() {
       console.error("Error starting course:", error);
     }
   };
-
-  if (status === "loading") {
-    return (
-      <AppLayout>
-        <section className="bg-[#0f0f0f] min-h-screen flex items-center justify-center px-4">
-          <Skeleton className="w-full max-w-4xl h-72" />
-        </section>
-      </AppLayout>
-    );
-  }
-
-  if (status === "error") {
-    return (
-      <AppLayout>
-        <section
-          className="bg-[#0f0f0f] min-h-screen flex flex-col gap-6 items-center justify-center text-white px-4"
-          dir="rtl"
-        >
-          <p className="text-lg text-center max-w-lg leading-8">{error}</p>
-          <Button
-            onClick={fetchCourse}
-            className="rounded-2xl px-6 bg-gradient-to-r from-emerald-700 to-emerald-600 hover:from-emerald-600 hover:to-emerald-500"
-          >
-            حاول مرة أخرى <RefreshCcw size={18} className="mr-2" />
-          </Button>
-        </section>
-      </AppLayout>
-    );
-  }
 
   const data = {
     content: course ? [course] : [],
@@ -111,18 +75,16 @@ export default function CourseView() {
         />
       </GenericSection>
 
-      <div className="w-full mt-5 mb-5 ">
+      <div className="w-full mt-5 mb-5">
         <div className="flex flex-wrap sm:justify-between sm:gap-4 md:gap-6 gap-1 sm-gap-3">
           <Button
             onClick={handleStartCourse}
-            className={`
-    gap-2 px-2 py-2 sm:px-4 sm:py-4 sm:text-lg font-medium duration-500 transition-all ease-in-out
+            className={`gap-2 px-2 py-2 sm:px-4 sm:py-4 sm:text-lg font-medium duration-500 transition-all ease-in-out
     ${
       isEnroll
         ? "text-white bg-[#2c32d1] hover:bg-[#16185c]"
         : "text-[#2CD195] bg-[#1B3731] bg-opacity-80 hover:bg-white hover:bg-opacity-45 hover:text-black"
-    }
-  `}
+    }`}
           >
             {isEnroll ? (
               <ArrowLeft className="w-4 h-4" />
@@ -132,11 +94,11 @@ export default function CourseView() {
             {isEnroll ? "اكمل الدوره" : "ابدأ الدورة"}
           </Button>
           <div className="flex flex-wrap justify-end gap-1 sm:gap-4">
-            <Button className="bg-[#0C0C0C] px-2 py-2 sm:px-4 sm:py-4 sm:text-md text-white font-medium border-[#282D3D] border-2">
-              <Play style={{ fill: "white" }} className="w-4 h-4" />
+            <Button className="bg-[#999999] dark:bg-[#0C0C0C] px-2 py-2 sm:px-4 sm:py-4 sm:text-md text-[#34363F] dark:text-white font-medium ">
+              <Play style={{ fill: "#34363F" }} className="w-4 h-4" />
               مشاهدة نبذة
             </Button>
-            <Button className="bg-[#0C0C0C] px-2 py-2 sm:px-4 sm:py-4  sm:text-md text-white font-medium border-[#282D3D] border-2">
+            <Button className="bg-[#999999] dark:bg-[#0C0C0C] px-2 py-2 sm:px-4 sm:py-4 sm:text-md text-[#34363F] dark:text-white  font-medium ">
               تحميل المنهج
             </Button>
           </div>
@@ -147,6 +109,9 @@ export default function CourseView() {
         tabs={tabs}
         activeTab={selectedTab}
         onChange={setSelectedTab}
+        onRetry={fetchCourse}
+        loading={loading}
+        error={error}
         data={data}
         renderItem={(course: CourseDetails, index: number) => (
           <CourseDetailsContent

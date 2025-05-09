@@ -11,8 +11,9 @@ interface User {
   id: string;
   email: string;
   mobile: string;
-  first_name: string;
-  last_name: string;
+  firstName: string;
+  lastName: string;
+  avatar?: string;
 }
 
 export enum ContextType {
@@ -28,8 +29,8 @@ interface Auth {
 
 const initialUserState: User = {
   id: "",
-  first_name: "",
-  last_name: "",
+  firstName: "",
+  lastName: "",
   mobile: "",
   email: "",
 };

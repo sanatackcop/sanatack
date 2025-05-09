@@ -62,6 +62,7 @@ export default function CoursesCard() {
             title={course.title}
             description={course.description}
             className={index === 0 ? "md:col-span-2 sm:col-span-1" : ""}
+            link={`/dashboard/courses/${course.id}`}
           >
             <CourseTags
               duration={course?.duration}
