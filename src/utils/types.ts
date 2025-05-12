@@ -23,6 +23,7 @@ export type GenericCardProps = {
   children?: ReactNode;
   className?: string;
   progress?: number;
+  link?: string;
 };
 
 export type Tab = {

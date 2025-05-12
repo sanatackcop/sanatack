@@ -11,8 +11,8 @@ interface GenericSectionProps {
 export default function GenericSection({
   title,
   description,
-  titleClassName = "text-lg sm:text-3xl font-bold flex justify-normal mt-2",
-  descriptionClassName = "sm:text-lg text-gray-500 text-right mt-2",
+  titleClassName = "text-lg sm:text-3xl font-bold flex justify-normal mt-2 mr-4 text-[#34363F] dark:text-white ",
+  descriptionClassName = "sm:text-lg text-gray-500 text-right mt-2 mr-4",
   children,
 }: GenericSectionProps) {
   return (

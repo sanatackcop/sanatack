@@ -12,7 +12,7 @@ export default function MaterialViewer({
 
   if (!material) {
     return (
-      <p className="text-center text-muted-foreground">
+      <p className="text-center text-[#34363F]  dark:text-white text-muted-foreground">
         اختر مادة من القائمة لبدء التعلم
       </p>
     );
