@@ -19,7 +19,7 @@ import { VideoResource } from './entities/video-lessons.entity';
 import { CourseProgress } from './entities/course-progress';
 import { Enrollment } from './entities/enrollment';
 import { User } from '../users/entities/user.entity';
-import { MaterialType } from './entities/material-mapper';
+import { MaterialMapper, MaterialType } from './entities/material-mapper';
 
 @Injectable()
 export class CoursesService {
@@ -34,7 +34,7 @@ export class CoursesService {
     @InjectRepository(VideoResource)
     private readonly videoRepository: Repository<VideoResource>,
     @InjectRepository(Resource)
-    private readonly resourceRepository: Repository<Resource>,
+    private readonly resourceRepository: Repository<Resource>
   ) {}
 
   async list({
@@ -61,6 +61,7 @@ export class CoursesService {
       title: course.title,
       description: course.description?.substring(0, 100),
       level: course.level,
+      isPublished: course.isPublished,
       tags: course.tags,
     }));
 
@@ -113,7 +114,7 @@ export class CoursesService {
         throw new Error('User not found');
       }
 
-      const isEnrolled = this.enrollmentCheck(userId,courseId);
+      const isEnrolled = this.enrollmentCheck(userId, courseId);
 
       if (isEnrolled) {
         return isEnrolled;
@@ -144,16 +145,14 @@ export class CoursesService {
     return !!isEnrolled;
   }
 
-  async courseDetails(id: string, userId: string): Promise<CourseDetails> {
-    const isEnrolled = await this.enrollmentCheck(userId, id);
-
+  protected async courseDetails(id: string): Promise<CourseDetails> {
     const course = await this.courseRepository
       .createQueryBuilder('course')
       .leftJoinAndSelect('course.courseMappers', 'mapper')
       .leftJoinAndSelect('mapper.module', 'module')
-      .leftJoinAndSelect('module.lessonMappers','lessonMapper')
-      .leftJoinAndSelect('lessonMapper.lesson','lesson')
-      .leftJoinAndSelect('lesson.materialMapper','materialMapper')
+      .leftJoinAndSelect('module.lessonMappers', 'lessonMapper')
+      .leftJoinAndSelect('lessonMapper.lesson', 'lesson')
+      .leftJoinAndSelect('lesson.materialMapper', 'materialMapper')
       .where('course.id = :cid', { cid: id })
       .getOne();
 
@@ -163,66 +162,96 @@ export class CoursesService {
 
     return {
       id: course.id,
-      isEnrolled: isEnrolled,
       title: course.title,
       description: course.description,
       level: course.level,
       tags: course.tags,
-      modules: await Promise.all(course.courseMappers.map(async (mapper) => ({
-        id: mapper.module.id,
-        title: mapper.module.title,
-        lessons: await Promise.all(mapper.module.lessonMappers?.map(async (lessonMapper) => ({
-          id: lessonMapper.lesson.id,
-          name: lessonMapper.lesson.name,
-          description: lessonMapper.lesson.description,
-          order: lessonMapper.lesson.order,
-          materials: await Promise.all(lessonMapper.lesson.materialMapper?.map(async (material) => {
-            if (material.material_type === MaterialType.QUIZ) {
-              const quiz = await this.quizRepository.findOne({ where: { id: material.material_id } });
-              return quiz ? {
-                order: material.order,
-                type: MaterialType.QUIZ,
-                quiz: {
-                  id: quiz.id,
-                  question: quiz.question,
-                  options: quiz.options,
-                  correctAnswer: quiz.correctAnswer,
-                  explanation: quiz.explanation,
-                },
-              } : null;
-            } else if (material.material_type === MaterialType.VIDEO) {
-              const video = await this.videoRepository.findOne({ where: { id: material.material_id } });
-              return video ? {
-                type: MaterialType.VIDEO,
-                video: {
-                  order: material.order,
-                  id: video.id,
-                  title: video.title,
-                  youtubeId: video.youtubeId,
-                  duration: video.duration,
-                  description: video.description,
-                },
-              } : null;
-            } else if (material.material_type === MaterialType.RESOURCE) {
-              const resource = await this.resourceRepository.findOne({ where: { id: material.material_id } });
-              return resource ? {
-                order: material.order,
-                type: MaterialType.RESOURCE,
-                resource: {
-                  id: resource.id,
-                  title: resource.title,
-                  url: resource.url,
-                  content: resource.content,
-                  description: resource.description,
-                },
-              } : null;
-            }
-            return null;
-          }) ?? []),
-        })) ?? []),
-      })) ?? []),
+      modules: await Promise.all(
+        course.courseMappers.map(async (mapper) => ({
+          id: mapper.module.id,
+          title: mapper.module.title,
+          lessons: await Promise.all(
+            mapper.module.lessonMappers?.map(async (lessonMapper) => ({
+              id: lessonMapper.lesson.id,
+              name: lessonMapper.lesson.name,
+              description: lessonMapper.lesson.description,
+              order: lessonMapper.lesson.order,
+              materials: (
+                await Promise.all(
+                  lessonMapper.lesson.materialMapper?.map(async (material) => {
+                    if (material.material_type === MaterialType.QUIZ) {
+                      const quiz = await this.quizRepository.findOne({
+                        where: { id: material.material_id },
+                      });
+                      return quiz
+                        ? {
+                            order: material.order,
+                            type: MaterialType.QUIZ,
+                            quiz: {
+                              id: quiz.id,
+                              question: quiz.question,
+                              options: quiz.options,
+                              correctAnswer: quiz.correctAnswer,
+                              explanation: quiz.explanation,
+                            },
+                          }
+                        : null;
+                    } else if (material.material_type === MaterialType.VIDEO) {
+                      const video = await this.videoRepository.findOne({
+                        where: { id: material.material_id },
+                      });
+                      return video
+                        ? {
+                            order: material.order,
+                            type: MaterialType.VIDEO,
+                            video: {
+                              id: video.id,
+                              title: video.title,
+                              youtubeId: video.youtubeId,
+                              duration: video.duration,
+                              description: video.description,
+                            },
+                          }
+                        : null;
+                    } else if (
+                      material.material_type === MaterialType.RESOURCE
+                    ) {
+                      const resource = await this.resourceRepository.findOne({
+                        where: { id: material.material_id },
+                      });
+                      return resource
+                        ? {
+                            order: material.order,
+                            type: MaterialType.RESOURCE,
+                            resource: {
+                              id: resource.id,
+                              title: resource.title,
+                              url: resource.url,
+                              content: resource.content,
+                              description: resource.description,
+                            },
+                          }
+                        : null;
+                    }
+                    return null;
+                  }) ?? []
+                )
+              ).sort((a, b) => a.order - b.order),
+            })) ?? []
+          ),
+        })) ?? []
+      ),
     };
-    
+  }
+
+  async courseDetailsUser(id: string, userId: string): Promise<CourseDetails> {
+    const courseDetails = await this.courseDetails(id);
+    const isEnrolled = await this.enrollmentCheck(userId, id);
+
+    return {
+      ...courseDetails,
+      isEnrolled: isEnrolled,
+    };
   }
 
   async createNewCourse({
@@ -285,6 +314,8 @@ export class CoursesService {
           });
           await manager.save(lessonMapper);
 
+          let materialOrder = 0;
+
           if (lDto.videos?.length) {
             for (const vDto of lDto.videos) {
               let video: VideoResource;
@@ -295,10 +326,17 @@ export class CoursesService {
                 // description: vDto.description,
                 // duration: vDto.duration,
                 youtubeId: vDto.url,
-                lesson,
               });
 
               await manager.save(video);
+
+              const videoMapper = manager.create(MaterialMapper, {
+                lesson,
+                material_id: video.id,
+                material_type: MaterialType.VIDEO,
+                order: materialOrder++,
+              });
+              await manager.save(videoMapper);
             }
           }
 
@@ -319,10 +357,16 @@ export class CoursesService {
                   type: rDto.type,
                   url: rDto.url,
                   content: rDto.content,
-                  lesson,
                 });
                 await manager.save(resource);
               }
+              const resourceMapper = manager.create(MaterialMapper, {
+                lesson,
+                material_id: resource.id,
+                material_type: MaterialType.RESOURCE,
+                order: materialOrder++,
+              });
+              await manager.save(resourceMapper);
             }
           }
 
@@ -340,10 +384,16 @@ export class CoursesService {
                   options: qDto.options,
                   correctAnswer: qDto.correctAnswer,
                   explanation: qDto.explanation,
-                  lesson,
                 });
                 await manager.save(quiz);
               }
+              const quizMapper = manager.create(MaterialMapper, {
+                lesson,
+                material_id: quiz.id,
+                material_type: MaterialType.QUIZ,
+                order: materialOrder++,
+              });
+              await manager.save(quizMapper);
             }
           }
         }

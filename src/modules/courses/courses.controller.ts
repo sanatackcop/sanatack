@@ -42,13 +42,12 @@ export class CoursesController {
   async getCourseDetails(@Req() req, @Param('id') id: string) {
     try {
       const userId = req.headers.user_id;
-      return await this.courseService.courseDetails(id, userId);
+      return await this.courseService.courseDetailsUser(id, userId);
     } catch (error) {
       console.log({ error });
       throw new HttpException(error, 500);
     }
   }
-
 
   @Post('/enroll/:courseId')
   async enrollInCourse(@Req() req: any, @Param('courseId') courseId: string) {
