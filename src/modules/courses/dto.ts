@@ -66,10 +66,11 @@ export class CoursesContext {
   tags: {
     durtionsHours: number;
   };
+  isPublished?: boolean;
 }
 
 export class CourseDetails extends CoursesContext {
-  isEnrolled: boolean;
+  isEnrolled?: boolean;
   modules: ModuleDetailsDto[];
 }
 
