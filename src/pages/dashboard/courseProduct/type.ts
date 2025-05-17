@@ -5,6 +5,7 @@ export interface CourseMaterial {
   title: string;
   type: MaterialType;
   duration?: string | null;
+  description?: string;
   content?: React.ReactNode;
   url?: string | null;
 }

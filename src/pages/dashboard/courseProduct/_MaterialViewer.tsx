@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardHeader, CardTitle } from "@/components/ui/card";
 import { MaterialViewerProps } from "./type";
 import { iconMap } from "./const";
-import { Button } from "@/components/ui/button";
 
 export default function MaterialViewer({
   material,
@@ -12,110 +11,61 @@ export default function MaterialViewer({
 
   if (!material) {
     return (
-      <p className="text-center text-[#34363F]  dark:text-white text-muted-foreground">
+      <p className="mt-8 text-center text-gray-500 dark:text-gray-400">
         اختر مادة من القائمة لبدء التعلم
       </p>
     );
   }
 
-  const Header = (
-    <CardHeader className="flex-row items-center gap-2">
-      {React.createElement(iconMap[material.type], { className: "h-6 w-6" })}
-      <CardTitle className="text-base font-semibold line-clamp-2 text-right flex-1">
-        {material.title}
-      </CardTitle>
-    </CardHeader>
-  );
+  const handleDone = () => onComplete(material);
 
-  const done = () => onComplete(material);
+  if (material.type === "video") {
+    const isYouTube = !!material.url?.match(/youtu\.?(be|be\.com)/);
+    let embedUrl: string | undefined;
+    if (isYouTube && material.url) {
+      embedUrl = material.url
+        .replace("watch?v=", "embed/")
+        .replace("youtu.be/", "www.youtube.com/embed/");
+    }
 
-  switch (material.type) {
-    case "video":
-      return (
-        <Card className="w-full max-w-4xl shadow-xl bg-[#1B1B1B] text-white/90">
-          {Header}
-          <CardContent>
-            {material.url ? (
-              <div className="w-full aspect-video">
-                {material.url.match(/youtu\.?(be)/) ? (
-                  <>
-                    <iframe
-                      src={
-                        material.url.replace("watch?v=", "embed/") +
-                        "?enablejsapi=1"
-                      }
-                      title={material.title}
-                      className="h-full w-full rounded-lg"
-                      allowFullScreen
-                    />
-                    <div className="flex justify-end mt-2">
-                      <Button size="sm" onClick={done}>
-                        تم الانتهاء
-                      </Button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <video
-                      src={material.url}
-                      controls
-                      className="h-full w-full rounded-lg"
-                      onEnded={() => setVideoEnded(true)}
-                    />
-                    <div className="flex justify-end mt-2">
-                      <Button size="sm" disabled={!videoEnded} onClick={done}>
-                        تم الانتهاء
-                      </Button>
-                    </div>
-                  </>
-                )}
-              </div>
-            ) : (
-              <p className="text-center py-10">لا يتوفر رابط للفيديو.</p>
-            )}
-          </CardContent>
-        </Card>
-      );
+    return (
+      <div className="flex-col">
+        <CardHeader className="flex items-right gap-3 px-6">
+          {React.createElement(iconMap[material.type], {
+            className: "h-6 w-6 text-white/90",
+          })}
+          <h1 className="flex-1 text-right text-lg font-semibold line-clamp-2 dark:text-white/90">
+            {material.title}
+          </h1>
 
-    case "reading":
-      return (
-        <Card className="w-full max-w-3xl shadow-xl bg-[#1B1B1B] text-white/90 overflow-hidden">
-          {Header}
-          <CardContent className="h-[70vh] overflow-y-auto">
-            {material.url ? (
-              <iframe
-                src={material.url}
-                title={material.title}
-                className="h-full w-full rounded-lg border-none"
-              />
-            ) : material.content ? (
-              <div className="prose prose-invert max-w-none" dir="rtl">
-                {material.content}
-              </div>
-            ) : (
-              <p className="text-center py-10">لا يتوفر محتوى للقراءة.</p>
-            )}
-          </CardContent>
-          <CardContent className="pt-2 flex justify-end">
-            <Button size="sm" onClick={done}>
-              تم الانتهاء
-            </Button>
-          </CardContent>
-        </Card>
-      );
+          {material.description && (
+            <p className="mt-4 px-6 w-full max-w-4xl text-right text-gray-700 dark:text-gray-300">
+              {material.description}
+            </p>
+          )}
+        </CardHeader>
 
-    case "quiz":
-      return (
-        <Card className="w-full max-w-xl shadow-xl bg-[#1B1B1B] text-white/90 p-6 flex flex-col items-center gap-4">
-          {Header}
-          <CardContent className="flex flex-col items-center gap-6">
-            <p className="text-center">خاصية الاختبارات قيد التطوير ✨</p>
-            <Button onClick={done}>ابدأ الاختبار (محاكي)</Button>
-          </CardContent>
-        </Card>
-      );
-
-    default:
-      return null;
+        <div className="mt-2 w-full flex justify-start px-6">
+          {isYouTube && embedUrl ? (
+            <iframe
+              className="w-full max-w-full max-h-[700px] aspect-video rounded-3xl shadow-md"
+              src={embedUrl}
+              title={material.title}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          ) : (
+            <video
+              className="w-full max-w-4xl rounded-lg shadow-md"
+              src={String(material.url)}
+              controls
+              onEnded={() => setVideoEnded(true)}
+            />
+          )}
+        </div>
+      </div>
+    );
   }
+
+  return null;
 }
