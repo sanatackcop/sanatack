@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+ @layer utilities {
+  .scrollbar-thin::-webkit-scrollbar { width: 6px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { @apply rounded bg-gray-400/25 dark:bg-white/15; }
+}
+
 @layer base {
   html {
     font-family: system-ui, -apple-system, sans-serif;

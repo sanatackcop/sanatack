@@ -31,7 +31,8 @@ const GenericCard: React.FC<GenericCardProps> = ({
   return (
     <>
       <Card
-        className={`bg-[#eaeaea] border-gray-300  dark:bg-[#111111] dark:text-white dark:border-[#282D3D] rounded-xl shadow-xl h-80 cursor-pointer flex flex-col justify-between ${className}`}
+        className={`bg-[#eaeaea] border-gray-300  dark:bg-[#111111] dark:text-white dark:border-[#282D3D] rounded-xl shadow-xl 
+          h-80 cursor-pointer flex flex-col justify-between ${className}`}
         onClick={handleClick}
       >
         {progress && <ProgressBar progress={progress} />}

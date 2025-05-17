@@ -31,9 +31,6 @@ const AccordionTrigger = React.forwardRef<
       )}
       {...props}
     >
-      <div className="px-2 py-2 bg-[#404756] rounded-full ">
-        <ChevronDown className="h-3 w-3 sm:h-5 sm:w-5 rounded-xl shrink-0 text-white dark:text-neutral-400 transition-transform duration-200 group-data-[state=open]:rotate-90 " />
-      </div>
       {children}
     </AccordionPrimitive.Trigger>
   </AccordionPrimitive.Header>
