@@ -36,10 +36,11 @@ export const CourseTags = ({
   unitesNum,
   level,
   courseType,
+  className,
 }: tagsInterface) => {
   const tags: TagItem[] = [
     {
-      icon: <Hourglass className="h-3 w-3 text-white-500" />,
+      icon: <Hourglass className="h-3 w-3 text-white-500 mx-1" />,
       text: duration || `Duration`,
     },
     {
@@ -47,7 +48,7 @@ export const CourseTags = ({
       text: `${level}`,
     },
     {
-      icon: <Book className="h-3 w-3 text-green-500" />,
+      icon: <Book className="h-3 w-3 text-green-500 mx-1" />,
       text: unitesNum || `Unites`,
     },
     {
@@ -56,5 +57,5 @@ export const CourseTags = ({
     },
   ];
 
-  return <TagsList items={tags} />;
+  return <TagsList items={tags} className={className} />;
 };

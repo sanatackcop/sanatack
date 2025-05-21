@@ -17,23 +17,30 @@ export interface CoursesContext {
   level: Level;
   tags: {
     durtionsHours: number;
+    unitesNum?: number;
+    courseType?: string;
   };
   isEnrolled?: boolean;
+}
+export interface CareerPathInterface {
+  id: string;
+  title: string;
+  description: string;
+  isEnrolled?: boolean;
+  roadMap?: RoadMapInterface[];
+}
+export interface RoadMapInterface {
+  id: string;
+  name: string;
+  description?: string;
+  order: number;
+  isEnrolled?: boolean;
+  courses: CourseDetails[];
 }
 export interface CourseDetails extends CoursesContext {
   modules: ModuleDetailsDto[];
 }
-export interface tagsInterface {
-  unitesNum?: number;
-  level?: Level;
-  duration?: string;
-  courseType?: string;
-}
-export enum LevelEnum {
-  "BEGINNER" = "BEGINNER",
-  "INTERMEDIATE" = "INTERMEDIATE",
-  "ADVANCED" = "ADVANCED",
-}
+
 export interface MaterialDto {
   type: "quiz" | "video" | "resource";
   order?: number;
@@ -77,4 +84,17 @@ export interface VideoDto {
   title?: string;
   description?: string;
   duration?: number;
+}
+
+export interface tagsInterface {
+  unitesNum?: number;
+  level?: Level;
+  duration?: number;
+  courseType?: string;
+  className?: string;
+}
+export enum LevelEnum {
+  "BEGINNER" = "BEGINNER",
+  "INTERMEDIATE" = "INTERMEDIATE",
+  "ADVANCED" = "ADVANCED",
 }

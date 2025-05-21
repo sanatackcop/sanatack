@@ -1,16 +1,90 @@
 /* eslint-disable no-unused-vars */
 import { trackPromise } from "react-promise-tracker";
 import Api from "./api";
-import { CourseDetails, CourseInterface } from "@/types/courses";
+import {
+  CareerPathInterface,
+  CourseDetails,
+  CoursesContext,
+  RoadMapInterface,
+} from "@/types/courses";
+import axios from "axios";
 
-export const getAllCoursesApi = async (): Promise<CourseInterface[]> => {
+const apiMock = axios.create({
+  baseURL: "https://682c8fd14fae188947530eae.mockapi.io/",
+  headers: { "Content-Type": "application/json" },
+  withCredentials: false,
+});
+
+export const getCareerPathApi = async (): Promise<CareerPathInterface[]> => {
+  try {
+    const response = await apiMock.get<CareerPathInterface[]>(
+      "/CareerPath/CareerPath"
+    );
+    console.log(response.data);
+    return response.data;
+  } catch (e: any) {
+    console.error("getCareerPathApi error:", e);
+    throw e;
+  }
+};
+export const getSingleCareerPathApi = async ({
+  careerPathId,
+}: {
+  careerPathId: string;
+}): Promise<CareerPathInterface> => {
+  try {
+    const response = await trackPromise(
+      apiMock({
+        method: "get",
+        url: `/CareerPath/CareerPath/${careerPathId}`,
+        withCredentials: false,
+      }) as Promise<{ data: CareerPathInterface }>
+    );
+    return response.data;
+  } catch (e: any) {
+    console.error("getSingleCareerPathApi error:", e);
+    throw e;
+  }
+};
+export const getRoadMapApi = async (): Promise<RoadMapInterface[]> => {
+  try {
+    const response = await apiMock.get<RoadMapInterface[]>(
+      "/CareerPath/RoadMap"
+    );
+    console.log(response.data);
+    return response.data;
+  } catch (e: any) {
+    console.error("getCareerPathApi error:", e);
+    throw e;
+  }
+};
+export const getSingleRoadMapApi = async ({
+  RoadMapId,
+}: {
+  RoadMapId: string;
+}): Promise<RoadMapInterface> => {
+  try {
+    const response = await trackPromise(
+      apiMock({
+        method: "get",
+        url: `/CareerPath/RoadMap/${RoadMapId}`,
+        withCredentials: false,
+      }) as Promise<{ data: RoadMapInterface }>
+    );
+    return response.data;
+  } catch (e: any) {
+    console.error("getSingleRoadMapApi error:", e);
+    throw e;
+  }
+};
+export const getAllCoursesApi = async (): Promise<CoursesContext[]> => {
   try {
     const response = await trackPromise(
       Api({
         method: "get",
         url: "admin/courses",
         withCredentials: false,
-      }) as Promise<{ data: CourseInterface[] }>
+      }) as Promise<{ data: CoursesContext[] }>
     );
     console.log(response.data);
     return response.data;
@@ -100,14 +174,14 @@ export const getCourseProgressApi = async ({
   }
 };
 
-export const getCurrentCoursesApi = async (): Promise<CourseInterface[]> => {
+export const getCurrentCoursesApi = async (): Promise<CoursesContext[]> => {
   try {
     const response = await trackPromise(
       Api({
         method: "get",
         url: "courses/current",
         withCredentials: false,
-      }) as Promise<{ data: CourseInterface[] }>
+      }) as Promise<{ data: CoursesContext[] }>
     );
     return response.data;
   } catch (e: any) {

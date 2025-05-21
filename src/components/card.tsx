@@ -13,6 +13,7 @@ import { ArrowLeft } from "lucide-react";
 const GenericCard: React.FC<GenericCardProps> = ({
   type,
   title,
+  icon,
   subtitle,
   description,
   children,
@@ -31,7 +32,7 @@ const GenericCard: React.FC<GenericCardProps> = ({
   return (
     <>
       <Card
-        className={`bg-[#eaeaea] border-gray-300  dark:bg-[#111111] dark:text-white dark:border-[#282D3D] rounded-xl shadow-xl h-80 cursor-pointer flex flex-col justify-between ${className}`}
+        className={`bg-[#eaeaea] border-gray-300  dark:bg-[#111111] dark:text-white dark:border-white/10 rounded-xl shadow-xl h-80 cursor-pointer flex flex-col justify-between ${className}`}
         onClick={handleClick}
       >
         {progress && <ProgressBar progress={progress} />}
@@ -49,23 +50,23 @@ const GenericCard: React.FC<GenericCardProps> = ({
           )}
           {title && (
             <>
-              <h2 className="sm:text-xl font-bold mt-1 text-[#34363F] dark:text-white">
+              <h2 className="sm:text-xl font-bold mt-1 text-[#34363F] dark:text-white flex items-center gap-2">
+                {icon && <span>{icon}</span>}
                 {title}
               </h2>
             </>
           )}
+          {description && (
+            <CardContent className="text-start mt-2">
+              <p className="text-sm sm:text-md text-[#565863] leading-relaxed mb-2">
+                {description}
+              </p>
+            </CardContent>
+          )}
         </CardHeader>
 
-        {description && (
-          <CardContent className="text-start px-5 mt-2">
-            <p className="text-sm sm:text-md text-[#565863] leading-relaxed mb-2">
-              {description}
-            </p>
-          </CardContent>
-        )}
-
-        {!progress && (
-          <CardFooter className="mt-auto flex flex-col items-start gap-2 border-t border-white/10 p-5 text-xs">
+        {children && !progress && (
+          <CardFooter className=" flex flex-col items-start gap-2 border-t border-white/10 p-5 text-xs">
             {children && <div>{children}</div>}
           </CardFooter>
         )}
@@ -94,7 +95,7 @@ export function ProgressBar({ progress }: { progress: number }) {
   return (
     <div
       dir="rtl"
-      className="w-full h-12 bg-[#999999] dark:bg-neutral-700 rounded-lg overflow-hidden"
+      className="w-full h-14 bg-[#999999] dark:bg-neutral-700 rounded-lg overflow-hidden"
     >
       <div
         className="h-full bg-emerald-500 flex items-center justify-center transition-all duration-300 ease-in-out"
