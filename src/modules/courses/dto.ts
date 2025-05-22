@@ -58,6 +58,14 @@ export class CreateNewCourseDto {
   modules: CreateModuleDto[];
 }
 
+export class CareerPathContext {
+  id: string;
+  title: string;
+  description?: string;
+}
+
+
+
 export class CoursesContext {
   id: string;
   title: string;
@@ -120,4 +128,15 @@ export interface User {
 
 export interface RequestType {
   user: User;
+}
+
+export class RoadmapDetails {
+  id: string;
+  title: string;
+  description?: string;
+  courses: CourseDetails[];
+}
+
+export class CareerPathDetails extends CareerPathContext{
+  roadmaps: RoadmapDetails[];
 }

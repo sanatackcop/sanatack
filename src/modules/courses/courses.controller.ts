@@ -76,4 +76,43 @@ export class CoursesController {
     await this.courseService.update(userId, courseId, dto.progress);
     return { success: true };
   }
+
+  @Get('/list/careerpath')
+  async getAllCareerPaths(@Req() req: any) {
+    try {
+      return await this.courseService.listCareerPaths(); 
+    } catch (error) {
+      throw new HttpException(error, 500);
+    }
+  }
+
+  @Get('/list/roadmap')
+  async getAllRoadmaps(@Req() req: any) {
+    try {
+      return await this.courseService.listRoadmaps();
+    } catch (error) {
+      throw new HttpException(error, 500);
+    }
+  }
+
+  @Get('roadmap/:id')
+  async getRoadmapDetails(@Req() req, @Param('id') id: string) {
+    try {
+      return await this.courseService.roadmapDetails(id);
+    } catch (error) {
+      console.log({ error });
+      throw new HttpException(error, 500);
+    }
+  }
+
+  @Get('careerpath/:id')
+  async getCareerPathDetails(@Req() req, @Param('id') id: string) {
+    try {
+      return await this.courseService.carrerPathDetails(id);
+    } catch (error) {
+      console.log({ error });
+      throw new HttpException(error, 500);
+    }
+  }
+
 }

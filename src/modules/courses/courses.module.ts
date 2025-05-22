@@ -13,6 +13,10 @@ import { Module as ModuleEntity } from './entities/module.entity';
 import { CourseProgress } from './entities/course-progress';
 import { Enrollment } from './entities/enrollment';
 import { MaterialMapper } from './entities/material-mapper';
+import { CareerPath } from './entities/career-path.entity';
+import { RoadMap } from './entities/roadmap.entity';
+import { CareerPathMapper } from './entities/career-mapper.entity';
+import { RoadmapMapper } from './entities/roadmap-mapper.entity';
 
 @Module({
   imports: [
@@ -28,6 +32,10 @@ import { MaterialMapper } from './entities/material-mapper';
       CourseProgress,
       Enrollment,
       MaterialMapper,
+      CareerPath,
+      RoadMap,
+      CareerPathMapper,
+      RoadmapMapper
     ]),
   ],
   controllers: [CoursesController],
