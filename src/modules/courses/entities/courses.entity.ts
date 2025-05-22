@@ -10,6 +10,7 @@ import { Level } from '../dto';
 import { CourseMapper } from './courses-maper.entity';
 import { CourseProgress } from './course-progress';
 import { Enrollment } from './enrollment';
+import { RoadmapMapper } from 'src/modules/courses/entities/roadmap-mapper.entity';
 
 @Entity({ name: 'courses' })
 export class Course {
@@ -41,6 +42,9 @@ export class Course {
 
   @OneToMany(() => Enrollment, (course) => course.course)
   enrollment: Enrollment[];
+
+  @OneToMany(() => RoadmapMapper, (mapper) => mapper.course)
+  roadmapMappers: RoadmapMapper[];
 
   @CreateDateColumn()
   createdAt: Date;

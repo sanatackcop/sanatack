@@ -15,6 +15,10 @@ import { VideoResource } from 'src/modules/courses/entities/video-lessons.entity
 import { CourseProgress } from 'src/modules/courses/entities/course-progress';
 import { Enrollment } from 'src/modules/courses/entities/enrollment';
 import { MaterialMapper } from 'src/modules/courses/entities/material-mapper';
+import { CareerPath } from 'src/modules/courses/entities/career-path.entity';
+import { RoadMap } from 'src/modules/courses/entities/roadmap.entity';
+import { CareerPathMapper } from 'src/modules/courses/entities/career-mapper.entity';
+import { RoadmapMapper } from 'src/modules/courses/entities/roadmap-mapper.entity';
 
 config();
 
@@ -32,7 +36,11 @@ export const entities = [
   VideoResource,
   CourseProgress,
   Enrollment,
-  MaterialMapper
+  MaterialMapper,
+  CareerPath,
+  RoadMap,
+  CareerPathMapper,
+  RoadmapMapper,
 ];
 
 const mainDataSource = new DataSource({

@@ -9,7 +9,14 @@ import {
 } from 'typeorm';
 import { Course } from './entities/courses.entity';
 import { Module } from './entities/module.entity';
-import { CourseDetails, CoursesContext, CreateNewCourseDto } from './dto';
+import {
+  CareerPathContext,
+  CareerPathDetails,
+  CourseDetails,
+  CoursesContext,
+  CreateNewCourseDto,
+  RoadmapDetails,
+} from './dto';
 import { CourseMapper } from './entities/courses-maper.entity';
 import { Quiz } from './entities/quiz.entity';
 import { Resource } from './entities/resource.entity';
@@ -20,6 +27,8 @@ import { CourseProgress } from './entities/course-progress';
 import { Enrollment } from './entities/enrollment';
 import { User } from '../users/entities/user.entity';
 import { MaterialMapper, MaterialType } from './entities/material-mapper';
+import { CareerPath } from './entities/career-path.entity';
+import { RoadMap } from './entities/roadmap.entity';
 
 @Injectable()
 export class CoursesService {
@@ -34,7 +43,11 @@ export class CoursesService {
     @InjectRepository(VideoResource)
     private readonly videoRepository: Repository<VideoResource>,
     @InjectRepository(Resource)
-    private readonly resourceRepository: Repository<Resource>
+    private readonly resourceRepository: Repository<Resource>,
+    @InjectRepository(CareerPath)
+    private readonly careerPathRepository: Repository<CareerPath>,
+    @InjectRepository(RoadMap)
+    private readonly roadmapRepository: Repository<RoadMap>
   ) {}
 
   async list({
@@ -440,7 +453,7 @@ export class CoursesService {
     });
 
     const response = currentCourese.map((course) => ({
-      id: course.id,
+      id: course.course.id,
       title: course.course.title,
       description: course.course.description?.substring(0, 100),
       level: course.course.level,
@@ -448,5 +461,86 @@ export class CoursesService {
       progress: course.progress,
     }));
     return response;
+  }
+
+  async roadmapDetails(id: string): Promise<RoadmapDetails> {
+    const roadmap = await this.roadmapRepository
+      .createQueryBuilder('roadmap')
+      .leftJoinAndSelect('roadmap.roadmapMappers', 'mapper')
+      .leftJoinAndSelect('mapper.course', 'course')
+      .where('roadmap.id = :id', { id })
+      .orderBy('mapper.order', 'ASC')
+      .getOne();
+
+    if (!roadmap) {
+      throw new Error('Roadmap not found');
+    }
+
+    const courses = await Promise.all(
+      roadmap.roadmapMappers.map((mapper) =>
+        this.courseDetails(mapper.course.id)
+      )
+    );
+
+    return {
+      id: roadmap.id,
+      title: roadmap.title,
+      description: roadmap.description,
+      courses,
+    };
+  }
+
+  async carrerPathDetails(id: string): Promise<CareerPathDetails> {
+    const careerPath = await this.careerPathRepository
+      .createQueryBuilder('careerPath')
+      .leftJoinAndSelect('careerPath.roadmaps', 'roadmapMapper')
+      .leftJoinAndSelect('roadmapMapper.roadmap','roadmap')
+      .where('careerPath.id = :id', { id })
+      .getOne();
+
+      if (!careerPath) {
+        throw new Error('Career Path not found');
+      }
+
+    const roadmaps = await Promise.all(
+      careerPath.roadmaps.map((mapper) =>
+        this.roadmapDetails(mapper.roadmap.id)
+      )
+    );
+    return {
+      id: careerPath.id,
+      title: careerPath.title,
+      description: careerPath.description,
+      roadmaps,
+    };
+  }
+
+  async listCareerPaths(): Promise<CareerPathContext[]> {
+    const careerPaths = await this.careerPathRepository.find({
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+    const careerpath = careerPaths.map((path) => ({
+      id: path.id,
+      title: path.title,
+      description: path.description,
+    }));
+    return careerpath;
+  }
+
+  async listRoadmaps():Promise<CareerPathContext[]>{
+    const roadmaps = await this.roadmapRepository.find({
+      order: {
+        createdAt: 'DESC',
+      }
+    });
+
+    const roadmap = roadmaps.map((roadmap) =>({
+      id: roadmap.id,
+      title: roadmap.title,
+      description: roadmap.description
+    }))
+    return roadmap;
   }
 }
