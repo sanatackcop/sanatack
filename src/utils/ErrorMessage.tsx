@@ -10,7 +10,7 @@ const ShowErrorMessage: React.FC<ErrorMessageProps> = ({
   onRetry,
 }) => {
   return (
-    <div className="my-20 py-10 text-center bg-[#111111] text-white border-[#282D3D] rounded-md m-4">
+    <div className="my-20 py-10 text-center bg-[#eaeaea] dark:bg-[#111111] text-[#34363F] dark:text-white border-[#282D3D] rounded-md m-4">
       {message}
       <div>
         {" "}

@@ -3,7 +3,7 @@ import GenericCard from "@/components/card";
 import AppLayout from "@/components/layout/Applayout";
 import GenericSection from "@/components/section";
 import { CourseTags } from "@/components/tagsList";
-import { CourseInterface } from "@/types/courses";
+import { CoursesContext } from "@/types/courses";
 import {
   getAllCoursesApi,
   getCurrentCoursesApi,
@@ -64,7 +64,7 @@ export default function DashboardHome() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [courses, setCourses] = useState<CourseInterface[]>([]);
+  const [courses, setCourses] = useState<CoursesContext[]>([]);
 
   const fetchCourses = async () => {
     setLoading(true);
@@ -99,7 +99,7 @@ export default function DashboardHome() {
                 key={p.id}
                 title={p.title}
                 link={`/dashboard/courses/${p.id}/${p.title}`}
-                className=" h-[400px] w-[350px]"
+                className=" h-[380px] w-[400px]"
                 progress={p.progress}
                 description={p.description}
               />
@@ -126,10 +126,10 @@ export default function DashboardHome() {
               )}
             >
               <CourseTags
-                duration={course.duration}
-                unitesNum={course.unitesNum}
-                level={course.level}
-                courseType={course.courseType}
+                duration={course?.tags.durtionsHours}
+                unitesNum={course?.tags.unitesNum}
+                level={course?.level}
+                courseType={course?.tags.courseType}
               />
             </GenericCard>
           ))}

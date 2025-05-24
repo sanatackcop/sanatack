@@ -1,59 +1,45 @@
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { GitBranchPlus, Play, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  enrollCoursesApi,
-  getSingleCoursesApi,
-} from "@/utils/_apis/courses-apis";
+import { getSingleCareerPathApi } from "@/utils/_apis/courses-apis";
 import AppLayout from "@/components/layout/Applayout";
-import { CourseDetails } from "@/types/courses";
+import { CareerPathInterface } from "@/types/courses";
 import GenericSection from "@/components/section";
 import GenericTabs from "@/components/tabs";
-import CourseDetailsContent from "./_course_content";
-import { CourseTags } from "@/components/tagsList";
 import { Tab } from "@/utils/types";
+import CareerContent from "./_career_content";
 
-export default function CourseView() {
+export default function CareerView() {
   const { id } = useParams<{ id: string }>();
-  const [course, setCourse] = useState<CourseDetails | any>();
+  const [careerPath, setCareerPath] = useState<CareerPathInterface | any>();
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isEnroll, setIsEnroll] = useState<boolean>(false);
   const [selectedTab, setSelectedTab] = useState("content");
-  const navigate = useNavigate();
-  const location = useLocation();
 
-  const fetchCourse = async () => {
+  const fetchCareerPath = async () => {
     if (!id) return;
     try {
       setLoading(true);
-      const response = await getSingleCoursesApi({ courseId: id });
+      const response = await getSingleCareerPathApi({ careerPathId: id });
       setIsEnroll(response.isEnrolled || false);
-      setCourse(response);
+      setCareerPath(response);
       setLoading(false);
     } catch (err: any) {
-      setError(err?.message || "حدث خطأ أثناء جلب بيانات الدورة، حاول مجددًا.");
+      setError(
+        err?.message || "حدث خطأ أثناء جلب بيانات المسار المهني حاول مجددًا."
+      );
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchCourse();
+    fetchCareerPath();
   }, []);
 
-  const handleStartCourse = async () => {
-    try {
-      await enrollCoursesApi({ courseId: id as string });
-      navigate(`${location.pathname}/${course.title}`);
-    } catch (error) {
-      console.log(error);
-      console.error("Error starting course:", error);
-    }
-  };
-
   const data = {
-    content: course ? [course] : [],
+    content: careerPath ? [careerPath] : [],
     started: [],
     done: [],
   };
@@ -66,20 +52,14 @@ export default function CourseView() {
 
   return (
     <AppLayout>
-      <GenericSection title={course?.title} description={course?.description}>
-        <CourseTags
-          duration={course?.tags.durtionsHours}
-          unitesNum={course?.tags.unitesNum}
-          level={course?.level}
-          courseType={course?.tags.courseType}
-          className="mr-2"
-        />
-      </GenericSection>
+      <GenericSection
+        title={careerPath?.title}
+        description={careerPath?.description}
+      ></GenericSection>
 
       <div className="w-full mt-5 mb-5">
         <div className="flex flex-wrap sm:justify-between sm:gap-4 md:gap-6 gap-1 sm-gap-3">
           <Button
-            onClick={handleStartCourse}
             className={`gap-2 px-2 py-2 sm:px-4 sm:py-4 sm:text-lg font-medium duration-500 transition-all ease-in-out
     ${
       isEnroll
@@ -92,7 +72,7 @@ export default function CourseView() {
             ) : (
               <GitBranchPlus className="w-4 h-4" />
             )}
-            {isEnroll ? "أكمل الدوره" : "ابدأ الدورة"}
+            {isEnroll ? "أكمل المسار المهني" : "ابدأ المسار المهني"}
           </Button>
           <div className="flex flex-wrap justify-end gap-1 sm:gap-4">
             <Button className="bg-[#999999] dark:bg-[#0C0C0C] dark:border-2 dark:border-gray-700 px-2 py-2 sm:px-4 sm:py-4 sm:text-md text-[#34363F] dark:text-white font-medium">
@@ -110,13 +90,13 @@ export default function CourseView() {
         tabs={tabs}
         activeTab={selectedTab}
         onChange={setSelectedTab}
-        onRetry={fetchCourse}
+        onRetry={fetchCareerPath}
         loading={loading}
         error={error}
         data={data}
-        renderItem={(course: CourseDetails, index: number) => (
-          <CourseDetailsContent
-            course={course}
+        renderItem={(careerPath: CareerPathInterface, index: number) => (
+          <CareerContent
+            careerPath={careerPath}
             key={index}
             className={
               index === 0

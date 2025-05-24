@@ -1,7 +1,7 @@
 import GenericTabs from "@/components/tabs";
 import GenericCard from "@/components/card";
 import GenericSection from "@/components/section";
-import { CourseInterface } from "@/types/courses";
+import { CoursesContext } from "@/types/courses";
 import { getAllCoursesApi } from "@/utils/_apis/courses-apis";
 import { useEffect, useState } from "react";
 import { CourseTags } from "./tagsList";
@@ -10,7 +10,7 @@ export default function CoursesCard() {
   const [tab, setTab] = useState("all");
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [courses, setCourses] = useState<CourseInterface[]>([]);
+  const [courses, setCourses] = useState<CoursesContext[]>([]);
 
   async function fetchCourses() {
     setLoading(true);
@@ -65,10 +65,10 @@ export default function CoursesCard() {
             link={`/dashboard/courses/${course.id}`}
           >
             <CourseTags
-              duration={course?.duration}
-              unitesNum={course?.unitesNum}
+              duration={course?.tags.durtionsHours}
+              unitesNum={course?.tags.unitesNum}
               level={course?.level}
-              courseType={course?.courseType}
+              courseType={course?.tags.courseType}
             />
           </GenericCard>
         )}
