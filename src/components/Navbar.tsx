@@ -1,148 +1,193 @@
 import { useEffect, useState } from "react";
-import { navItems } from "@/utils/navList";
-import { Link } from "react-router-dom";
-import LogoLight from "../assets/logo.svg";
+import { Link, NavLink } from "react-router-dom";
+import clsx from "clsx";
 import { CircleArrowLeft, Moon, Sun, Menu, X } from "lucide-react";
-import { useSettings } from "@/context/SettingsContexts";
-import { Button } from "./ui/button";
 
-// TODO: refime the design 
+import { navItems } from "@/utils/navList";
+import LogoLight from "@/assets/logo.svg";
+import LogoDark from "@/assets/dark_logo.svg";
+import { useSettings } from "@/context/SettingsContexts";
+import { Button } from "@/components/ui/button";
+
 const Navbar = () => {
   const { darkMode, toggleDarkMode } = useSettings();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const toggleMenu = () => setIsMenuOpen((prev) => !prev);
+  const sharedNavClass =
+    "relative transition-all duration-300 font-medium text-sm hover:scale-105 hover:text-primary-500 dark:hover:text-primary-400 before:absolute before:bottom-0 before:left-0 before:w-0 before:h-0.5 before:bg-gradient-to-r before:from-primary-500 before:to-primary-400 before:transition-all before:duration-300 hover:before:w-full";
 
   return (
-    <nav
-      className={`fixed inset-x-0 top-0 w-full z-50 transition-all duration-300 ${
+    <header
+      className={clsx(
+        "fixed inset-x-0 top-0 z-50 w-full transition-all duration-500 ease-out border-b",
         isScrolled
-          ? "backdrop-blur-lg bg-black/70 dark:bg-[#0C0C0C]/70 py-2 rounded-b--3xl  shadow-lg"
-          : "bg-white dark:bg-black py-2"
-      }`}
+          ? "backdrop-blur-xl shadow-2xl shadow-black/5 dark:shadow-black/20 py-2 bg-white/80 dark:bg-gray-900/80 border-b border-gray-200/50 dark:border-gray-700/50"
+          : "py-4 bg-gradient-to-b from-white/95 to-white/90 dark:from-gray-900/95 dark:to-gray-900/90"
+      )}
     >
-      <div className="mx-auto flex items-center justify-between px-4 md:px-8 bg-none">
-        <Link to="/" className="flex-shrink-0">
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 md:px-8 lg:px-12">
+        <Link
+          to="/"
+          className="flex-shrink-0 transition-transform duration-300 hover:scale-105"
+        >
           <img
-            src={String(LogoLight)}
-            alt="logo"
-            className={`transition-all duration-300 ${
-              isScrolled ? "w-24" : "w-32"
-            }`}
+            src={String(darkMode ? LogoDark : LogoLight)}
+            alt="NearPay logo"
+            className="w-28 h-auto filter transition-all duration-300 hover:brightness-110"
           />
         </Link>
 
-        <div className="hidden md:flex items-center space-x-5 space-x-reverse bg-[#0C0C0C] border border-[#222222] rounded-full h-14 pr-5 pl-2">
-          {navItems.map((item, index) => (
-            <Link
-              key={item.title}
-              to={item.isActive ? item.href : ""}
-              className={`text-white hover:text-[#888888] text-sm font-medium text-nowrap ${
-                !item.isActive ? "text-gray-600 text-opacity-50" : ""
-              } hover:text-gray-300 transition-colors cursor-pointer ${
-                index === navItems.length - 1
-                  ? "bg-[#181818] border text-[#888888] border-[#2B2B2B] text-nowrap rounded-full h-10 w-32 gap-2 flex items-center justify-center"
-                  : ""
-              }`}
+        <nav className="hidden md:flex items-center gap-8 lg:gap-10">
+          {navItems.map(({ title, href, icon: Icon, isActive }) => (
+            <NavLink
+              key={title}
+              to={href}
+              className={({ isActive: active }) =>
+                clsx(
+                  sharedNavClass,
+                  active || isActive
+                    ? "text-gray-900 dark:text-white before:w-full"
+                    : "text-gray-600 dark:text-gray-300"
+                )
+              }
             >
-              {item.icon && <item.icon className="h-4 w-4" />} {item.title}
-            </Link>
+              <div className="flex items-center gap-2">
+                {Icon && (
+                  <Icon className="h-4 w-4 transition-transform duration-300 group-hover:rotate-12" />
+                )}
+                <span>{title}</span>
+              </div>
+            </NavLink>
           ))}
-        </div>
+        </nav>
 
         <div className="hidden md:flex items-center gap-4">
-          <button
-            onClick={toggleDarkMode}
-            aria-label="Toggle Dark Mode"
-            className="rounded-full p-2 text-black dark:text-white hover:bg-white/10 transition-colors"
-          >
-            {darkMode ? (
-              <Sun className="w-5 h-5" />
-            ) : (
-              <Moon className="w-5 h-5" />
-            )}
-          </button>
           <Button
-            className="w-full h-full bg-none dark:bg-transparent transition-all
-              ease-in-out duration-700 dark:hover:bg-transparent dark:hover:opacity-50
-              rounded-full bg-transparent"
+            onClick={toggleDarkMode}
+            variant="ghost"
+            size="icon"
+            aria-label="Toggle dark mode"
+            className="relative rounded-full h-10 w-10 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all duration-300 hover:scale-110 hover:bg-gray-100/80 dark:hover:bg-gray-800/80 group"
           >
-            <Link
-              to={"/login"}
-              className="flex items-center gap-2 text-black dark:text-white "
-            >
-              التسجيل
-              <CircleArrowLeft
-                className="transition-transform 
-                duration-300 group-hover:rotate-45"
-              />
+            <div className="relative">
+              {darkMode ? (
+                <Sun className="h-5 w-5 rotate-0 scale-100 transition-all duration-500" />
+              ) : (
+                <Moon className="h-5 w-5 rotate-0 scale-100 transition-all duration-500" />
+              )}
+            </div>
+          </Button>
+
+          <Button
+            asChild
+            size="sm"
+            className="group relative overflow-hidden
+            from-primary-600 to-primary-500 hover:from-primary-700
+            hover:to-primary-600 text-white  hover:shadow-xl
+             transition-all duration-300 hover:scale-105 px-6 py-2 rounded-full"
+          >
+            <Link to="/login" className="flex items-center gap-2 relative z-10">
+              <span className="font-medium">التسجيل</span>
+              <CircleArrowLeft className="h-4 w-4 transition-transform duration-300 group-hover:-translate-x-1 rtl:group-hover:translate-x-1" />
             </Link>
           </Button>
         </div>
 
-        <button
-          onClick={toggleMenu}
+        <Button
+          onClick={() => setIsMenuOpen((open) => !open)}
+          variant="ghost"
+          size="icon"
           aria-label="Toggle navigation"
-          className="md:hidden p-2 rounded-full hover:bg-white/10 transition-colors"
+          aria-expanded={isMenuOpen}
+          className="md:hidden relative h-10 w-10 rounded-full hover:bg-gray-100/80 dark:hover:bg-gray-800/80 transition-all duration-300"
         >
-          {isMenuOpen ? (
-            <X className="h-6 w-6" />
-          ) : (
-            <Menu className="h-6 w-6" />
-          )}
-        </button>
+          {/* //TODO: FIX THIS */}
+          <div className="relative">
+            <button
+              // onClick={togg}
+              aria-label="Toggle navigation"
+              className="md:hidden p-2 rounded-full hover:bg-white/10 transition-colors"
+            >
+              {isMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
+            </button>{" "}
+          </div>
+        </Button>
       </div>
 
       <div
-        className={`md:hidden transition-[max-height] duration-300 overflow-hidden ${
-          isMenuOpen ? "max-h-96" : "max-h-0"
-        }`}
+        className={clsx(
+          "md:hidden overflow-hidden transition-all duration-500 ease-out",
+          isMenuOpen ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
+        )}
       >
-        <ul className="flex flex-col gap-4 p-4 bg-[#0C0C0C] dark:bg-[#181818] rounded-b-2xl">
-          {navItems.map((item) => (
-            <li key={item.title}>
-              <Link
-                to={item.href}
-                onClick={() => setIsMenuOpen(false)}
-                className="flex items-center gap-2 text-white text-lg"
-              >
-                {item.icon && <item.icon className="h-5 w-5" />} {item.title}
-              </Link>
-            </li>
-          ))}
+        <div className="mx-4 mt-4 mb-2 rounded-2xl bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50">
+          <ul className="flex flex-col p-6 space-y-2">
+            {navItems.map(({ title, href, icon: Icon }, idx) => (
+              <li key={idx}>
+                <Link
+                  to={href}
+                  onClick={() => setIsMenuOpen(false)}
+                  className="flex items-center gap-3 p-3 rounded-xl text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100/60 dark:hover:bg-gray-700/60 transition-all duration-300 group"
+                >
+                  {Icon && (
+                    <Icon className="h-5 w-5 text-primary-500 group-hover:scale-110 transition-transform duration-300" />
+                  )}
+                  <span className="font-medium">{title}</span>
+                </Link>
+              </li>
+            ))}
 
-          <li className="flex items-center justify-between mt-6">
-            <button
-              onClick={toggleDarkMode}
-              aria-label="Toggle Dark Mode"
-              className="flex items-center gap-2"
-            >
-              {darkMode ? (
-                <Sun className="w-5 h-5" />
-              ) : (
-                <Moon className="w-5 h-5" />
-              )}
-            </button>
-            <Link
-              to="/login"
-              className="flex items-center gap-1 text-white bg-[#181818] border border-[#2B2B2B] rounded-full px-4 py-2"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              التسجيل <CircleArrowLeft className="w-4 h-4" />
-            </Link>
-          </li>
-        </ul>
+            <li className="pt-4 mt-4 border-t border-gray-200/50 dark:border-gray-700/50">
+              <div className="flex items-center justify-between gap-4">
+                <Button
+                  onClick={toggleDarkMode}
+                  variant="ghost"
+                  size="sm"
+                  aria-label="Toggle dark mode"
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-gray-100/60 dark:hover:bg-gray-700/60 transition-all duration-300"
+                >
+                  {darkMode ? (
+                    <>
+                      <Sun className="h-5 w-5" />
+                    </>
+                  ) : (
+                    <>
+                      <Moon className="h-5 w-5" />
+                    </>
+                  )}
+                </Button>
+
+                <Button
+                  asChild
+                  size="sm"
+                  className="bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 px-4 py-2 rounded-xl"
+                >
+                  <Link
+                    to="/login"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center gap-2"
+                  >
+                    <span className="font-medium">التسجيل</span>
+                    <CircleArrowLeft className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </li>
+          </ul>
+        </div>
       </div>
-    </nav>
+    </header>
   );
 };
 
