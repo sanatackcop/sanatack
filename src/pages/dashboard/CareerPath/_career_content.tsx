@@ -46,12 +46,12 @@ export default function CareerPathTimeline({
   return (
     <div className={className}>
       <TimeLine
-        data={careerPath.roadMap || []}
-        getId={(roadmap) => roadmap.id.toString()}
-        getTitle={(roadmap) => roadmap.name}
-        renderContent={(roadmap) => (
+        data={careerPath.roadmaps || []}
+        getId={(roadmaps) => roadmaps.id.toString()}
+        getTitle={(roadmaps) => roadmaps.title}
+        renderContent={(roadmaps) => (
           <TimeLine
-            data={roadmap.courses}
+            data={roadmaps.courses}
             getId={(course) => course.id.toString()}
             getTitle={(course) => course.title}
             className="mr-2"

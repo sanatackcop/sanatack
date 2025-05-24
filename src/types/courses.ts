@@ -26,14 +26,14 @@ export interface CareerPathInterface {
   id: string;
   title: string;
   description: string;
+  roadmaps?: RoadMapInterface[];
   isEnrolled?: boolean;
-  roadMap?: RoadMapInterface[];
 }
 export interface RoadMapInterface {
   id: string;
-  name: string;
+  title: string;
   description?: string;
-  order: number;
+  order?: number;
   isEnrolled?: boolean;
   courses: CourseDetails[];
 }

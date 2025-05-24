@@ -52,9 +52,9 @@ export default function RoadmapContent() {
         renderItem={(roadMap, index) => (
           <GenericCard
             id={roadMap.id}
-            icon={<CareerIcon title={roadMap.name} />}
+            icon={<CareerIcon title={roadMap.title} />}
             key={index}
-            title={roadMap.name}
+            title={roadMap.title}
             description={roadMap.description}
             className={index === 0 ? "md:col-span-2 sm:col-span-1" : ""}
             link={`/dashboard/roadMap/${roadMap.id}`}

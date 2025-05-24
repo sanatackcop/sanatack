@@ -53,7 +53,7 @@ export default function RoadMapView() {
   return (
     <AppLayout>
       <GenericSection
-        title={roadMap?.name}
+        title={roadMap?.title}
         description={roadMap?.description}
       ></GenericSection>
 

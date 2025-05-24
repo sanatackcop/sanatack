@@ -7,26 +7,23 @@ import {
   CoursesContext,
   RoadMapInterface,
 } from "@/types/courses";
-import axios from "axios";
-
-const apiMock = axios.create({
-  baseURL: "https://682c8fd14fae188947530eae.mockapi.io/",
-  headers: { "Content-Type": "application/json" },
-  withCredentials: false,
-});
 
 export const getCareerPathApi = async (): Promise<CareerPathInterface[]> => {
   try {
-    const response = await apiMock.get<CareerPathInterface[]>(
-      "/CareerPath/CareerPath"
+    const response = await trackPromise(
+      Api({
+        method: "get",
+        url: "/courses/list/careerpath",
+        withCredentials: false,
+      }) as Promise<{ data: CareerPathInterface[] }>
     );
-    console.log(response.data);
     return response.data;
   } catch (e: any) {
-    console.error("getCareerPathApi error:", e);
+    console.error("getAllCareerPathApi error:", e);
     throw e;
   }
 };
+
 export const getSingleCareerPathApi = async ({
   careerPathId,
 }: {
@@ -34,9 +31,9 @@ export const getSingleCareerPathApi = async ({
 }): Promise<CareerPathInterface> => {
   try {
     const response = await trackPromise(
-      apiMock({
+      Api({
         method: "get",
-        url: `/CareerPath/CareerPath/${careerPathId}`,
+        url: `/courses/careerpath/${careerPathId}`,
         withCredentials: false,
       }) as Promise<{ data: CareerPathInterface }>
     );
@@ -48,13 +45,16 @@ export const getSingleCareerPathApi = async ({
 };
 export const getRoadMapApi = async (): Promise<RoadMapInterface[]> => {
   try {
-    const response = await apiMock.get<RoadMapInterface[]>(
-      "/CareerPath/RoadMap"
+    const response = await trackPromise(
+      Api({
+        method: "get",
+        url: "/courses/list/roadmap",
+        withCredentials: false,
+      }) as Promise<{ data: RoadMapInterface[] }>
     );
-    console.log(response.data);
     return response.data;
   } catch (e: any) {
-    console.error("getCareerPathApi error:", e);
+    console.error("getRoadMapApi error:", e);
     throw e;
   }
 };
@@ -65,9 +65,9 @@ export const getSingleRoadMapApi = async ({
 }): Promise<RoadMapInterface> => {
   try {
     const response = await trackPromise(
-      apiMock({
+      Api({
         method: "get",
-        url: `/CareerPath/RoadMap/${RoadMapId}`,
+        url: `/courses/roadmap/${RoadMapId}`,
         withCredentials: false,
       }) as Promise<{ data: RoadMapInterface }>
     );
@@ -77,6 +77,7 @@ export const getSingleRoadMapApi = async ({
     throw e;
   }
 };
+
 export const getAllCoursesApi = async (): Promise<CoursesContext[]> => {
   try {
     const response = await trackPromise(
@@ -86,7 +87,6 @@ export const getAllCoursesApi = async (): Promise<CoursesContext[]> => {
         withCredentials: false,
       }) as Promise<{ data: CoursesContext[] }>
     );
-    console.log(response.data);
     return response.data;
   } catch (e: any) {
     console.error("getAllCoursesApi error:", e);
