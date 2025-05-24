@@ -74,7 +74,8 @@ const Navbar = () => {
             variant="ghost"
             size="icon"
             aria-label="Toggle dark mode"
-            className="relative rounded-full h-10 w-10 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all duration-300 hover:scale-110 hover:bg-gray-100/80 dark:hover:bg-gray-800/80 group"
+            className="relative rounded-full h-10 w-10 text-gray-700 dark:text-gray-300 hover:text-gray-900
+             dark:hover:text-white transition-all duration-300 hover:scale-110 hover:bg-gray-100/80 dark:hover:bg-gray-800/80 group"
           >
             <div className="relative">
               {darkMode ? (
@@ -108,12 +109,11 @@ const Navbar = () => {
           aria-expanded={isMenuOpen}
           className="md:hidden relative h-10 w-10 rounded-full hover:bg-gray-100/80 dark:hover:bg-gray-800/80 transition-all duration-300"
         >
-          {/* //TODO: FIX THIS */}
           <div className="relative">
             <button
-              // onClick={togg}
               aria-label="Toggle navigation"
-              className="md:hidden p-2 rounded-full hover:bg-white/10 transition-colors"
+              className="md:hidden p-2 rounded-full hover:bg-white/10 transition-colors
+               text-black dark:text-white"
             >
               {isMenuOpen ? (
                 <X className="h-6 w-6" />
@@ -159,11 +159,11 @@ const Navbar = () => {
                 >
                   {darkMode ? (
                     <>
-                      <Sun className="h-5 w-5" />
+                      <Sun className="h-5 w-5 text-white" />
                     </>
                   ) : (
                     <>
-                      <Moon className="h-5 w-5" />
+                      <Moon className="h-5 w-5 text-black" />
                     </>
                   )}
                 </Button>
@@ -171,7 +171,7 @@ const Navbar = () => {
                 <Button
                   asChild
                   size="sm"
-                  className="bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 px-4 py-2 rounded-xl"
+                  className="from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 px-4 py-2 rounded-xl"
                 >
                   <Link
                     to="/login"
