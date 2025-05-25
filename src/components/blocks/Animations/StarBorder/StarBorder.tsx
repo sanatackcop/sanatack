@@ -13,11 +13,13 @@ type StarBorderProps<T extends React.ElementType> =
     children?: React.ReactNode;
     color?: string;
     speed?: React.CSSProperties["animationDuration"];
+    inputClassName?: string;
   };
 
 const StarBorder = <T extends React.ElementType = "button">({
   as,
   className = "",
+  inputClassName = "",
   color = "white",
   speed = "6s",
   children,
@@ -45,9 +47,9 @@ const StarBorder = <T extends React.ElementType = "button">({
         }}
       ></div>
       <div
-        className="relative z-1 bg-gradient-to-b
-       from-black to-gray-900 border border-gray-800
-        text-white text-center text-[16px] py-[16px] px-[26px] rounded-[20px]"
+        className={`relative z-1 bg-gradient-to-b ${inputClassName}
+       from-black to-gray-900 border border-gray-800 
+        text-white text-center text-[16px] py-[16px] px-[26px] rounded-[20px]`}
       >
         {children}
       </div>
