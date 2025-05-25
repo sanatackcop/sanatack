@@ -2,7 +2,10 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { GitBranchPlus, Play, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getSingleCareerPathApi } from "@/utils/_apis/courses-apis";
+import {
+  enrollCareerPathApi,
+  getSingleCareerPathApi,
+} from "@/utils/_apis/courses-apis";
 import AppLayout from "@/components/layout/Applayout";
 import { CareerPathInterface } from "@/types/courses";
 import GenericSection from "@/components/section";
@@ -38,6 +41,15 @@ export default function CareerView() {
     fetchCareerPath();
   }, []);
 
+  const handleStartCareerPath = async () => {
+    try {
+      await enrollCareerPathApi({ careerPathId: id as string });
+    } catch (error) {
+      console.log(error);
+      console.error("Error starting course:", error);
+    }
+  };
+
   const data = {
     content: careerPath ? [careerPath] : [],
     started: [],
@@ -60,6 +72,7 @@ export default function CareerView() {
       <div className="w-full mt-5 mb-5">
         <div className="flex flex-wrap sm:justify-between sm:gap-4 md:gap-6 gap-1 sm-gap-3">
           <Button
+            onClick={handleStartCareerPath}
             className={`gap-2 px-2 py-2 sm:px-4 sm:py-4 sm:text-lg font-medium duration-500 transition-all ease-in-out
     ${
       isEnroll

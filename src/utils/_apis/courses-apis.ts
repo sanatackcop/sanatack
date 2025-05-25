@@ -128,6 +128,43 @@ export const enrollCoursesApi = async ({ courseId }: { courseId: string }) => {
     throw e;
   }
 };
+export const enrollRoadMapApi = async ({
+  RoadMapId,
+}: {
+  RoadMapId: string;
+}) => {
+  try {
+    const response = await Api({
+      method: "post",
+      url: `courses/enroll/roadmap/${RoadMapId}`,
+      withCredentials: false,
+    });
+
+    return response;
+  } catch (e: any) {
+    console.error("enrollRoadMapApi error:", e.message);
+    throw e;
+  }
+};
+
+export const enrollCareerPathApi = async ({
+  careerPathId,
+}: {
+  careerPathId: string;
+}) => {
+  try {
+    const response = await Api({
+      method: "post",
+      url: `courses/enroll/careerpath/${careerPathId}`,
+      withCredentials: false,
+    });
+
+    return response;
+  } catch (e: any) {
+    console.error("enrollCareerPathApi error:", e.message);
+    throw e;
+  }
+};
 
 interface UpdateCourseProgressArgs {
   courseId: string;

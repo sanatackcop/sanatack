@@ -47,11 +47,11 @@ export function AppSidebar() {
       className=" bg-[#eaeaea] dark:bg-[#0C0C0C] border-l border-gray-500 border-opacity-20 w-full sm:w-64"
     >
       <SidebarContent className="bg-[#eaeaea] dark:bg-[#0C0C0C]">
-        <div className=" h-[60px] flex justify-normal">
+        <div className=" h-[60px] flex justify-normal items-center overflow-hidden">
           <img
-            src={darkMode ? String(LogoLight) : String(LogoDark)}
+            src={darkMode ? String(LogoDark) : String(LogoLight)}
             alt="logo"
-            className="w-[155px] dark:w-[200px] max-w-full dark:-mt-6 dark:-mb-10 dark:-mr-6 "
+            className="h-full w-auto object-contain transform scale-[2] pr-6 pt-1 "
           />
         </div>
         <Separator className="bg-gray-500 dark:opacity-70 opacity-20" />
