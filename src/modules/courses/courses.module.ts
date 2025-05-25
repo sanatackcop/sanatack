@@ -17,6 +17,9 @@ import { CareerPath } from './entities/career-path.entity';
 import { RoadMap } from './entities/roadmap.entity';
 import { CareerPathMapper } from './entities/career-mapper.entity';
 import { RoadmapMapper } from './entities/roadmap-mapper.entity';
+import { CareerEnrollment } from './entities/career-enrollment.entity';
+import { RoadmapEnrollment } from './entities/roadmap-enrollment.entity';
+import { User } from '../users/entities/user.entity';
 
 @Module({
   imports: [
@@ -35,7 +38,10 @@ import { RoadmapMapper } from './entities/roadmap-mapper.entity';
       CareerPath,
       RoadMap,
       CareerPathMapper,
-      RoadmapMapper
+      RoadmapMapper,
+      CareerEnrollment,
+      RoadmapEnrollment,
+      User
     ]),
   ],
   controllers: [CoursesController],

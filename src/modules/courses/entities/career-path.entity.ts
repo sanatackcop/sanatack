@@ -7,6 +7,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { CareerPathMapper } from './career-mapper.entity';
+import { CareerEnrollment } from './career-enrollment.entity';
 
 @Entity('career_path')
 export class CareerPath {
@@ -21,6 +22,9 @@ export class CareerPath {
 
   @OneToMany(() => CareerPathMapper, (mapper) => mapper.careerPath)
   roadmaps: CareerPathMapper[];
+
+  @OneToMany(() => CareerEnrollment, (mapper) => mapper.careerPath)
+  careerpathEnrollments: CareerEnrollment[];
 
   @CreateDateColumn()
   createdAt: Date;

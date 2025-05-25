@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { CareerPathMapper } from './career-mapper.entity';
 import { RoadmapMapper } from './roadmap-mapper.entity';
+import { RoadmapEnrollment } from './roadmap-enrollment.entity';
 
 @Entity('roadmap')
 export class RoadMap {
@@ -25,6 +26,11 @@ export class RoadMap {
 
   @OneToMany(() => RoadmapMapper, (mapper) => mapper.roadmap, { cascade: true })
   roadmapMappers: RoadmapMapper[];
+
+  @OneToMany(() => RoadmapEnrollment, (mapper) => mapper.roadmap, {
+    cascade: true,
+  })
+  roadmapEnrollments: RoadmapEnrollment[];
 
   @CreateDateColumn()
   createdAt: Date;

@@ -19,6 +19,8 @@ import { CareerPath } from 'src/modules/courses/entities/career-path.entity';
 import { RoadMap } from 'src/modules/courses/entities/roadmap.entity';
 import { CareerPathMapper } from 'src/modules/courses/entities/career-mapper.entity';
 import { RoadmapMapper } from 'src/modules/courses/entities/roadmap-mapper.entity';
+import { CareerEnrollment } from 'src/modules/courses/entities/career-enrollment.entity';
+import { RoadmapEnrollment } from 'src/modules/courses/entities/roadmap-enrollment.entity';
 
 config();
 
@@ -41,6 +43,8 @@ export const entities = [
   RoadMap,
   CareerPathMapper,
   RoadmapMapper,
+  CareerEnrollment,
+  RoadmapEnrollment
 ];
 
 const mainDataSource = new DataSource({

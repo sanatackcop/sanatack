@@ -53,7 +53,29 @@ export class CoursesController {
   async enrollInCourse(@Req() req: any, @Param('courseId') courseId: string) {
     try {
       const userId = req.headers.user_id;
-      return await this.courseService.enroll(userId, courseId);
+      return await this.courseService.enrollinCourse(userId, courseId);
+    } catch (error) {
+      console.log(error);
+      throw new HttpException({ message: error }, 500);
+    }
+  }
+
+  @Post('/enroll/roadmap/:roadmapId')
+  async enrollInRoadmap(@Req() req: any, @Param('roadmapId') roadmapId: string) {
+    try {
+      const userId = req.headers.user_id;
+      return await this.courseService.enrollinRoadmap(userId, roadmapId);
+    } catch (error) {
+      console.log(error);
+      throw new HttpException({ message: error }, 500);
+    }
+  }
+
+  @Post('/enroll/careerpath/:careerpathId')
+  async enrollInCareerPath(@Req() req: any, @Param('careerpathId') courseId: string) {
+    try {
+      const userId = req.headers.user_id;
+      return await this.courseService.enrollinCareerpath(userId, courseId);
     } catch (error) {
       console.log(error);
       throw new HttpException({ message: error }, 500);

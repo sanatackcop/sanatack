@@ -29,6 +29,8 @@ import { User } from '../users/entities/user.entity';
 import { MaterialMapper, MaterialType } from './entities/material-mapper';
 import { CareerPath } from './entities/career-path.entity';
 import { RoadMap } from './entities/roadmap.entity';
+import { RoadmapEnrollment } from './entities/roadmap-enrollment.entity';
+import { CareerEnrollment } from './entities/career-enrollment.entity';
 
 @Injectable()
 export class CoursesService {
@@ -47,7 +49,15 @@ export class CoursesService {
     @InjectRepository(CareerPath)
     private readonly careerPathRepository: Repository<CareerPath>,
     @InjectRepository(RoadMap)
-    private readonly roadmapRepository: Repository<RoadMap>
+    private readonly roadmapRepository: Repository<RoadMap>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+    @InjectRepository(RoadmapEnrollment)
+    private readonly roadmapEnrollmentRepository: Repository<RoadmapEnrollment>,
+    @InjectRepository(CareerEnrollment)
+    private readonly careerEnrollmentRepository: Repository<CareerEnrollment>,
+    @InjectRepository(Enrollment)
+    private readonly courseEnrollmentRepository: Repository<Enrollment>
   ) {}
 
   async list({
@@ -114,36 +124,86 @@ export class CoursesService {
     return progressCourses;
   }
 
-  async enroll(userId: string, courseId: string) {
-    const result = await this.dataSource.transaction(async (manager) => {
-      const course = await manager.findOne(Course, { where: { id: courseId } });
-
-      if (!course) {
-        throw new Error('Course not found');
-      }
-      const user = await manager.findOne(User, { where: { id: userId } });
-
-      if (!user) {
-        throw new Error('User not found');
-      }
-
-      const isEnrolled = this.enrollmentCheck(userId, courseId);
-
-      if (isEnrolled) {
-        return isEnrolled;
-      }
-
-      const enrollment = manager.create(Enrollment, {
-        user: user,
-        course: course,
-      });
-      await manager.save(enrollment);
-
-      return enrollment;
+  async enrollinCourse(userId: string, courseId: string) {
+    const course = await this.courseRepository.findOne({
+      where: { id: courseId },
     });
+    if (!course) {
+      throw new Error('Course not found');
+    }
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const isEnrolled = await this.courseEnrollmentCheck(userId, courseId);
+    if (isEnrolled) {
+      throw new Error('User is already enrolled in this course');
+    }
+
+    const enrollment = this.courseEnrollmentRepository.create({
+      course,
+      user,
+    });
+    await this.courseEnrollmentRepository.save(enrollment);
+    return enrollment;
   }
 
-  private async enrollmentCheck(
+  async enrollinRoadmap(userId: string, roadmapId: string) {
+    const roadmap = await this.roadmapRepository.findOne({
+      where: { id: roadmapId },
+    });
+
+    if (!roadmap) {
+      throw new Error('Roadmap not found');
+    }
+
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new Error('User not found');
+    }
+    const isEnrolled = await this.roadmapEnrollmentCheck(userId, roadmapId);
+
+    if (isEnrolled) {
+      throw new Error('User is already enrolled in this roadmap');
+    }
+    const enrollment = this.roadmapEnrollmentRepository.create({
+      user,
+      roadmap,
+    });
+
+    await this.roadmapEnrollmentRepository.save(enrollment);
+    return enrollment;
+  }
+
+  async enrollinCareerpath(userId: string, careerpathId: string) {
+    const careerPath = await this.careerPathRepository.findOne({
+      where: { id: careerpathId },
+    });
+
+    if (!careerPath) {
+      throw new Error('Career Path not found');
+    }
+
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const isEnrolled = await this.careerpathEnrollmentCheck(userId, careerpathId);
+    if (isEnrolled) {
+      throw new Error('User already enrolled in this career path');
+    }
+    const enrollment = this.careerEnrollmentRepository.create({
+      user,
+      careerPath,
+    });
+    await this.careerEnrollmentRepository.save(enrollment);
+    return enrollment;
+  }
+
+  private async courseEnrollmentCheck(
     userId: string,
     courseId: string
   ): Promise<boolean> {
@@ -152,6 +212,36 @@ export class CoursesService {
       .leftJoin('course.enrollment', 'enrollment')
       .leftJoin('enrollment.user', 'user')
       .where('course.id = :courseId', { courseId })
+      .andWhere('user.id = :userId', { userId })
+      .getOne();
+
+    return !!isEnrolled;
+  }
+
+  private async roadmapEnrollmentCheck(
+    userId: string,
+    roadmapId: string
+  ): Promise<boolean> {
+    const isEnrolled = await this.roadmapRepository
+      .createQueryBuilder('roadmap')
+      .leftJoin('roadmap.roadmapEnrollments', 'enrollment')
+      .leftJoin('enrollment.user', 'user')
+      .where('roadmap.id = :roadmapId', { roadmapId })
+      .andWhere('user.id = :userId', { userId })
+      .getOne();
+
+    return !!isEnrolled;
+  }
+
+  private async careerpathEnrollmentCheck(
+    userId: string,
+    careerpathId: string
+  ): Promise<boolean> {
+    const isEnrolled = await this.careerPathRepository
+      .createQueryBuilder('careerpath')
+      .leftJoin('careerpath.careerpathEnrollments', 'enrollment')
+      .leftJoin('enrollment.user', 'user')
+      .where('careerpath.id = :careerpathId', { careerpathId })
       .andWhere('user.id = :userId', { userId })
       .getOne();
 
@@ -259,8 +349,7 @@ export class CoursesService {
 
   async courseDetailsUser(id: string, userId: string): Promise<CourseDetails> {
     const courseDetails = await this.courseDetails(id);
-    const isEnrolled = await this.enrollmentCheck(userId, id);
-
+    const isEnrolled = await this.courseEnrollmentCheck(userId, id);
     return {
       ...courseDetails,
       isEnrolled: isEnrolled,
@@ -469,7 +558,7 @@ export class CoursesService {
       .leftJoinAndSelect('roadmap.roadmapMappers', 'mapper')
       .leftJoinAndSelect('mapper.course', 'course')
       .where('roadmap.id = :id', { id })
-      .orderBy('mapper.order', 'ASC')
+      .orderBy('mapper.order', 'DESC')
       .getOne();
 
     if (!roadmap) {
@@ -494,13 +583,13 @@ export class CoursesService {
     const careerPath = await this.careerPathRepository
       .createQueryBuilder('careerPath')
       .leftJoinAndSelect('careerPath.roadmaps', 'roadmapMapper')
-      .leftJoinAndSelect('roadmapMapper.roadmap','roadmap')
+      .leftJoinAndSelect('roadmapMapper.roadmap', 'roadmap')
       .where('careerPath.id = :id', { id })
       .getOne();
 
-      if (!careerPath) {
-        throw new Error('Career Path not found');
-      }
+    if (!careerPath) {
+      throw new Error('Career Path not found');
+    }
 
     const roadmaps = await Promise.all(
       careerPath.roadmaps.map((mapper) =>
@@ -529,18 +618,18 @@ export class CoursesService {
     return careerpath;
   }
 
-  async listRoadmaps():Promise<CareerPathContext[]>{
+  async listRoadmaps(): Promise<CareerPathContext[]> {
     const roadmaps = await this.roadmapRepository.find({
       order: {
         createdAt: 'DESC',
-      }
+      },
     });
 
-    const roadmap = roadmaps.map((roadmap) =>({
+    const roadmap = roadmaps.map((roadmap) => ({
       id: roadmap.id,
       title: roadmap.title,
-      description: roadmap.description
-    }))
+      description: roadmap.description,
+    }));
     return roadmap;
   }
 }
