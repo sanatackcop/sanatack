@@ -49,6 +49,28 @@ export class CoursesController {
     }
   }
 
+  @Get('roadmap/:id')
+  async getRoadmapDetails(@Req() req, @Param('id') id: string) {
+    try {
+      const userId = req.headers.user_id;
+      return await this.courseService.roadmapDetailsUser(id, userId);
+    } catch (error) {
+      console.log({ error });
+      throw new HttpException(error, 500);
+    }
+  }
+
+  @Get('careerpath/:id')
+  async getCareerPathDetails(@Req() req, @Param('id') id: string) {
+    try {
+      const userId = req.headers.user_id;
+      return await this.courseService.careerPathDetailsUser(id, userId);
+    } catch (error) {
+      console.log({ error });
+      throw new HttpException(error, 500);
+    }
+  }
+
   @Post('/enroll/:courseId')
   async enrollInCourse(@Req() req: any, @Param('courseId') courseId: string) {
     try {
@@ -117,24 +139,6 @@ export class CoursesController {
     }
   }
 
-  @Get('roadmap/:id')
-  async getRoadmapDetails(@Req() req, @Param('id') id: string) {
-    try {
-      return await this.courseService.roadmapDetails(id);
-    } catch (error) {
-      console.log({ error });
-      throw new HttpException(error, 500);
-    }
-  }
-
-  @Get('careerpath/:id')
-  async getCareerPathDetails(@Req() req, @Param('id') id: string) {
-    try {
-      return await this.courseService.carrerPathDetails(id);
-    } catch (error) {
-      console.log({ error });
-      throw new HttpException(error, 500);
-    }
-  }
+  
 
 }

@@ -632,4 +632,24 @@ export class CoursesService {
     }));
     return roadmap;
   }
+
+  async roadmapDetailsUser(id: string, userId: string): Promise<RoadmapDetails> {
+    const roadmapDetails = await this.roadmapDetails(id);
+    const isEnrolled = await this.roadmapEnrollmentCheck(userId, id);
+    return {
+      ...roadmapDetails,
+      isEnrolled: isEnrolled,
+    };
+  }
+
+  async careerPathDetailsUser(id: string, userId: string): Promise<CareerPathDetails> {
+    const careerpathDetails = await this.carrerPathDetails(id);
+    const isEnrolled = await this.careerpathEnrollmentCheck(userId, id);
+    return {
+      ...careerpathDetails,
+      isEnrolled: isEnrolled,
+    };
+  }
+
+
 }
