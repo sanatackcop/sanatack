@@ -12,6 +12,15 @@ import { Lesson } from 'src/modules/courses/entities/lessons.entity';
 import { Resource } from 'src/modules/courses/entities/resource.entity';
 import { Quiz } from 'src/modules/courses/entities/quiz.entity';
 import { VideoResource } from 'src/modules/courses/entities/video-lessons.entity';
+import { CourseProgress } from 'src/modules/courses/entities/course-progress';
+import { Enrollment } from 'src/modules/courses/entities/enrollment';
+import { MaterialMapper } from 'src/modules/courses/entities/material-mapper';
+import { CareerPath } from 'src/modules/courses/entities/career-path.entity';
+import { RoadMap } from 'src/modules/courses/entities/roadmap.entity';
+import { CareerPathMapper } from 'src/modules/courses/entities/career-mapper.entity';
+import { RoadmapMapper } from 'src/modules/courses/entities/roadmap-mapper.entity';
+import { CareerEnrollment } from 'src/modules/courses/entities/career-enrollment.entity';
+import { RoadmapEnrollment } from 'src/modules/courses/entities/roadmap-enrollment.entity';
 
 config();
 
@@ -27,6 +36,15 @@ export const entities = [
   Resource,
   Quiz,
   VideoResource,
+  CourseProgress,
+  Enrollment,
+  MaterialMapper,
+  CareerPath,
+  RoadMap,
+  CareerPathMapper,
+  RoadmapMapper,
+  CareerEnrollment,
+  RoadmapEnrollment
 ];
 
 const mainDataSource = new DataSource({

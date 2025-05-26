@@ -58,17 +58,25 @@ export class CreateNewCourseDto {
   modules: CreateModuleDto[];
 }
 
+export class CareerPathContext {
+  id: string;
+  title: string;
+  description?: string;
+}
+
 export class CoursesContext {
-  id: number;
+  id: string;
   title: string;
   description: string;
   level: Level;
   tags: {
     durtionsHours: number;
   };
+  isPublished?: boolean;
 }
 
 export class CourseDetails extends CoursesContext {
+  isEnrolled?: boolean;
   modules: ModuleDetailsDto[];
 }
 
@@ -106,7 +114,7 @@ export class QuizDto {
 
 export class VideoDto {
   id: string;
-  url?: string;
+  youtubeId?: string;
   title?: string;
   description?: string;
   duration?: number;
@@ -118,4 +126,17 @@ export interface User {
 
 export interface RequestType {
   user: User;
+}
+
+export class RoadmapDetails {
+  id: string;
+  title: string;
+  description?: string;
+  courses: CourseDetails[];
+  isEnrolled?: boolean;
+}
+
+export class CareerPathDetails extends CareerPathContext {
+  roadmaps: RoadmapDetails[];
+  isEnrolled?: boolean;
 }

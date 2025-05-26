@@ -10,6 +10,16 @@ import { Quiz } from './entities/quiz.entity';
 import { Resource } from './entities/resource.entity';
 import { VideoResource } from './entities/video-lessons.entity';
 import { Module as ModuleEntity } from './entities/module.entity';
+import { CourseProgress } from './entities/course-progress';
+import { Enrollment } from './entities/enrollment';
+import { MaterialMapper } from './entities/material-mapper';
+import { CareerPath } from './entities/career-path.entity';
+import { RoadMap } from './entities/roadmap.entity';
+import { CareerPathMapper } from './entities/career-mapper.entity';
+import { RoadmapMapper } from './entities/roadmap-mapper.entity';
+import { CareerEnrollment } from './entities/career-enrollment.entity';
+import { RoadmapEnrollment } from './entities/roadmap-enrollment.entity';
+import { User } from '../users/entities/user.entity';
 
 @Module({
   imports: [
@@ -22,6 +32,16 @@ import { Module as ModuleEntity } from './entities/module.entity';
       Resource,
       Quiz,
       VideoResource,
+      CourseProgress,
+      Enrollment,
+      MaterialMapper,
+      CareerPath,
+      RoadMap,
+      CareerPathMapper,
+      RoadmapMapper,
+      CareerEnrollment,
+      RoadmapEnrollment,
+      User
     ]),
   ],
   controllers: [CoursesController],
