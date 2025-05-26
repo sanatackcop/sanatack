@@ -64,8 +64,6 @@ export class CareerPathContext {
   description?: string;
 }
 
-
-
 export class CoursesContext {
   id: string;
   title: string;
@@ -135,8 +133,10 @@ export class RoadmapDetails {
   title: string;
   description?: string;
   courses: CourseDetails[];
+  isEnrolled?: boolean;
 }
 
-export class CareerPathDetails extends CareerPathContext{
+export class CareerPathDetails extends CareerPathContext {
   roadmaps: RoadmapDetails[];
+  isEnrolled?: boolean;
 }

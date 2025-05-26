@@ -5,6 +5,7 @@ import { AddEnrollmentTable1745779688646 } from './1745779688646-AddEnrollmentTa
 import { AddMaterialMapperTable1746039083025 } from './1746039083025-AddMaterialMapperTable';
 import { DropRelationsOfMaterials1746039701255 } from './1746039701255-DropRelationsOfMaterials';
 import { AddCareerPathTable1747767526298 } from './1747767526298-AddCareerPathTable';
+import { AddCareerEnrollmentTable1748196968098 } from './1748196968098-AddCareerEnrollmentTable';
 
 export const migrationFiles = [
   AddUserTokenTable1741999709886,
@@ -14,4 +15,5 @@ export const migrationFiles = [
   AddMaterialMapperTable1746039083025,
   DropRelationsOfMaterials1746039701255,
   AddCareerPathTable1747767526298,
+  AddCareerEnrollmentTable1748196968098,
 ];
