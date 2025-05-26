@@ -26,9 +26,9 @@ const Navbar = () => {
   return (
     <header
       className={clsx(
-        "fixed inset-x-0 top-0 z-50 w-full transition-all duration-500 ease-out border-b",
+        " z-50 w-full transition-all duration-500 ease-out border-b",
         isScrolled
-          ? "backdrop-blur-xl shadow-2xl shadow-black/5 dark:shadow-black/20 py-2 bg-white/80 dark:bg-gray-900/80 border-b border-gray-200/50 dark:border-gray-700/50"
+          ? " fixed inset-x-0 top-0 backdrop-blur-xl shadow-2xl shadow-black/5 dark:shadow-black/20 py-2 bg-white/80 dark:bg-gray-900/80 border-b border-gray-200/50 dark:border-gray-700/50"
           : "py-4 bg-gradient-to-b from-white/95 to-white/90 dark:from-gray-900/95 dark:to-gray-900/90"
       )}
     >

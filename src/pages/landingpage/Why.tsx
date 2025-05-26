@@ -28,6 +28,27 @@ const WhyUs = () => {
         "انضم إلى مجتمع من المتعلمين والخبراء الذين يساعدونك في رحلتك التعليمية ويقدمون الدعم والإرشاد المستمر.",
       highlights: ["دعم مستمر", "خبراء متخصصون", "تفاعل مجتمعي"],
     },
+    {
+      icon: Code,
+      title: "تعلم عملي وتطبيقي",
+      description:
+        "تم تصميم الدورة بطريقة تفاعلية تعتمد على التطبيق العملي والتحديات الحقيقية مما يجعل التعلم أكثر فعالية وإثارة.",
+      highlights: ["مشاريع حقيقية", "تحديات عملية", "تطبيق فوري"],
+    },
+    {
+      icon: Database,
+      title: "منهج شامل ومتطور",
+      description:
+        "منهج يغطي أحدث التقنيات والأدوات المطلوبة في سوق العمل مع تحديث مستمر للمحتوى ليواكب التطورات التكنولوجية.",
+      highlights: ["تقنيات حديثة", "محتوى محدث", "معايير السوق"],
+    },
+    {
+      icon: Users,
+      title: "مجتمع داعم ومتفاعل",
+      description:
+        "انضم إلى مجتمع من المتعلمين والخبراء الذين يساعدونك في رحلتك التعليمية ويقدمون الدعم والإرشاد المستمر.",
+      highlights: ["دعم مستمر", "خبراء متخصصون", "تفاعل مجتمعي"],
+    },
   ];
 
   return (
@@ -38,9 +59,7 @@ const WhyUs = () => {
       dir="rtl"
     >
       <div className="container mx-auto px-4">
-        {/* Header Section */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-16">
-          {/* Title and Description */}
           <div className="flex-1 mb-8 lg:mb-0">
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-black mb-6">
               لماذا صنعتك
@@ -58,7 +77,6 @@ const WhyUs = () => {
             </div>
           </div>
 
-          {/* Browse Programs Button */}
           <div className="flex-shrink-0">
             <Button
               size="lg"
@@ -73,7 +91,6 @@ const WhyUs = () => {
           </div>
         </div>
 
-        {/* Cards Section */}
         <div className="grid lg:grid-cols-3 gap-8">
           {features.map((feature, index) => {
             const IconComponent = feature.icon;
@@ -87,7 +104,6 @@ const WhyUs = () => {
                 } transition-all duration-300 hover:shadow-xl hover:scale-105 group`}
               >
                 <CardContent className="p-8 h-full flex flex-col">
-                  {/* Icon */}
                   <div
                     className={`w-16 h-16 rounded-2xl ${
                       darkMode ? "bg-gray-800" : "bg-white"
@@ -100,12 +116,10 @@ const WhyUs = () => {
                     />
                   </div>
 
-                  {/* Title */}
                   <h3 className="text-2xl font-bold mb-4 group-hover:scale-105 transition-transform duration-300">
                     {feature.title}
                   </h3>
 
-                  {/* Description */}
                   <p
                     className={`text-base leading-relaxed mb-6 flex-grow ${
                       darkMode ? "text-gray-400" : "text-gray-600"
@@ -114,7 +128,6 @@ const WhyUs = () => {
                     {feature.description}
                   </p>
 
-                  {/* Highlights */}
                   <div className="space-y-2">
                     {feature.highlights.map((highlight, highlightIndex) => (
                       <div
@@ -137,7 +150,6 @@ const WhyUs = () => {
                     ))}
                   </div>
 
-                  {/* Bottom Accent Line */}
                   <div
                     className={`h-1 rounded-full mt-6 ${
                       darkMode ? "bg-gray-800" : "bg-gray-200"
