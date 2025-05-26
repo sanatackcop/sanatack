@@ -122,6 +122,7 @@ console.log("الأرقام المضاعفة:", doubled);
   };
 
   const handleScroll = (e: any) => {
+    console.log({ e });
     if (highlightRef.current) {
       // highlightRef.current.scrollTop = e.target.scrollTop;
       // highlightRef.current.scrollLeft = e.target.scrollLeft;
