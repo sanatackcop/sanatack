@@ -1,6 +1,10 @@
 import { Body, Controller, Get, Post, Req } from '@nestjs/common';
 import { CoursesService } from '../courses/courses.service';
-import { CreateNewCourseDto } from '../courses/dto';
+import {
+  CreateCareerPathDto,
+  CreateNewCourseDto,
+  CreateRoadmapDto,
+} from '../courses/dto';
 
 @Controller('admin')
 export class ApiController {
@@ -25,5 +29,15 @@ export class ApiController {
       isPublish,
       modules,
     });
+  }
+
+  @Post('roadmaps/new-roadmap')
+  async uploadRoadmap(@Body() data: CreateRoadmapDto) {
+    return await this.coursesService.createNewRoadmap(data);
+  }
+
+  @Post('careerpaths/new-careerpath')
+  async uploadCareerPath(@Body() data: CreateCareerPathDto) {
+    return await this.coursesService.createNewCareerPath(data);
   }
 }
