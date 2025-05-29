@@ -62,7 +62,7 @@ const FAQs = () => {
       }`}
       dir="rtl"
     >
-      <div className="container mx-auto px-6 py-20">
+      <div className="container mx-auto px-8 py-20">
         {/* Header */}
         <div className="text-left mb-16">
           <h1 className="text-4xl md:text-6xl text-right font-bold mb-4">

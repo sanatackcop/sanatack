@@ -89,39 +89,39 @@ const HowToLearn = () => {
   );
 
   const MockMobile = () => (
-    <div className="bg-gray-800 dark:bg-gray-200 rounded-2xl p-4 w-full max-w-[200px] mx-auto">
+    <div className="bg-gray-200 dark:bg-gray-800 rounded-2xl p-4 w-full max-w-[200px] mx-auto">
       <div className="space-y-3">
         <div className="flex justify-between items-center">
-          <span className="text-xs text-gray-400 dark:text-gray-600">
+          <span className="text-xs text-gray-600 dark:text-gray-400">
             البطاقات
           </span>
-          <span className="text-xs text-gray-400 dark:text-gray-600">(3)</span>
+          <span className="text-xs text-gray-600 dark:text-gray-400">(3)</span>
         </div>
         <div className="space-y-2">
-          <div className="h-6 bg-gray-700 dark:bg-gray-300 rounded"></div>
-          <div className="h-6 bg-gray-700 dark:bg-gray-300 rounded"></div>
+          <div className="h-6 bg-gray-300 dark:bg-gray-700 rounded"></div>
+          <div className="h-6 bg-gray-300 dark:bg-gray-700 rounded"></div>
         </div>
-        <div className="text-xs text-gray-400 dark:text-gray-600">
+        <div className="text-xs text-gray-600 dark:text-gray-400">
           نظرة عامة
         </div>
         <div className="grid grid-cols-2 gap-2">
-          <div className="h-8 bg-gray-700 dark:bg-gray-300 rounded"></div>
-          <div className="h-8 bg-gray-700 dark:bg-gray-300 rounded"></div>
+          <div className="h-8 bg-gray-300 dark:bg-gray-700 rounded"></div>
+          <div className="h-8 bg-gray-300 dark:bg-gray-700 rounded"></div>
         </div>
       </div>
     </div>
   );
 
   const MockAlert = () => (
-    <div className="bg-gray-800 dark:bg-gray-200 rounded-lg p-4 w-full">
-      <div className="space-y-3">
+    <div className="bg-gray-200 dark:bg-gray-800 rounded-lg p-4 w-full">
+      <div className="space-y-3 p-2">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-          <span className="text-xs text-gray-400 dark:text-gray-600">
+          <span className="text-xs text-gray-600 dark:text-gray-400">
             CoGrArt • منذ 12 ساعة
           </span>
         </div>
-        <div className="text-sm text-white dark:text-gray-900">
+        <div className="text-sm text-gray-900 dark:text-white">
           زيادة 29% في الإيرادات هذا الشهر
         </div>
         <div className="flex gap-2">
@@ -134,14 +134,14 @@ const HowToLearn = () => {
           <Button
             size="sm"
             variant="outline"
-            className="text-xs border-gray-600 dark:border-gray-400"
+            className="text-xs border-gray-400 dark:border-gray-600"
           >
             رفض
           </Button>
           <Button
             size="sm"
             variant="outline"
-            className="text-xs border-gray-600 dark:border-gray-400"
+            className="text-xs border-gray-400 dark:border-gray-600"
           >
             تعديل
           </Button>
@@ -157,7 +157,7 @@ const HowToLearn = () => {
       }`}
       dir="rtl"
     >
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-8 py-16">
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-6xl font-black mb-6">طريقة التعلم</h1>
@@ -171,7 +171,7 @@ const HowToLearn = () => {
         </div>
 
         {/* Main Dashboard Cards */}
-        <div className="grid lg:grid-cols-3 gap-8 mb-16">
+        <div className="grid lg:grid-cols-3 gap-6 mb-16">
           {/* Insights Card */}
           <Card
             className={`${
@@ -181,19 +181,6 @@ const HowToLearn = () => {
             } transition-colors`}
           >
             <CardHeader>
-              <CardTitle className="text-xl font-bold">
-                {dashboardCards[0].title}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <p
-                className={`text-sm ${
-                  darkMode ? "text-gray-400" : "text-gray-600"
-                }`}
-              >
-                {dashboardCards[0].description}
-              </p>
-
               {/* Mock Chart */}
               <div
                 className={`${
@@ -218,6 +205,18 @@ const HowToLearn = () => {
                   </span>
                 </div>
               </div>
+            </CardHeader>
+            <CardContent className="space-y-6 p-2">
+              <CardTitle className="text-xl font-bold">
+                {dashboardCards[0].title}
+              </CardTitle>
+              <p
+                className={`text-sm ${
+                  darkMode ? "text-gray-400" : "text-gray-600"
+                }`}
+              >
+                {dashboardCards[0].description}
+              </p>
             </CardContent>
           </Card>
 
@@ -230,11 +229,12 @@ const HowToLearn = () => {
             } transition-colors`}
           >
             <CardHeader>
+              <MockMobile />
+            </CardHeader>
+            <CardContent className="space-y-6 p-2">
               <CardTitle className="text-xl font-bold">
                 {dashboardCards[1].title}
               </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
               <p
                 className={`text-sm ${
                   darkMode ? "text-gray-400" : "text-gray-600"
@@ -242,7 +242,6 @@ const HowToLearn = () => {
               >
                 {dashboardCards[1].description}
               </p>
-              <MockMobile />
             </CardContent>
           </Card>
 
@@ -254,12 +253,13 @@ const HowToLearn = () => {
                 : "bg-gray-50 border-gray-200"
             } transition-colors`}
           >
-            <CardHeader>
+            <CardHeader className="h-[230px]">
+              <MockAlert />
+            </CardHeader>
+            <CardContent className="space-y-6 p-2">
               <CardTitle className="text-xl font-bold">
                 {dashboardCards[2].title}
               </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
               <p
                 className={`text-sm ${
                   darkMode ? "text-gray-400" : "text-gray-600"
@@ -267,7 +267,6 @@ const HowToLearn = () => {
               >
                 {dashboardCards[2].description}
               </p>
-              <MockAlert />
             </CardContent>
           </Card>
         </div>
@@ -291,7 +290,7 @@ const HowToLearn = () => {
               </p>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-4 md:grid-cols-7 lg:grid-cols-14 gap-4">
+              <div className="grid grid-cols-4 md:grid-cols-7 lg:grid-cols-14 gap-4 p-4">
                 {integrationApps.map((app, index) => (
                   <div
                     key={index}
@@ -390,7 +389,7 @@ const HowToLearn = () => {
                       ماذا تريد أن تفعل؟
                     </span>
                     <kbd
-                      className={`mr-auto px-2 py-1 text-xs rounded ${
+                      className={`mr-auto py-1 text-xs rounded ${
                         darkMode
                           ? "bg-gray-700 text-gray-300"
                           : "bg-gray-200 text-gray-700"

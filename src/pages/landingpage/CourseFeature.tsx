@@ -82,11 +82,10 @@ export function CourseFeature() {
         </p>
       </div>
 
-      <div className="mt-12 md:mt-16 grid gap-6 md:gap-8 sm:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto">
+      <div className="mt-12 md:mt-16 grid gap-6 md:gap-8 sm:grid-cols-2 lg:grid-cols-3 items-start max-w-7xl mx-auto">
         {features.map((feature) => {
           const IconComponent = feature.icon;
           const isOpen = openId === feature.id;
-
           return (
             <div
               key={feature.id}
@@ -152,7 +151,7 @@ export function CourseFeature() {
                   isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
                 }`}
               >
-                <div className="px-4 md:px-8 pb-6 md:pb-8 pt-0 border-t-2 border-gray-300 dark:border-gray-700">
+                <div className="px-4 md:px-8 py-4 md:pb-6  border-t-2 border-gray-300 dark:border-gray-700">
                   <div className="bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-xl md:rounded-2xl p-4 md:p-6 backdrop-blur-sm border-2 border-gray-300 dark:border-gray-700">
                     <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm md:text-base mb-4 md:mb-6">
                       {feature.body}

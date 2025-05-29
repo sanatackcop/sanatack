@@ -109,10 +109,10 @@ const Hero = () => {
 
       <div className="hidden lg:block">
         <FloatingIcon Icon={GitBranch} delay={200} className="top-24 left-8" />
-        <FloatingIcon Icon={Cpu} delay={400} className="top-40 left-48" />
-        <FloatingIcon Icon={Database} delay={600} className="top-32 right-16" />
-        <FloatingIcon Icon={Brain} delay={800} className="top-64 left-20" />
-        <FloatingIcon Icon={Code} delay={1000} className="bottom-32 right-24" />
+        {/* <FloatingIcon Icon={Cpu} delay={400} className="top-40 left-52" /> */}
+        <FloatingIcon Icon={Database} delay={600} className="top-28 left-80" />
+        <FloatingIcon Icon={Brain} delay={800} className="top-64 left-12" />
+        <FloatingIcon Icon={Code} delay={1000} className="bottom-44 left-64" />
       </div>
 
       <div className="relative z-10 container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 mt-5 ">
@@ -126,9 +126,9 @@ const Hero = () => {
                 </span>
               </span>
 
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black leading-[1.1] text-gray-900 dark:text-white">
-                <span className="block">ارتقِ بمسيرتك</span>
-                <span className="block bg-gradient-to-l from-gray-900 via-gray-700 to-gray-900 dark:from-white dark:via-gray-200 dark:to-white bg-clip-text text-transparent">
+              <h1 className=" text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black leading-[1.1] text-gray-900 dark:text-white">
+                <span className="block ">ارتقِ بمسيرتك</span>
+                <span className="block bg-gradient-to-l from-gray-900 via-gray-700 to-gray-900 dark:from-white dark:via-gray-200 dark:to-white bg-clip-text">
                   المهنية إلى
                 </span>
                 <span className="block text-black dark:text-white">
@@ -165,7 +165,7 @@ const Hero = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 pt-2 sm:pt-4">
-              <button className="w-full sm:w-auto text-sm sm:text-base font-bold px-8 sm:px-10 py-4 sm:py-5 rounded-xl sm:rounded-2xl bg-gray-900 text-white dark:bg-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-100 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300">
+              <button className="w-full sm:w-auto text-sm sm:text-base font-bold  px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl bg-gray-900 text-white dark:bg-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-100 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300">
                 تصفّح البرامج
               </button>
               <StarBorder className="w-full sm:w-auto font-bold">
@@ -175,7 +175,7 @@ const Hero = () => {
           </div>
 
           <div className="order-1 lg:order-2 relative flex flex-col items-center justify-center">
-            <div className="relative bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-gray-200/80 dark:border-gray-700/80 rounded-2xl sm:rounded-3xl shadow-2xl p-4 sm:p-6 md:p-8 w-full max-w-sm sm:max-w-md lg:max-w-lg">
+            <div className="relative bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-gray-200/80 dark:border-gray-700/80 rounded-2xl sm:rounded-3xl shadow-2xl p-4 mb-4 sm:p-6 md:p-8 w-full max-w-sm sm:max-w-md lg:max-w-lg">
               <div className="flex items-center gap-2 sm:gap-3 pb-4 sm:pb-6 border-b border-gray-200 dark:border-gray-700">
                 <div className="flex gap-1.5 sm:gap-2">
                   <span className="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-red-400 hover:bg-red-500 cursor-pointer transition-colors" />
@@ -237,7 +237,7 @@ const Hero = () => {
               </span>
             </div>
 
-            <div className="hidden sm:block absolute -top-12 sm:-top-16 lg:-top-20 -right-6 sm:-right-8 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-gray-200/80 dark:border-gray-700/80 rounded-xl sm:rounded-2xl p-3 sm:p-5 shadow-xl max-w-[180px] sm:max-w-[240px] animate-float">
+            <div className="hidden lg:block absolute -top-12 sm:-top-16 lg:-top-20 -right-6 sm:-right-8 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-gray-200/80 dark:border-gray-700/80 rounded-xl sm:rounded-2xl p-3 sm:p-5 shadow-xl max-w-[180px] sm:max-w-[240px] animate-float">
               <div className="flex items-center gap-2 sm:gap-4">
                 <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
                   <div className="relative">
@@ -257,7 +257,7 @@ const Hero = () => {
               </div>
             </div>
 
-            <div className="hidden sm:block absolute -bottom-12 sm:-bottom-16 lg:-bottom-20 -left-6 sm:-left-8 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-gray-200/80 dark:border-gray-700/80 rounded-xl sm:rounded-2xl p-3 sm:p-5 shadow-xl max-w-[180px] sm:max-w-[240px] animate-float-delayed">
+            <div className="hidden lg:block absolute -bottom-12 sm:-bottom-16 lg:-bottom-20 -left-6 sm:-left-8 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-gray-200/80 dark:border-gray-700/80 rounded-xl sm:rounded-2xl p-3 sm:p-5 shadow-xl max-w-[180px] sm:max-w-[240px] animate-float-delayed">
               <div className="flex items-center gap-2 sm:gap-4">
                 <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg relative">
                   <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
