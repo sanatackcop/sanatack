@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Post, Req } from '@nestjs/common';
-import { CoursesService } from '../courses/courses.service';
-import { CreateNewCourseDto } from '../courses/dto';
+import { CoursesService } from '../courses/services/courses.service';
+import { CreateNewCourseDto } from '../courses/entities/dto';
 
 @Controller('admin')
 export class ApiController {
@@ -17,7 +17,7 @@ export class ApiController {
     @Body()
     { title, description, tags, level, isPublish, modules }: CreateNewCourseDto
   ) {
-    return await this.coursesService.createNewCourse({
+    return await this.coursesService.create({
       title,
       description,
       tags,

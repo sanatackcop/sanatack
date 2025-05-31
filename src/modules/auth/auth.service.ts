@@ -4,7 +4,7 @@ import {
   SingupBody,
   SingupReturn,
 } from './dto/auth.dto';
-import { UsersService } from '../users/users.service';
+import UsersService from '../users/users.service';
 import { TokenService } from './token.service';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
