@@ -18,6 +18,7 @@ export type GenericCardProps = {
   type?: string;
   id?: string;
   title?: string;
+  icon?: React.ReactNode;
   subtitle?: string;
   description?: string;
   children?: ReactNode;

@@ -1,18 +1,92 @@
 /* eslint-disable no-unused-vars */
 import { trackPromise } from "react-promise-tracker";
 import Api from "./api";
-import { CourseDetails, CourseInterface } from "@/types/courses";
+import {
+  CareerPathInterface,
+  CourseDetails,
+  CoursesContext,
+  RoadMapInterface,
+} from "@/types/courses";
 
-export const getAllCoursesApi = async (): Promise<CourseInterface[]> => {
+export const getCareerPathApi = async (): Promise<CareerPathInterface[]> => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "get",
+        url: "/courses/list/careerpath",
+        withCredentials: false,
+      }) as Promise<{ data: CareerPathInterface[] }>
+    );
+    return response.data;
+  } catch (e: any) {
+    console.error("getAllCareerPathApi error:", e);
+    throw e;
+  }
+};
+
+export const getSingleCareerPathApi = async ({
+  careerPathId,
+}: {
+  careerPathId: string;
+}): Promise<CareerPathInterface> => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "get",
+        url: `/courses/careerpath/${careerPathId}`,
+        withCredentials: false,
+      }) as Promise<{ data: CareerPathInterface }>
+    );
+    return response.data;
+  } catch (e: any) {
+    console.error("getSingleCareerPathApi error:", e);
+    throw e;
+  }
+};
+export const getRoadMapApi = async (): Promise<RoadMapInterface[]> => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "get",
+        url: "/courses/list/roadmap",
+        withCredentials: false,
+      }) as Promise<{ data: RoadMapInterface[] }>
+    );
+    return response.data;
+  } catch (e: any) {
+    console.error("getRoadMapApi error:", e);
+    throw e;
+  }
+};
+export const getSingleRoadMapApi = async ({
+  RoadMapId,
+}: {
+  RoadMapId: string;
+}): Promise<RoadMapInterface> => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "get",
+        url: `/courses/roadmap/${RoadMapId}`,
+        withCredentials: false,
+      }) as Promise<{ data: RoadMapInterface }>
+    );
+    return response.data;
+  } catch (e: any) {
+    console.error("getSingleRoadMapApi error:", e);
+    throw e;
+  }
+};
+
+export const getAllCoursesApi = async (): Promise<CoursesContext[]> => {
   try {
     const response = await trackPromise(
       Api({
         method: "get",
         url: "admin/courses",
         withCredentials: false,
-      }) as Promise<{ data: CourseInterface[] }>
+      }) as Promise<{ data: CoursesContext[] }>
     );
-    console.log(response.data);
     return response.data;
   } catch (e: any) {
     console.error("getAllCoursesApi error:", e);
@@ -51,6 +125,43 @@ export const enrollCoursesApi = async ({ courseId }: { courseId: string }) => {
     return response;
   } catch (e: any) {
     console.error("enrollCoursesApi error:", e.message);
+    throw e;
+  }
+};
+export const enrollRoadMapApi = async ({
+  RoadMapId,
+}: {
+  RoadMapId: string;
+}) => {
+  try {
+    const response = await Api({
+      method: "post",
+      url: `courses/enroll/roadmap/${RoadMapId}`,
+      withCredentials: false,
+    });
+
+    return response;
+  } catch (e: any) {
+    console.error("enrollRoadMapApi error:", e.message);
+    throw e;
+  }
+};
+
+export const enrollCareerPathApi = async ({
+  careerPathId,
+}: {
+  careerPathId: string;
+}) => {
+  try {
+    const response = await Api({
+      method: "post",
+      url: `courses/enroll/careerpath/${careerPathId}`,
+      withCredentials: false,
+    });
+
+    return response;
+  } catch (e: any) {
+    console.error("enrollCareerPathApi error:", e.message);
     throw e;
   }
 };
@@ -100,14 +211,14 @@ export const getCourseProgressApi = async ({
   }
 };
 
-export const getCurrentCoursesApi = async (): Promise<CourseInterface[]> => {
+export const getCurrentCoursesApi = async (): Promise<CoursesContext[]> => {
   try {
     const response = await trackPromise(
       Api({
         method: "get",
         url: "courses/current",
         withCredentials: false,
-      }) as Promise<{ data: CourseInterface[] }>
+      }) as Promise<{ data: CoursesContext[] }>
     );
     return response.data;
   } catch (e: any) {

@@ -32,13 +32,18 @@ export default function CourseDetailsContent({
           return (
             <li
               key={`${material.type}-${material.order}`}
-              className="group relative w-fit py-1"
+              className="group relative w-fit py-1 mr-[0.2rem]"
             >
-              <a href={url} target="_blank" rel="noopener noreferrer">
+              <a
+                href={url}
+                target="_blank"
+                className="flex items-center gap-1 text-sm"
+                rel="noopener noreferrer"
+              >
                 {getLessonResourceIcon(material.type)}
                 {title}
                 {!isLast && (
-                  <div className="absolute right-5 sm:right-7 top-8 sm:top-10 h-full w-px bg-gray-700 transition-all duration-300" />
+                  <div className="absolute right-5 sm:right-6 top-7 sm:top-9 h-full w-px bg-gray-500 transition-all duration-300" />
                 )}
               </a>
             </li>
@@ -63,7 +68,7 @@ export default function CourseDetailsContent({
               <div className="group relative w-fit cursor-pointer">
                 <span>{lesson.name}</span>
                 {lesson.description && (
-                  <span className="absolute right-full top-1/2 -translate-y-1/2 mr-2 bg-white text-xs text-muted-foreground p-2 rounded shadow-md opacity-0 group-hover:opacity-100 transition-opacity z-10 w-52 text-right">
+                  <span className="absolute right-full top-1/2 -translate-y-1/2 mr-2 bg-white text-xs text-muted-foreground p-2 rounded opacity-0 group-hover:opacity-100 transition-opacity z-10 w-52 text-right">
                     {lesson.description}
                   </span>
                 )}
@@ -73,7 +78,7 @@ export default function CourseDetailsContent({
               const content = renderResources(lesson);
               if (!content) return null;
 
-              return <div className="space-y-4 mr-2 sm:mr-4">{content}</div>;
+              return <div className="space-y-2">{content}</div>;
             }}
           />
         )}

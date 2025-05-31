@@ -32,3 +32,9 @@ export interface MaterialViewerProps {
   material: CourseMaterial | null;
   onComplete: (material: CourseMaterial) => void;
 }
+
+export enum PlaygroundType {
+  courses = `courses`,
+  roadMap = `roadMap`,
+  careerPath = `careerPath`,
+}
