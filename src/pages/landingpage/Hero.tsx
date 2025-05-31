@@ -3,7 +3,6 @@ import {
   Sparkles,
   TrendingUp,
   GitBranch,
-  Cpu,
   Database,
   Brain,
   Code,
