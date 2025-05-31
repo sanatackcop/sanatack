@@ -58,7 +58,7 @@ const WhyUs = () => {
       }`}
       dir="rtl"
     >
-      <div className="container mx-auto px-8">
+      <div className="container mx-auto px-4">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-16">
           <div className="flex-1 mb-8 lg:mb-0">
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-black mb-6">
@@ -97,12 +97,11 @@ const WhyUs = () => {
             return (
               <Card
                 key={index}
-                className={`transition-all duration-300 hover:shadow-xl hover:scale-105
-                ${
+                className={`${
                   darkMode
-                    ? "bg-gray-900 border-gray-800 hover:border-gray-700 hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-purple-500/10"
-                    : "bg-gray-50 border-gray-200 hover:border-gray-300 hover:bg-gradient-to-r hover:from-blue-500/20 hover:to-purple-500/20"
-                }`}
+                    ? "bg-gray-900 border-gray-800 hover:border-gray-700"
+                    : "bg-gray-50 border-gray-200 hover:border-gray-300"
+                } transition-all duration-300 hover:shadow-xl hover:scale-105 group`}
               >
                 <CardContent className="p-8 h-full flex flex-col">
                   <div
@@ -151,11 +150,11 @@ const WhyUs = () => {
                     ))}
                   </div>
 
-                  {/* <div
+                  <div
                     className={`h-1 rounded-full mt-6 ${
                       darkMode ? "bg-gray-800" : "bg-gray-200"
                     } group-hover:bg-gradient-to-r group-hover:from-blue-500 group-hover:to-purple-500 transition-all duration-300`}
-                  /> */}
+                  />
                 </CardContent>
               </Card>
             );

@@ -99,7 +99,7 @@ export function DashboardNavbar() {
         <a href="#" className="mx-1">
           <Bell
             size={18}
-            className="stroke-black fill-transparent dark:stroke-white fill-[#1A1A1A] text-gray-500 hover:text-gray-700"
+            className="stroke-black dark:stroke-white fill-[#1A1A1A] text-gray-500 hover:text-gray-700"
           />
         </a>
 
