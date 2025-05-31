@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AdminModule } from './modules/admin/admin.module';
-import { UsersModule } from './modules/users/users.module';
+import UsersModule from './modules/users/users.module';
 import { CoursesModule } from './modules/courses/courses.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -28,7 +28,7 @@ import { RedisModule } from '@nestjs-modules/ioredis';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => ({
+      useFactory: (configService: ConfigService) => ({
         type: 'postgres',
         host: configService.get<string>('MAIN_DB_HOST', 'localhost'),
         port: configService.get<number>('MAIN_DB_PORT', 5432),
@@ -37,7 +37,7 @@ import { RedisModule } from '@nestjs-modules/ioredis';
         database: configService.get<string>('MAIN_DB'),
         entities: entities,
         autoLoadEntities: true,
-        logging: configService.get<string>('NODE_ENV') === 'development',
+        // logging: configService.get<string>('NODE_ENV') === 'development',
         retryAttempts: configService.get<number>('MAIN_RECONNECT_TIMES', 5),
         migrationsRun: true,
         migrationsTableName: 'migrations',

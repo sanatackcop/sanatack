@@ -5,7 +5,7 @@ import { User } from './entities/user.entity';
 import { SingupBody } from '../auth/dto/auth.dto';
 
 @Injectable()
-export class UsersService {
+export default class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepo: Repository<User>
@@ -36,6 +36,12 @@ export class UsersService {
 
     await this.userRepo.save(newUser);
     return newUser;
+  }
+
+  async findOne(id: string) {
+    return this.userRepo.findOne({
+      where: { id: Equal(id) },
+    });
   }
 
   async turnActive({ user_id }: { user_id: string }) {

@@ -1,19 +1,10 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  CreateDateColumn,
-  JoinColumn,
-  ManyToOne,
-} from 'typeorm';
+import { Entity, Column, JoinColumn, ManyToOne } from 'typeorm';
 import { Module } from './module.entity';
 import { Course } from './courses.entity';
+import AbstractEntity from './abstract.base.entity';
 
 @Entity('course_mapper')
-export class CourseMapper {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+export class CourseMapper extends AbstractEntity {
   @ManyToOne(() => Course, (course) => course.courseMappers, {
     onDelete: 'CASCADE',
   })
@@ -28,7 +19,4 @@ export class CourseMapper {
 
   @Column({ type: 'int' })
   order: number;
-
-  @CreateDateColumn()
-  createdAt: Date;
 }

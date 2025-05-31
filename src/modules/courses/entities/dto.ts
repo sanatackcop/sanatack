@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty } from 'class-validator';
 
 export enum Level {
   'BEGINNER' = 'BEGINNER',
@@ -50,9 +50,8 @@ export interface CreateModuleDto {
 export class CreateNewCourseDto {
   @IsNotEmpty({ message: 'Please Provide A Title' })
   title: string;
-
   description?: string;
-  level: any;
+  level: Level;
   tags?: { durtionsHours: number };
   isPublish: boolean;
   modules: CreateModuleDto[];
