@@ -1,20 +1,10 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { RoadMap } from './roadmap.entity';
 import { User } from 'src/modules/users/entities/user.entity';
+import AbstractEntity from './abstract.base.entity';
 
 @Entity({ name: 'roadmap_enrollment' })
-export class RoadmapEnrollment {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+export class RoadmapEnrollment extends AbstractEntity {
   @ManyToOne(() => RoadMap, (roadmap) => roadmap.roadmapEnrollments, {
     onDelete: 'SET NULL',
     nullable: false,
@@ -28,12 +18,6 @@ export class RoadmapEnrollment {
   })
   @JoinColumn({ name: 'user_id' })
   user: User;
-
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
 
   @Column({ type: 'timestamp', nullable: true })
   cancelledAt: Date;

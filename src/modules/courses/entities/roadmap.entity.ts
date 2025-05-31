@@ -1,20 +1,11 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  OneToMany,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
 import { CareerPathMapper } from './career-mapper.entity';
 import { RoadmapMapper } from './roadmap-mapper.entity';
 import { RoadmapEnrollment } from './roadmap-enrollment.entity';
+import AbstractEntity from './abstract.base.entity';
 
 @Entity('roadmap')
-export class RoadMap {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+export class RoadMap extends AbstractEntity {
   @Column({ type: 'text' })
   title: string;
 
@@ -31,10 +22,4 @@ export class RoadMap {
     cascade: true,
   })
   roadmapEnrollments: RoadmapEnrollment[];
-
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
 }

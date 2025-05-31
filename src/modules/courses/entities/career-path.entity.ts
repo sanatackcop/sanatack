@@ -1,19 +1,10 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  OneToMany,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
 import { CareerPathMapper } from './career-mapper.entity';
 import { CareerEnrollment } from './career-enrollment.entity';
+import AbstractEntity from './abstract.base.entity';
 
 @Entity('career_path')
-export class CareerPath {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+export class CareerPath extends AbstractEntity {
   @Column({ type: 'text' })
   title: string;
 
@@ -25,10 +16,4 @@ export class CareerPath {
 
   @OneToMany(() => CareerEnrollment, (mapper) => mapper.careerPath)
   careerpathEnrollments: CareerEnrollment[];
-
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
 }

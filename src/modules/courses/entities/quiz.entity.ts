@@ -1,15 +1,8 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity } from 'typeorm';
+import AbstractEntity from './abstract.base.entity';
 
 @Entity({ name: 'quiz' })
-export class Quiz {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+export class Quiz extends AbstractEntity {
   @Column({ nullable: false })
   question: string;
 
@@ -21,7 +14,4 @@ export class Quiz {
 
   @Column({ type: 'text', nullable: true })
   explanation: string;
-
-  @CreateDateColumn()
-  createdAt: Date;
 }

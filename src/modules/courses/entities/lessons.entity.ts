@@ -1,21 +1,10 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  OneToMany,
-  CreateDateColumn,
-} from 'typeorm';
-import { Quiz } from './quiz.entity';
-import { Resource } from './resource.entity';
-import { VideoResource } from './video-lessons.entity';
+import { Entity, Column, OneToMany } from 'typeorm';
 import { LessonMapper } from './lessons-maper.entity';
 import { MaterialMapper } from './material-mapper';
+import AbstractEntity from './abstract.base.entity';
 
 @Entity({ name: 'lesson' })
-export class Lesson {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+export class Lesson extends AbstractEntity {
   @Column({ nullable: false })
   name: string;
 
@@ -30,7 +19,4 @@ export class Lesson {
 
   @OneToMany(() => MaterialMapper, (mapper) => mapper.lesson)
   materialMapper: MaterialMapper[];
-
-  @CreateDateColumn()
-  createdAt: Date;
 }

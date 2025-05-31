@@ -1,19 +1,10 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { RoadMap } from './roadmap.entity';
 import { Course } from 'src/modules/courses/entities/courses.entity';
+import AbstractEntity from './abstract.base.entity';
 
 @Entity('roadmap_mapper')
-export class RoadmapMapper {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+export class RoadmapMapper extends AbstractEntity {
   @ManyToOne(() => RoadMap, (roadmap) => roadmap.roadmapMappers, {
     onDelete: 'CASCADE',
   })
@@ -26,7 +17,4 @@ export class RoadmapMapper {
 
   @Column({ type: 'int' })
   order: number;
-
-  @CreateDateColumn()
-  createdAt: Date;
 }

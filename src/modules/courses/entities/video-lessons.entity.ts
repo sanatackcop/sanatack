@@ -1,15 +1,8 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity } from 'typeorm';
+import AbstractEntity from './abstract.base.entity';
 
 @Entity({ name: 'video_resource' })
-export class VideoResource {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+export class VideoResource extends AbstractEntity {
   @Column({ nullable: false })
   title: string;
 
@@ -21,7 +14,4 @@ export class VideoResource {
 
   @Column({ type: 'int', nullable: true })
   duration: number;
-
-  @CreateDateColumn()
-  createdAt: Date;
 }

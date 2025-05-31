@@ -1,14 +1,15 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
 import { CourseMapper } from './courses-maper.entity';
 import { LessonMapper } from './lessons-maper.entity';
+import AbstractEntity from './abstract.base.entity';
 
 @Entity({ name: 'module' })
-export class Module {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
-  @Column({ nullable: false })
+export class Module extends AbstractEntity {
+  @Column()
   title: string;
+
+  @Column()
+  description: string;
 
   @OneToMany(() => CourseMapper, (mapper) => mapper.module)
   courseMappers: CourseMapper[];

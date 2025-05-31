@@ -1,19 +1,10 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { CareerPath } from './career-path.entity';
 import { RoadMap } from './roadmap.entity';
+import AbstractEntity from './abstract.base.entity';
 
 @Entity('career_path_mapper')
-export class CareerPathMapper {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+export class CareerPathMapper extends AbstractEntity {
   @ManyToOne(() => CareerPath, (careerPath) => careerPath.roadmaps, {
     onDelete: 'CASCADE',
   })
@@ -28,7 +19,4 @@ export class CareerPathMapper {
 
   @Column({ type: 'int' })
   order: number;
-
-  @CreateDateColumn()
-  createdAt: Date;
 }

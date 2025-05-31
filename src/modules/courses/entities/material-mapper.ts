@@ -1,13 +1,6 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { Lesson } from './lessons.entity';
+import AbstractEntity from './abstract.base.entity';
 
 export enum MaterialType {
   RESOURCE = 'resource',
@@ -16,10 +9,7 @@ export enum MaterialType {
 }
 
 @Entity({ name: 'material_mapper' })
-export class MaterialMapper {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+export class MaterialMapper extends AbstractEntity {
   @ManyToOne(() => Lesson, (lesson) => lesson.materialMapper, {
     onDelete: 'SET NULL',
     nullable: false,
@@ -35,10 +25,4 @@ export class MaterialMapper {
 
   @Column({ type: 'enum', enum: MaterialType, nullable: false })
   material_type: MaterialType;
-
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
 }
