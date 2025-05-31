@@ -14,7 +14,9 @@ import {
   CareerPathDetails,
   CourseDetails,
   CoursesContext,
+  CreateCareerPathDto,
   CreateNewCourseDto,
+  CreateRoadmapDto,
   RoadmapDetails,
 } from './dto';
 import { CourseMapper } from './entities/courses-maper.entity';
@@ -31,6 +33,8 @@ import { CareerPath } from './entities/career-path.entity';
 import { RoadMap } from './entities/roadmap.entity';
 import { RoadmapEnrollment } from './entities/roadmap-enrollment.entity';
 import { CareerEnrollment } from './entities/career-enrollment.entity';
+import { RoadmapMapper } from './entities/roadmap-mapper.entity';
+import { CareerPathMapper } from './entities/career-mapper.entity';
 
 @Injectable()
 export class CoursesService {
@@ -191,7 +195,10 @@ export class CoursesService {
       throw new Error('User not found');
     }
 
-    const isEnrolled = await this.careerpathEnrollmentCheck(userId, careerpathId);
+    const isEnrolled = await this.careerpathEnrollmentCheck(
+      userId,
+      careerpathId
+    );
     if (isEnrolled) {
       throw new Error('User already enrolled in this career path');
     }
@@ -505,6 +512,90 @@ export class CoursesService {
     });
   }
 
+  async createNewRoadmap(data: CreateRoadmapDto): Promise<RoadMap> {
+    return this.dataSource.transaction(async (manager) => {
+      const roadmap = manager.create(RoadMap, {
+        title: data.title,
+        description: data.description,
+      });
+      const savedRoadmap = await manager.save(RoadMap, roadmap);
+
+      let courseOrder = 1;
+
+      if (data.existingCourseIds?.length) {
+        for (const courseId of data.existingCourseIds) {
+          const course = await manager.findOne(Course, {
+            where: { id: courseId },
+          });
+          if (!course) {
+            throw new Error(`Course ${courseId} not found`);
+          }
+          const mapper = manager.create(RoadmapMapper, {
+            roadmap: savedRoadmap,
+            course,
+            order: courseOrder++,
+          });
+          await manager.save(RoadmapMapper, mapper);
+        }
+      }
+
+      if (data.newCourses?.length) {
+        for (const newCourse of data.newCourses) {
+          const course = await this.createNewCourse(newCourse);
+          const mapper = manager.create(RoadmapMapper, {
+            roadmap: savedRoadmap,
+            course,
+            order: courseOrder++,
+          });
+          await manager.save(RoadmapMapper, mapper);
+        }
+      }
+      return savedRoadmap;
+    });
+  }
+
+  async createNewCareerPath(data: CreateCareerPathDto): Promise<CareerPath> {
+    return this.dataSource.transaction(async (manager) => {
+      const careerPath = manager.create(CareerPath, {
+        title: data.title,
+        description: data.description,
+      });
+      const savedCareerPath = await manager.save(CareerPath, careerPath);
+
+      let roadmapOrder = 1;
+
+      if (data.existingRoadmapIds?.length) {
+        for (const roadmapId of data.existingRoadmapIds) {
+          const roadmap = await manager.findOne(RoadMap, {
+            where: { id: roadmapId },
+          });
+          if (!roadmap) {
+            throw new Error(`Roadmap ${roadmapId} not found`);
+          }
+          const mapper = manager.create(CareerPathMapper, {
+            careerPath: savedCareerPath,
+            roadmap,
+            order: roadmapOrder++,
+          });
+          await manager.save(CareerPathMapper, mapper);
+        }
+      }
+
+      if (data.newRoadmaps?.length) {
+        for (const roadmap of data.newRoadmaps) {
+          const newRoadmap = await this.createNewRoadmap(roadmap);
+          const mapper = manager.create(CareerPathMapper, {
+            careerPath: savedCareerPath,
+            roadmap: newRoadmap,
+            order: roadmapOrder,
+          });
+          await manager.save(CareerPathMapper, mapper);
+        }
+      }
+      return savedCareerPath;
+    });
+  }
+
   async update(userId: string, courseId: string, progress: number) {
     let rec = await this.courseProgressRepo.findOne({
       where: { user: { id: userId }, course: { id: courseId } },
@@ -633,7 +724,10 @@ export class CoursesService {
     return roadmap;
   }
 
-  async roadmapDetailsUser(id: string, userId: string): Promise<RoadmapDetails> {
+  async roadmapDetailsUser(
+    id: string,
+    userId: string
+  ): Promise<RoadmapDetails> {
     const roadmapDetails = await this.roadmapDetails(id);
     const isEnrolled = await this.roadmapEnrollmentCheck(userId, id);
     return {
@@ -642,7 +736,10 @@ export class CoursesService {
     };
   }
 
-  async careerPathDetailsUser(id: string, userId: string): Promise<CareerPathDetails> {
+  async careerPathDetailsUser(
+    id: string,
+    userId: string
+  ): Promise<CareerPathDetails> {
     const careerpathDetails = await this.carrerPathDetails(id);
     const isEnrolled = await this.careerpathEnrollmentCheck(userId, id);
     return {
@@ -650,6 +747,4 @@ export class CoursesService {
       isEnrolled: isEnrolled,
     };
   }
-
-
 }

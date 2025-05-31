@@ -58,6 +58,20 @@ export class CreateNewCourseDto {
   modules: CreateModuleDto[];
 }
 
+export class CreateRoadmapDto {
+  title: string;
+  description?: string;
+  existingCourseIds?: string[];
+  newCourses?: CreateNewCourseDto[];
+}
+
+export class CreateCareerPathDto {
+  title: string;
+  description: string;
+  existingRoadmapIds?: string[];
+  newRoadmaps?: CreateRoadmapDto[];
+}
+
 export class CareerPathContext {
   id: string;
   title: string;
