@@ -7,6 +7,7 @@ import {
   CoursesContext,
   RoadMapInterface,
 } from "@/types/courses";
+import { Course } from "../types";
 
 export const getCareerPathApi = async (): Promise<CareerPathInterface[]> => {
   try {
@@ -95,17 +96,17 @@ export const getAllCoursesApi = async (): Promise<CoursesContext[]> => {
 };
 
 export const getSingleCoursesApi = async ({
-  courseId,
+  course_id,
 }: {
-  courseId: string;
-}): Promise<CourseDetails> => {
+  course_id: string;
+}): Promise<Course> => {
   try {
     const response = await trackPromise(
-      Api({
+      Api<Course>({
         method: "get",
-        url: `courses/${courseId}`,
+        url: `courses/${course_id}`,
         withCredentials: false,
-      }) as Promise<{ data: CourseDetails }>
+      })
     );
     return response.data;
   } catch (e: any) {

@@ -42,3 +42,37 @@ export type GenericTabsProps<T> = {
   error?: string | null;
   onRetry?: () => void;
 };
+export interface Course {
+  id: string;
+  title: string;
+  description: string;
+  modules: Module[]
+  isPublish: boolean;
+}
+export type MaterialType = "video" | "reading" | "quiz";
+
+export interface Material {
+  id: string;
+  title: string;
+  type: MaterialType;
+  duration?: string | null;
+  description?: string;
+  content?: React.ReactNode;
+  url?: string | null;
+}
+
+export interface Lesson {
+  id: string;
+  title: string;
+  duration: string;
+  completedCount: number;
+  totalCount: number;
+  materials: Material[];
+}
+
+export interface Module {
+  id: string;
+  description: string;
+  title: string;
+  lessons: Lesson[];
+}

@@ -28,7 +28,7 @@ export default function CourseView() {
     if (!id) return;
     try {
       setLoading(true);
-      const response = await getSingleCoursesApi({ courseId: id });
+      const response = await getSingleCoursesApi({ course_id: id });
       setIsEnroll(response.isEnrolled || false);
       setCourse(response);
       setLoading(false);

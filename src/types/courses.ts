@@ -71,10 +71,9 @@ export interface ResourceDto {
 }
 
 export interface QuizDto {
-  id: string;
-  question?: string;
-  options?: string[];
-  correctAnswer?: string;
+  question: string;
+  options: string[];
+  correctAnswer: string;
   explanation?: string;
 }
 
