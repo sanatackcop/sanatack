@@ -1,5 +1,5 @@
 import { Course } from "@/utils/types";
-import { QuizInput } from "@/utils/types/adminTypes";
+import { QuizInput, ResourceInput, VideoInput } from "@/utils/types/adminTypes";
 import { ColumnDef } from "@tanstack/react-table";
 
 export const CourseColumns: ColumnDef<Course>[] = [
@@ -25,5 +25,39 @@ export const QuizColumns: ColumnDef<QuizInput>[] = [
   {
     accessorKey: "correctAnswer",
     header: "Answer",
+  },
+];
+
+export const VideoColumns: ColumnDef<VideoInput>[] = [
+  {
+    accessorKey: "title",
+    header: "Title",
+  },
+  {
+    accessorKey: "description",
+    header: "Description",
+  },
+  {
+    accessorKey: "youtubeId",
+    header: "Youtube Url",
+  },
+  {
+    accessorKey: "duration",
+    header: "Duration",
+  },
+];
+
+export const ResourceColumns: ColumnDef<ResourceInput>[] = [
+  {
+    accessorKey: "title",
+    header: "Title",
+  },
+  {
+    accessorKey: "description",
+    header: "Description",
+  },
+  {
+    accessorKey: "type",
+    header: "Type",
   },
 ];

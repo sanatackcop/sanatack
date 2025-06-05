@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
-import { getQuizList } from "@/utils/_apis/admin-api";
+import {
+  getQuizList,
+  getResourcesList,
+  getVideosList,
+} from "@/utils/_apis/admin-api";
 import { DataTable } from "@/components/ui/data-table";
-import { QuizColumns } from "../columns";
+import { QuizColumns, ResourceColumns, VideoColumns } from "../columns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   DropdownMenu,
@@ -14,21 +18,26 @@ import {
 import QuizDialogCreate from "../components/quiz.create";
 import VideoDialogCreate from "../components/video.create";
 import ResourceDialogCreate from "../components/resource.create";
-import { QuizInput } from "@/utils/types/adminTypes";
+import { QuizInput, ResourceInput, VideoInput } from "@/utils/types/adminTypes";
 
 export default function MaterialsPage() {
   const [quiz, setQuiz] = useState<QuizInput[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [video, setVideo] = useState<VideoInput[]>([]);
+  const [resource, setResource] = useState<ResourceInput[]>([]);
 
   async function fetchCourses() {
-    setLoading(true);
     try {
-      const res = await getQuizList<QuizInput[]>();
-      if (res) setQuiz(res);
+      const [quizList, videoList, resourceList] = await Promise.all([
+        getQuizList<QuizInput[]>(),
+        getVideosList<VideoInput[]>(),
+        getResourcesList<ResourceInput[]>(),
+      ]);
+
+      if (quizList && quizList.length) setQuiz(quizList);
+      if (videoList && videoList.length) setVideo(videoList);
+      if (resourceList && resourceList.length) setResource(resourceList);
     } catch (err) {
       console.error(err);
-    } finally {
-      setLoading(false);
     }
   }
 
@@ -70,23 +79,23 @@ export default function MaterialsPage() {
           {quiz.length > 0 ? (
             <DataTable columns={QuizColumns} data={quiz} />
           ) : (
-            <p className="flex justify-center">No Quiz</p>
+            <p className="flex justify-center">No Quizzes</p>
           )}
         </TabsContent>
-        {/* <TabsContent value="video">
-          {courses.length > 0 ? (
-            <DataTable columns={CourseColumns} data={courses} />
+        <TabsContent value="video">
+          {video.length > 0 ? (
+            <DataTable columns={VideoColumns} data={video} />
           ) : (
-            <p className="flex justify-center">No Video</p>
+            <p className="flex justify-center">No Videos</p>
           )}
         </TabsContent>
         <TabsContent value="resource">
-          {courses.length > 0 ? (
-            <DataTable columns={CourseColumns} data={courses} />
+          {resource.length > 0 ? (
+            <DataTable columns={ResourceColumns} data={resource} />
           ) : (
-            <p className="flex justify-center">No Resource</p>
+            <p className="flex justify-center">No Resources</p>
           )}
-        </TabsContent> */}
+        </TabsContent>
       </Tabs>
     </div>
   );

@@ -51,9 +51,13 @@ export default function QuizDialogCreate() {
 
   const options = watch("options");
 
-  const onSubmit = (data: QuizFormValues) => {
-    createNewQuiz(data);
-    console.log("✅ Quiz submitted:", data);
+  const onSubmit = async (data: QuizFormValues) => {
+    try {
+      await createNewQuiz(data);
+      console.log("✅ Quiz submitted:", data);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
