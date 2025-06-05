@@ -1,29 +1,31 @@
-import React from "react";
+// import React from "react";
 import {
   Sidebar,
   SidebarHeader,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
-import { Material } from "@/utils/types";
-import { Course } from "@/utils/types";
+// import { Material } from "@/utils/types";
+// import { Course } from "@/utils/types";
 import SanatackLogo from "../../../assets/logo.svg";
 import SanatackDarkLogo from "../../../assets/logo_black.svg";
-import { Home } from "lucide-react";
+import { Home, Sun } from "lucide-react";
 import { useSettings } from "@/context/SettingsContexts";
 
-interface SidebarProps {
-  course: Course;
-  currentMaterial: Material | null;
-  setCurrentMaterial: (mat: Material) => void;
-  iconMap?: Record<string, React.ComponentType<any>>;
-}
+// interface SidebarProps {
+//   course: Course;
+//   currentMaterial: Material | null;
+//   setCurrentMaterial: (mat: Material) => void;
+//   iconMap?: Record<string, React.ComponentType<any>>;
+// }
 
-export default function CourseSidebar({
-  course,
-  currentMaterial,
-  setCurrentMaterial,
-  iconMap = {},
-}: SidebarProps) {
+// {
+//   course,
+//   currentMaterial,
+//   setCurrentMaterial,
+//   iconMap = {},
+// }: SidebarProps
+
+export default function CourseSidebar() {
   const { darkMode, toggleDarkMode } = useSettings();
   return (
     <Sidebar side="right">
@@ -35,10 +37,10 @@ export default function CourseSidebar({
             className=" w-20 h-10 object-cover"
           />
           <Home className=" ml-4 relative top-1" />
-          {/* <Sun
+          <Sun
             className=" ml-4 relative top-1"
             onClick={() => toggleDarkMode()}
-          /> */}
+          />
         </div>
       </SidebarHeader>
       <SidebarSeparator />

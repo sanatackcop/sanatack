@@ -1,5 +1,4 @@
-import React from "react";
-import { Routes, Route, Navigate, Outlet, useNavigate } from "react-router-dom";
+import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 import DashboardLayout from "./layout";
 import CardList from "./courses/Index";
 import CourseView from "./courses/View";
@@ -9,17 +8,6 @@ import Roadmap from "./RoadMap";
 import RoadMapView from "./RoadMap/View";
 import CareerPaths from "./CareerPath/Index";
 import CareerView from "./CareerPath/View";
-const CourseProduct: React.FC = () => {
-  const navigate = useNavigate();
-
-  return (
-    <CourseLearningPage
-      logoSrc="/logo-light.svg"
-      modules={[]}
-      onBack={() => navigate(-1)}
-    />
-  );
-};
 
 export default function MainDashboard() {
   return (

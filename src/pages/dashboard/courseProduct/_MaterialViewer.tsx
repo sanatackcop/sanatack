@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useEffect, useState } from "react";
+import { CardHeader } from "@/components/ui/card";
 import { MaterialViewerProps } from "./type";
 import { iconMap } from "./const";
 
@@ -7,7 +7,8 @@ export default function MaterialViewer({
   material,
   onComplete,
 }: MaterialViewerProps) {
-  const [videoEnded, setVideoEnded] = useState(false);
+  // const [videoEnded, setVideoEnded] = useState(false);
+  const [_, setVideoEnded] = useState(false);
 
   if (!material) {
     return (
@@ -17,7 +18,9 @@ export default function MaterialViewer({
     );
   }
 
-  const handleDone = () => onComplete(material);
+  useEffect(() => {
+    onComplete(material);
+  }, []);
 
   if (material.type === "video") {
     const isYouTube = !!material.url?.match(/youtu\.?(be|be\.com)/);

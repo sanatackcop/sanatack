@@ -93,7 +93,7 @@ export default function DashboardHome() {
           description="أكمل ما بدأته وارتقِ بمهاراتك."
         />
         <div className="grid gap-5 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-          {currentCourses.length &&
+          {currentCourses.length != 0 &&
             currentCourses.map((p) => (
               <GenericCard
                 key={p.id}
@@ -105,7 +105,7 @@ export default function DashboardHome() {
               />
             ))}
         </div>
-                 
+
         <GenericSection title="موصى به لك" description="تعلم افضل المهارات" />
         <div
           className={clsx(

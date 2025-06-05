@@ -29,7 +29,7 @@ export default function CourseView() {
     try {
       setLoading(true);
       const response = await getSingleCoursesApi({ course_id: id });
-      setIsEnroll(response.isEnrolled || false);
+      setIsEnroll(false); //! Need Fix
       setCourse(response);
       setLoading(false);
     } catch (err: any) {
