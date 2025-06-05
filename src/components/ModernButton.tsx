@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 interface ModernButtonProps {
   children: React.ReactNode;
   variant?: "primary" | "secondary";
@@ -5,19 +7,6 @@ interface ModernButtonProps {
   to?: string;
   [key: string]: any;
 }
-
-interface LinkProps {
-  to: string;
-  children: React.ReactNode;
-  className?: string;
-  [key: string]: any;
-}
-
-const Link: React.FC<LinkProps> = ({ to, children, className, ...props }) => (
-  <a href={to} className={className} {...props}>
-    {children}
-  </a>
-);
 
 export const ModernButton: React.FC<ModernButtonProps> = ({
   children,
