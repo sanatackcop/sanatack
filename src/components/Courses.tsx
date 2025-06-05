@@ -64,12 +64,14 @@ export default function CoursesCard() {
             className={index === 0 ? "md:col-span-2 sm:col-span-1" : ""}
             link={`/dashboard/courses/${course.id}`}
           >
-            <CourseTags
-              duration={course?.tags.durtionsHours}
-              unitesNum={course?.tags.unitesNum}
-              level={course?.level}
-              courseType={course?.tags.courseType}
-            />
+            {course.tags && (
+              <CourseTags
+                duration={course?.tags.durtionsHours}
+                unitesNum={course?.tags.unitesNum}
+                level={course?.level}
+                courseType={course?.tags.courseType}
+              />
+            )}
           </GenericCard>
         )}
       />

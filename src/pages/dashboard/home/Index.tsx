@@ -125,12 +125,14 @@ export default function DashboardHome() {
                 index === 0 && "md:col-span-2 lg:col-span-2"
               )}
             >
-              <CourseTags
-                duration={course?.tags.durtionsHours}
-                unitesNum={course?.tags.unitesNum}
-                level={course?.level}
-                courseType={course?.tags.courseType}
-              />
+              {course?.tags && (
+                <CourseTags
+                  duration={course?.tags.durtionsHours}
+                  unitesNum={course?.tags.unitesNum}
+                  level={course?.level}
+                  courseType={course?.tags.courseType}
+                />
+              )}
             </GenericCard>
           ))}
         </div>
