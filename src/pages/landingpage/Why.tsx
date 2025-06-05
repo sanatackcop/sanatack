@@ -1,11 +1,21 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Code, Database, Users, CheckCircle } from "lucide-react";
+import {
+  Code,
+  Database,
+  Users,
+  CheckCircle,
+  Brain,
+  Map,
+  Sparkles,
+  Clock,
+} from "lucide-react";
 import { useSettings } from "@/context/SettingsContexts";
+import { useNavigate } from "react-router-dom";
 
 const WhyUs = () => {
   const { darkMode } = useSettings();
-
+  const navigate = useNavigate();
   const features = [
     {
       icon: Code,
@@ -29,31 +39,34 @@ const WhyUs = () => {
       highlights: ["دعم مستمر", "خبراء متخصصون", "تفاعل مجتمعي"],
     },
     {
-      icon: Code,
-      title: "تعلم عملي وتطبيقي",
+      icon: Brain,
+      title: "مساعد ذكي بالذكاء الاصطناعي",
       description:
-        "تم تصميم الدورة بطريقة تفاعلية تعتمد على التطبيق العملي والتحديات الحقيقية مما يجعل التعلم أكثر فعالية وإثارة.",
-      highlights: ["مشاريع حقيقية", "تحديات عملية", "تطبيق فوري"],
+        "مساعد ذكي متطور يفهم أسلوبك في التعلم ويقدم إرشادات شخصية ويجيب على أسئلتك على مدار الساعة لتحسين تجربة التعلم.",
+      highlights: ["إرشاد شخصي", "متاح 24/7", "تحليل ذكي"],
+      isSoon: true,
     },
     {
-      icon: Database,
-      title: "منهج شامل ومتطور",
+      icon: Sparkles,
+      title: "تجربة تعلم تفاعلية ومخصصة",
       description:
-        "منهج يغطي أحدث التقنيات والأدوات المطلوبة في سوق العمل مع تحديث مستمر للمحتوى ليواكب التطورات التكنولوجية.",
-      highlights: ["تقنيات حديثة", "محتوى محدث", "معايير السوق"],
+        "تجربة تعلم فريدة تتكيف مع مستواك ووتيرة تعلمك، مع محتوى تفاعلي ومسارات تعليمية مخصصة حسب اهتمامك وهدفك المهني.",
+      highlights: ["محتوى مخصص", "مسارات ذكية", "تقييم مستمر"],
+      isSoon: true,
     },
     {
-      icon: Users,
-      title: "مجتمع داعم ومتفاعل",
+      icon: Map,
+      title: "خريطة المهارات الذكية",
       description:
-        "انضم إلى مجتمع من المتعلمين والخبراء الذين يساعدونك في رحلتك التعليمية ويقدمون الدعم والإرشاد المستمر.",
-      highlights: ["دعم مستمر", "خبراء متخصصون", "تفاعل مجتمعي"],
+        "نظام خرائط ذهنية تفاعلي يتتبع تقدمك ويرسم لك طريق واضح نحو إتقان المهارات المطلوبة في مجالك مع توصيات ذكية للخطوات التالية.",
+      highlights: ["تتبع تقدم ذكي", "خرائط ذهنية", "توصيات مخصصة"],
+      isSoon: true,
     },
   ];
 
   return (
     <div
-      className={`min-h-screen transition-colors duration-300 ${
+      className={`min-h-screen transition-colors duration-300 mt-10 ${
         darkMode ? "bg-black text-white" : "bg-white text-black"
       }`}
       dir="rtl"
@@ -61,25 +74,15 @@ const WhyUs = () => {
       <div className="container mx-auto px-4">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-16">
           <div className="flex-1 mb-8 lg:mb-0">
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-black mb-6">
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-black">
               لماذا صنعتك
             </h1>
-            <div
-              className={`space-y-4 text-lg md:text-xl leading-relaxed max-w-4xl ${
-                darkMode ? "text-gray-400" : "text-gray-600"
-              }`}
-            >
-              <p>
-                تم تصميم هذه الدورة بطريقة تفاعلية تعتمد على النصوص ومليئة
-                بالتحديات العملية، مما يجعل مبكس SQL الحديثي هذا يتميز
-              </p>
-              <p>بخصائص فريدة تجعله استثنائياً</p>
-            </div>
           </div>
 
           <div className="flex-shrink-0">
             <Button
               size="lg"
+              onClick={() => navigate("/signup")}
               className={`${
                 darkMode
                   ? "bg-white text-black hover:bg-gray-200"
@@ -101,9 +104,26 @@ const WhyUs = () => {
                   darkMode
                     ? "bg-gray-900 border-gray-800 hover:border-gray-700"
                     : "bg-gray-50 border-gray-200 hover:border-gray-300"
-                } transition-all duration-300 hover:shadow-xl hover:scale-105 group`}
+                } transition-all duration-300 hover:shadow-xl hover:scale-105 group relative overflow-hidden`}
               >
-                <CardContent className="p-8 h-full flex flex-col">
+                {feature.isSoon && (
+                  <div className="absolute top-4 left-4 z-10">
+                    <div
+                      className={`
+                      flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold
+                      ${
+                        darkMode ? "bg-white text-black" : "bg-black text-white"
+                      }
+                      shadow-lg
+                    `}
+                    >
+                      <Clock className="w-3 h-3" />
+                      <span>قريباً</span>
+                    </div>
+                  </div>
+                )}
+
+                <CardContent className="p-8 h-full flex flex-col relative z-10">
                   <div
                     className={`w-16 h-16 rounded-2xl ${
                       darkMode ? "bg-gray-800" : "bg-white"

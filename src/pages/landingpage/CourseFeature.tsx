@@ -1,8 +1,18 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, X, BookOpen, Bot, PenTool } from "lucide-react";
+import {
+  Plus,
+  X,
+  BookOpen,
+  Bot,
+  PenTool,
+  Brain,
+  AudioLinesIcon,
+  BicepsFlexedIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Code, Target, Award } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export function CourseFeature() {
   const features = [
@@ -20,7 +30,7 @@ export function CourseFeature() {
     },
     {
       id: 3,
-      title: "بنك ترميز",
+      title: "محرر الأكواد",
       body: "مئات الأسئلة البرمجية مصنفة حسب الصعوبة مع حلول مشروحة وتفسيرات مفصلة.",
       icon: Code,
     },
@@ -41,6 +51,24 @@ export function CourseFeature() {
       title: "شهادة إتمام",
       body: "احصل على شهادة رقمية موثوقة عند إنهاء جميع التحديات والمشاريع مع إمكانية المشاركة.",
       icon: Award,
+    },
+    {
+      id: 7,
+      title: "خرائط ذهنية أثناء التعلّم",
+      body: "نظِّم أفكارك بتجميع المفاهيم في خرائط ذهنية تفاعلية تعزّز ترسيخ المعلومات وتسهِّل المراجعة.",
+      icon: Brain,
+    },
+    {
+      id: 8,
+      title: "محتوى مرئي",
+      body: "شاهد مقاطع فيديو تعليمية عالية الجودة توضح الخطوات والمفاهيم بطريقة سلسة وجذابة.",
+      icon: AudioLinesIcon,
+    },
+    {
+      id: 9,
+      title: "دروس تفاعلية",
+      body: "طبّق ما تتعلّمه فورًا من خلال دروس تفاعلية واختبارات قصيرة ومسارات متابعة تقدّمية، لتحقق أقصى استفادة من وقتك.",
+      icon: BicepsFlexedIcon,
     },
   ];
 
@@ -70,15 +98,14 @@ export function CourseFeature() {
         <h2 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black tracking-tight text-black dark:text-white leading-tight">
           ليست دورتك المعتادة
         </h2>
-
         <p className="max-w-2xl mx-auto text-gray-600 dark:text-gray-300 text-base md:text-lg lg:text-xl leading-relaxed font-light">
           تم تصميم هذه الدورة بطريقة تفاعلية تعتمد على النصوص ومليئة بالتحديات
-          العملية مما يجعل
+          العملية، مما يجعل
           <span className="text-black dark:text-white font-semibold">
             {" "}
-            مسار SQL{" "}
+            التعليم أكثر إتقانًا{" "}
           </span>
-          التدريسي هذا يتميز بخصائص فريدة تجعله استثنائيًا.
+          هذا البرنامج التدريسي يتميز بخصائص فريدة تجعله استثنائيًا.
         </p>
       </div>
 
@@ -165,7 +192,7 @@ export function CourseFeature() {
                           e.stopPropagation();
                         }}
                       >
-                        ابدأ الآن
+                        <Link to="signup"> ابدأ الآن</Link>
                       </Button>
                       <Button
                         size="sm"
@@ -190,12 +217,12 @@ export function CourseFeature() {
       <div className="mt-16 md:mt-20 max-w-4xl mx-auto text-center">
         <div className="bg-gradient-to-r from-gray-100 via-white to-gray-100 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800 rounded-2xl md:rounded-3xl p-6 md:p-8 border-2 border-gray-300 dark:border-gray-700 backdrop-blur-sm">
           <p className="text-gray-700 dark:text-gray-300 text-base md:text-lg lg:text-xl leading-relaxed mb-6">
-            تم تصميم هذه الدورة بطريقة تفاعلية تعتمد على النصوص ومليئة
+            تم تصميم هذه الدورة بطريقة تفاعلية تعتمد على النصوص، ومليئة
             <span className="text-black dark:text-white font-bold">
               {" "}
-              بالتحديات العملية{" "}
+              بالتحديات العملية،{" "}
             </span>
-            مما يجعل مسار SQL التدريسي هذا يتميز بخصائص فريدة تجعله
+            مما يجعل هذا المسار التدريسي يتميز بخصائص فريدة تجعله
             <span className="text-gray-600 dark:text-gray-400 font-bold">
               {" "}
               استثنائيًا!
@@ -203,7 +230,7 @@ export function CourseFeature() {
           </p>
 
           <Button className="bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 font-bold px-6 md:px-8 py-3 rounded-full text-base md:text-lg transition-all duration-300 hover:scale-105 hover:shadow-xl">
-            ابدأ رحلتك الآن
+            <Link to="signup">ابدأ رحلتك الآن</Link>
           </Button>
         </div>
       </div>

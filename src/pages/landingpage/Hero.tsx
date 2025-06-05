@@ -1,281 +1,536 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { gsap } from "gsap";
 import {
   Sparkles,
-  TrendingUp,
-  GitBranch,
-  Database,
-  Brain,
   Code,
-  Zap,
   Target,
   Award,
+  BookOpen,
+  Play,
+  ArrowLeft,
+  TrendingUp,
+  CheckCircle,
+  Video,
+  Monitor,
+  Database,
 } from "lucide-react";
+import { ModernButton } from "@/components/ModernButton";
 
-const logos = [
-  { name: "JavaScript", icon: "JS", color: "from-yellow-400 to-yellow-600" },
-  { name: "Python", icon: "PY", color: "from-blue-400 to-blue-600" },
-  { name: "React", icon: "⚛", color: "from-cyan-400 to-cyan-600" },
-  { name: "Node.js", icon: "⬢", color: "from-green-400 to-green-600" },
-  { name: "MySQL", icon: "DB", color: "from-orange-400 to-orange-600" },
-  { name: "Git", icon: "⚡", color: "from-red-400 to-red-600" },
-  { name: "CSS3", icon: "CSS", color: "from-purple-400 to-purple-600" },
-  { name: "HTML5", icon: "HTML", color: "from-pink-400 to-pink-600" },
-];
+interface CourseFloatingCardProps {
+  delay?: number;
+  className?: string;
+  children: React.ReactNode;
+  [key: string]: any;
+}
 
-export const LogoSlider = () => {
-  const scrollingLogos = [...logos, ...logos, ...logos];
+interface FloatingTechIconProps {
+  Icon: React.ComponentType<{ className?: string }>;
+  delay?: number;
+  className?: string;
+}
 
-  return (
-    <div className="w-full overflow-hidden py-6">
-      <div className="flex animate-scroll">
-        {scrollingLogos.map((logo, idx) => (
-          <div
-            key={idx}
-            className="flex flex-col items-center mx-4 sm:mx-6 md:mx-8 space-y-2 sm:space-y-3 group min-w-0 flex-shrink-0"
-          >
-            <div
-              className={`w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 flex items-center justify-center rounded-xl sm:rounded-2xl font-black text-xs sm:text-sm bg-gradient-to-br ${logo.color} text-white shadow-lg group-hover:scale-110 group-hover:shadow-xl transition-all duration-300`}
-            >
-              {logo.icon}
-            </div>
-            <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 group-hover:text-black dark:group-hover:text-white transition-colors whitespace-nowrap">
-              {logo.name}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
+interface TypingAnimationProps {
+  texts: string[];
+  delay?: number;
+}
 
-const StarBorder = ({ children, className = "", ...props }: any) => {
-  return (
-    <button
-      className={`relative px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl border-2 border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 hover:border-black dark:hover:border-white transition-all duration-300 overflow-hidden group text-sm sm:text-base ${className}`}
-      {...props}
-    >
-      <span className="relative z-10">{children}</span>
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-    </button>
-  );
-};
+interface FeatureItem {
+  icon: React.ComponentType<{ className?: string }>;
+  text: string;
+  desc: string;
+}
 
-const FloatingIcon = ({ Icon, delay = 0, className = "" }: any) => {
-  const [ready, setReady] = useState(false);
+const CourseFloatingCard: React.FC<CourseFloatingCardProps> = ({
+  delay = 0,
+  className = "",
+  children,
+  ...props
+}) => {
+  const cardRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    const t = setTimeout(() => setReady(true), delay);
-    return () => clearTimeout(t);
+    if (cardRef.current) {
+      gsap.fromTo(
+        cardRef.current,
+        {
+          opacity: 0,
+          y: 32,
+          scale: 0.8,
+        },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.8,
+          delay: delay / 1000,
+          ease: "back.out(1.7)",
+        }
+      );
+    }
   }, [delay]);
 
   return (
-    <div
-      className={`absolute transition-all duration-1000 ${
-        ready ? "translate-y-0 opacity-100" : "translate-y-12 opacity-0"
-      } ${className}`}
-    >
-      <div className="group w-12 h-12 lg:w-16 lg:h-16 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-gray-200/80 dark:border-gray-700/80 rounded-xl lg:rounded-2xl flex items-center justify-center shadow-xl hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 hover:rotate-3">
-        <Icon className="w-5 h-5 lg:w-6 lg:h-6 text-gray-700 dark:text-gray-300 group-hover:text-black dark:group-hover:text-white group-hover:scale-110 transition-all" />
+    <div ref={cardRef} className={`absolute ${className}`} {...props}>
+      <div className="group bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:-translate-y-2 hover:scale-105">
+        {children}
       </div>
     </div>
   );
 };
 
-const Hero = () => {
-  const [activeFeat, setActiveFeat] = useState(0);
-  const features = [
-    { icon: Target, text: "تعلم عملي وتطبيقي" },
-    { icon: Zap, text: "تفاعل مباشر ومستمر" },
-    { icon: Award, text: "شهادات معتمدة عالمياً" },
+const FloatingTechIcon: React.FC<FloatingTechIconProps> = ({
+  Icon,
+  delay = 0,
+  className = "",
+}) => {
+  const iconRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (iconRef.current) {
+      gsap.fromTo(
+        iconRef.current,
+        {
+          opacity: 0,
+          scale: 0,
+          y: 48,
+          rotation: -180,
+        },
+        {
+          opacity: 1,
+          scale: 1,
+          y: 0,
+          rotation: 0,
+          duration: 1,
+          delay: delay / 1000,
+          ease: "elastic.out(1, 0.5)",
+        }
+      );
+
+      gsap.to(iconRef.current, {
+        y: -10,
+        rotation: 5,
+        duration: 3,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
+        delay: delay / 1000 + 1,
+      });
+    }
+  }, [delay]);
+
+  return (
+    <div ref={iconRef} className={`absolute ${className}`}>
+      <div className="group w-10 h-10 sm:w-12 sm:h-12 lg:w-16 lg:h-16 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-gray-200/60 dark:border-gray-700/60 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 hover:rotate-6">
+        <Icon className="w-4 h-4 sm:w-5 sm:h-5 lg:w-7 lg:h-7 text-gray-700 dark:text-gray-300 group-hover:text-black dark:group-hover:text-white group-hover:scale-110 transition-all duration-300" />
+      </div>
+    </div>
+  );
+};
+
+const TypingAnimation: React.FC<TypingAnimationProps> = ({
+  texts,
+  delay = 100,
+}) => {
+  const [currentText, setCurrentText] = useState<string>("");
+  const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const [textIndex, setTextIndex] = useState<number>(0);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
+
+  useEffect(() => {
+    const timeout = setTimeout(
+      () => {
+        const current = texts[textIndex];
+
+        if (isDeleting) {
+          setCurrentText(current.substring(0, currentIndex - 1));
+          setCurrentIndex(currentIndex - 1);
+
+          if (currentIndex === 0) {
+            setIsDeleting(false);
+            setTextIndex((textIndex + 1) % texts.length);
+          }
+        } else {
+          setCurrentText(current.substring(0, currentIndex + 1));
+          setCurrentIndex(currentIndex + 1);
+
+          if (currentIndex === current.length) {
+            setTimeout(() => setIsDeleting(true), 1500);
+          }
+        }
+      },
+      isDeleting ? 50 : delay
+    );
+
+    return () => clearTimeout(timeout);
+  }, [currentIndex, isDeleting, textIndex, texts, delay]);
+
+  return (
+    <span className="text-black dark:text-white">
+      {currentText}
+      <span className="animate-pulse">|</span>
+    </span>
+  );
+};
+
+const CoursesHero: React.FC = () => {
+  const heroRef = useRef<HTMLElement>(null);
+  const timelineRef = useRef<gsap.core.Timeline>();
+
+  const courseTexts: string[] = ["البرمجة", "التصميم", "البيانات", "الويب"];
+
+  const features: FeatureItem[] = [
+    { icon: Video, text: "دروس تفاعلية", desc: "محتوى مرئي عالي الجودة" },
+    { icon: Monitor, text: "مشاريع عملية", desc: "طبق ما تتعلمه فوراً" },
+    { icon: Target, text: "مسار واضح", desc: "خطة تعلم منظمة" },
+    { icon: CheckCircle, text: "شهادة معتمدة", desc: "اعتراف مهني موثق" },
   ];
 
   useEffect(() => {
-    const int = setInterval(
-      () => setActiveFeat((p) => (p + 1) % features.length),
-      3000
-    );
-    return () => clearInterval(int);
+    if (heroRef.current) {
+      timelineRef.current = gsap.timeline();
+
+      const elements = heroRef.current.querySelectorAll(".animate-on-load");
+
+      timelineRef.current.fromTo(
+        elements,
+        {
+          opacity: 0,
+          y: 50,
+          scale: 0.95,
+        },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.8,
+          stagger: 0.2,
+          ease: "power3.out",
+        }
+      );
+
+      const blurElements = heroRef.current.querySelectorAll(".blur-bg");
+      gsap.fromTo(
+        blurElements,
+        {
+          scale: 0,
+          opacity: 0,
+        },
+        {
+          scale: 1,
+          opacity: 1,
+          duration: 2,
+          stagger: 0.3,
+          ease: "power2.out",
+        }
+      );
+
+      const statElements = heroRef.current.querySelectorAll(".stat-item");
+      gsap.fromTo(
+        statElements,
+        {
+          opacity: 0,
+          y: 30,
+          scale: 0.8,
+        },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.6,
+          stagger: 0.1,
+          ease: "back.out(1.7)",
+          delay: 0.8,
+        }
+      );
+    }
+
+    return () => {
+      if (timelineRef.current) {
+        timelineRef.current.kill();
+      }
+    };
   }, []);
 
   return (
     <section
-      className="relative min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-black overflow-hidden"
+      ref={heroRef}
+      className="relative min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-black dark:to-gray-800 overflow-hidden"
       dir="rtl"
     >
-      <div className="absolute inset-0 pointer-events-none opacity-[0.02] sm:opacity-[0.03] dark:opacity-[0.04] dark:sm:opacity-[0.05]">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#000_1px,transparent_1px),linear-gradient(to_bottom,#000_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#fff_1px,transparent_1px),linear-gradient(to_bottom,#fff_1px,transparent_1px)] bg-[size:2rem_2rem] sm:bg-[size:4rem_4rem]" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#000_1px,transparent_1px),linear-gradient(to_bottom,#000_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#fff_1px,transparent_1px),linear-gradient(to_bottom,#fff_1px,transparent_1px)] bg-[size:4rem_4rem] sm:bg-[size:8rem_8rem] opacity-50" />
+      <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05]">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#000_1px,transparent_1px),linear-gradient(to_bottom,#000_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#fff_1px,transparent_1px),linear-gradient(to_bottom,#fff_1px,transparent_1px)] bg-[size:3rem_3rem] sm:bg-[size:4rem_4rem]"></div>
       </div>
 
-      <div className="hidden lg:block">
-        <FloatingIcon Icon={GitBranch} delay={200} className="top-24 left-8" />
-        {/* <FloatingIcon Icon={Cpu} delay={400} className="top-40 left-52" /> */}
-        <FloatingIcon Icon={Database} delay={600} className="top-28 left-80" />
-        <FloatingIcon Icon={Brain} delay={800} className="top-64 left-12" />
-        <FloatingIcon Icon={Code} delay={1000} className="bottom-44 left-64" />
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="blur-bg absolute top-20 left-20 w-32 h-32 sm:w-48 sm:h-48 bg-gradient-to-br from-gray-200/30 to-gray-400/20 dark:from-gray-600/20 dark:to-gray-800/30 rounded-full blur-3xl"></div>
+        <div className="blur-bg absolute bottom-20 right-20 w-40 h-40 sm:w-64 sm:h-64 bg-gradient-to-tr from-gray-300/25 to-gray-500/15 dark:from-gray-500/15 dark:to-gray-700/25 rounded-full blur-3xl"></div>
+        <div className="blur-bg absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-24 sm:w-36 sm:h-36 bg-gradient-to-r from-gray-400/20 to-gray-600/20 dark:from-gray-400/10 dark:to-gray-600/20 rounded-full blur-2xl"></div>
+        <div className="blur-bg absolute top-10 right-10 w-20 h-20 sm:w-28 sm:h-28 bg-gradient-to-bl from-gray-300/30 to-gray-500/20 dark:from-gray-500/20 dark:to-gray-700/30 rounded-full blur-2xl"></div>
+        <div className="blur-bg absolute bottom-10 left-10 w-28 h-28 sm:w-40 sm:h-40 bg-gradient-to-tr from-gray-200/25 to-gray-400/25 dark:from-gray-600/15 dark:to-gray-800/25 rounded-full blur-3xl"></div>
       </div>
 
-      <div className="relative z-10 container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 mt-5 ">
-        <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 xl:gap-20 items-center min-h-[90vh] lg:min-h-[85vh]">
-          <div className="order-1 lg:order-1 space-y-6 sm:space-y-8 text-right flex flex-col justify-center">
-            <div className="space-y-4 sm:space-y-6">
-              <span className="inline-flex items-center gap-2 sm:gap-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/80 dark:border-gray-700/80 rounded-full px-4 sm:px-6 py-2 sm:py-3 font-bold text-xs sm:text-sm shadow-lg hover:shadow-xl transition-all">
-                <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
-                <span className="bg-gradient-to-r from-gray-800 to-gray-600 dark:from-gray-200 dark:to-gray-400 bg-clip-text text-transparent">
-                  تعلم • طور • احترف
+      <div className="hidden md:block">
+        <FloatingTechIcon
+          Icon={Code}
+          delay={300}
+          className="top-16 sm:top-24 left-8 sm:left-16"
+        />
+        <FloatingTechIcon
+          Icon={Database}
+          delay={500}
+          className="top-32 sm:top-48 left-16 sm:left-32"
+        />
+        <FloatingTechIcon
+          Icon={Monitor}
+          delay={700}
+          className="top-20 sm:top-32 right-12 sm:right-24"
+        />
+        <FloatingTechIcon
+          Icon={BookOpen}
+          delay={900}
+          className="bottom-20 sm:bottom-32 left-8 sm:left-20"
+        />
+        <FloatingTechIcon
+          Icon={Video}
+          delay={1100}
+          className="bottom-32 sm:bottom-48 right-16 sm:right-32"
+        />
+      </div>
+
+      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 pb-12 sm:pb-16">
+        <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-20 items-center min-h-[85vh]">
+          <div className="space-y-6 sm:space-y-8 text-right ">
+            <div className="animate-on-load mt-10">
+              <span
+                className="inline-flex items-center gap-2 sm:gap-3 bg-gray-100/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/60
+               dark:border-gray-700/60 rounded-full px-4 sm:px-6 py-2 sm:py-3 font-bold text-xs sm:text-sm shadow-lg"
+              >
+                <div className="relative">
+                  <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700 dark:text-gray-300 animate-pulse" />
+                  <div className="absolute -top-1 -right-1 w-1.5 h-1.5 sm:w-2 sm:h-2 bg-black dark:bg-white rounded-full animate-ping"></div>
+                </div>
+                <span className="text-gray-800 dark:text-gray-200">
+                  تعلم • طور • احترف{" "}
                 </span>
               </span>
+            </div>
 
-              <h1 className=" text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black leading-[1.1] text-gray-900 dark:text-white">
-                <span className="block ">ارتقِ بمسيرتك</span>
-                <span className="block bg-gradient-to-l from-gray-900 via-gray-700 to-gray-900 dark:from-white dark:via-gray-200 dark:to-white bg-clip-text">
-                  المهنية إلى
+            <div className="animate-on-load space-y-3 sm:space-y-4">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black leading-[1.1] text-gray-900 dark:text-white">
+                <span className="block">تعلم</span>
+                <span className="block">
+                  <TypingAnimation texts={courseTexts} delay={150} />
                 </span>
-                <span className="block text-black dark:text-white">
-                  آفاق جديدة
+                <span className="block text-gray-700 dark:text-gray-300">
+                  مع خبراء المجال
                 </span>
               </h1>
 
               <p className="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-2xl leading-relaxed">
-                عبر التطبيق العملي والتعليم التفاعلي
+                منصة تعليمية متطورة تقدم أحدث الدورات التدريبية في التكنولوجيا
+                والبرمجة
                 <br />
                 <span className="font-bold text-gray-900 dark:text-white mt-1 sm:mt-2 block">
-                  احصل على جودة تضاهي معسكرات التدريب المكثّفة
+                  من المبتدئ إلى المحترف • محتوى عربي أصيل • شهادات معتمدة
                 </span>
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3 md:gap-4">
-              {features.map((f, i) => {
-                const IconCmp = f.icon;
-                const live = i === activeFeat;
+            <div className="animate-on-load flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
+              <ModernButton to="/signup" className="w-full sm:w-auto">
+                <Play className="w-4 h-4 sm:w-5 sm:h-5" />
+                ابدأ رحلتك مجاناً
+              </ModernButton>
+              <ModernButton
+                to="/signup"
+                variant="secondary"
+                className="w-full sm:w-auto"
+              >
+                استكشف الدورات
+                <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+              </ModernButton>
+            </div>
+
+            {/* Trust Indicators */}
+            <div className="animate-on-load flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-500" />
+                <span>تجربة مجانية</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-500" />
+                <span>شهادات معتمدة</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-500" />
+                <span>دعم مستمر</span>
+              </div>
+            </div>
+
+            {/* Feature Pills */}
+            <div className="animate-on-load grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl">
+              {features.map((feature, index) => {
+                const IconCmp = feature.icon;
                 return (
-                  <span
-                    key={i}
-                    className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 md:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl border-2 text-xs sm:text-sm font-bold transition-all duration-500 cursor-pointer ${
-                      live
-                        ? "bg-gray-900 text-white border-gray-900 dark:bg-white dark:text-black dark:border-white shadow-lg scale-105"
-                        : "border-gray-300 text-gray-700 dark:border-gray-600 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500"
-                    }`}
+                  <div
+                    key={index}
+                    className="flex items-center gap-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group cursor-pointer"
                   >
-                    <IconCmp className="w-4 h-4 sm:w-5 sm:h-5" /> {f.text}
-                  </span>
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-black dark:bg-white flex items-center justify-center shadow-md group-hover:scale-110 transition-transform flex-shrink-0">
+                      <IconCmp className="w-4 h-4 sm:w-5 sm:h-5 text-white dark:text-black" />
+                    </div>
+                    <div className="text-right min-w-0">
+                      <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
+                        {feature.text}
+                      </p>
+                      <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                        {feature.desc}
+                      </p>
+                    </div>
+                  </div>
                 );
               })}
             </div>
-
-            <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 pt-2 sm:pt-4">
-              <button className="w-full sm:w-auto text-sm sm:text-base font-bold  px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl bg-gray-900 text-white dark:bg-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-100 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300">
-                تصفّح البرامج
-              </button>
-              <StarBorder className="w-full sm:w-auto font-bold">
-                انضم مجانا
-              </StarBorder>
-            </div>
           </div>
 
-          <div className="order-1 lg:order-2 relative flex flex-col items-center justify-center">
-            <div className="relative bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-gray-200/80 dark:border-gray-700/80 rounded-2xl sm:rounded-3xl shadow-2xl p-4 mb-4 sm:p-6 md:p-8 w-full max-w-sm sm:max-w-md lg:max-w-lg">
-              <div className="flex items-center gap-2 sm:gap-3 pb-4 sm:pb-6 border-b border-gray-200 dark:border-gray-700">
-                <div className="flex gap-1.5 sm:gap-2">
-                  <span className="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-red-400 hover:bg-red-500 cursor-pointer transition-colors" />
-                  <span className="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-yellow-400 hover:bg-yellow-500 cursor-pointer transition-colors" />
-                  <span className="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-green-400 hover:bg-green-500 cursor-pointer transition-colors" />
+          <div className="relative flex items-center justify-center order-1 lg:order-2">
+            {/* Main Course Interface */}
+            <div className="animate-on-load relative bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl sm:rounded-3xl shadow-2xl p-4 sm:p-6 w-full max-w-sm sm:max-w-md">
+              {/* Course Header */}
+              <div className="flex items-center gap-3 pb-3 sm:pb-4 border-b border-gray-200 dark:border-gray-700">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-black dark:bg-white flex items-center justify-center shadow-lg">
+                  <Code className="w-5 h-5 sm:w-6 sm:h-6 text-white dark:text-black" />
                 </div>
-                <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-mono bg-gray-100 dark:bg-gray-800 px-2 sm:px-3 py-1 rounded-md sm:rounded-lg">
-                  sanatack.sql
-                </span>
-              </div>
-
-              <div
-                className="space-y-3 sm:space-y-4 font-mono text-sm sm:text-base pt-4 sm:pt-6"
-                dir="ltr"
-              >
-                <div className="flex items-center gap-2 sm:gap-4">
-                  <span className="text-gray-400 w-4 sm:w-6 text-right font-bold text-xs sm:text-base">
-                    1
-                  </span>
-                  <span className="font-bold text-blue-600 dark:text-blue-400 text-xs sm:text-base">
-                    SELECT
-                  </span>
-                  <span className="text-gray-800 dark:text-gray-200 text-xs sm:text-base">
-                    * FROM
-                  </span>
-                  <span className="font-bold text-purple-600 dark:text-purple-400 text-xs sm:text-base">
-                    students
-                  </span>
+                <div className="text-right flex-1">
+                  <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
+                    تطوير مواقع الويب
+                  </p>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                    HTML, CSS, JavaScript
+                  </p>
                 </div>
-                <div className="flex items-center gap-2 sm:gap-4">
-                  <span className="text-gray-400 w-4 sm:w-6 text-right font-bold text-xs sm:text-base">
-                    2
-                  </span>
-                  <span className="font-bold text-blue-600 dark:text-blue-400 text-xs sm:text-base">
-                    WHERE
-                  </span>
-                  <span className="text-gray-800 dark:text-gray-200 text-xs sm:text-base">
-                    progress =
-                  </span>
-                  <span className="font-bold text-green-600 dark:text-green-400 text-xs sm:text-base">
-                    'excellent'
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 sm:gap-4 animate-pulse">
-                  <span className="text-gray-400 w-4 sm:w-6 text-right font-bold text-xs sm:text-base">
-                    3
-                  </span>
-                  <span className="text-black dark:text-white text-lg sm:text-xl">
-                    █
-                  </span>
+                <div className="flex gap-1 sm:gap-2">
+                  <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-red-400"></div>
+                  <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-yellow-400"></div>
+                  <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-green-400"></div>
                 </div>
               </div>
 
-              <span className="absolute -top-3 sm:-top-4 -left-3 sm:-left-4 bg-green-500 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold shadow-lg animate-bounce">
-                ✓ مكتمل
-              </span>
-              <span className="absolute -bottom-3 sm:-bottom-4 -right-3 sm:-right-4 bg-orange-500 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold shadow-lg">
-                🔥 +50 XP
-              </span>
-            </div>
+              {/* Course Progress */}
+              <div className="mt-3 sm:mt-4">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
+                    التقدم في الدورة
+                  </span>
+                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                    65%
+                  </span>
+                </div>
+                <div className="w-full h-2 sm:h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-black dark:bg-white rounded-full transition-all duration-1000"
+                    style={{ width: "65%" }}
+                  ></div>
+                </div>
+              </div>
 
-            <div className="hidden lg:block absolute -top-12 sm:-top-16 lg:-top-20 -right-6 sm:-right-8 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-gray-200/80 dark:border-gray-700/80 rounded-xl sm:rounded-2xl p-3 sm:p-5 shadow-xl max-w-[180px] sm:max-w-[240px] animate-float">
-              <div className="flex items-center gap-2 sm:gap-4">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
-                  <div className="relative">
-                    <Code className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                    <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+              {/* Course Lessons */}
+              <div className="space-y-2 sm:space-y-3 mt-4 sm:mt-6">
+                <div className="flex items-center gap-3 p-2 sm:p-3 bg-gray-50 dark:bg-gray-800 rounded-lg sm:rounded-xl">
+                  <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
+                  <div className="text-right flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
+                      مقدمة في HTML
+                    </p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">
+                      45 دقيقة
+                    </p>
                   </div>
                 </div>
-                <div className="text-right min-w-0">
-                  <p className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white flex items-center gap-1">
-                    درس جديد
-                    <span className="inline-block w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce"></span>
-                  </p>
-                  <p className="text-xs text-gray-600 dark:text-gray-400">
-                    قواعد البيانات المتقدمة
-                  </p>
+
+                <div className="flex items-center gap-3 p-2 sm:p-3 bg-gray-50 dark:bg-gray-800 rounded-lg sm:rounded-xl">
+                  <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
+                  <div className="text-right flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
+                      أساسيات CSS
+                    </p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">
+                      60 دقيقة
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 p-2 sm:p-3 bg-white dark:bg-gray-700 rounded-lg sm:rounded-xl border-2 border-black dark:border-white">
+                  <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full border-2 border-black dark:border-white animate-pulse flex-shrink-0"></div>
+                  <div className="text-right flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white flex items-center gap-1">
+                      JavaScript للمبتدئين
+                      <span className="text-orange-500">◀</span>
+                    </p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">
+                      80 دقيقة
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 p-2 sm:p-3 bg-gray-100 dark:bg-gray-800/50 rounded-lg sm:rounded-xl opacity-60">
+                  <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full border-2 border-gray-300 dark:border-gray-600 flex-shrink-0"></div>
+                  <div className="text-right flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-400">
+                      مشروع عملي
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-500">
+                      120 دقيقة
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="hidden lg:block absolute -bottom-12 sm:-bottom-16 lg:-bottom-20 -left-6 sm:-left-8 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-gray-200/80 dark:border-gray-700/80 rounded-xl sm:rounded-2xl p-3 sm:p-5 shadow-xl max-w-[180px] sm:max-w-[240px] animate-float-delayed">
-              <div className="flex items-center gap-2 sm:gap-4">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg relative">
-                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                  <div className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full animate-ping"></div>
+            {/* Floating Course Cards - Hidden on mobile for better UX */}
+            <CourseFloatingCard
+              delay={800}
+              className="hidden sm:block -top-6 sm:-top-8 -right-6 sm:-right-8 lg:-right-12"
+            >
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-black dark:bg-white flex items-center justify-center shadow-lg">
+                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-white dark:text-black" />
                 </div>
-                <div className="text-right min-w-0">
-                  <p className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white flex items-center gap-1">
-                    تقدم ممتاز
-                    <span className="text-green-500 text-xs">↗</span>
+                <div className="text-right">
+                  <p className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white">
+                    معدل إكمال عالي
                   </p>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-1">
-                    <span className="inline-block w-16 sm:w-20 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                      <span className="block w-[85%] h-full bg-gradient-to-r from-green-400 to-emerald-500 rounded-full animate-pulse"></span>
+                  <div className="flex items-center gap-2 mt-1">
+                    <div className="w-12 sm:w-16 h-1.5 sm:h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                      <div className="w-[98%] h-full bg-black dark:bg-white rounded-full"></div>
+                    </div>
+                    <span className="text-xs text-gray-600 dark:text-gray-400">
+                      98%
                     </span>
-                    85%
+                  </div>
+                </div>
+              </div>
+            </CourseFloatingCard>
+
+            <CourseFloatingCard
+              delay={1200}
+              className="hidden sm:block -bottom-6 sm:-bottom-8 -left-6 sm:-left-8 lg:-left-12"
+            >
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-black dark:bg-white flex items-center justify-center shadow-lg relative">
+                  <Award className="w-4 h-4 sm:w-5 sm:h-5 text-white dark:text-black" />
+                  <div className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 w-2 h-2 sm:w-3 sm:h-3 bg-yellow-400 rounded-full animate-ping"></div>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white">
+                    شهادة جديدة!
+                  </p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
+                    مطور ويب مبتدئ 🎉
                   </p>
                 </div>
               </div>
-            </div>
+            </CourseFloatingCard>
           </div>
         </div>
       </div>
@@ -283,4 +538,4 @@ const Hero = () => {
   );
 };
 
-export default Hero;
+export default CoursesHero;

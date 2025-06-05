@@ -205,65 +205,6 @@ const ArabicFooterSection = () => {
         </div>
       </div>
 
-      <div
-        className={`w-full max-w-4xl mb-16 p-8 rounded-2xl ${
-          darkMode
-            ? "bg-gray-900/30 border border-gray-800"
-            : "bg-white/60 border border-gray-200"
-        } backdrop-blur-sm`}
-      >
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-          <div>
-            <div
-              className={`text-3xl font-bold mb-2 ${
-                darkMode ? "text-white" : "text-slate-900"
-              }`}
-            >
-              +10,000
-            </div>
-            <div
-              className={`text-sm ${
-                darkMode ? "text-gray-400" : "text-slate-600"
-              }`}
-            >
-              فريق نشط
-            </div>
-          </div>
-          <div>
-            <div
-              className={`text-3xl font-bold mb-2 ${
-                darkMode ? "text-white" : "text-slate-900"
-              }`}
-            >
-              99.9%
-            </div>
-            <div
-              className={`text-sm ${
-                darkMode ? "text-gray-400" : "text-slate-600"
-              }`}
-            >
-              وقت التشغيل
-            </div>
-          </div>
-          <div>
-            <div
-              className={`text-3xl font-bold mb-2 ${
-                darkMode ? "text-white" : "text-slate-900"
-              }`}
-            >
-              4.9/5
-            </div>
-            <div
-              className={`text-sm ${
-                darkMode ? "text-gray-400" : "text-slate-600"
-              }`}
-            >
-              تقييم المستخدمين
-            </div>
-          </div>
-        </div>
-      </div>
-
       <footer className="w-full max-w-6xl">
         <div
           className={`border-t pt-12 ${

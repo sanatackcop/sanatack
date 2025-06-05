@@ -9,7 +9,7 @@ import MainDashboard from "@/pages/dashboard/MainDashboard";
 const publicRoutes = [
   { path: "/", element: <HomePAGE /> },
   { path: "/login", element: <LoginPage /> },
-  { path: "/singup", element: <SingupPage /> },
+  { path: "/signup", element: <SingupPage /> },
 ];
 
 const privateRoutes = [{ path: "/dashboard/*", element: <MainDashboard /> }];

@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Award, BookOpen, ChevronDown, Users } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ChevronDown } from "lucide-react";
 import { useSettings } from "@/context/SettingsContexts";
+import { ModernButton } from "@/components/ModernButton";
 
 const FAQs = () => {
   const [openItems, setOpenItems] = useState([0]);
@@ -14,34 +14,50 @@ const FAQs = () => {
         "نعم بالطبع! تم تصميم دوراتنا خصيصاً للمبتدئين. نبدأ معك من الأساسيات ونتدرج بك خطوة بخطوة حتى تصل إلى مستوى متقدم. لا نفترض أي معرفة مسبقة، ونوفر الدعم والإرشاد المستمر طوال رحلتك التعليمية. ستتعلم البرمجة من خلال مشاريع عملية وتطبيقات حقيقية.",
     },
     {
-      question: "متى سأحصل على طلبي؟",
+      question: "كيف يتم تنظيم الدورات والمسارات التعليمية؟",
       answer:
-        "بمجرد التسجيل في الدورة، ستحصل على الوصول الفوري لجميع المواد التعليمية. يمكنك البدء في التعلم على الفور والوصول للمحتوى في أي وقت ومن أي مكان.",
+        'يتم تنظيم دوراتنا في وحدات ودروس متسلسلة، كل درس يركز على مفهوم معين ويتضمن شروحات وتمارين عملية. المسارات التعليمية تجمع عدة دورات لتحقيق هدف تعليمي أكبر (مثل: "تطوير تطبيقات الويب").',
     },
     {
-      question: "هل يمكنني طلب التوصيل؟",
+      question: "هل يمكنني التعلم بالسرعة التي تناسبني؟",
       answer:
-        "منصتنا رقمية بالكامل، مما يعني عدم الحاجة للتوصيل التقليدي. جميع المواد والدروس متاحة أونلاين ويمكنك الوصول إليها فوراً.",
+        "نعم، جميع الدورات متاحة للتعلم الذاتي، ويمكنك التقدم فيها بالسرعة التي تجدها مناسبة لجدولك الزمني ومستوى استيعابك.",
     },
     {
-      question: "هل يمكنني إضافة العناصر إلى طلبي؟",
+      question: "هل سأحصل على شهادة عند إكمال دورة أو مسار تعليمي؟",
       answer:
-        "يمكنك ترقية خطتك التعليمية في أي وقت لتشمل دورات إضافية أو خدمات متقدمة. ندعم المرونة الكاملة في اختيار المسار التعليمي المناسب لك.",
+        "نعم، عند إكمال جميع متطلبات الدورة بنجاح، ستحصل على شهادة إتمام معتمدة يمكنك مشاركتها على منصات التوظيف مثل LinkedIn أو إضافتها إلى سيرتك الذاتية.",
     },
     {
-      question: "متى سأحصل على طلبي؟",
+      question: "كيف يمكنني تتبع تقدمي في التعلم؟",
       answer:
-        "الوصول فوري! بعد التسجيل مباشرة، ستتلقى بيانات الدخول عبر البريد الإلكتروني ويمكنك البدء في التعلم خلال دقائق.",
+        "يمكنك تتبع تقدمك من خلال لوحة التحكم الخاصة بك، والتي تعرض الدروس التي أكملتها، والتمارين التي قمت بحلها، وأداءك العام في الدورات.",
     },
     {
-      question: "هل يمكنني طلب التوصيل؟",
+      question: "هل هناك مشاريع عملية يمكنني إضافتها إلى معرض أعمالي؟",
       answer:
-        "التعلم متاح 24/7 من خلال منصتنا الرقمية. نوفر أيضاً تطبيق محمول لتتمكن من التعلم أثناء التنقل.",
+        "نعم، تتضمن العديد من دوراتنا ومساراتنا التعليمية مشاريع تطبيقية يمكنك العمل عليها واستخدامها كجزء من معرض أعمالك (portfolio) لإظهار مهاراتك.",
     },
     {
-      question: "هل يمكنني إضافة العناصر إلى طلبي؟",
+      question: "كيف تعمل تمارين البرمجة التفاعلية؟",
       answer:
-        "نعم، يمكنك تخصيص مسارك التعليمي بإضافة دورات متخصصة، ورش عمل عملية، أو جلسات إرشاد فردية.",
+        "توفر لك تماريننا بيئة كود مدمجة حيث يمكنك كتابة الكود الخاص بك مباشرة وتشغيله لرؤية النتائج. يتم غالباً تقديم إرشادات واختبارات آلية للتحقق من صحة حلك.",
+    },
+    {
+      question: "ماذا لو واجهت صعوبة في حل تمرين ما؟ هل هناك مساعدة متاحة؟",
+      answer:
+        "نعم، نقدم عدة طرق للمساعدة. تحتوي بعض التمارين على تلميحات. يمكنك أيضاً طرح سؤال في منتدى المجتمع الخاص بالدورة، مراجعة الدروس السابقة، أو الاطلاع على الحلول (متاحة بعد عدة محاولات).",
+    },
+    {
+      question: "هل يمكنني حفظ الكود الخاص بي والعودة إليه لاحقاً؟",
+      answer:
+        "نعم، يتم حفظ تقدمك في التمارين تلقائياً، ويمكنك العودة لإكمالها في أي وقت.",
+    },
+    {
+      question:
+        "ماذا يحدث إذا كان الكود الخاص بي غير صحيح؟ كيف أحصل على ملاحظات؟",
+      answer:
+        "عند تشغيل الكود، سيوفر لك المحرر التفاعلي ملاحظات حول الأخطاء (إذا وجدت) أو نتائج الاختبارات التي لم يتم اجتيازها، مما يساعدك على تحديد المشكلة وتصحيحها.",
     },
   ];
 
@@ -63,14 +79,12 @@ const FAQs = () => {
       dir="rtl"
     >
       <div className="container mx-auto px-8 py-20">
-        {/* Header */}
         <div className="text-left mb-16">
           <h1 className="text-4xl md:text-6xl text-right font-bold mb-4">
             الأسئلة الشائعة
           </h1>
         </div>
 
-        {/* FAQ List */}
         <div className="max-w-6xl mx-auto">
           {faqData.map((item, index) => {
             const isOpen = openItems.includes(index);
@@ -82,7 +96,6 @@ const FAQs = () => {
                   darkMode ? "border-gray-800" : "border-gray-200"
                 }`}
               >
-                {/* Question */}
                 <button
                   onClick={() => toggleItem(index)}
                   className={`w-full py-6 flex items-center justify-between text-right hover:${
@@ -100,7 +113,6 @@ const FAQs = () => {
                   />
                 </button>
 
-                {/* Answer */}
                 <div
                   className={`transition-all duration-500 ease-in-out overflow-hidden ${
                     isOpen ? "max-h-96 opacity-100 pb-6" : "max-h-0 opacity-0"
@@ -121,43 +133,6 @@ const FAQs = () => {
           })}
         </div>
 
-        {/* Bottom Stats Section */}
-        <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8">
-          {[
-            { number: "50K+", label: "طالب نشط", icon: Users },
-            { number: "500+", label: "درس تفاعلي", icon: BookOpen },
-            { number: "95%", label: "معدل النجاح", icon: Award },
-          ].map((stat, index) => {
-            const IconComponent = stat.icon;
-            return (
-              <div key={index} className="text-center group">
-                <div
-                  className={`inline-flex items-center justify-center w-16 h-16 rounded-full mb-4 ${
-                    darkMode ? "bg-gray-900" : "bg-gray-100"
-                  } group-hover:scale-110 transition-transform duration-300`}
-                >
-                  <IconComponent
-                    className={`w-8 h-8 ${
-                      darkMode ? "text-white" : "text-black"
-                    }`}
-                  />
-                </div>
-                <div className="text-4xl lg:text-5xl font-black mb-2 group-hover:scale-110 transition-transform duration-300">
-                  {stat.number}
-                </div>
-                <div
-                  className={`text-lg font-semibold ${
-                    darkMode ? "text-gray-400" : "text-gray-600"
-                  }`}
-                >
-                  {stat.label}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Call to Action */}
         <div className="text-center mt-20">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
             ابدأ رحلتك التعليمية اليوم
@@ -170,16 +145,9 @@ const FAQs = () => {
             انضم إلى آلاف الطلاب الذين غيروا مسارهم المهني من خلال منصتنا
             التعليمية المتقدمة
           </p>
-          <Button
-            size="lg"
-            className={`${
-              darkMode
-                ? "bg-white text-black hover:bg-gray-200"
-                : "bg-black text-white hover:bg-gray-800"
-            } font-bold px-12 py-6 rounded-full text-xl transition-all duration-300 hover:scale-105 shadow-xl hover:shadow-2xl`}
-          >
+          <ModernButton to="/signup" className="w-full sm:w-auto">
             ابدأ مجاناً الآن
-          </Button>
+          </ModernButton>
         </div>
       </div>
     </div>
