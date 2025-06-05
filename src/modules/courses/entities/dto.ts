@@ -1,4 +1,17 @@
-import { IsNotEmpty } from 'class-validator';
+import {
+  ArrayMaxSize,
+  ArrayMinSize,
+  IsArray,
+  IsEnum,
+  IsLowercase,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUrl,
+  Min,
+} from 'class-validator';
+import { MaterialType } from './material-mapper';
 
 export enum Level {
   'BEGINNER' = 'BEGINNER',
@@ -108,28 +121,63 @@ export class LessonDetailsDto {
   quizzes?: QuizDto[];
   videos?: VideoDto[];
 }
-
 export class ResourceDto {
-  id: string;
+  @IsNotEmpty({ message: 'العنوان مطلوب' })
+  @IsString()
   title: string;
+
+  @IsString()
   description?: string;
+
+  @IsNotEmpty({ message: 'نوع المورد مطلوب' })
+  @IsLowercase()
+  @IsEnum(MaterialType, { message: 'نوع المورد غير صالح' })
+  type: MaterialType;
+
+  @IsUrl({}, { message: 'الرابط غير صالح' })
   url?: string;
+
+  @IsString()
   content?: string;
 }
 
 export class QuizDto {
-  id: string;
-  question?: string;
-  options?: string[];
-  correctAnswer?: string;
+  @IsString()
+  @IsNotEmpty()
+  question: string;
+
+  @IsString()
+  @IsNotEmpty()
+  correctAnswer: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
   explanation?: string;
+
+  @IsArray()
+  @ArrayMinSize(4)
+  @ArrayMaxSize(4)
+  @IsString({ each: true }) // validate that each element is a string
+  options: string[];
 }
 
 export class VideoDto {
-  id: string;
-  youtubeId?: string;
-  title?: string;
+  @IsNotEmpty({ message: 'رابط الفيديو مطلوب' })
+  @IsUrl({}, { message: 'رابط YouTube غير صالح' })
+  youtubeId: string; // full embed URL expected
+
+  @IsNotEmpty({ message: 'العنوان مطلوب' })
+  @IsString({ message: 'العنوان يجب أن يكون نصًا' })
+  title: string;
+
+  @IsOptional()
+  @IsString({ message: 'الوصف يجب أن يكون نصًا' })
   description?: string;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'المدة يجب أن تكون رقمًا' })
+  @Min(0, { message: 'المدة يجب أن تكون رقمًا موجبًا' })
   duration?: number;
 }
 

@@ -8,7 +8,8 @@ import { AddCareerPathTable1747767526298 } from './1747767526298-AddCareerPathTa
 import { AddCareerEnrollmentTable1748196968098 } from './1748196968098-AddCareerEnrollmentTable';
 import { AddDescriptionAndTagsToCourseAndModules1748600526738 } from './1748600526738-AddDescriptionAndTagsToCourseAndModules';
 import { AlterCourseAndModule1748606327476 } from './1748606327476-AlterCourseAndModule';
-import { AddUserToken1748691822527 } from './1748691822527-AddUserToken';
+import { ChangeSomeTableColumns1748691822527 } from './1748691822527-ChangeSomeTableColumns';
+import { UpdateEntitles1749026470592 } from './1749026470592-UpdateEntites';
 
 export const migrationFiles = [
   AddUserTokenTable1741999709886,
@@ -21,5 +22,6 @@ export const migrationFiles = [
   AddCareerPathTable1747767526298,
   AddCareerEnrollmentTable1748196968098,
   AddDescriptionAndTagsToCourseAndModules1748600526738,
-  AddUserToken1748691822527,
+  ChangeSomeTableColumns1748691822527,
+  UpdateEntitles1749026470592,
 ];

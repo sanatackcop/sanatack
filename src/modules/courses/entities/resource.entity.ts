@@ -1,5 +1,6 @@
 import { Column, Entity } from 'typeorm';
 import AbstractEntity from './abstract.base.entity';
+import { MaterialType } from './material-mapper';
 
 @Entity({ name: 'resource' })
 export class Resource extends AbstractEntity {
@@ -9,8 +10,8 @@ export class Resource extends AbstractEntity {
   @Column({ nullable: true })
   description: string;
 
-  @Column({ nullable: false })
-  type: 'video' | 'document' | 'link' | 'code';
+  @Column({ nullable: false, type: 'enum', enum: MaterialType })
+  type: MaterialType;
 
   @Column({ nullable: true })
   url: string;

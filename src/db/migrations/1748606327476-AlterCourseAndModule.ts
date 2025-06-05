@@ -10,6 +10,9 @@ export class AlterCourseAndModule1748606327476 implements MigrationInterface {
     await queryRunner.query(
       `ALTER TABLE "module" ADD "updated_at" TIMESTAMP NOT NULL DEFAULT now()`
     );
+    await queryRunner.query(
+      `ALTER TABLE "module" ADD "description" character varying NOT NULL DEFAULT ''`
+    );
     await queryRunner.query(`ALTER TABLE "courses" DROP COLUMN "tags"`);
     await queryRunner.query(`ALTER TABLE "courses" ADD "tags" jsonb`);
   }
@@ -19,6 +22,7 @@ export class AlterCourseAndModule1748606327476 implements MigrationInterface {
     await queryRunner.query(
       `ALTER TABLE "courses" ADD "tags" character varying`
     );
+    await queryRunner.query(`ALTER TABLE "module" DROP COLUMN "description"`);
     await queryRunner.query(`ALTER TABLE "module" DROP COLUMN "updated_at"`);
     await queryRunner.query(`ALTER TABLE "module" DROP COLUMN "created_at"`);
   }

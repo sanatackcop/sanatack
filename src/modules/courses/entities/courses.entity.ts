@@ -1,21 +1,12 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-  OneToMany,
-} from 'typeorm';
+import { Entity, Column, OneToMany } from 'typeorm';
 import { Level } from './dto';
 import { CourseMapper } from './courses-maper.entity';
 import { Enrollment } from './enrollment';
 import { RoadmapMapper } from 'src/modules/courses/entities/roadmap-mapper.entity';
+import AbstractEntity from './abstract.base.entity';
 
 @Entity({ name: 'courses' })
-export class Course {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+export class Course extends AbstractEntity {
   @Column({ length: 255 })
   title: string;
 
@@ -41,10 +32,4 @@ export class Course {
 
   @OneToMany(() => RoadmapMapper, (mapper) => mapper.course)
   roadmapMappers: RoadmapMapper[];
-
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
 }

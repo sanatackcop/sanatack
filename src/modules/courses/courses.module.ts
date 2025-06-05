@@ -68,6 +68,13 @@ import LessonService from './services/lesson.service';
     ModuleService,
     LessonService,
   ],
-  exports: [CareerPathService, RoadMapService, CoursesService],
+  exports: [
+    CareerPathService,
+    RoadMapService,
+    CoursesService,
+    QuizService,
+    VideoService,
+    ResourceService,
+  ],
 })
 export class CoursesModule {}
