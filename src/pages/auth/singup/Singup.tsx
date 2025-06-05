@@ -1,62 +1,67 @@
-import { useRef, useState, useEffect, useContext } from "react";
-import { useNavigate } from "react-router-dom";
-import LogoLight from "@/assets/logo.svg";
-import { Button } from "@/components/ui/button";
+import React, { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-  FormControl,
-} from "@/components/ui/form";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-  InputOTPSeparator,
-} from "@/components/ui/input-otp";
-import Storage from "@/lib/Storage";
-import UserContext from "@/context/UserContext";
-import {
-  sendEmailOtpApi,
-  signupApi,
-  verifyOtpApi,
-} from "@/utils/_apis/auth-apis";
-import { Input } from "@/components/ui/input";
+  User,
+  Briefcase,
+  Users,
+  Eye,
+  EyeOff,
+  Check,
+  Shield,
+  Target,
+  BookOpen,
+  Rocket,
+  X,
+  ChevronLeft,
+  Loader2,
+  AlertCircle,
+} from "lucide-react";
+import Navbar from "@/components/Navbar";
+import { signupApi } from "@/utils/_apis/auth-apis";
+
+interface Step {
+  title: string;
+  description: string;
+  icon: React.ComponentType<any>;
+}
+
+interface UserOption {
+  key: string;
+  icon: React.ComponentType<any>;
+  title: string;
+  desc: string;
+}
+
+interface ApiError {
+  message: string;
+  field?: string;
+}
 
 const SignupFormSchema = z.object({
-  first_name: z.string().min(1, "First name is required"),
-  last_name: z.string().min(1, "Last name is required"),
-  phone: z.string().min(1, "Phone is required"),
-  email: z.string().email("Invalid email"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  first_name: z.string().min(1, "الاسم الأول مطلوب"),
+  last_name: z.string().min(1, "اسم العائلة مطلوب"),
+  phone: z.string().min(10, "رقم الهاتف يجب أن يكون 10 أرقام على الأقل"),
+  email: z.string().email("بريد إلكتروني غير صحيح"),
+  password: z.string().min(6, "كلمة المرور يجب أن تكون 6 أحرف على الأقل"),
 });
+
 type SignupFormData = z.infer<typeof SignupFormSchema>;
 
-// TODO: fix
-const Signup = () => {
-  const navigate = useNavigate();
-  const formRef = useRef<HTMLDivElement>(null);
-  const [step, setStep] = useState(0);
-  const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState("");
-  const [otp, setOtp] = useState<string[]>(Array(6).fill(""));
-
-  const userContext = useContext(UserContext);
-  const auth = userContext?.auth;
-  const login = userContext?.login;
-
-  useEffect(() => {
-    window.history.pushState(null, "", window.location.href);
-    const handlePopState = () =>
-      window.history.pushState(null, "", window.location.href);
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
+const SignupFlow: React.FC = () => {
+  const [currentStep, setCurrentStep] = useState<number>(0);
+  const [userType, setUserType] = useState<string>("");
+  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [formData, setFormData] = useState<SignupFormData | null>(null);
+  const [focusedInput, setFocusedInput] = useState<string | null>(null);
+  const [showMobileSteps, setShowMobileSteps] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [errors, setErrors] = useState<ApiError[]>([]);
+  const [otpSent, setOtpSent] = useState<boolean>(false);
+  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const form = useForm<SignupFormData>({
     resolver: zodResolver(SignupFormSchema),
@@ -69,256 +74,800 @@ const Signup = () => {
     },
   });
 
-  const onSubmit = async (values: SignupFormData) => {
-    setError(null);
+  const steps: Step[] = [
+    {
+      title: "المعلومات الشخصية",
+      description: "أدخل بياناتك الأساسية",
+      icon: User,
+    },
+    {
+      title: "نوع المستخدم",
+      description: "اختر الفئة التي تناسبك",
+      icon: Target,
+    },
+    { title: "الاهتمامات", description: "اختر مجالات اهتمامك", icon: BookOpen },
+    { title: "تأكيد الهوية", description: "تحقق من رقم الهاتف", icon: Shield },
+  ];
+
+  const userOptions: UserOption[] = [
+    {
+      key: "student",
+      icon: User,
+      title: "طالب",
+      desc: "أو سيلتحق قريباً بالدراسة",
+    },
+    {
+      key: "professional",
+      icon: Briefcase,
+      title: "محترف",
+      desc: "يسعى لتطوير مهنته",
+    },
+    { key: "other", icon: Users, title: "أخرى", desc: "فئة أخرى" },
+  ];
+
+  const interests = [
+    "البرمجة",
+    "التصميم",
+    "التسويق",
+    "الأعمال",
+    "اللغات",
+    "العلوم",
+    "الطب",
+    "الهندسة",
+    "الفنون",
+    "الموسيقى",
+    "الرياضة",
+    "الطبخ",
+    "التصوير",
+    "الكتابة",
+    "المحاسبة",
+    "القانون",
+  ];
+
+  const registerUser = async (userData: SignupFormData): Promise<boolean> => {
+    setLoading(true);
+    setErrors([]);
     try {
-      const result: any = await signupApi({
-        first_name: values.first_name,
-        last_name: values.last_name,
-        phone: values.phone,
-        email: values.email,
-        password: values.password,
+      const req = await signupApi({
+        email: userData.email,
+        password: userData.password,
+        first_name: userData.first_name,
+        last_name: userData.last_name,
+        phone: userData.phone,
       });
-      if (result && login) {
-        login({
-          role: result.role,
-          type: result.type,
-          user: result.user,
-          refresh_token: result.refresh_token,
-        });
-        setStep(1);
-        await sendEmailOtp();
-      }
-    } catch (err) {
-      console.error("Signup failed", err);
-      setError("Signup failed. Please try again.");
+
+      return Boolean(req);
+    } catch (error) {
+      setErrors([
+        {
+          message:
+            error instanceof Error ? error.message : "حدث خطأ في التسجيل",
+        },
+      ]);
+      return false;
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleInputChange = (index: number, value: string) => {
+  const sendOtp = async (phone: string): Promise<boolean> => {
+    setLoading(true);
+    setErrors([]);
+    console.log(phone);
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      if (Math.random() > 0.8) {
+        throw new Error("فشل في إرسال رمز التحقق");
+      }
+
+      setOtpSent(true);
+      return true;
+    } catch (error) {
+      setErrors([
+        {
+          message:
+            error instanceof Error ? error.message : "حدث خطأ في إرسال الرمز",
+        },
+      ]);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const verifyOtp = async (otpCode: string): Promise<boolean> => {
+    setLoading(true);
+    setErrors([]);
+
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      if (otpCode !== "123456") {
+        throw new Error("رمز التحقق غير صحيح");
+      }
+
+      return true;
+    } catch (error) {
+      setErrors([
+        {
+          message: error instanceof Error ? error.message : "حدث خطأ في التحقق",
+        },
+      ]);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFormSubmit = async (values: SignupFormData): Promise<void> => {
+    const success = await registerUser(values);
+    if (success) {
+      setFormData(values);
+      setCurrentStep(1);
+    }
+  };
+
+  const handleUserTypeNext = (): void => {
+    if (userType) {
+      setErrors([]);
+      setCurrentStep(2);
+    } else {
+      setErrors([{ message: "يرجى اختيار نوع المستخدم" }]);
+    }
+  };
+
+  const handleInterestsNext = async (): Promise<void> => {
+    if (selectedInterests.length >= 3) {
+      setErrors([]);
+      if (formData) {
+        const success = await sendOtp(formData.phone);
+        if (success) {
+          setCurrentStep(3);
+        }
+      }
+    } else {
+      setErrors([{ message: "يرجى اختيار 3 مجالات على الأقل" }]);
+    }
+  };
+
+  const handleOtpChange = (index: number, value: string): void => {
     if (value.length > 1) return;
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
-  };
-
-  const verifyOtp = async () => {
-    try {
-      const result: any = await verifyOtpApi({
-        otp: otp.join(""),
-        user_id: auth!.user.id,
-      });
-      if (result.isVerify === true) {
-        setMessage("Verify Successfully.");
-        const authStorage = Storage.get("auth");
-        if (authStorage && authStorage.user) {
-          authStorage.user.isVerify = true;
-          Storage.set("auth", authStorage);
-        }
-        navigate("/dashboard");
-      } else {
-        setMessage("OTP verification failed. Please try again.");
-      }
-    } catch (error) {
-      setMessage("An error occurred during OTP verification.");
+    if (value && index < 5) {
+      otpRefs.current[index + 1]?.focus();
     }
   };
 
-  const sendEmailOtp = async () => {
-    try {
-      const result = await sendEmailOtpApi({
-        user_id: auth!.user.id,
-        email: auth!.user.email,
-      });
-      if (result) {
-        setMessage("OTP has been sent to your email.");
-      } else {
-        setMessage("Failed to send OTP. Please try again.");
-      }
-    } catch (error) {
-      setMessage("An error occurred while sending OTP.");
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent): void => {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      otpRefs.current[index - 1]?.focus();
     }
   };
 
-  const renderSignupForm = () => (
-    <div className="w-full max-w-xs">
-      <h1 className="text-2xl font-bold text-center mb-4">إنشاء حساب جديد</h1>
-      <p className="text-sm text-center text-muted-foreground mb-6">
-        أدخل التفاصيل أدناه لإنشاء حساب جديد
-      </p>
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-4">
-          {error}
+  const toggleInterest = (interest: string): void => {
+    setSelectedInterests((prev) =>
+      prev.includes(interest)
+        ? prev.filter((i) => i !== interest)
+        : prev.length < 10
+        ? [...prev, interest]
+        : prev
+    );
+  };
+
+  const handleFinalSubmit = async (): Promise<void> => {
+    const otpCode = otp.join("");
+    const success = await verifyOtp(otpCode);
+    if (success) {
+      console.log("بيانات التسجيل:", {
+        personalInfo: formData,
+        userType,
+        interests: selectedInterests,
+        otp: otpCode,
+      });
+      alert("تم إنشاء الحساب بنجاح!");
+    }
+  };
+
+  const ErrorDisplay = (): JSX.Element | null => {
+    if (errors.length === 0) return null;
+
+    return (
+      <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+        {errors.map((error, index) => (
+          <div
+            key={index}
+            className="flex items-center gap-2 text-red-600 dark:text-red-400 text-sm"
+          >
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>{error.message}</span>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const renderMobileHeader = (): JSX.Element => (
+    <div className="md:hidden sticky top-16 z-40 bg-white/90 dark:bg-black/90 border-b border-gray-200 dark:border-gray-800 backdrop-blur-md">
+      <div className="flex items-center justify-between p-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-black text-white dark:bg-white dark:text-black">
+            <Rocket className="w-5 h-5" />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-black dark:text-white">
+              إنشاء حساب
+            </h1>
+            <p className="text-xs text-gray-600 dark:text-gray-400">
+              الخطوة {currentStep + 1} من {steps.length}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowMobileSteps(!showMobileSteps)}
+            className="p-2 rounded-lg bg-gray-100 text-black dark:bg-gray-800 dark:text-white"
+          >
+            <Target className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      <div className="px-4 pb-4">
+        <div className="w-full h-2 rounded-full bg-gray-200 dark:bg-gray-800">
+          <div
+            className="h-2 rounded-full transition-all duration-500 bg-black dark:bg-white"
+            style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
+          />
+        </div>
+      </div>
+
+      {showMobileSteps && (
+        <div className="bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 p-4">
+          <div className="space-y-3">
+            {steps.map((step, index) => {
+              const StepIcon = step.icon;
+              const isCompleted = index < currentStep;
+              const isCurrent = index === currentStep;
+              return (
+                <div key={index} className="flex items-center gap-3">
+                  <div
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                      isCompleted
+                        ? "bg-black text-white dark:bg-white dark:text-black"
+                        : isCurrent
+                        ? "bg-black text-white dark:bg-white dark:text-black"
+                        : "bg-gray-200 text-gray-400 dark:bg-gray-800 dark:text-gray-400"
+                    }`}
+                  >
+                    {isCompleted ? (
+                      <Check className="w-4 h-4" />
+                    ) : (
+                      <StepIcon className="w-4 h-4" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <h4
+                      className={`text-sm font-medium ${
+                        isCurrent || isCompleted
+                          ? "text-black dark:text-white"
+                          : "text-gray-500 dark:text-gray-400"
+                      }`}
+                    >
+                      {step.title}
+                    </h4>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">
+                      {step.description}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
-      <Form {...form}>
-        <form
-          className="flex flex-col gap-4"
-          onSubmit={form.handleSubmit(onSubmit)}
-        >
-          <div className="grid grid-cols-1 gap-4">
-            <FormField
-              control={form.control}
-              name="first_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel htmlFor="first_name">الاسم الأول</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="last_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel htmlFor="last_name">اسم العائلة</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel htmlFor="phone">رقم الهاتف</FormLabel>
-                  <FormControl>
-                    <Input {...field} type="tel" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <div className="grid grid-cols-1 gap-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel htmlFor="email">البريد الإلكتروني</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel htmlFor="password">كلمة المرور</FormLabel>
-                  <FormControl>
-                    <Input {...field} type="password" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <Button
-            type="submit"
-            className="w-full py-2 mt-4 bg-blue-600 text-white rounded-lg hover:bg-indigo-700"
-          >
-            التالي
-          </Button>
-        </form>
-      </Form>
     </div>
   );
 
-  const renderOTPVerification = () => (
-    <div className="flex flex-col items-center justify-center p-6">
-      <h2 className="text-3xl font-extrabold text-center text-white mb-8">
-        OTP Verification
-      </h2>
-      <p className="text-white mb-4">{message}</p>
-      <div className="w-full max-w-md p-6 flex flex-col items-center justify-center rounded-lg shadow-md">
-        <InputOTP
-          maxLength={6}
-          value={otp.join("")}
-          onChange={(val: string) => setOtp(val.split(""))}
-        >
-          <InputOTPGroup className="flex justify-center gap-2">
-            {[0, 1, 2].map((index) => (
-              <InputOTPSlot
-                key={index}
-                index={index}
-                defaultValue={otp[index]}
-                className="w-12 h-12 border border-gray-300 rounded-md text-center text-xl font-semibold text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                onChange={(e: any) => handleInputChange(index, e.value)}
-              />
-            ))}
-          </InputOTPGroup>
-          <InputOTPSeparator className="mx-4 text-white text-lg">
-            -
-          </InputOTPSeparator>
-          <InputOTPGroup className="flex justify-center gap-2">
-            {[3, 4, 5].map((index) => (
-              <InputOTPSlot
-                key={index}
-                index={index}
-                defaultValue={otp[index]}
-                className="w-12 h-12 border border-gray-300 rounded-md text-center text-xl font-semibold text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                onChange={(e: any) => handleInputChange(index, e.value)}
-              />
-            ))}
-          </InputOTPGroup>
-        </InputOTP>
+  const renderStepsProgress = (): JSX.Element => (
+    <div className="h-full flex flex-col bg-gradient-to-b from-gray-50 to-white dark:from-black dark:to-gray-900 border-l border-gray-200 dark:border-gray-800 overflow-hidden">
+      <div className="p-6 shrink-0 mt-2">
+        <h3 className="text-xl font-bold text-black dark:text-white mb-2">
+          خطوات التسجيل
+        </h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          تتبع تقدمك في عملية التسجيل
+        </p>
       </div>
-      <div className="flex gap-4 mt-4">
-        <Button
-          onClick={verifyOtp}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Verify OTP
-        </Button>
-        <Button
-          onClick={sendEmailOtp}
-          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-        >
-          Resend OTP
-        </Button>
+      <div className="flex-1 p-6 overflow-y-auto">
+        <div className="space-y-6">
+          {steps.map((step, index) => {
+            const StepIcon = step.icon;
+            const isCompleted = index < currentStep;
+            const isCurrent = index === currentStep;
+            return (
+              <div key={index} className="flex items-start gap-4">
+                <div className="flex flex-col items-center shrink-0">
+                  <div
+                    className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 ${
+                      isCompleted
+                        ? "bg-black text-white shadow-lg shadow-black/30 dark:bg-white dark:text-black dark:shadow-white/30"
+                        : isCurrent
+                        ? "bg-black text-white shadow-lg shadow-black/30 dark:bg-white dark:text-black dark:shadow-white/30"
+                        : "bg-white text-gray-400 border-2 border-gray-300 shadow-sm dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700"
+                    }`}
+                  >
+                    {isCompleted ? (
+                      <Check className="w-6 h-6" />
+                    ) : (
+                      <StepIcon className="w-6 h-6" />
+                    )}
+                  </div>
+                  {index < steps.length - 1 && (
+                    <div
+                      className={`w-0.5 h-10 mt-3 rounded-full transition-all duration-500 ${
+                        isCompleted
+                          ? "bg-black dark:bg-white"
+                          : "bg-gray-300 dark:bg-gray-800"
+                      }`}
+                    />
+                  )}
+                </div>
+                <div className="flex-1 pt-3 min-w-0">
+                  <h4
+                    className={`font-bold text-base transition-all duration-300 ${
+                      isCurrent || isCompleted
+                        ? "text-black dark:text-white"
+                        : "text-gray-500 dark:text-gray-400"
+                    }`}
+                  >
+                    {step.title}
+                  </h4>
+                  <p className="text-sm mt-1 leading-relaxed text-gray-600 dark:text-gray-400">
+                    {step.description}
+                  </p>
+                  {isCurrent && (
+                    <div className="mt-3 text-xs px-3 py-1.5 rounded-full inline-block font-medium bg-black/10 text-black border border-gray-300 dark:bg-white/10 dark:text-white dark:border-gray-700">
+                      الخطوة الحالية
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      <div className="p-6 shrink-0 border-t border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/50 backdrop-blur-sm">
+        <div className="mb-3">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              التقدم العام
+            </span>
+            <span className="text-sm font-bold text-black dark:text-white">
+              {Math.round((currentStep / (steps.length - 1)) * 100)}%
+            </span>
+          </div>
+          <div className="w-full h-3 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden">
+            <div
+              className="h-3 rounded-full transition-all duration-500 bg-black dark:bg-white"
+              style={{ width: `${(currentStep / (steps.length - 1)) * 100}%` }}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
+
+  const renderInput = (
+    name: keyof SignupFormData,
+    label: string,
+    placeholder: string,
+    type: string = "text"
+  ): JSX.Element => (
+    <div>
+      <label className="block text-sm font-medium mb-2 text-gray-800 dark:text-gray-200">
+        {label}
+      </label>
+      <div className="relative">
+        <input
+          {...form.register(name)}
+          type={
+            type === "password" ? (showPassword ? "text" : "password") : type
+          }
+          placeholder={placeholder}
+          onFocus={() => setFocusedInput(name)}
+          onBlur={() => setFocusedInput(null)}
+          className={`w-full p-3 rounded-xl border-2 transition-all duration-300 text-base text-right ${
+            focusedInput === name
+              ? "border-black ring-4 ring-black/20 bg-white text-black dark:border-white dark:ring-white/20 dark:bg-gray-800 dark:text-white"
+              : form.formState.errors[name]
+              ? "border-red-500 bg-red-50 dark:border-red-400 dark:bg-red-900/20"
+              : "border-gray-300 bg-gray-50/50 text-black hover:border-gray-400 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:border-gray-500"
+          } focus:outline-none placeholder:text-gray-400`}
+        />
+        {type === "password" && (
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 transition-colors text-gray-500 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300"
+          >
+            {showPassword ? (
+              <EyeOff className="w-5 h-5" />
+            ) : (
+              <Eye className="w-5 h-5" />
+            )}
+          </button>
+        )}
+      </div>
+      {form.formState.errors[name] && (
+        <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
+          <span className="w-4 h-4 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">
+            !
+          </span>
+          {form.formState.errors[name]?.message}
+        </p>
+      )}
+    </div>
+  );
+
+  const renderPersonalInfoStep = (): JSX.Element => (
+    <div className="h-full flex flex-col bg-gradient-to-br from-gray-50 to-white dark:from-black dark:to-gray-900 overflow-y-auto">
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-6">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-6">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl mb-4 shadow-2xl bg-black text-white dark:bg-white dark:text-black">
+              <User className="w-6 h-6" />
+            </div>
+            <h2 className="text-2xl md:text-3xl font-bold mb-3 text-black dark:text-white">
+              إنشاء حساب جديد
+            </h2>
+            <p className="text-base text-gray-600 dark:text-gray-400">
+              أدخل بياناتك الشخصية للبدء في رحلة التعلم
+            </p>
+          </div>
+          <div className="bg-white/80 dark:bg-gray-800/80 border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl p-6 space-y-4 border-2 backdrop-blur-sm">
+            <ErrorDisplay />
+            {renderInput("first_name", "الاسم الأول", "أدخل اسمك الأول")}
+            {renderInput("last_name", "اسم العائلة", "أدخل اسم العائلة")}
+            {renderInput("phone", "رقم الهاتف", "0555288598", "tel")}
+            {renderInput(
+              "email",
+              "البريد الإلكتروني",
+              "أدخل بريدك الإلكتروني",
+              "email"
+            )}
+            {renderInput(
+              "password",
+              "كلمة المرور",
+              "أدخل كلمة المرور",
+              "password"
+            )}
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={form.handleSubmit(handleFormSubmit)}
+                disabled={loading}
+                className="flex-1 py-3 rounded-xl font-bold text-base transition-all duration-300 transform hover:scale-105 shadow-2xl flex items-center justify-center gap-2 bg-black text-white hover:bg-gray-800 shadow-black/25 dark:bg-white dark:text-black dark:hover:bg-gray-100 dark:shadow-white/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              >
+                {loading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <>
+                    التالي
+                    <ChevronLeft className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderUserTypeStep = (): JSX.Element => (
+    <div className="h-full flex flex-col bg-gradient-to-br from-gray-50 to-white dark:from-black dark:to-gray-900 overflow-y-auto">
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-6">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-6">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl mb-4 shadow-2xl bg-black text-white dark:bg-white dark:text-black">
+              <Target className="w-6 h-6" />
+            </div>
+            <h2 className="text-2xl md:text-3xl font-bold mb-3 text-black dark:text-white">
+              ما الذي يصفك بشكل أفضل؟
+            </h2>
+            <p className="text-base text-gray-600 dark:text-gray-400">
+              سيساعدنا هذا في تخصيص تجربتك التعليمية
+            </p>
+          </div>
+          <ErrorDisplay />
+          <div className="space-y-3 mb-6">
+            {userOptions.map((option) => {
+              const OptionIcon = option.icon;
+              const isSelected = userType === option.key;
+              return (
+                <div
+                  key={option.key}
+                  onClick={() => setUserType(option.key)}
+                  className={`p-4 rounded-2xl border-2 cursor-pointer transition-all duration-300 transform active:scale-95 hover:scale-105 ${
+                    isSelected
+                      ? "border-black bg-black/5 shadow-2xl shadow-black/25 dark:border-white dark:bg-white/10 dark:shadow-white/25"
+                      : "border-gray-300 bg-white/80 hover:border-gray-400 hover:shadow-lg backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/80 dark:hover:border-gray-600"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`p-3 rounded-xl transition-all duration-300 ${
+                        isSelected
+                          ? "bg-black text-white shadow-lg dark:bg-white dark:text-black"
+                          : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+                      }`}
+                    >
+                      <OptionIcon className="w-6 h-6" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-lg text-black dark:text-white">
+                        {option.title}
+                      </h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        {option.desc}
+                      </p>
+                    </div>
+                    {isSelected && (
+                      <div className="mr-auto">
+                        <Check className="w-5 h-5 text-black dark:text-white" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={handleUserTypeNext}
+              disabled={!userType || loading}
+              className="flex-1 py-3 rounded-xl font-bold text-base transition-all duration-300 transform hover:scale-105 shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 bg-black text-white hover:bg-gray-800 shadow-black/25 dark:bg-white dark:text-black dark:hover:bg-gray-100 dark:shadow-white/25"
+            >
+              {loading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <>
+                  التالي
+                  <ChevronLeft className="w-4 h-4" />
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderInterestsStep = (): JSX.Element => (
+    <div className="h-full flex flex-col bg-gradient-to-br from-gray-50 to-white dark:from-black dark:to-gray-900 overflow-hidden">
+      <div className="p-4 sm:p-6 shrink-0">
+        <div className="text-center max-w-md mx-auto">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl mb-4 shadow-2xl bg-black text-white dark:bg-white dark:text-black">
+            <BookOpen className="w-6 h-6" />
+          </div>
+          <h2 className="text-2xl md:text-3xl font-bold mb-3 text-black dark:text-white">
+            اختر مجالات اهتمامك
+          </h2>
+          <p className="text-base text-gray-600 dark:text-gray-400 mb-4">
+            اختر على الأقل 3 مجالات من اهتماماتك (الحد الأقصى 10)
+          </p>
+          <div
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${
+              selectedInterests.length >= 3
+                ? "bg-green-100 text-green-700 border-2 border-green-300 dark:bg-green-900/20 dark:text-green-400 dark:border-green-700"
+                : "bg-gray-200 text-gray-700 border-2 border-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600"
+            }`}
+          >
+            تم اختيار {selectedInterests.length} من أصل 3 (
+            {selectedInterests.length}/10)
+            {selectedInterests.length >= 3 && <Check className="w-4 h-4" />}
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 px-4 sm:px-6 pb-4 sm:pb-6 overflow-hidden flex flex-col">
+        <div className="max-w-2xl mx-auto w-full h-full flex flex-col">
+          <ErrorDisplay />
+
+          <div className="bg-white/80 dark:bg-gray-800/80 border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl p-4 md:p-6 flex flex-col h-full overflow-hidden border-2 backdrop-blur-sm">
+            <div className="flex-1 overflow-y-auto">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
+                {interests.map((interest) => {
+                  const isSelected = selectedInterests.includes(interest);
+                  const isDisabled =
+                    !isSelected && selectedInterests.length >= 10;
+                  return (
+                    <button
+                      key={interest}
+                      onClick={() => !isDisabled && toggleInterest(interest)}
+                      disabled={isDisabled}
+                      className={`p-3 rounded-xl text-sm font-medium transition-all duration-300 transform hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:transform-none ${
+                        isSelected
+                          ? "bg-black text-white shadow-lg dark:bg-white dark:text-black"
+                          : isDisabled
+                          ? "bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                      }`}
+                    >
+                      {interest}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {selectedInterests.length > 0 && (
+              <div className="pt-4 border-t-2 border-gray-200 dark:border-gray-700 shrink-0 mt-4">
+                <h4 className="text-sm font-medium mb-3 text-black dark:text-white">
+                  اهتماماتك المختارة:
+                </h4>
+                <div className="flex flex-wrap gap-2 max-h-20 overflow-y-auto">
+                  {selectedInterests.map((interest) => (
+                    <span
+                      key={interest}
+                      className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs shrink-0 bg-black/10 text-black border border-gray-300 dark:bg-white/10 dark:text-white dark:border-gray-600"
+                    >
+                      {interest}
+                      <button
+                        onClick={() => toggleInterest(interest)}
+                        className="hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full p-0.5 transition-colors ml-1"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="flex gap-3 mt-4 shrink-0">
+            <button
+              onClick={handleInterestsNext}
+              disabled={selectedInterests.length < 3 || loading}
+              className="flex-1 py-3 rounded-xl font-bold text-base transition-all duration-300 transform hover:scale-105 shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 bg-black text-white hover:bg-gray-800 shadow-black/25 dark:bg-white dark:text-black dark:hover:bg-gray-100 dark:shadow-white/25"
+            >
+              {loading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <>
+                  التالي ({selectedInterests.length}/3)
+                  <ChevronLeft className="w-4 h-4" />
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderOtpStep = (): JSX.Element => (
+    <div className="h-full flex flex-col bg-gradient-to-br from-gray-50 to-white dark:from-black dark:to-gray-900 overflow-y-auto">
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-6">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-6">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl mb-4 shadow-2xl bg-black text-white dark:bg-white dark:text-black">
+              <Shield className="w-6 h-6" />
+            </div>
+            <h2 className="text-2xl md:text-3xl font-bold mb-3 text-black dark:text-white">
+              تأكيد رقم الهاتف
+            </h2>
+            <p className="text-base text-gray-600 dark:text-gray-400 mb-4">
+              أدخل الرمز المرسل إلى رقم هاتفك
+            </p>
+            {formData && (
+              <div className="inline-flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium bg-black/10 text-black border border-black dark:bg-white/20 dark:text-white dark:border-white">
+                📱 {formData.phone}
+              </div>
+            )}
+            {otpSent && (
+              <div className="mt-2 text-sm text-green-600 dark:text-green-400">
+                تم إرسال الرمز بنجاح! (استخدم 123456 للتجربة)
+              </div>
+            )}
+          </div>
+          <div className="bg-white/80 dark:bg-gray-800/80 border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl p-6 border-2 backdrop-blur-sm">
+            <ErrorDisplay />
+            <div className="flex justify-center gap-2 mb-6">
+              {otp.map((digit, index) => (
+                <input
+                  key={index}
+                  ref={(el) => (otpRefs.current[index] = el)}
+                  type="text"
+                  value={digit}
+                  onChange={(e) => handleOtpChange(index, e.target.value)}
+                  onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                  className={`w-12 h-12 border-2 rounded-lg text-center text-lg font-bold transition-all duration-300 ${
+                    digit
+                      ? "border-black bg-black/5 text-black shadow-lg shadow-black/20 dark:border-white dark:bg-white/20 dark:text-white dark:shadow-white/20"
+                      : "border-gray-300 bg-gray-50 text-black dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  } focus:outline-none focus:border-black focus:ring-4 focus:ring-black/20 dark:focus:border-white dark:focus:ring-white/20`}
+                  maxLength={1}
+                />
+              ))}
+            </div>
+            <div className="space-y-3">
+              <div className="flex gap-3">
+                <button
+                  onClick={handleFinalSubmit}
+                  disabled={otp.some((digit) => !digit) || loading}
+                  className="flex-1 py-3 rounded-xl font-bold text-base transition-all duration-300 transform hover:scale-105 shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 bg-black text-white hover:bg-gray-800 shadow-black/25 dark:bg-white dark:text-black dark:hover:bg-gray-100 dark:shadow-white/25"
+                >
+                  {loading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <>
+                      تأكيد وإنشاء الحساب
+                      <Check className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+              </div>
+              <button
+                onClick={async () => {
+                  setOtp(["", "", "", "", "", ""]);
+                  if (formData) {
+                    await sendOtp(formData.phone);
+                  }
+                }}
+                disabled={loading}
+                className="w-full py-2 rounded-xl border-2 border-dashed font-medium transition-all duration-300 border-gray-400 text-gray-600 hover:text-gray-700 hover:border-gray-500 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-500 dark:hover:bg-gray-800/50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    جاري الإرسال...
+                  </div>
+                ) : (
+                  "إعادة إرسال الرمز"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderCurrentStep = (): JSX.Element => {
+    switch (currentStep) {
+      case 0:
+        return renderPersonalInfoStep();
+      case 1:
+        return renderUserTypeStep();
+      case 2:
+        return renderInterestsStep();
+      case 3:
+        return renderOtpStep();
+      default:
+        return renderPersonalInfoStep();
+    }
+  };
 
   return (
-    <div className="grid min-h-svh lg:grid-cols-2">
-      <div className="flex flex-col gap-4 p-6 md:p-10">
-        <div className="flex justify-center gap-2 md:justify-start">
-          <a href="#" className="flex items-center gap-2 font-medium">
-            <div className="flex items-center justify-center rounded-md bg-primary text-primary-foreground">
-              <img
-                className="w-[120px] md:w-[180px] cursor-pointer"
-                src={String(LogoLight)}
-                alt="logo"
-              />
-            </div>
-          </a>
+    <div className="min-h-screen" dir="rtl">
+      {/* Full width navbar */}
+      <Navbar />
+
+      <div className="h-screen flex flex-col md:flex-row pt-16">
+        {renderMobileHeader()}
+
+        <div className="flex-1 h-full md:h-auto">{renderCurrentStep()}</div>
+
+        <div className="w-96 hidden lg:block h-full">
+          {renderStepsProgress()}
         </div>
-        <div className="flex flex-1 items-center justify-center" ref={formRef}>
-          {step === 0 ? renderSignupForm() : renderOTPVerification()}
-        </div>
-      </div>
-      <div className="relative hidden bg-muted lg:block">
-        <img
-          src="https://img.freepik.com/free-vector/blue-gradient-background-limbo-studio-setup_107791-32108.jpg"
-          alt="Image"
-          className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
-        />
       </div>
     </div>
   );
 };
 
-export default Signup;
+export default SignupFlow;

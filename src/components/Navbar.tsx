@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import clsx from "clsx";
 import { CircleArrowLeft, Moon, Sun, Menu, X } from "lucide-react";
@@ -12,25 +12,14 @@ import { Button } from "@/components/ui/button";
 const Navbar = () => {
   const { darkMode, toggleDarkMode } = useSettings();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   const sharedNavClass =
     "relative transition-all duration-300 font-medium text-sm hover:scale-105 hover:text-primary-500 dark:hover:text-primary-400 before:absolute before:bottom-0 before:left-0 before:w-0 before:h-0.5 before:bg-gradient-to-r before:from-primary-500 before:to-primary-400 before:transition-all before:duration-300 hover:before:w-full";
 
   return (
-    <header
-      className={clsx(
-        " z-50 w-full transition-all duration-500 ease-out border-b",
-        isScrolled
-          ? " fixed inset-x-0 top-0 backdrop-blur-xl shadow-2xl shadow-black/5 dark:shadow-black/20 py-2 bg-white/80 dark:bg-gray-900/80 border-b border-gray-200/50 dark:border-gray-700/50"
-          : "py-4 bg-gradient-to-b from-white/95 to-white/90 dark:from-gray-900/95 dark:to-gray-900/90"
-      )}
+    <nav
+      className="fixed inset-x-0 top-0 z-50 w-full transition-all duration-500 ease-out 
+    backdrop-blur-xl shadow-2xl shadow-black/5 dark:shadow-black/20 py-2 bg-white/80 dark:bg-gray-900/80 border-b border-gray-200/50 dark:border-gray-700/50"
     >
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 md:px-8 lg:px-12">
         <Link
@@ -187,7 +176,7 @@ const Navbar = () => {
           </ul>
         </div>
       </div>
-    </header>
+    </nav>
   );
 };
 

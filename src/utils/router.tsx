@@ -13,7 +13,7 @@ import MaterialPage from "@/admin/pages/material.page";
 const publicRoutes = [
   { path: "/", element: <HomePAGE /> },
   { path: "/login", element: <LoginPage /> },
-  { path: "/singup", element: <SingupPage /> },
+  { path: "/signup", element: <SingupPage /> },
 ];
 
 const privateRoutes = [{ path: "/dashboard/*", element: <MainDashboard /> }];

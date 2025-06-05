@@ -67,13 +67,15 @@ export default function CourseView() {
   return (
     <AppLayout>
       <GenericSection title={course?.title} description={course?.description}>
-        <CourseTags
-          duration={course?.tags.durtionsHours}
-          unitesNum={course?.tags.unitesNum}
-          level={course?.level}
-          courseType={course?.tags.courseType}
-          className="mr-2"
-        />
+        {course?.tags && (
+          <CourseTags
+            duration={course?.tags.durtionsHours}
+            unitesNum={course?.tags.unitesNum}
+            level={course?.level}
+            courseType={course?.tags.courseType}
+            className="mr-2"
+          />
+        )}
       </GenericSection>
 
       <div className="w-full mt-5 mb-5">
