@@ -13,7 +13,13 @@ async function bootstrap() {
   app.use(urlencoded({ extended: true, limit: '50mb' }));
 
   app.enableCors({
-    origin: ['http://localhost:5173', 'https://your-production-domain.com'],
+    origin: [
+      'http://localhost:3000',
+      'http://localhost:5173',
+      'http://localhost:5174',
+      'http://localhost:3001',
+      process.env.FRONTEND_URL || '*',
+    ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: [
       'Content-Type',
@@ -24,7 +30,8 @@ async function bootstrap() {
       'Accept-Version',
       'Content-Length',
       'Content-MD5',
-      'user_id'
+      'user_id',
+      'Connection',
     ],
     exposedHeaders: ['Authorization', 'X-Request-Id'],
     credentials: true,

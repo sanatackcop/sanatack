@@ -403,7 +403,8 @@ export class CoursesService {
     //   where: { user: { id: userId }, course: { id: courseId } },
     // });
     // return rec?.progress ?? 0;
-    throw new Error('Not Implemented' + userId + courseId);
+    // throw new Error('Not Implemented' + userId + courseId);
+    return 0;
   }
 
   getCurrentCoursesForUser(userId: string) {
