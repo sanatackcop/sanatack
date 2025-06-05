@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { useSettings } from "@/context/SettingsContexts";
 import { ModernButton } from "@/components/ModernButton";
 
 const FAQs = () => {
-  const [openItems, setOpenItems] = useState([0]);
+  const [openItems, setOpenItems] = useState<Set<number>>(new Set());
   const { darkMode } = useSettings();
 
   const faqData = [
@@ -61,15 +61,13 @@ const FAQs = () => {
     },
   ];
 
-  const toggleItem = (index: any) => {
+  const toggleItem = useCallback((index: number) => {
     setOpenItems((prev) => {
-      if (prev.includes(index)) {
-        return prev.filter((i) => i !== index);
-      } else {
-        return [...prev, index];
-      }
+      const updated = new Set(prev);
+      updated.has(index) ? updated.delete(index) : updated.add(index);
+      return updated;
     });
-  };
+  }, []);
 
   return (
     <div
@@ -87,7 +85,7 @@ const FAQs = () => {
 
         <div className="max-w-6xl mx-auto">
           {faqData.map((item, index) => {
-            const isOpen = openItems.includes(index);
+            const isOpen = openItems.has(index);
 
             return (
               <div
