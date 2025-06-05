@@ -34,7 +34,6 @@ import { createNewResource } from "@/utils/_apis/admin-api";
 // Example MaterialType enum values — adjust to match your backend
 
 const MaterialTypeEnum = z.enum(["resource", "video", "quiz", "link"]);
-type MaterialType = z.infer<typeof MaterialTypeEnum>;
 
 const resourceSchema = z.object({
   title: z.string().min(1, "العنوان مطلوب"),

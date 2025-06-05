@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { useSettings } from "@/context/SettingsContexts";
 import { useParams, useNavigate } from "react-router-dom";
 import MaterialViewer from "./_MaterialViewer";
 import { getSingleCoursesApi } from "@/utils/_apis/courses-apis";
-import { iconMap } from "./const";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Course, Material } from "@/utils/types";
@@ -87,10 +85,10 @@ export default function CourseLearningPage() {
     <div className="flex h-screen w-full overflow-hidden bg-[#eaeaea] dark:bg-[#0C0C0C] text-gray-900 dark:text-white">
       <SidebarProvider>
         <CourseSidebar
-          course={course}
-          currentMaterial={currentMaterial}
-          setCurrentMaterial={setCurrentMaterial}
-          iconMap={iconMap}
+        // course={course}
+        // currentMaterial={currentMaterial}
+        // setCurrentMaterial={setCurrentMaterial}
+        // iconMap={iconMap}
         />
         <main className="relative flex flex-1 flex-col overflow-auto p-4 pt-0 bg-white dark:bg-[#131313] gap-4">
           <MaterialViewer

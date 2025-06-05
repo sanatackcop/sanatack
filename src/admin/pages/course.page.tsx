@@ -6,11 +6,8 @@ import { CourseColumns } from "../columns";
 
 export default function CoursePage() {
   const [courses, setCourses] = useState<Course[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [showDialog, setShowDialog] = useState<boolean>(false);
 
   async function fetchCourses() {
-    setLoading(true);
     try {
       const res = await getListCoursesApi({});
       if (res) {
@@ -18,8 +15,6 @@ export default function CoursePage() {
       }
     } catch (err) {
       console.error(err);
-    } finally {
-      setLoading(false);
     }
   }
 

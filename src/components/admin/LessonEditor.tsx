@@ -142,8 +142,8 @@ const VideoItem: React.FC<{
 
     <Input
       placeholder="Enter Video URL"
-      value={video.url}
-      onChange={(e) => onChange({ url: e.target.value })}
+      value={video.youtubeId}
+      onChange={(e) => onChange({ youtubeId: e.target.value })}
       className="h-8"
     />
   </li>
@@ -214,7 +214,10 @@ const LessonEditor = React.memo<{
 
   const handleAddVideo = useCallback(() => {
     const newVideo: VideoInput = {
-      url: "",
+      title: "",
+      description: "",
+      youtubeId: "",
+      duration: 0,
     };
     onUpdate({ videos: [...lesson.videos, newVideo] });
   }, [lesson.videos, onUpdate]);
