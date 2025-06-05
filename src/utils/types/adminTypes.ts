@@ -8,7 +8,10 @@ export interface ResourceInput {
 }
 
 export interface VideoInput {
-  url: string;
+  title: string;
+  youtubeId: string;
+  description: string;
+  duration: number;
 }
 
 export interface QuizInput {

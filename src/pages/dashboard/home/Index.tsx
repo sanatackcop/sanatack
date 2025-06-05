@@ -22,7 +22,7 @@ interface Props {
   className?: string;
 }
 
-const HeroSection = () => (
+export const HeroSection = () => (
   <section className="relative overflow-hidden rounded-2xl bg-[#eaeaea] dark:bg-[#2A2D3D] p-8 text-white shadow-xl">
     <div className="relative z-10 space-y-5">
       <h1 className="text-md sm:text-lg md:text-2xl text-[#34363F] dark:text-white font-extrabold leading-tight">
@@ -87,7 +87,7 @@ export default function DashboardHome() {
   return (
     <AppLayout>
       <div className="space-y-10">
-        <HeroSection />
+        {/* <HeroSection /> */}
         <GenericSection
           title="تابع دوراتك الحالية"
           description="أكمل ما بدأته وارتقِ بمهاراتك."
@@ -99,13 +99,13 @@ export default function DashboardHome() {
                 key={p.id}
                 title={p.title}
                 link={`/dashboard/courses/${p.id}/${p.title}`}
-                className=" h-[380px] w-[400px]"
+                className=" h-[400px] w-[350px]"
                 progress={p.progress}
                 description={p.description}
               />
             ))}
         </div>
-
+                 
         <GenericSection title="موصى به لك" description="تعلم افضل المهارات" />
         <div
           className={clsx(
@@ -119,7 +119,7 @@ export default function DashboardHome() {
               key={course.id}
               title={course.title}
               description={course.description}
-              link={`/dashboard/courses/${course.id}/${course.title}`}
+              link={`/dashboard/courses/${course.id}`}
               className={clsx(
                 "flex flex-col",
                 index === 0 && "md:col-span-2 lg:col-span-2"

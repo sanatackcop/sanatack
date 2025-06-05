@@ -24,8 +24,7 @@ const CourseProduct: React.FC = () => {
 export default function MainDashboard() {
   return (
     <Routes>
-      <Route path="courses/:id/:courseName/*" element={<CourseProduct />} />
-
+      <Route path="courses/:id/:title" element={<CourseLearningPage />} />
       <Route
         path="/"
         element={

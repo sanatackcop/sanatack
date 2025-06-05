@@ -63,27 +63,24 @@ export interface LessonDetailsDto {
 }
 
 export interface ResourceDto {
-  id: string;
-  title?: string;
-  description?: string;
-  url?: string;
-  content?: string;
+  title: string;
+  description: string;
+  url: string;
+  content: string;
 }
 
 export interface QuizDto {
-  id: string;
-  question?: string;
-  options?: string[];
-  correctAnswer?: string;
+  question: string;
+  options: string[];
+  correctAnswer: string;
   explanation?: string;
 }
 
 export interface VideoDto {
-  id: string;
-  youtubeId?: string;
-  title?: string;
-  description?: string;
-  duration?: number;
+  youtubeId: string;
+  title: string;
+  description: string;
+  duration: number;
 }
 
 export interface tagsInterface {
