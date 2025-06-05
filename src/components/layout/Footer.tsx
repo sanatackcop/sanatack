@@ -137,8 +137,8 @@ const Footer: React.FC = () => {
   const { darkMode } = useSettings();
 
   return (
-    <footer className="w-full px-20 border-t border">
-      <div className="flex flex-col md:flex-row justify-between items-center ">
+    <footer className="w-full px-6 sm:px-10 md:px-20 py-6 border-t border-gray-300 dark:border-gray-700">
+      <div className="flex flex-col md:flex-row justify-between items-center gap-6">
         <div className="flex-shrink-0 transition-transform duration-300 hover:scale-105">
           <img
             src={String(darkMode ? LogoDark : LogoLight)}
@@ -147,11 +147,10 @@ const Footer: React.FC = () => {
           />
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex gap-4">
           {[
             { label: "X", href: "#" },
             { label: "in", href: "#" },
-            { label: "@", href: "#" },
           ].map(({ label, href }) => (
             <a
               key={label}
