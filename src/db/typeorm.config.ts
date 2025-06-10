@@ -2,8 +2,7 @@ import { DataSource } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { config } from 'dotenv';
 import { migrationFiles } from './migrations';
-import { User } from 'src/modules/users/entities/user.entity';
-import { Token } from 'src/modules/auth/entities/token.entity';
+import User from 'src/modules/users/entities/user.entity';
 import { Course } from 'src/modules/courses/entities/courses.entity';
 import { Module } from 'src/modules/courses/entities/module.entity';
 import { CourseMapper } from 'src/modules/courses/entities/courses-maper.entity';
@@ -20,13 +19,18 @@ import { CareerPathMapper } from 'src/modules/courses/entities/career-mapper.ent
 import { RoadmapMapper } from 'src/modules/courses/entities/roadmap-mapper.entity';
 import { CareerEnrollment } from 'src/modules/courses/entities/career-enrollment.entity';
 import { RoadmapEnrollment } from 'src/modules/courses/entities/roadmap-enrollment.entity';
+import UsersAttributes from 'src/modules/users/entities/user.attributes.entity';
+import { Otps } from 'src/modules/auth/entities/otp.entity';
+import { Attempts } from 'src/modules/auth/entities/attempts.entity';
 
 config();
 
 const configService = new ConfigService();
 export const entities = [
   User,
-  Token,
+  UsersAttributes,
+  Otps,
+  Attempts,
   Course,
   Module,
   CourseMapper,

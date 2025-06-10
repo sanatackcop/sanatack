@@ -1,7 +1,7 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, Relation } from 'typeorm';
 import { Course } from './courses.entity';
-import { User } from 'src/modules/users/entities/user.entity';
-import AbstractEntity from './abstract.base.entity';
+import User from 'src/modules/users/entities/user.entity';
+import AbstractEntity from '@libs/db/abstract.base.entity';
 
 @Entity({ name: 'enrollment' })
 export class Enrollment extends AbstractEntity {
@@ -10,14 +10,14 @@ export class Enrollment extends AbstractEntity {
     nullable: false,
   })
   @JoinColumn({ name: 'course_id' })
-  course: Course;
+  course: Relation<Course>;
 
   @ManyToOne(() => User, (user) => user.enrollment, {
     onDelete: 'SET NULL',
     nullable: false,
   })
   @JoinColumn({ name: 'user_id' })
-  user: User;
+  user: Relation<User>;
 
   @Column({ type: 'timestamp', nullable: true })
   cancelledAt: Date;

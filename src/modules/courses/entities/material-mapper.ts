@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { Lesson } from './lessons.entity';
-import AbstractEntity from './abstract.base.entity';
+import AbstractEntity from '@libs/db/abstract.base.entity';
 
 // type: "video" | "document" | "link" | "code";
 export enum MaterialType {

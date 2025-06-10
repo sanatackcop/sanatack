@@ -1,7 +1,7 @@
 import { Column, Entity, OneToMany } from 'typeorm';
 import { CareerPathMapper } from './career-mapper.entity';
 import { CareerEnrollment } from './career-enrollment.entity';
-import AbstractEntity from './abstract.base.entity';
+import AbstractEntity from '@libs/db/abstract.base.entity';
 
 @Entity('career_path')
 export class CareerPath extends AbstractEntity {

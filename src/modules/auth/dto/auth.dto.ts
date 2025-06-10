@@ -1,5 +1,20 @@
-import { IsEmail, IsNotEmpty, IsString, IsUUID, isUUID } from 'class-validator';
-import { User } from 'src/modules/users/entities/user.entity';
+import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import {
+  ArrayNotEmpty,
+  IsArray,
+  IsDefined,
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsNotEmptyObject,
+  IsObject,
+  IsPhoneNumber,
+  IsString,
+  Length,
+  ValidateNested,
+} from 'class-validator';
+import { UserType } from 'src/modules/users/entities/user.attributes.entity';
 
 export class BasicLoginBody {
   @IsNotEmpty()
@@ -12,26 +27,56 @@ export class BasicLoginBody {
   password: string;
 }
 
-export class SingupBody extends BasicLoginBody {
+export class PersonalInfoDto {
   @IsNotEmpty()
   @IsString()
-  first_name: string;
+  firstName: string;
 
   @IsNotEmpty()
   @IsString()
-  last_name: string;
+  lastName: string;
 
   @IsNotEmpty()
   @IsString()
+  @IsEmail()
+  email: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @Length(6)
+  password: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @IsPhoneNumber('SA')
   phone: string;
 }
 
-export class SendEmailOtpBody extends BasicLoginBody {
+export class SignupBody {
+  @IsDefined()
+  @IsNotEmptyObject()
+  @IsObject()
+  @ValidateNested()
+  @ApiProperty()
+  @Type(() => PersonalInfoDto)
+  personalInfo: PersonalInfoDto;
+
+  @IsNotEmpty()
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsString({ each: true })
+  @ApiProperty()
+  interests: string[];
+
   @IsNotEmpty()
   @IsString()
-  @IsUUID()
-  user_id: string;
+  @ApiProperty()
+  @IsEnum(UserType)
+  userType: UserType;
+}
 
+export class SendEmailOtpBody {
+  @ApiProperty()
   @IsNotEmpty()
   @IsString()
   @IsEmail()
@@ -41,12 +86,13 @@ export class SendEmailOtpBody extends BasicLoginBody {
 export class VerifyOtpBody {
   @IsNotEmpty()
   @IsString()
+  @Length(6, 6)
   otp: string;
 
   @IsNotEmpty()
   @IsString()
-  @IsUUID()
-  user_id: string;
+  @IsEmail()
+  email: string;
 }
 
 export type SingupReturn = {

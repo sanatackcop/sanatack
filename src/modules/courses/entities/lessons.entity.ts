@@ -1,7 +1,7 @@
 import { Entity, Column, OneToMany } from 'typeorm';
 import { LessonMapper } from './lessons-maper.entity';
 import { MaterialMapper } from './material-mapper';
-import AbstractEntity from './abstract.base.entity';
+import AbstractEntity from '@libs/db/abstract.base.entity';
 
 @Entity({ name: 'lesson' })
 export class Lesson extends AbstractEntity {

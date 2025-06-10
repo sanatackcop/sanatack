@@ -1,3 +1,1 @@
-exec npm run start
-echo "Running the Docker..."
-exec docker compose up --build
+nest start --watch --debug -b swc

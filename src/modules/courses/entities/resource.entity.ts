@@ -1,5 +1,5 @@
 import { Column, Entity } from 'typeorm';
-import AbstractEntity from './abstract.base.entity';
+import AbstractEntity from '@libs/db/abstract.base.entity';
 import { MaterialType } from './material-mapper';
 
 @Entity({ name: 'resource' })

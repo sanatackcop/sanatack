@@ -1,20 +1,12 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Token } from './entities/token.entity';
 
 @Injectable()
 export class TokenService {
-  constructor(
-    private readonly jwtService: JwtService,
-    @InjectRepository(Token)
-    private readonly tokenRepository: Repository<Token>
-  ) {}
+  constructor(private readonly jwtService: JwtService) {}
 
   async generateTokens(
-    payload: object,
-    user_id: string
+    payload: object
   ): Promise<{ accessToken: string; refreshToken: string }> {
     const accessTokenPayload = {
       ...payload,
@@ -28,14 +20,6 @@ export class TokenService {
       expiresIn: '7d',
     });
 
-    const tokenEntity = this.tokenRepository.create({
-      user: { id: user_id },
-      lastLoginAt: new Date(),
-      refreshToken: refreshToken,
-    });
-
-    await this.tokenRepository.save(tokenEntity);
-
     return { accessToken, refreshToken };
   }
 
@@ -43,6 +27,7 @@ export class TokenService {
     try {
       return await this.jwtService.verifyAsync(token);
     } catch (error) {
+      console.log(error);
       throw new UnauthorizedException('Invalid or expired token');
     }
   }
@@ -50,16 +35,12 @@ export class TokenService {
   async refreshToken(
     oldRefreshToken: string
   ): Promise<{ accessToken: string; refreshToken: string }> {
-    const tokenEntity = await this.tokenRepository.findOne({
-      where: { refreshToken: oldRefreshToken },
-    });
-    if (!tokenEntity) {
-      throw new UnauthorizedException('Refresh token not found');
-    }
-
-    const payload = await this.verifyToken(oldRefreshToken);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const payload: any = await this.verifyToken(oldRefreshToken);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     delete payload.exp;
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const accessTokenPayload = {
       ...payload,
       extraProp: 'updatedValue',
@@ -71,9 +52,6 @@ export class TokenService {
     const newRefreshToken = await this.jwtService.signAsync(payload, {
       expiresIn: '7d',
     });
-
-    tokenEntity.refreshToken = newRefreshToken;
-    await this.tokenRepository.save(tokenEntity);
 
     return { accessToken, refreshToken: newRefreshToken };
   }

@@ -18,7 +18,7 @@ import { CareerPathMapper } from './entities/career-mapper.entity';
 import { RoadmapMapper } from './entities/roadmap-mapper.entity';
 import { CareerEnrollment } from './entities/career-enrollment.entity';
 import { RoadmapEnrollment } from './entities/roadmap-enrollment.entity';
-import { User } from '../users/entities/user.entity';
+import User from '../users/entities/user.entity';
 import QuizService from './services/quiz.service';
 import ResourceService from './services/resource.service';
 import VideoService from './services/video.service';

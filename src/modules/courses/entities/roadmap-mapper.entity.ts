@@ -1,7 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { RoadMap } from './roadmap.entity';
 import { Course } from 'src/modules/courses/entities/courses.entity';
-import AbstractEntity from './abstract.base.entity';
+import AbstractEntity from '@libs/db/abstract.base.entity';
 
 @Entity('roadmap_mapper')
 export class RoadmapMapper extends AbstractEntity {

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Equal } from 'typeorm';
 import { Enrollment } from '../entities/enrollment';
-import { User } from 'src/modules/users/entities/user.entity';
+import User from 'src/modules/users/entities/user.entity';
 import { Course } from '../entities/courses.entity';
 
 @Injectable()

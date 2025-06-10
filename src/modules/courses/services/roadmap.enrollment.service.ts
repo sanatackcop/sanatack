@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Equal } from 'typeorm';
 import { RoadmapEnrollment } from '../entities/roadmap-enrollment.entity';
-import { User } from 'src/modules/users/entities/user.entity';
+import User from 'src/modules/users/entities/user.entity';
 import { RoadMap } from '../entities/roadmap.entity';
 
 @Injectable()

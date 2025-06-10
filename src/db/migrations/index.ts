@@ -1,4 +1,3 @@
-import { AddUserTokenTable1741999709886 } from './1741999709886-AddUserTokenTable';
 import { AddedCoursesLogic1744993675068 } from './1744993675068-AddedCoursesLogic';
 import { AddTableCourseProgress1745510805070 } from './1745510805070-AddTableCourseProgress';
 import { AddEnrollmentTable1745779688646 } from './1745779688646-AddEnrollmentTable';
@@ -10,9 +9,10 @@ import { AddDescriptionAndTagsToCourseAndModules1748600526738 } from './17486005
 import { AlterCourseAndModule1748606327476 } from './1748606327476-AlterCourseAndModule';
 import { ChangeSomeTableColumns1748691822527 } from './1748691822527-ChangeSomeTableColumns';
 import { UpdateEntitles1749026470592 } from './1749026470592-UpdateEntites';
+import { AuthUpdate1749551322404 } from './1749551322404-AuthUpdate';
+import { AddedJoinToUserAttributes1749578711138 } from './1749578711138-AddedJoinToUserAttributes';
 
 export const migrationFiles = [
-  AddUserTokenTable1741999709886,
   AddedCoursesLogic1744993675068,
   AddTableCourseProgress1745510805070,
   AddEnrollmentTable1745779688646,
@@ -24,4 +24,6 @@ export const migrationFiles = [
   AddDescriptionAndTagsToCourseAndModules1748600526738,
   ChangeSomeTableColumns1748691822527,
   UpdateEntitles1749026470592,
+  AuthUpdate1749551322404,
+  AddedJoinToUserAttributes1749578711138,
 ];

@@ -3,7 +3,7 @@ import { Level } from './dto';
 import { CourseMapper } from './courses-maper.entity';
 import { Enrollment } from './enrollment';
 import { RoadmapMapper } from 'src/modules/courses/entities/roadmap-mapper.entity';
-import AbstractEntity from './abstract.base.entity';
+import AbstractEntity from '@libs/db/abstract.base.entity';
 
 @Entity({ name: 'courses' })
 export class Course extends AbstractEntity {

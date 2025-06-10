@@ -1,22 +1,13 @@
-import { Token } from 'src/modules/auth/entities/token.entity';
+import AbstractEntity from '@libs/db/abstract.base.entity';
 import { decrypt, encrypt } from 'src/modules/auth/helper';
 import { CareerEnrollment } from 'src/modules/courses/entities/career-enrollment.entity';
 import { Enrollment } from 'src/modules/courses/entities/enrollment';
 import { RoadmapEnrollment } from 'src/modules/courses/entities/roadmap-enrollment.entity';
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-  OneToMany,
-} from 'typeorm';
+import { Entity, Column, OneToMany, Relation, OneToOne } from 'typeorm';
+import UsersAttributes from './user.attributes.entity';
 
 @Entity({ name: 'users' })
-export class User {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+export default class User extends AbstractEntity {
   @Column({ unique: true })
   email: string;
 
@@ -49,21 +40,15 @@ export class User {
   @Column({ nullable: true })
   phone: string;
 
-  @OneToMany(() => Token, (token) => token.user)
-  tokens: Token[];
+  @OneToOne(() => UsersAttributes, (attributes) => attributes.user)
+  attributes: Relation<UsersAttributes>;
 
   @OneToMany(() => Enrollment, (user) => user.user)
-  enrollment: Enrollment[];
+  enrollment: Relation<Enrollment[]>;
 
   @OneToMany(() => RoadmapEnrollment, (user) => user.user)
-  roadmapEnrollments: RoadmapEnrollment[];
+  roadmapEnrollments: Relation<RoadmapEnrollment[]>;
 
   @OneToMany(() => CareerEnrollment, (user) => user.user)
-  careerpathEnrollments: CareerEnrollment[];
-
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
+  careerPathEnrollments: Relation<CareerEnrollment[]>;
 }
