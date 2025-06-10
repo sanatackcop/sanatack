@@ -4,6 +4,8 @@ import App from "./App.tsx";
 import "./index.css";
 import { SettingsProvider } from "./context/SettingsContexts.tsx";
 
+// test
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <SettingsProvider>
