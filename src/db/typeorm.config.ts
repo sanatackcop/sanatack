@@ -51,20 +51,13 @@ export const entities = [
 
 const mainDataSource = new DataSource({
   type: 'postgres',
-  host: configService.get('MAIN_DB_HOST') || 'localhost',
-  port: Number(configService.get('MAIN_DB_PORT')) || 5432,
-  username: configService.get('MAIN_DB_USERNAME'),
-  password: configService.get('MAIN_DB_PASSWORD'),
-  database: configService.get('MAIN_DB') || 'smg_db',
+  // host: configService.get('MAIN_DB_HOST') || 'localhost',
+  // port: Number(configService.get('MAIN_DB_PORT')) || 5432,
+  // username: configService.get('MAIN_DB_USERNAME'),
+  // password: configService.get('MAIN_DB_PASSWORD'),
+  // database: configService.get('MAIN_DB') || 'smg_db',
   url: configService.get('DATABASE_URL'),
-  ssl: {
-    rejectUnauthorized: false,
-  },
-  extra: {
-    ssl: {
-      rejectUnauthorized: false,
-    },
-  },
+  ssl: true,
   entities: entities,
   logging: false,
   migrations: migrationFiles,
