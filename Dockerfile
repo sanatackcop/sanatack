@@ -3,7 +3,7 @@ FROM node:16-alpine AS builder
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install -f
+RUN npm ci
 
 COPY . .
 
@@ -14,9 +14,10 @@ FROM node:16-alpine
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install --production
+RUN npm ci --omit=dev
 
 COPY --from=builder /app/dist ./dist
 
-EXPOSE 3000
+ENV PORT=3000
+EXPOSE $PORT
 CMD ["node", "dist/main"]
