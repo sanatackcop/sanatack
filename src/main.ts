@@ -28,6 +28,7 @@ async function bootstrap() {
       'http://localhost:5173',
       'http://localhost:5174',
       'http://localhost:3001',
+      'https://sanatack.com',
       process.env.FRONTEND_URL || '*',
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
