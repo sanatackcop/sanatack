@@ -16,6 +16,8 @@ interface BasicSignup extends BasicLogin {
   phone: string;
   first_name: string;
   last_name: string;
+  interests: string[];
+  userType: string;
 }
 
 enum Roles {
@@ -65,18 +67,24 @@ export const signupApi = async ({
   first_name,
   last_name,
   phone,
+  interests,
+  userType,
 }: BasicSignup) => {
   try {
     const response = await trackPromise(
       Api({
         method: "post",
-        url: "auth/singup",
+        url: "auth/signup",
         data: {
-          email: email.toLowerCase(),
-          password,
-          first_name: first_name.toLowerCase(),
-          last_name: last_name.toLowerCase(),
-          phone,
+          personalInfo: {
+            email: email.toLowerCase(),
+            password,
+            firstName: first_name.toLowerCase(),
+            lastName: last_name.toLowerCase(),
+            phone,
+          },
+          interests,
+          userType,
         },
       })
     );
@@ -87,20 +95,14 @@ export const signupApi = async ({
   }
 };
 
-export const verifyOtpApi = async ({
-  otp,
-  user_id,
-}: {
-  otp: string;
-  user_id: string;
-}) => {
+export const verifyOtpApi = async (otp: string, email: string) => {
   try {
     const response = await trackPromise(
       Api({
         method: "post",
         url: "auth/verify-otp",
         data: {
-          user_id: user_id,
+          email: email,
           otp: otp,
         },
       })
@@ -112,21 +114,14 @@ export const verifyOtpApi = async ({
   }
 };
 
-export const sendEmailOtpApi = async ({
-  user_id,
-  email,
-}: {
-  user_id: string;
-  email: string;
-}) => {
+export const sendEmailOtpApi = async (email: string) => {
   try {
     const response = await trackPromise(
       Api({
         method: "post",
         url: "auth/send-email-otp",
         data: {
-          user_id: user_id,
-          email: email,
+          email,
         },
       })
     );
