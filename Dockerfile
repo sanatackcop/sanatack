@@ -7,7 +7,7 @@ RUN npm install -f
 
 COPY . .
 
-RUN npm run build
+RUN npm run build && npm run run-migrations
 
 FROM node:16-alpine
 

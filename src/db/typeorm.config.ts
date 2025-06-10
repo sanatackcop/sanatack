@@ -25,7 +25,8 @@ import { Attempts } from 'src/modules/auth/entities/attempts.entity';
 
 config();
 
-const configService = new ConfigService();
+const cfg = new ConfigService();
+
 export const entities = [
   User,
   UsersAttributes,
@@ -51,14 +52,16 @@ export const entities = [
 
 const mainDataSource = new DataSource({
   type: 'postgres',
-  // host: configService.get('MAIN_DB_HOST') || 'localhost',
-  // port: Number(configService.get('MAIN_DB_PORT')) || 5432,
-  // username: configService.get('MAIN_DB_USERNAME'),
-  // password: configService.get('MAIN_DB_PASSWORD'),
-  // database: configService.get('MAIN_DB') || 'smg_db',
-  url: configService.get('DATABASE_URL'),
-  ssl: {
-    rejectUnauthorized: false,
+  host: cfg.get('MAIN_DB_HOST'),
+  port: Number(cfg.get('MAIN_DB_PORT')),
+  username: cfg.get('MAIN_DB_USERNAME'),
+  password: cfg.get('MAIN_DB_PASSWORD'),
+  database: cfg.get('MAIN_DB'),
+  ssl: true,
+  extra: {
+    ssl: {
+      rejectUnauthorized: false,
+    },
   },
   entities: entities,
   logging: false,
