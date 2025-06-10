@@ -57,7 +57,7 @@ const mainDataSource = new DataSource({
   // password: configService.get('MAIN_DB_PASSWORD'),
   // database: configService.get('MAIN_DB') || 'smg_db',
   url: configService.get('DATABASE_URL'),
-  ssl: true,
+  ssl: { rejectUnauthorized: false },
   entities: entities,
   logging: false,
   migrations: migrationFiles,
