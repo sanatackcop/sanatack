@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, HTMLInputTypeAttribute, useContext } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -19,7 +19,21 @@ import {
   AlertCircle,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
-import { signupApi } from "@/utils/_apis/auth-apis";
+import {
+  LoginResult,
+  sendEmailOtpApi,
+  signupApi,
+  verifyOtpApi,
+} from "@/utils/_apis/auth-apis";
+import { Button } from "@/components/ui/button";
+import {
+  InputOTP,
+  InputOTPSeparator,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
+import { Input } from "@/components/ui/input";
+import { useNavigate } from "react-router-dom";
+import UserContext, { ContextType } from "@/context/UserContext";
 
 interface Step {
   title: string;
@@ -39,10 +53,15 @@ interface ApiError {
   field?: string;
 }
 
+const phoneRegex = new RegExp(/^\+?[1-9]\d{1,14}$/);
+
 const SignupFormSchema = z.object({
-  first_name: z.string().min(1, "الاسم الأول مطلوب"),
-  last_name: z.string().min(1, "اسم العائلة مطلوب"),
-  phone: z.string().min(10, "رقم الهاتف يجب أن يكون 10 أرقام على الأقل"),
+  firstName: z.string().min(3, "الاسم الأول مطلوب"),
+  lastName: z.string().min(3, "اسم العائلة مطلوب"),
+  phone: z
+    .string()
+    .regex(phoneRegex, "يجب الرقم ان يكون من هذا النوع: 966555555555+")
+    .min(10, "رقم الهاتف يجب أن يكون 10 أرقام على الأقل"),
   email: z.string().email("بريد إلكتروني غير صحيح"),
   password: z.string().min(6, "كلمة المرور يجب أن تكون 6 أحرف على الأقل"),
 });
@@ -53,21 +72,20 @@ const SignupFlow: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [userType, setUserType] = useState<string>("");
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
-  const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
+  const [otp, setOtp] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [formData, setFormData] = useState<SignupFormData | null>(null);
   const [focusedInput, setFocusedInput] = useState<string | null>(null);
   const [showMobileSteps, setShowMobileSteps] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading] = useState<boolean>(false);
   const [errors, setErrors] = useState<ApiError[]>([]);
-  const [otpSent, setOtpSent] = useState<boolean>(false);
-  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const [otpSent] = useState<boolean>(false);
 
   const form = useForm<SignupFormData>({
     resolver: zodResolver(SignupFormSchema),
     defaultValues: {
-      first_name: "",
-      last_name: "",
+      firstName: "",
+      lastName: "",
       phone: "",
       email: "",
       password: "",
@@ -124,88 +142,12 @@ const SignupFlow: React.FC = () => {
     "القانون",
   ];
 
-  const registerUser = async (userData: SignupFormData): Promise<boolean> => {
-    setLoading(true);
-    setErrors([]);
-    try {
-      const req = await signupApi({
-        email: userData.email,
-        password: userData.password,
-        first_name: userData.first_name,
-        last_name: userData.last_name,
-        phone: userData.phone,
-      });
-
-      return Boolean(req);
-    } catch (error) {
-      setErrors([
-        {
-          message:
-            error instanceof Error ? error.message : "حدث خطأ في التسجيل",
-        },
-      ]);
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const sendOtp = async (phone: string): Promise<boolean> => {
-    setLoading(true);
-    setErrors([]);
-    console.log(phone);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      if (Math.random() > 0.8) {
-        throw new Error("فشل في إرسال رمز التحقق");
-      }
-
-      setOtpSent(true);
-      return true;
-    } catch (error) {
-      setErrors([
-        {
-          message:
-            error instanceof Error ? error.message : "حدث خطأ في إرسال الرمز",
-        },
-      ]);
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const verifyOtp = async (otpCode: string): Promise<boolean> => {
-    setLoading(true);
-    setErrors([]);
-
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      if (otpCode !== "123456") {
-        throw new Error("رمز التحقق غير صحيح");
-      }
-
-      return true;
-    } catch (error) {
-      setErrors([
-        {
-          message: error instanceof Error ? error.message : "حدث خطأ في التحقق",
-        },
-      ]);
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleFormSubmit = async (values: SignupFormData): Promise<void> => {
-    const success = await registerUser(values);
-    if (success) {
-      setFormData(values);
-      setCurrentStep(1);
-    }
+    // const success = await registerUser(values);
+    // if (success) {
+    setFormData(values);
+    setCurrentStep(1);
+    // }
   };
 
   const handleUserTypeNext = (): void => {
@@ -221,29 +163,14 @@ const SignupFlow: React.FC = () => {
     if (selectedInterests.length >= 3) {
       setErrors([]);
       if (formData) {
-        const success = await sendOtp(formData.phone);
+        const success = await sendEmailOtpApi(formData.email);
+        console.log({ success });
         if (success) {
           setCurrentStep(3);
-        }
+        } else console.error("Error Occurred");
       }
     } else {
       setErrors([{ message: "يرجى اختيار 3 مجالات على الأقل" }]);
-    }
-  };
-
-  const handleOtpChange = (index: number, value: string): void => {
-    if (value.length > 1) return;
-    const newOtp = [...otp];
-    newOtp[index] = value;
-    setOtp(newOtp);
-    if (value && index < 5) {
-      otpRefs.current[index + 1]?.focus();
-    }
-  };
-
-  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent): void => {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
-      otpRefs.current[index - 1]?.focus();
     }
   };
 
@@ -256,18 +183,44 @@ const SignupFlow: React.FC = () => {
         : prev
     );
   };
+  const navigate = useNavigate();
+  const userContext = useContext(UserContext);
+  const login = userContext?.login;
 
   const handleFinalSubmit = async (): Promise<void> => {
-    const otpCode = otp.join("");
-    const success = await verifyOtp(otpCode);
+    if (!formData) {
+      console.log("Error Occurred @DE");
+      return;
+    }
+
+    const success = await verifyOtpApi(otp, formData?.email);
+    console.log("بيانات التسجيل:", {
+      personalInfo: formData,
+      userType,
+      interests: selectedInterests,
+      otp: otp,
+    });
     if (success) {
-      console.log("بيانات التسجيل:", {
-        personalInfo: formData,
-        userType,
-        interests: selectedInterests,
-        otp: otpCode,
-      });
-      alert("تم إنشاء الحساب بنجاح!");
+      const result = (await signupApi({
+        email: formData?.email,
+        password: formData?.password,
+        phone: formData.phone,
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        interests: interests,
+        userType: userType,
+      })) as unknown as LoginResult;
+
+      if (result.role && login) {
+        login({
+          role: result.role,
+          type: result.type as ContextType,
+          user: result.user,
+          refresh_token: result.refresh_token,
+        });
+        navigate("/dashboard", { replace: true });
+      } else {
+      }
     }
   };
 
@@ -464,14 +417,14 @@ const SignupFlow: React.FC = () => {
     name: keyof SignupFormData,
     label: string,
     placeholder: string,
-    type: string = "text"
+    type: HTMLInputTypeAttribute = "text"
   ): JSX.Element => (
     <div>
       <label className="block text-sm font-medium mb-2 text-gray-800 dark:text-gray-200">
         {label}
       </label>
       <div className="relative">
-        <input
+        <Input
           {...form.register(name)}
           type={
             type === "password" ? (showPassword ? "text" : "password") : type
@@ -529,9 +482,9 @@ const SignupFlow: React.FC = () => {
           </div>
           <div className="bg-white/80 dark:bg-gray-800/80 border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl p-6 space-y-4 border-2 backdrop-blur-sm">
             <ErrorDisplay />
-            {renderInput("first_name", "الاسم الأول", "أدخل اسمك الأول")}
-            {renderInput("last_name", "اسم العائلة", "أدخل اسم العائلة")}
-            {renderInput("phone", "رقم الهاتف", "0555288598", "tel")}
+            {renderInput("firstName", "الاسم الأول", "أدخل اسمك الأول")}
+            {renderInput("lastName", "اسم العائلة", "أدخل اسم العائلة")}
+            {renderInput("phone", "رقم الهاتف", "+966555555555", "tel")}
             {renderInput(
               "email",
               "البريد الإلكتروني",
@@ -545,7 +498,7 @@ const SignupFlow: React.FC = () => {
               "password"
             )}
             <div className="flex gap-3 pt-2">
-              <button
+              <Button
                 onClick={form.handleSubmit(handleFormSubmit)}
                 disabled={loading}
                 className="flex-1 py-3 rounded-xl font-bold text-base transition-all duration-300 transform hover:scale-105 shadow-2xl flex items-center justify-center gap-2 bg-black text-white hover:bg-gray-800 shadow-black/25 dark:bg-white dark:text-black dark:hover:bg-gray-100 dark:shadow-white/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
@@ -558,7 +511,7 @@ const SignupFlow: React.FC = () => {
                     <ChevronLeft className="w-4 h-4" />
                   </>
                 )}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -776,8 +729,8 @@ const SignupFlow: React.FC = () => {
           </div>
           <div className="bg-white/80 dark:bg-gray-800/80 border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl p-6 border-2 backdrop-blur-sm">
             <ErrorDisplay />
-            <div className="flex justify-center gap-2 mb-6">
-              {otp.map((digit, index) => (
+            <div className="flex justify-center gap2 mb-6">
+              {/* {otp.map((digit, index) => (
                 <input
                   key={index}
                   ref={(el) => (otpRefs.current[index] = el)}
@@ -792,34 +745,45 @@ const SignupFlow: React.FC = () => {
                   } focus:outline-none focus:border-black focus:ring-4 focus:ring-black/20 dark:focus:border-white dark:focus:ring-white/20`}
                   maxLength={1}
                 />
-              ))}
+              ))} */}
+              <InputOTP
+                maxLength={6}
+                value={otp}
+                onChange={(value) => setOtp(value)}
+              >
+                <InputOTPSlot index={0} />
+                <InputOTPSlot index={1} />
+                <InputOTPSlot index={2} />
+                <InputOTPSeparator />
+                <InputOTPSlot index={3} />
+                <InputOTPSlot index={4} />
+                <InputOTPSlot index={5} />
+              </InputOTP>
             </div>
             <div className="space-y-3">
               <div className="flex gap-3">
                 <button
                   onClick={handleFinalSubmit}
-                  disabled={otp.some((digit) => !digit) || loading}
+                  disabled={otp.length != 6}
                   className="flex-1 py-3 rounded-xl font-bold text-base transition-all duration-300 transform hover:scale-105 shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 bg-black text-white hover:bg-gray-800 shadow-black/25 dark:bg-white dark:text-black dark:hover:bg-gray-100 dark:shadow-white/25"
                 >
                   {loading ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
                     <>
-                      تأكيد وإنشاء الحساب
                       <Check className="w-4 h-4" />
                     </>
                   )}
                 </button>
               </div>
-              <button
+              <Button
+                className="w-full py-5 rounded-xl border-2 border-dashed font-medium transition-all duration-300 border-gray-400 bg-transparent text-gray-600 hover:text-gray-700 hover:border-gray-500 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-500 dark:hover:bg-gray-800/50 disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={async () => {
-                  setOtp(["", "", "", "", "", ""]);
                   if (formData) {
-                    await sendOtp(formData.phone);
+                    await sendEmailOtpApi(formData.email);
                   }
                 }}
                 disabled={loading}
-                className="w-full py-2 rounded-xl border-2 border-dashed font-medium transition-all duration-300 border-gray-400 text-gray-600 hover:text-gray-700 hover:border-gray-500 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-500 dark:hover:bg-gray-800/50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <div className="flex items-center justify-center gap-2">
@@ -829,7 +793,7 @@ const SignupFlow: React.FC = () => {
                 ) : (
                   "إعادة إرسال الرمز"
                 )}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
