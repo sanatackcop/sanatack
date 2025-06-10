@@ -3,10 +3,6 @@ import {
   Bell,
   Sun,
   Moon,
-  User,
-  ChevronDown,
-  Settings,
-  LogOut,
   Crown,
   Zap,
   Briefcase,
@@ -14,7 +10,7 @@ import {
   ClipboardList,
   FolderOpen,
   Code,
-  Map
+  Map,
 } from "lucide-react";
 import LogoLight from "@/assets/logo.svg";
 import LogoDark from "@/assets/logo_black.svg";
@@ -32,6 +28,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useSettings } from "@/context/SettingsContexts";
+import UserProfileMenu from "@/components/UserProfile";
 
 const items = [
   {
@@ -113,12 +110,9 @@ export function AppSidebar() {
   const activePath = location.pathname;
   const { darkMode } = useSettings();
 
-  // Mock user subscription status - replace with actual user context
-  const isUserPaid = false; // This should come from your user context/state
-
+  const isUserPaid = false;
   const handleUpgrade = () => {
-    // Handle upgrade logic here
-    console.log("Upgrade clicked");
+    console.log("Upgrade");
   };
 
   return (
@@ -152,7 +146,7 @@ export function AppSidebar() {
                       asChild={!isDisabled}
                       className={
                         isActive
-                          ? "bg-gray-900 text-right dark:bg-white text-white dark:text-gray-900 h-10 px-3 hover:bg-gray-800 dark:hover:bg-gray-100 rounded-lg font-medium"
+                          ? "bg-gray-900 text-right dark:bg-white text-white hover:text-white dark:text-gray-900 h-10 px-3 hover:bg-gray-800 dark:hover:bg-gray-100 rounded-lg font-medium"
                           : isDisabled
                           ? "text-gray-400 text-right dark:text-gray-500 cursor-not-allowed h-10 px-3 rounded-lg"
                           : "text-gray-700 text-right dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 h-10 px-3 rounded-lg transition-all duration-200"
@@ -253,51 +247,9 @@ export function DashboardNavbar() {
         </button>
 
         <div className="ml-2">
-          <ProfilerDropDown />
+          <UserProfileMenu />
         </div>
       </div>
     </nav>
-  );
-}
-
-function ProfilerDropDown() {
-  return (
-    <div className="relative group">
-      <button className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200">
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 dark:from-blue-500 dark:to-blue-700 flex items-center justify-center">
-          <User size={16} className="text-white" />
-        </div>
-        <div className="hidden sm:block text-right">
-          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-            المستخدم
-          </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            user@example.com
-          </p>
-        </div>
-        <ChevronDown
-          size={16}
-          className="text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-200"
-        />
-      </button>
-
-      <div className="absolute left-0 top-full  w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg dark:shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-        <div className="p-2">
-          <button className="w-full flex items-center gap-2 p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors duration-200">
-            <User size={16} />
-            <span className="text-sm">الملف الشخصي</span>
-          </button>
-          <button className="w-full flex items-center gap-2 p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors duration-200">
-            <Settings size={16} />
-            <span className="text-sm">الإعدادات</span>
-          </button>
-          <Separator className="bg-gray-200 dark:bg-gray-700 my-1" />
-          <button className="w-full flex items-center gap-2 p-2 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors duration-200">
-            <LogOut size={16} />
-            <span className="text-sm">تسجيل الخروج</span>
-          </button>
-        </div>
-      </div>
-    </div>
   );
 }

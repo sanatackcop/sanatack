@@ -1,74 +1,53 @@
-import React, { useEffect, useState } from "react";
-import { CardHeader } from "@/components/ui/card";
-import { MaterialViewerProps } from "./type";
-import { iconMap } from "./const";
+import React from "react";
+import { BookOpen, FileText } from "lucide-react";
+import { CodeEditorView } from "./_CodeEditorView";
+import { VideoView } from "./_VideoView";
+import { Material } from "./_Sidebar";
 
-export default function MaterialViewer({
-  material,
-  onComplete,
-}: MaterialViewerProps) {
-  // const [videoEnded, setVideoEnded] = useState(false);
-  const [_, setVideoEnded] = useState(false);
+interface MaterialViewerProps {
+  material: Material | null;
+}
 
+export const MaterialViewer: React.FC<MaterialViewerProps> = ({ material }) => {
   if (!material) {
     return (
-      <p className="mt-8 text-center text-gray-500 dark:text-gray-400">
-        اختر مادة من القائمة لبدء التعلم
-      </p>
-    );
-  }
-
-  useEffect(() => {
-    onComplete(material);
-  }, []);
-
-  if (material.type === "video") {
-    const isYouTube = !!material.url?.match(/youtu\.?(be|be\.com)/);
-    let embedUrl: string | undefined;
-    if (isYouTube && material.url) {
-      embedUrl = material.url
-        .replace("watch?v=", "embed/")
-        .replace("youtu.be/", "www.youtube.com/embed/");
-    }
-
-    return (
-      <div className="flex-col">
-        <CardHeader className="flex items-right gap-3 px-6">
-          {React.createElement(iconMap[material.type], {
-            className: "h-6 w-6 text-white/90",
-          })}
-          <h1 className="flex-1 text-right text-lg font-semibold line-clamp-2 dark:text-white/90">
-            {material.title}
-          </h1>
-
-          {material.description && (
-            <p className="mt-4 px-6 w-full max-w-4xl text-right text-gray-700 dark:text-gray-300">
-              {material.description}
-            </p>
-          )}
-        </CardHeader>
-
-        <div className="mt-2 w-full flex justify-start px-6">
-          {isYouTube && embedUrl ? (
-            <iframe
-              className="w-full max-w-full max-h-[700px] aspect-video rounded-3xl shadow-md"
-              src={embedUrl}
-              title={material.title}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
-          ) : (
-            <video
-              className="w-full max-w-4xl rounded-lg shadow-md"
-              src={String(material.url)}
-              controls
-              onEnded={() => setVideoEnded(true)}
-            />
-          )}
+      <div className="flex h-full items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900">
+        <div className="text-center">
+          <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <p className="text-lg text-gray-500 dark:text-gray-400 mb-2">
+            اختر مادة من القائمة
+          </p>
+          <p className="text-sm text-gray-400">لبدء رحلة التعلم</p>
         </div>
       </div>
     );
   }
 
-  return null;
-}
+  if (material.type === "video") {
+    return <VideoView material={material} />;
+  }
+
+  if (material.type === "code") {
+    return <CodeEditorView />;
+  }
+
+  return (
+    <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-900">
+      <div className="flex-1 p-6 flex items-center justify-center">
+        <div
+          className="max-w-3xl mx-auto prose dark:prose-invert text-right"
+          dir="rtl"
+        >
+          <div className="text-center mb-6">
+            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-xl flex items-center justify-center mx-auto mb-3">
+              <FileText className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            </div>
+            <p className="text-lg text-gray-600 dark:text-gray-400">
+              محتوى الدرس سيظهر هنا...
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
