@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, Equal, Like, Repository } from 'typeorm';
 import { Module } from '../entities/module.entity';
-import { LessonMapper } from '../entities/lessons-maper.entity';
+import LessonMapper from '../entities/lessons-maper.entity';
 import LessonService from './lesson.service';
 
 @Injectable()

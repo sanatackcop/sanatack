@@ -6,13 +6,13 @@ import User from 'src/modules/users/entities/user.entity';
 import { Course } from 'src/modules/courses/entities/courses.entity';
 import { Module } from 'src/modules/courses/entities/module.entity';
 import { CourseMapper } from 'src/modules/courses/entities/courses-maper.entity';
-import { LessonMapper } from 'src/modules/courses/entities/lessons-maper.entity';
+import LessonMapper from 'src/modules/courses/entities/lessons-maper.entity';
 import { Lesson } from 'src/modules/courses/entities/lessons.entity';
-import { Resource } from 'src/modules/courses/entities/resource.entity';
-import { Quiz } from 'src/modules/courses/entities/quiz.entity';
-import { VideoResource } from 'src/modules/courses/entities/video-lessons.entity';
+import Resource from 'src/modules/courses/entities/resource.entity';
+import Quiz from 'src/modules/courses/entities/quiz.entity';
+import VideoResource from 'src/modules/courses/entities/video-lessons.entity';
 import { Enrollment } from 'src/modules/courses/entities/enrollment';
-import { MaterialMapper } from 'src/modules/courses/entities/material-mapper';
+import MaterialMapper from 'src/modules/courses/entities/material-mapper';
 import { CareerPath } from 'src/modules/courses/entities/career-path.entity';
 import { RoadMap } from 'src/modules/courses/entities/roadmap.entity';
 import { CareerPathMapper } from 'src/modules/courses/entities/career-mapper.entity';
@@ -57,12 +57,12 @@ const mainDataSource = new DataSource({
   username: cfg.get('MAIN_DB_USERNAME'),
   password: cfg.get('MAIN_DB_PASSWORD'),
   database: cfg.get('MAIN_DB'),
-  ssl: true,
-  extra: {
-    ssl: {
-      rejectUnauthorized: false,
-    },
-  },
+  // ssl: true,
+  // extra: {
+  //   ssl: {
+  //     rejectUnauthorized: false,
+  //   },
+  // },
   entities: entities,
   logging: false,
   migrations: migrationFiles,

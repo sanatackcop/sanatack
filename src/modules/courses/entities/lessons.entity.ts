@@ -1,18 +1,15 @@
 import { Entity, Column, OneToMany } from 'typeorm';
-import { LessonMapper } from './lessons-maper.entity';
-import { MaterialMapper } from './material-mapper';
+import LessonMapper from './lessons-maper.entity';
+import MaterialMapper from './material-mapper';
 import AbstractEntity from '@libs/db/abstract.base.entity';
 
 @Entity({ name: 'lesson' })
 export class Lesson extends AbstractEntity {
-  @Column({ nullable: false })
+  @Column({ unique: true })
   name: string;
 
-  @Column({ nullable: true })
+  @Column()
   description: string;
-
-  @Column({ type: 'int', nullable: false })
-  order: number;
 
   @OneToMany(() => LessonMapper, (mapper) => mapper.lesson)
   lessonMapper: LessonMapper[];

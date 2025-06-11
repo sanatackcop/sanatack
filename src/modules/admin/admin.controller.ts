@@ -1,9 +1,11 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { CoursesService } from '../courses/services/courses.service';
 import {
   CreateCareerPathDto,
   CreateNewCourseDto,
   CreateRoadmapDto,
+  LessonDto,
+  MaterialLessonMapDto,
   QuizDto,
   ResourceDto,
   VideoDto,
@@ -13,6 +15,9 @@ import CareerPathService from '../courses/services/career.path.service';
 import QuizService from '../courses/services/quiz.service';
 import VideoService from '../courses/services/video.service';
 import ResourceService from '../courses/services/resource.service';
+import LessonService from '../courses/services/lesson.service';
+import LessonMapperService from '../courses/services/lesson.mapper';
+import MaterialMapperService from '../courses/services/material.mapper.service';
 
 @Controller('admin')
 export class AdminController {
@@ -22,7 +27,10 @@ export class AdminController {
     private readonly careerPathService: CareerPathService,
     private readonly quizService: QuizService,
     private readonly videoService: VideoService,
-    private readonly resourceService: ResourceService
+    private readonly resourceService: ResourceService,
+    private readonly lessonService: LessonService,
+    private readonly lessonMapper: LessonMapperService,
+    private readonly materialMapper: MaterialMapperService
   ) {}
 
   @Get('/courses')
@@ -83,5 +91,39 @@ export class AdminController {
   @Get('/resources')
   async getAllResource() {
     return await this.resourceService.getAll();
+  }
+
+  @Post('/lessons')
+  async createLesson(@Body() lesson: LessonDto) {
+    return await this.lessonService.create(lesson);
+  }
+
+  @Get('/lessons')
+  async getLessons() {
+    return await this.lessonService.find();
+  }
+
+  @Post('/mapper/quiz')
+  async linkQuizToLesson(@Body() linkQuiz: MaterialLessonMapDto) {
+    try {
+      const d = await this.materialMapper.create({
+        lesson: { id: linkQuiz.lesson_id },
+        material_id: linkQuiz.material_id,
+        material_type: linkQuiz.type,
+        order: linkQuiz.order,
+      });
+      return d;
+    } catch (error: unknown) {
+      console.log({ error });
+    }
+  }
+
+  @Get('/mapper/:lesson_id/quizzes')
+  async getAllMappedQuizzes(@Param('lesson_id') lesson_id: string) {
+    try {
+      return await this.materialMapper.findAllMaterialsByLesson(lesson_id);
+    } catch (error: unknown) {
+      console.log({ error });
+    }
   }
 }

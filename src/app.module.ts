@@ -22,9 +22,8 @@ import { migrationFiles } from './db/migrations';
         password: configService.get<string>('MAIN_DB_PASSWORD'),
         database: configService.get<string>('MAIN_DB'),
         entities: entities,
-        ssl: true, //! change this
+        ssl: configService.get<string>('MAIN_DB_SSL') === 'true',
         autoLoadEntities: true,
-        // logging: configService.get<string>('NODE_ENV') === 'development',
         retryAttempts: configService.get<number>('MAIN_RECONNECT_TIMES', 5),
         migrationsRun: true,
         migrationsTableName: 'migrations',

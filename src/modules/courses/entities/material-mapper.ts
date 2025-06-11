@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm';
 import { Lesson } from './lessons.entity';
 import AbstractEntity from '@libs/db/abstract.base.entity';
 
@@ -40,7 +40,8 @@ export declare type MaterialIF =
   | MaterialQuiz;
 
 @Entity({ name: 'material_mapper' })
-export class MaterialMapper extends AbstractEntity {
+@Unique('lesson_material_unique', ['lesson', 'material_id'])
+export default class MaterialMapper extends AbstractEntity {
   @ManyToOne(() => Lesson, (lesson) => lesson.materialMapper, {
     onDelete: 'SET NULL',
     nullable: false,

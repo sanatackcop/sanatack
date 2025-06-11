@@ -4,7 +4,7 @@ import { Lesson } from './lessons.entity';
 import AbstractEntity from '@libs/db/abstract.base.entity';
 
 @Entity('lesson_mapper')
-export class LessonMapper extends AbstractEntity {
+export default class LessonMapper extends AbstractEntity {
   @ManyToOne(() => Module, (module) => module.lessonMappers, {
     onDelete: 'CASCADE',
   })
