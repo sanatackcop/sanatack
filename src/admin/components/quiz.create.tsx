@@ -36,7 +36,15 @@ const quizSchema = z.object({
 
 type QuizFormValues = z.infer<typeof quizSchema>;
 
-export default function QuizDialogCreate() {
+export default function QuizDialogCreate({
+  open,
+  onOpenChange,
+  updateTable,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  updateTable: () => void;
+}) {
   const form = useForm<QuizFormValues>({
     resolver: zodResolver(quizSchema),
     defaultValues: {
@@ -54,17 +62,15 @@ export default function QuizDialogCreate() {
   const onSubmit = async (data: QuizFormValues) => {
     try {
       await createNewQuiz(data);
-      console.log("✅ Quiz submitted:", data);
+      updateTable();
+      onOpenChange(false);
     } catch (error) {
       console.log(error);
     }
   };
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="outline">اختبار</Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>إنشاء اختبار</DialogTitle>

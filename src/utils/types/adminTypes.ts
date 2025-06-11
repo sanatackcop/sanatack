@@ -1,26 +1,46 @@
-export interface ResourceInput {
+export interface Resource {
   id: string;
   title: string;
   description?: string;
-  type: "video" | "document" | "link" | "code";
-  url?: string;
-  content?: string;
+  type: "resource";
 }
 
-export interface VideoInput {
+export interface Video {
+  id: string;
   title: string;
   youtubeId: string;
-  description: string;
   duration: number;
+  description: string;
+  type: "video";
 }
 
-export interface QuizInput {
+export interface Quiz {
   id: string;
   question: string;
   options: string[];
   correctAnswer: string;
   explanation?: string;
+  type: "quiz";
 }
+
+export declare type LinkedQuiz = Quiz & {
+  order: string;
+};
+
+export declare type LinkedVideo = Video & {
+  order: string;
+};
+
+export declare type LinkedResource = Resource & {
+  order: string;
+};
+
+export enum MaterialType {
+  Resource = "resource",
+  Video = "video",
+  Quiz = "quiz",
+}
+export declare type Material = Resource | Video | Quiz;
 
 export interface LessonInput {
   id: string;
@@ -28,9 +48,9 @@ export interface LessonInput {
   description: string;
   order: number;
   isExisting: boolean;
-  videos: VideoInput[];
-  resources: ResourceInput[];
-  quizzes: QuizInput[];
+  videos: Video[];
+  resources: Resource[];
+  quizzes: Quiz[];
 }
 
 export interface ModuleInput {
@@ -113,4 +133,10 @@ export interface CreateResourceDto {
   url?: string;
   content?: string;
   isExisting?: boolean;
+}
+export interface MaterialLessonLink {
+  lesson_id: string;
+  material_id: string;
+  type: MaterialType;
+  order: number;
 }

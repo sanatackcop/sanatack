@@ -9,6 +9,7 @@ import CoursePage from "@/admin/pages/course.page";
 import AdminDashboard from "@/admin/Index";
 import LessonPage from "@/admin/pages/lesson.page";
 import MaterialPage from "@/admin/pages/material.page";
+import MappedMaterials from "@/admin/pages/mapped.materials.page";
 
 const publicRoutes = [
   { path: "/", element: <HomePAGE /> },
@@ -26,6 +27,7 @@ const adminRoutes = [
       { path: "courses", element: <CoursePage /> },
       { path: "modules", element: <ModulesPage /> },
       { path: "lessons", element: <LessonPage /> },
+      { path: "lessons/:id", element: <MappedMaterials /> },
       { path: "materials", element: <MaterialPage /> },
     ],
   },

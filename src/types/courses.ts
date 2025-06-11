@@ -83,6 +83,11 @@ export interface VideoDto {
   duration: number;
 }
 
+export interface LessonDto {
+  name: string;
+  description: string;
+}
+
 export interface tagsInterface {
   unitesNum?: number;
   level?: Level;

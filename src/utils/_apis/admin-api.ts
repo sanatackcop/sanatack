@@ -1,4 +1,10 @@
-import { QuizDto, ResourceDto, VideoDto } from "./../../types/courses";
+import {
+  LessonDto,
+  QuizDto,
+  ResourceDto,
+  VideoDto,
+} from "./../../types/courses";
+import { MaterialLessonLink } from "../types/adminTypes";
 import { trackPromise } from "react-promise-tracker";
 import Api from "./api";
 import { CreateNewCourseDto } from "../types/adminTypes";
@@ -55,90 +61,106 @@ export const createNewCourseApi = async ({
 };
 
 export const getQuizList = async <T>() => {
-  try {
-    const response = await trackPromise(
-      Api({
-        method: "get",
-        url: "admin/quizzes",
-      })
-    );
-    return response.data as T;
-  } catch (error) {
-    console.log("Error Creating Quiz");
-  }
+  const response = await trackPromise(
+    Api({
+      method: "get",
+      url: "admin/quizzes",
+    })
+  );
+  return response.data as T;
 };
 
 export const createNewQuiz = async (quiz: QuizDto) => {
-  try {
-    const response = await trackPromise(
-      Api({
-        method: "post",
-        url: "admin/quizzes",
-        data: quiz,
-      })
-    );
-    return response.data;
-  } catch (error) {
-    console.log("Error Creating Quiz");
-  }
+  const response = await trackPromise(
+    Api({
+      method: "post",
+      url: "admin/quizzes",
+      data: quiz,
+    })
+  );
+  return response.data;
 };
 
 export const getVideosList = async <T>() => {
-  try {
-    const response = await trackPromise(
-      Api({
-        method: "get",
-        url: "admin/videos",
-      })
-    );
-    return response.data as T;
-  } catch (error) {
-    console.log("Error Creating Quiz");
-  }
+  const response = await trackPromise(
+    Api({
+      method: "get",
+      url: "admin/videos",
+    })
+  );
+  return response.data as T;
 };
 
-
 export const createNewVideo = async (quiz: VideoDto) => {
-  try {
-    const response = await trackPromise(
-      Api({
-        method: "post",
-        url: "admin/videos",
-        data: quiz,
-      })
-    );
-    return response.data;
-  } catch (error) {
-    console.log("Error Creating Quiz");
-  }
+  const response = await trackPromise(
+    Api({
+      method: "post",
+      url: "admin/videos",
+      data: quiz,
+    })
+  );
+  return response.data;
 };
 
 export const getResourcesList = async <T>() => {
-  try {
-    const response = await trackPromise(
-      Api({
-        method: "get",
-        url: "admin/resources",
-      })
-    );
-    return response.data as T;
-  } catch (error) {
-    console.log("Error Creating Quiz");
-  }
+  const response = await trackPromise(
+    Api({
+      method: "get",
+      url: "admin/resources",
+    })
+  );
+  return response.data as T;
 };
 
-
 export const createNewResource = async (quiz: ResourceDto) => {
-  try {
-    const response = await trackPromise(
-      Api({
-        method: "post",
-        url: "admin/resources",
-        data: quiz,
-      })
-    );
-    return response.data;
-  } catch (error) {
-    console.log("Error Creating Quiz");
-  }
+  const response = await trackPromise(
+    Api({
+      method: "post",
+      url: "admin/resources",
+      data: quiz,
+    })
+  );
+  return response.data;
+};
+
+export const createNewLesson = async (lesson: LessonDto) => {
+  const response = await trackPromise(
+    Api({
+      method: "post",
+      url: "admin/lessons",
+      data: lesson,
+    })
+  );
+  return response.data;
+};
+
+export const fetchAllLesson = async <T>() => {
+  const response = await trackPromise(
+    Api({
+      method: "get",
+      url: "admin/lessons",
+    })
+  );
+  return response.data as T;
+};
+
+export const linkLessonQuiz = async (link: MaterialLessonLink) => {
+  const response = await trackPromise(
+    Api({
+      method: "post",
+      url: "admin/mapper/quiz",
+      data: link,
+    })
+  );
+  return response.data;
+};
+
+export const getLinkedLessonMaterials = async <T>(lesson_id: string) => {
+  const response = await trackPromise(
+    Api({
+      method: "get",
+      url: `admin/mapper/${lesson_id}/quizzes`,
+    })
+  );
+  return response.data as T;
 };

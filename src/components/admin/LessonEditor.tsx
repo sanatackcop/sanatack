@@ -10,17 +10,12 @@ import {
   SelectItem,
 } from "../ui/select";
 import { X, Plus } from "lucide-react";
-import {
-  LessonInput,
-  ResourceInput,
-  QuizInput,
-  VideoInput,
-} from "@/utils/types/adminTypes";
+import { LessonInput, Resource, Quiz, Video } from "@/utils/types/adminTypes";
 
 const ResourceItem: React.FC<{
-  resource: ResourceInput;
+  resource: Resource;
   index: number;
-  onChange: (data: Partial<ResourceInput>) => void;
+  onChange: (data: Partial<Resource>) => void;
   onRemove: () => void;
 }> = ({ resource, index, onChange, onRemove }) => (
   <li className="flex flex-col gap-2 rounded-md border p-3 bg-muted/20">
@@ -47,9 +42,7 @@ const ResourceItem: React.FC<{
 
     <Select
       value={resource.type}
-      onValueChange={(value) =>
-        onChange({ type: value as ResourceInput["type"] })
-      }
+      onValueChange={(value) => onChange({ type: value as Resource["type"] })}
     >
       <SelectTrigger className="h-8">
         <SelectValue placeholder="Type" />
@@ -81,9 +74,9 @@ const ResourceItem: React.FC<{
 );
 
 const QuizItem: React.FC<{
-  quiz: QuizInput;
+  quiz: Quiz;
   index: number;
-  onChange: (data: Partial<QuizInput>) => void;
+  onChange: (data: Partial<Quiz>) => void;
   onRemove: () => void;
 }> = ({ quiz, index, onChange, onRemove }) => (
   <li className="flex flex-col gap-2 rounded-md border p-3 bg-muted/20">
@@ -127,9 +120,9 @@ const QuizItem: React.FC<{
 );
 
 const VideoItem: React.FC<{
-  video: VideoInput;
+  video: Video;
   index: number;
-  onChange: (data: Partial<VideoInput>) => void;
+  onChange: (data: Partial<Video>) => void;
   onRemove: () => void;
 }> = ({ video, index, onChange, onRemove }) => (
   <li className="flex flex-col gap-2 rounded-md border p-3 bg-muted/20">
@@ -156,7 +149,7 @@ const LessonEditor = React.memo<{
   onRemove: () => void;
 }>(({ lesson, index, onUpdate, onRemove }) => {
   const handleAddResource = useCallback(() => {
-    const newResource: ResourceInput = {
+    const newResource: Resource = {
       id: crypto.randomUUID(),
       title: "",
       type: "link",
@@ -167,7 +160,7 @@ const LessonEditor = React.memo<{
   }, [lesson.resources, onUpdate]);
 
   const handleUpdateResource = useCallback(
-    (idx: number, patch: Partial<ResourceInput>) => {
+    (idx: number, patch: Partial<Resource>) => {
       const next = lesson.resources.map((r, i) =>
         i === idx ? { ...r, ...patch } : r
       );
@@ -185,7 +178,7 @@ const LessonEditor = React.memo<{
   );
 
   const handleAddQuiz = useCallback(() => {
-    const newQuiz: QuizInput = {
+    const newQuiz: Quiz = {
       id: crypto.randomUUID(),
       question: "",
       options: [],
@@ -195,7 +188,7 @@ const LessonEditor = React.memo<{
   }, [lesson.quizzes, onUpdate]);
 
   const handleUpdateQuiz = useCallback(
-    (idx: number, patch: Partial<QuizInput>) => {
+    (idx: number, patch: Partial<Quiz>) => {
       const next = lesson.quizzes.map((q, i) =>
         i === idx ? { ...q, ...patch } : q
       );
@@ -213,7 +206,7 @@ const LessonEditor = React.memo<{
   );
 
   const handleAddVideo = useCallback(() => {
-    const newVideo: VideoInput = {
+    const newVideo: Video = {
       title: "",
       description: "",
       youtubeId: "",
@@ -223,7 +216,7 @@ const LessonEditor = React.memo<{
   }, [lesson.videos, onUpdate]);
 
   const handleUpdateVideo = useCallback(
-    (idx: number, patch: Partial<VideoInput>) => {
+    (idx: number, patch: Partial<Video>) => {
       const next = lesson.videos.map((q, i) =>
         i === idx ? { ...q, ...patch } : q
       );

@@ -7,9 +7,9 @@ import {
 // import { Material } from "@/utils/types";
 // import { Course } from "@/utils/types";
 import SanatackLogo from "../../../assets/logo.svg";
-import SanatackDarkLogo from "../../../assets/logo_black.svg";
-import { Home, Sun } from "lucide-react";
+import SanatackDarkLogo from "../../../assets/dark_logo.svg";
 import { useSettings } from "@/context/SettingsContexts";
+import { Home, Sun } from "lucide-react";
 
 // interface SidebarProps {
 //   course: Course;
