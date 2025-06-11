@@ -1,6 +1,5 @@
 import {
   Home,
-  Bell,
   Sun,
   Moon,
   Crown,
@@ -49,54 +48,58 @@ const items = [
     title: "المسارات",
     url: "/dashboard/roadMap",
     icon: Map,
-    requiresPaid: false,
-    comingSoon: false,
+    requiresPaid: true,
+    comingSoon: true,
   },
   {
     title: "المسار المهني",
     url: "/dashboard/careerPath",
     icon: Briefcase,
-    requiresPaid: false,
+    requiresPaid: true,
     comingSoon: true,
   },
   {
     title: "صناعة خطة تعليم",
     url: "/dashboard/assessments",
     icon: ClipboardList,
-    requiresPaid: false,
+    requiresPaid: true,
     comingSoon: true,
   },
   {
     title: "المشاريع",
     url: "/dashboard/assessments",
     icon: FolderOpen,
-    requiresPaid: false,
+    requiresPaid: true,
     comingSoon: true,
   },
   {
     title: "ليت كود",
     url: "/dashboard/assessments",
     icon: Code,
-    requiresPaid: false,
+    requiresPaid: true,
     comingSoon: true,
   },
 ];
 
 function SubscriptionBanner({ onUpgrade }: any) {
   return (
-    <div className="mx-3 mb-3 p-4 bg-white dark:bg-gray-800 border-2 border-gray-900 dark:border-white rounded-lg">
+    <div
+      className="mx-3 mb-3 p-4  border-2
+     border-blue-500 rounded-lg"
+    >
       <div className="flex items-center gap-2 mb-2">
-        <Crown size={18} className="text-gray-900 dark:text-white" />
-        <h3 className="font-bold text-sm text-gray-900 dark:text-white">
+        <Crown size={18} className="text-blue-600 " />
+        <h3 className="font-bold text-sm text-blue-500 ">
           ترقية إلى النسخة المدفوعة
         </h3>
       </div>
-      <p className="text-xs text-gray-600 dark:text-gray-300 mb-3">
+      <p className="text-xs text-blue-300 300 mb-3">
         احصل على وصول كامل لجميع الميزات والدورات المتقدمة
       </p>
       <button
         onClick={onUpgrade}
-        className="w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors duration-200 py-2 px-3 rounded-md text-sm font-semibold flex items-center justify-center gap-2"
+        className="w-full bg-blue-500  text-white 
+         hover:bg-gray-800  transition-colors duration-200 py-2 px-3 rounded-md text-sm font-semibold flex items-center justify-center gap-2"
       >
         <Zap size={14} />
         ترقية الآن
@@ -109,7 +112,8 @@ export function AppSidebar() {
   const location = useLocation();
   const activePath = location.pathname;
   const { darkMode } = useSettings();
-
+  // const { state } = useSidebar();
+  // const isCollapsed = state === "collapsed";
   const isUserPaid = false;
   const handleUpgrade = () => {
     console.log("Upgrade");
@@ -146,10 +150,10 @@ export function AppSidebar() {
                       asChild={!isDisabled}
                       className={
                         isActive
-                          ? "bg-gray-900 text-right dark:bg-white text-white hover:text-white dark:text-gray-900 h-10 px-3 hover:bg-gray-800 dark:hover:bg-gray-100 rounded-lg font-medium"
+                          ? "bg-blue-600 text-right text-white hover:text-white hover:bg-blue-700 h-10 px-3 rounded-lg font-medium"
                           : isDisabled
-                          ? "text-gray-400 text-right dark:text-gray-500 cursor-not-allowed h-10 px-3 rounded-lg"
-                          : "text-gray-700 text-right dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 h-10 px-3 rounded-lg transition-all duration-200"
+                          ? "text-gray-400 text-right dark:text-gray-500  h-10 px-3 rounded-lg"
+                          : "text-gray-700 text-right dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-blue-50 dark:hover:bg-blue-900/20 h-10 px-3 rounded-lg transition-all duration-200"
                       }
                     >
                       {isDisabled ? (
@@ -210,19 +214,6 @@ export function DashboardNavbar() {
             </div>
           </button>
         </SidebarTrigger>
-
-        <div className="relative">
-          <a
-            href="#"
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 block"
-          >
-            <Bell
-              size={18}
-              className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors duration-200"
-            />
-          </a>
-          <div className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-white dark:border-gray-900"></div>
-        </div>
       </div>
 
       <div className="flex items-center gap-2">

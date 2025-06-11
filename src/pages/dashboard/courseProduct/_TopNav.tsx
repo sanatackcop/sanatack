@@ -65,11 +65,6 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
   currentMaterial,
   handleComplete,
   handleRestart,
-  userData = {
-    name: "أحمد محمد",
-    level: 12,
-    totalXp: 2450,
-  },
 }) => {
   const [congratsOpen, setCongratsOpen] = useState(false);
 
@@ -93,7 +88,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
                 <Menu className="h-5 w-5 text-gray-700 dark:text-gray-300" />
               </Button>
 
-              <UserProfileMenu onlyAvatar={true} userData={userData} />
+              <UserProfileMenu />
             </div>
 
             <div className="flex-1 flex items-center justify-center gap-4">

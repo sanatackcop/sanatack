@@ -93,6 +93,9 @@ const iconMap = {
   text: FileText,
 };
 
+export const getIcon = (type: string) =>
+  iconMap[type as keyof typeof iconMap] || FileText;
+
 export const SideNavbar: React.FC<SideNavbarProps> = ({
   sidebarOpen,
   setSidebarOpen,
@@ -105,9 +108,6 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
 }) => {
   const [searchTerm] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
-
-  const getIcon = (type: string) =>
-    iconMap[type as keyof typeof iconMap] || FileText;
 
   const filteredModules = courseData.modules
     .map((module) => ({

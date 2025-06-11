@@ -120,6 +120,7 @@ export const UserContextProvider: FC<Props> = ({ children }: Props) => {
   const logout = () => {
     localStorage.clear();
     setRefreshAccess((prevState) => !prevState);
+    window.location.replace("/");
   };
 
   const login = ({ user, type, role, refresh_token }: LoginPayload) => {
