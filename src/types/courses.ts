@@ -93,6 +93,16 @@ export interface ModuleDto {
   description: string;
 }
 
+export interface CourseDto {
+  title: string;
+  description: string;
+  level: string;
+  course_info: {
+    durationHours: number;
+  };
+  isPublish: boolean;
+}
+
 export interface tagsInterface {
   unitesNum?: number;
   level?: Level;

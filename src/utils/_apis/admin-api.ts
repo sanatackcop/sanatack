@@ -1,14 +1,18 @@
 import {
+  CourseDto,
   LessonDto,
   ModuleDto,
   QuizDto,
   ResourceDto,
   VideoDto,
 } from "./../../types/courses";
-import { LessonModuleLink, MaterialLessonLink } from "../types/adminTypes";
+import {
+  CourseModuleLink,
+  LessonModuleLink,
+  MaterialLessonLink,
+} from "../types/adminTypes";
 import { trackPromise } from "react-promise-tracker";
 import Api from "./api";
-import { CreateNewCourseDto } from "../types/adminTypes";
 
 export const getListCoursesApi = async ({}) => {
   try {
@@ -21,42 +25,6 @@ export const getListCoursesApi = async ({}) => {
     return response.data;
   } catch (e: any) {
     console.log("login error", { e });
-    throw e;
-  }
-};
-
-export const createNewCourseApi = async ({
-  title,
-  description,
-  level,
-  tags,
-  isPublish,
-  modules,
-}: CreateNewCourseDto) => {
-  try {
-    const response = await trackPromise(
-      Api({
-        method: "post",
-        url: "admin/courses/new-course",
-        data: {
-          title,
-          description,
-          level,
-          tags,
-          isPublish,
-          modules,
-        },
-        headers: {
-          "Keep-Alive": "timeout=30, max=1000",
-        },
-      })
-    );
-    return response.data;
-  } catch (e: any) {
-    console.error("Course creation failed:", {
-      error: e?.error || e,
-      config: e?.config,
-    });
     throw e;
   }
 };
@@ -209,4 +177,39 @@ export const getLinkedLessonsModules = async <T>(module_id: string) => {
     })
   );
   return response.data as T;
+};
+
+export const createNewCourse = async (course: CourseDto) => {
+  const response = await trackPromise(
+    Api({
+      method: "post",
+      url: "admin/courses/new-course",
+      data: course,
+    })
+  );
+  return response.data;
+};
+
+export const getLinkedModulesCourses = async <T>(course_id: string) => {
+  const response = await trackPromise(
+    Api({
+      method: "get",
+      url: `admin/mapper/${course_id}/modules`,
+    })
+  );
+  return response.data as T;
+};
+
+export const linkModuleToCourse = async (
+  link: CourseModuleLink,
+  course_id: string
+) => {
+  const response = await trackPromise(
+    Api({
+      method: "post",
+      url: `admin/mapper/${course_id}/modules`,
+      data: link,
+    })
+  );
+  return response.data;
 };

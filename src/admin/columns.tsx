@@ -17,6 +17,16 @@ export const CourseColumns: ColumnDef<Course>[] = [
     accessorKey: "level",
     header: "Level",
   },
+  {
+    header: "Mapped Modules",
+    cell: ({ row }) => {
+      return (
+        <Link to={`/admin/courses/${row.original.id}`}>
+          <Button size="sm">Mapped Modules</Button>
+        </Link>
+      );
+    },
+  },
 ];
 
 export const QuizColumns: ColumnDef<Quiz>[] = [

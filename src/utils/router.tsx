@@ -12,6 +12,7 @@ import MaterialPage from "@/admin/pages/material.page";
 import MappedMaterials from "@/admin/pages/mapped.materials.page";
 import NotFoundPage from "@/lib/not.found";
 import MappedLessons from "@/admin/pages/mapped.lessons.page";
+import MappedModules from "@/admin/pages/mapped.modules.page";
 
 const publicRoutes = [
   { path: "/", element: <HomePAGE /> },
@@ -27,6 +28,7 @@ const adminRoutes = [
     children: [
       { path: "", element: <CoursePage /> },
       { path: "courses", element: <CoursePage /> },
+      { path: "courses/:id", element: <MappedModules /> },
       { path: "modules", element: <ModulesPage /> },
       { path: "modules/:id", element: <MappedLessons /> },
       { path: "lessons", element: <LessonPage /> },

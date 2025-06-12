@@ -3,6 +3,7 @@ import { getListCoursesApi } from "@/utils/_apis/admin-api";
 import { Course } from "@/utils/types";
 import { DataTable } from "@/components/ui/data-table";
 import { CourseColumns } from "../columns";
+import CourseCreate from "../components/course.create";
 
 export default function CoursePage() {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -24,6 +25,10 @@ export default function CoursePage() {
 
   return (
     <div className=" w-full ">
+      <div className="mb-5">
+        <CourseCreate updateTable={() => fetchCourses()} />
+      </div>
+
       <DataTable columns={CourseColumns} data={courses} />
     </div>
   );

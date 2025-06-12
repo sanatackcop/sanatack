@@ -8,7 +8,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -29,9 +28,6 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { createNewResource } from "@/utils/_apis/admin-api";
-import { useEffect } from "react";
-
-// Example MaterialType enum values — adjust to match your backend
 
 const MaterialTypeEnum = z.enum(["resource", "video", "quiz", "link"]);
 

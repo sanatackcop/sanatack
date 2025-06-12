@@ -8,21 +8,21 @@ import {
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Lesson } from "@/utils/types";
-import { fetchAllLesson, linkModuleLesson } from "@/utils/_apis/admin-api";
+import { Module } from "@/utils/types";
+import { fetchAllModules, linkModuleToCourse } from "@/utils/_apis/admin-api";
 import { DataTable } from "@/components/ui/data-table";
 import { ColumnDef } from "@tanstack/react-table";
-import { LessonColumns } from "../columns";
+import { ModuleLessons } from "../columns";
+import { Label } from "@radix-ui/react-dropdown-menu";
 
-export default function MappedLessonsCreate({ id }: { id: string }) {
+export default function MappedModulesCreate({ id }: { id: string }) {
   const [order, setOrder] = useState<number | "">("");
-  const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [modules, setModules] = useState<Module[]>([]);
 
   async function fetchLessons() {
     try {
-      const lessons = await fetchAllLesson<Lesson[]>();
-      if (lessons && lessons.length) setLessons(lessons);
+      const modules = await fetchAllModules<Module[]>();
+      if (modules && modules.length) setModules(modules);
     } catch (err) {
       console.error(err);
     }
@@ -32,17 +32,17 @@ export default function MappedLessonsCreate({ id }: { id: string }) {
     fetchLessons();
   }, []);
 
-  const LessonColumnsLink: ColumnDef<Lesson>[] = [
-    ...LessonColumns,
+  const ModuleColumnsLink: ColumnDef<Module>[] = [
+    ...ModuleLessons,
     {
       header: "Link",
       cell: ({ row }) => {
         return (
           <Button
             onClick={async () =>
-              await linkModuleLesson(
+              await linkModuleToCourse(
                 {
-                  lesson_id: row.original.id,
+                  module_id: row.original.id,
                   order: order || 0,
                 },
                 id ?? ""
@@ -59,11 +59,11 @@ export default function MappedLessonsCreate({ id }: { id: string }) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button>Link A Lesson</Button>
+        <Button>Link A Module</Button>
       </DialogTrigger>
       <DialogContent className="w-full max-w-[800px]">
         <DialogHeader>
-          <DialogTitle>Link A New Lesson</DialogTitle>
+          <DialogTitle>Link A New Module</DialogTitle>
         </DialogHeader>
         <div className="w-full flex flex-col  items-end">
           <Label>Set Counter</Label>
@@ -81,7 +81,7 @@ export default function MappedLessonsCreate({ id }: { id: string }) {
           </Button>
           <p>Current Order: {order || 0}</p>
         </div>
-        <DataTable data={lessons} columns={LessonColumnsLink} />
+        <DataTable data={modules} columns={ModuleColumnsLink} />
       </DialogContent>
     </Dialog>
   );

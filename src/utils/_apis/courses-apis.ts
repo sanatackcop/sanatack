@@ -167,51 +167,6 @@ export const enrollCareerPathApi = async ({
   }
 };
 
-interface UpdateCourseProgressArgs {
-  courseId: string;
-  progress: number;
-}
-
-interface GetCourseProgressArgs {
-  courseId: string;
-}
-
-export const updateCourseProgressApi = async ({
-  courseId,
-  progress,
-}: UpdateCourseProgressArgs) => {
-  try {
-    const { data } = await Api({
-      method: "patch",
-      url: `courses/progress/${courseId}`,
-      data: { progress },
-      withCredentials: false,
-    });
-
-    return data;
-  } catch (e: any) {
-    console.error("updateCourseProgressApi error:", e.message);
-    throw e;
-  }
-};
-
-export const getCourseProgressApi = async ({
-  courseId,
-}: GetCourseProgressArgs) => {
-  try {
-    const { data } = await Api({
-      method: "get",
-      url: `courses/progress/${courseId}`,
-      withCredentials: false,
-    });
-
-    return data;
-  } catch (e: any) {
-    console.error("getCourseProgressApi error:", e.message);
-    throw e;
-  }
-};
-
 export const getCurrentCoursesApi = async (): Promise<CoursesContext[]> => {
   try {
     const response = await trackPromise(
@@ -224,22 +179,6 @@ export const getCurrentCoursesApi = async (): Promise<CoursesContext[]> => {
     return response.data;
   } catch (e: any) {
     console.error("getAllCoursesApi error:", e);
-    throw e;
-  }
-};
-
-export const getCoursesContentApi = async ({ id }: CourseDetails) => {
-  try {
-    const response = await trackPromise(
-      Api({
-        method: "get",
-        url: `courses/${id}`,
-        withCredentials: false,
-      }) as Promise<{ data: CourseDetails[] }>
-    );
-    return response.data;
-  } catch (e: any) {
-    console.error("getCourseContentApi error:", e);
     throw e;
   }
 };
