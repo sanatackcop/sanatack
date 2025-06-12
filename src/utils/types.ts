@@ -1,5 +1,4 @@
 import { ReactNode } from "react";
-import { Video } from "./types/adminTypes";
 
 export type navItem = {
   cta?: string;

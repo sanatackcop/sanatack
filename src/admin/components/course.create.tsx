@@ -18,7 +18,7 @@ import {
   FormMessage,
   FormField,
 } from "@/components/ui/form";
-import { createNewCourse, createNewModule } from "@/utils/_apis/admin-api";
+import { createNewCourse } from "@/utils/_apis/admin-api";
 import { useState } from "react";
 import {
   Select,

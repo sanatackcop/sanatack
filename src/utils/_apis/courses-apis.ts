@@ -3,7 +3,6 @@ import { trackPromise } from "react-promise-tracker";
 import Api from "./api";
 import {
   CareerPathInterface,
-  CourseDetails,
   CoursesContext,
   RoadMapInterface,
 } from "@/types/courses";
