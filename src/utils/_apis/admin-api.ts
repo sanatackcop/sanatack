@@ -1,10 +1,11 @@
 import {
   LessonDto,
+  ModuleDto,
   QuizDto,
   ResourceDto,
   VideoDto,
 } from "./../../types/courses";
-import { MaterialLessonLink } from "../types/adminTypes";
+import { LessonModuleLink, MaterialLessonLink } from "../types/adminTypes";
 import { trackPromise } from "react-promise-tracker";
 import Api from "./api";
 import { CreateNewCourseDto } from "../types/adminTypes";
@@ -144,11 +145,11 @@ export const fetchAllLesson = async <T>() => {
   return response.data as T;
 };
 
-export const linkLessonQuiz = async (link: MaterialLessonLink) => {
+export const linkLessonMaterial = async (link: MaterialLessonLink) => {
   const response = await trackPromise(
     Api({
       method: "post",
-      url: "admin/mapper/quiz",
+      url: "admin/mapper/material",
       data: link,
     })
   );
@@ -159,7 +160,52 @@ export const getLinkedLessonMaterials = async <T>(lesson_id: string) => {
   const response = await trackPromise(
     Api({
       method: "get",
-      url: `admin/mapper/${lesson_id}/quizzes`,
+      url: `admin/mapper/${lesson_id}/materials`,
+    })
+  );
+  return response.data as T;
+};
+
+export const fetchAllModules = async <T>() => {
+  const response = await trackPromise(
+    Api({
+      method: "get",
+      url: "admin/modules",
+    })
+  );
+  return response.data as T;
+};
+
+export const createNewModule = async (module: ModuleDto) => {
+  const response = await trackPromise(
+    Api({
+      method: "post",
+      url: "admin/modules",
+      data: module,
+    })
+  );
+  return response.data;
+};
+
+export const linkModuleLesson = async (
+  link: LessonModuleLink,
+  module_id: string
+) => {
+  const response = await trackPromise(
+    Api({
+      method: "post",
+      url: `admin/mapper/${module_id}/lesson`,
+      data: link,
+    })
+  );
+  return response.data;
+};
+
+export const getLinkedLessonsModules = async <T>(module_id: string) => {
+  const response = await trackPromise(
+    Api({
+      method: "get",
+      url: `admin/mapper/${module_id}/lessons`,
     })
   );
   return response.data as T;

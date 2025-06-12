@@ -49,6 +49,10 @@ export default function MappedMaterials() {
     fetchCourses();
   }, []);
 
+  const combinedMaterial = [...quiz, ...video, ...resource].sort(
+    (a, b) => a.order - b.order
+  );
+
   return (
     <div>
       <div className="w-full flex justify-end">
@@ -61,10 +65,20 @@ export default function MappedMaterials() {
 
       <Tabs defaultValue="quiz">
         <TabsList className="mt-2 w-full justify-end">
+          <TabsTrigger value="all">الكل</TabsTrigger>
           <TabsTrigger value="quiz">اختبار</TabsTrigger>
           <TabsTrigger value="video">فيديو</TabsTrigger>
           <TabsTrigger value="resource">الموارد</TabsTrigger>
         </TabsList>
+        <TabsContent value="all">
+          <DataTable
+            columns={[
+              { accessorKey: "type", header: "Type" },
+              { accessorKey: "order", header: "Order" },
+            ]}
+            data={combinedMaterial}
+          />
+        </TabsContent>
         <TabsContent value="quiz">
           <DataTable
             columns={[

@@ -72,5 +72,4 @@ export interface Module {
   id: string;
   description: string;
   title: string;
-  lessons: Lesson[];
 }

@@ -13,7 +13,7 @@ import {
   getQuizList,
   getResourcesList,
   getVideosList,
-  linkLessonQuiz,
+  linkLessonMaterial,
 } from "@/utils/_apis/admin-api";
 import { DataTable } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
@@ -55,7 +55,7 @@ export default function MappedMaterialsCreate({ id }: { id: string }) {
         return (
           <Button
             onClick={async () =>
-              await linkLessonQuiz({
+              await linkLessonMaterial({
                 material_id: row.original.id,
                 lesson_id: id ?? "",
                 type: MaterialType.Quiz,
@@ -78,7 +78,7 @@ export default function MappedMaterialsCreate({ id }: { id: string }) {
         return (
           <Button
             onClick={async () =>
-              await linkLessonQuiz({
+              await linkLessonMaterial({
                 material_id: row.original.id,
                 lesson_id: id ?? "",
                 type: MaterialType.Video,
@@ -100,7 +100,7 @@ export default function MappedMaterialsCreate({ id }: { id: string }) {
         return (
           <Button
             onClick={async () =>
-              await linkLessonQuiz({
+              await linkLessonMaterial({
                 material_id: row.original.id,
                 lesson_id: id ?? "",
                 type: MaterialType.Resource,

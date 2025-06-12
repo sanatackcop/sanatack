@@ -88,6 +88,11 @@ export interface LessonDto {
   description: string;
 }
 
+export interface ModuleDto {
+  title: string;
+  description: string;
+}
+
 export interface tagsInterface {
   unitesNum?: number;
   level?: Level;

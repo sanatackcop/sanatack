@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Course, Lesson } from "@/utils/types";
+import { Course, Lesson, Module } from "@/utils/types";
 import { Quiz, Resource, Video } from "@/utils/types/adminTypes";
 import { ColumnDef } from "@tanstack/react-table";
 import { Link } from "react-router-dom";
@@ -79,6 +79,27 @@ export const LessonColumns: ColumnDef<Lesson>[] = [
       return (
         <Link to={`/admin/lessons/${row.original.id}`}>
           <Button size="sm">Mapped Materials</Button>
+        </Link>
+      );
+    },
+  },
+];
+
+export const ModuleLessons: ColumnDef<Module>[] = [
+  {
+    accessorKey: "title",
+    header: "Title",
+  },
+  {
+    accessorKey: "description",
+    header: "Description",
+  },
+  {
+    header: "Mapped Lessons",
+    cell: ({ row }) => {
+      return (
+        <Link to={`/admin/modules/${row.original.id}`}>
+          <Button size="sm">Mapped Lessons</Button>
         </Link>
       );
     },

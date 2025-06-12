@@ -18,18 +18,18 @@ import {
   FormMessage,
   FormField,
 } from "@/components/ui/form";
-import { createNewLesson } from "@/utils/_apis/admin-api";
+import { createNewModule } from "@/utils/_apis/admin-api";
 import { useState } from "react";
 
 // Zod schema based on Quiz entity
 const quizSchema = z.object({
-  name: z.string().min(1, "الاسم مطلوب"),
+  title: z.string().min(1, "الاسم مطلوب"),
   description: z.string().min(1, "شرح مطلوب"),
 });
 
 type QuizFormValues = z.infer<typeof quizSchema>;
 
-export default function LessonCreate({
+export default function ModuleCreate({
   updateTable,
 }: {
   updateTable: () => void;
@@ -37,7 +37,7 @@ export default function LessonCreate({
   const form = useForm<QuizFormValues>({
     resolver: zodResolver(quizSchema),
     defaultValues: {
-      name: "",
+      title: "",
       description: "",
     },
   });
@@ -47,7 +47,7 @@ export default function LessonCreate({
 
   const onSubmit = async (data: QuizFormValues) => {
     try {
-      await createNewLesson(data);
+      await createNewModule(data);
       updateTable();
       setOpen(false);
     } catch (error) {
@@ -59,19 +59,19 @@ export default function LessonCreate({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button onClick={() => setOpen(!open)} variant="outline">
-          Create new Lesson
+          Create new Module
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Create Lesson</DialogTitle>
+          <DialogTitle>Create Module</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <FormField
               control={control}
-              name="name"
+              name="title"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>الاسم</FormLabel>

@@ -10,17 +10,17 @@ export default function LessonPage() {
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [error, setError] = useState<string | null>(null);
 
+  const getAllLesson = async () => {
+    try {
+      const lessons = await fetchAllLesson<Lesson[]>();
+      if (lessons && lessons.length) setLessons(lessons);
+    } catch (err: unknown) {
+      console.log(err);
+      if ((err as CustomError).error.type == "network")
+        setError("Error when trying to fetch data.");
+    }
+  };
   useEffect(() => {
-    const getAllLesson = async () => {
-      try {
-        const lessons = await fetchAllLesson<Lesson[]>();
-        if (lessons && lessons.length) setLessons(lessons);
-      } catch (err: unknown) {
-        console.log(err);
-        if ((err as CustomError).error.type == "network")
-          setError("Error when trying to fetch data.");
-      }
-    };
     getAllLesson();
   }, []);
 
@@ -29,7 +29,7 @@ export default function LessonPage() {
   return (
     <div>
       <div className=" mb-2">
-        <LessonCreate />
+        <LessonCreate updateTable={() => getAllLesson()} />
       </div>
       <DataTable columns={LessonColumns} data={lessons} />
     </div>

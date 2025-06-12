@@ -32,7 +32,7 @@ export function DataTable<TData, TValue>({
   });
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-md border" dir="ltr">
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -55,7 +55,10 @@ export function DataTable<TData, TValue>({
         <TableBody>
           {table.getRowCount() == 0 ? (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center text-black">
+              <TableCell
+                colSpan={columns.length}
+                className="h-24 text-center text-black"
+              >
                 No results
               </TableCell>
             </TableRow>

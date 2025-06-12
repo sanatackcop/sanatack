@@ -24,15 +24,15 @@ export interface Quiz {
 }
 
 export declare type LinkedQuiz = Quiz & {
-  order: string;
+  order: number;
 };
 
 export declare type LinkedVideo = Video & {
-  order: string;
+  order: number;
 };
 
 export declare type LinkedResource = Resource & {
-  order: string;
+  order: number;
 };
 
 export enum MaterialType {
@@ -138,5 +138,10 @@ export interface MaterialLessonLink {
   lesson_id: string;
   material_id: string;
   type: MaterialType;
+  order: number;
+}
+
+export interface LessonModuleLink {
+  lesson_id: string;
   order: number;
 }
