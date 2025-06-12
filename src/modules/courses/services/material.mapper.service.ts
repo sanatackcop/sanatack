@@ -23,6 +23,13 @@ export default class MaterialMapperService {
     return this.lessonMapperRepo.save(this.lessonMapperRepo.create(map));
   }
 
+  async getMaterialCount(lesson_id: string): Promise<number> {
+    const entities_count = await this.lessonMapperRepo.findAndCount({
+      where: { lesson: { id: lesson_id } },
+    });
+    return entities_count[1];
+  }
+
   async findAllMaterialsByLesson(lesson_id: string): Promise<{
     quizzes: LinkQuiz[];
     videos: LinkVideo[];

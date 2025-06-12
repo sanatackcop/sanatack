@@ -32,6 +32,7 @@ import ModuleService from './services/module.service';
 import LessonService from './services/lesson.service';
 import LessonMapperService from './services/lesson.mapper';
 import MaterialMapperService from './services/material.mapper.service';
+import CourseMapperService from './services/courses.mapper.service';
 
 @Module({
   imports: [
@@ -71,6 +72,7 @@ import MaterialMapperService from './services/material.mapper.service';
     LessonService,
     LessonMapperService,
     MaterialMapperService,
+    CourseMapperService,
   ],
   exports: [
     CareerPathService,
@@ -83,6 +85,7 @@ import MaterialMapperService from './services/material.mapper.service';
     LessonMapperService,
     MaterialMapperService,
     ModuleService,
+    CourseMapperService,
   ],
 })
 export class CoursesModule {}

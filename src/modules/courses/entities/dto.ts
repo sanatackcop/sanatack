@@ -2,17 +2,24 @@ import {
   ArrayMaxSize,
   ArrayMinSize,
   IsArray,
+  IsBoolean,
+  IsDefined,
   IsEnum,
   IsLowercase,
   IsNotEmpty,
+  IsNotEmptyObject,
   IsNumber,
+  IsObject,
   IsOptional,
   IsString,
   IsUrl,
   IsUUID,
   Min,
+  ValidateNested,
 } from 'class-validator';
 import { MaterialType } from './material-mapper';
+import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 
 export enum Level {
   'BEGINNER' = 'BEGINNER',
@@ -61,14 +68,36 @@ export interface CreateModuleDto {
   isExisting?: boolean;
 }
 
+export class CourseInfoDto {
+  @IsNotEmpty()
+  @IsNumber()
+  durationHours: number;
+}
+
 export class CreateNewCourseDto {
-  @IsNotEmpty({ message: 'Please Provide A Title' })
+  @IsNotEmpty()
+  @IsString()
   title: string;
+
+  @IsNotEmpty()
+  @IsString()
   description?: string;
+
+  @IsNotEmpty()
+  @IsEnum(Level)
   level: Level;
-  tags?: { durtionsHours: number };
+
+  @IsDefined()
+  @IsNotEmptyObject()
+  @IsObject()
+  @ValidateNested()
+  @ApiProperty()
+  @Type(() => CourseInfoDto)
+  course_info?: CourseInfoDto;
+
+  @IsNotEmpty()
+  @IsBoolean()
   isPublish: boolean;
-  modules: CreateModuleDto[];
 }
 
 export class CreateRoadmapDto {
@@ -96,9 +125,7 @@ export class CoursesContext {
   title: string;
   description: string;
   level: Level;
-  tags: {
-    durtionsHours: number;
-  };
+  course_info?: { durationHours: number };
   isPublished?: boolean;
 }
 
@@ -165,6 +192,16 @@ export class ModuleLessonDto {
   @IsNotEmpty()
   @IsUUID('4')
   lesson_id: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  order: number;
+}
+
+export class CourseModuleDto {
+  @IsNotEmpty()
+  @IsUUID('4')
+  module_id: string;
 
   @IsNotEmpty()
   @IsNumber()

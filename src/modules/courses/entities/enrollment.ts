@@ -19,6 +19,12 @@ export class Enrollment extends AbstractEntity {
   @JoinColumn({ name: 'user_id' })
   user: Relation<User>;
 
+  @Column()
+  progress_count: number;
+
+  @Column()
+  is_finished: boolean;
+
   @Column({ type: 'timestamp', nullable: true })
   cancelledAt: Date;
 }

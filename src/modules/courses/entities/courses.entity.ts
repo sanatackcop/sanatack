@@ -17,9 +17,12 @@ export class Course extends AbstractEntity {
   level: Level;
 
   @Column({ type: 'jsonb', nullable: true })
-  tags?: {
-    durtionsHours: number;
+  course_info?: {
+    durationHours: number;
   };
+
+  @Column()
+  material_count: number;
 
   @Column({ default: false })
   isPublished: boolean;

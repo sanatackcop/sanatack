@@ -1,6 +1,15 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpException,
+  HttpStatus,
+  Param,
+  Post,
+} from '@nestjs/common';
 import { CoursesService } from '../courses/services/courses.service';
 import {
+  CourseModuleDto,
   CreateCareerPathDto,
   CreateNewCourseDto,
   CreateRoadmapDto,
@@ -21,6 +30,7 @@ import LessonService from '../courses/services/lesson.service';
 import LessonMapperService from '../courses/services/lesson.mapper';
 import MaterialMapperService from '../courses/services/material.mapper.service';
 import ModuleService from '../courses/services/module.service';
+import CourseMapperService from '../courses/services/courses.mapper.service';
 
 @Controller('admin')
 export class AdminController {
@@ -34,27 +44,45 @@ export class AdminController {
     private readonly lessonService: LessonService,
     private readonly materialMapper: MaterialMapperService,
     private readonly moduleService: ModuleService,
-    private readonly lessonMapper: LessonMapperService
+    private readonly lessonMapper: LessonMapperService,
+    private readonly courseMapper: CourseMapperService
   ) {}
 
   @Get('/courses')
   async getCourses() {
-    return await this.coursesService.list({});
+    return await this.coursesService.list();
   }
 
   @Post('/courses/new-course')
-  async uploadCourse(
-    @Body()
-    { title, description, tags, level, isPublish, modules }: CreateNewCourseDto
+  async uploadCourse(@Body() course: CreateNewCourseDto) {
+    return await this.coursesService.create(course);
+  }
+
+  @Get('/mapper/:course_id/modules')
+  async getAllMappedModules(@Param('course_id') course_id: string) {
+    try {
+      return await this.courseMapper.getAllLinkedByModules(course_id);
+    } catch (error: unknown) {
+      console.log({ error });
+    }
+  }
+
+  @Post('mapper/:course_id/modules')
+  async linkModuleToCourses(
+    @Param('course_id') id: string,
+    @Body() module: CourseModuleDto
   ) {
-    return await this.coursesService.create({
-      title,
-      description,
-      tags,
-      level,
-      isPublish,
-      modules,
-    });
+    try {
+      return await this.courseMapper.create({
+        course: { id },
+        module: { id: module.module_id },
+        order: module.order,
+      });
+    } catch (error) {
+      console.log(error);
+      if (error instanceof HttpException) throw error;
+      else throw new HttpException('Bad Request', HttpStatus.BAD_REQUEST);
+    }
   }
 
   @Post('roadmaps/new-roadmap')
