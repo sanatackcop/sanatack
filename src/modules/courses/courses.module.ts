@@ -82,6 +82,7 @@ import MaterialMapperService from './services/material.mapper.service';
     LessonService,
     LessonMapperService,
     MaterialMapperService,
+    ModuleService,
   ],
 })
 export class CoursesModule {}

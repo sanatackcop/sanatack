@@ -23,6 +23,10 @@ export default class ModuleService {
     });
   }
 
+  getAll(): Promise<Module[]> {
+    return this.moduleRepository.find();
+  }
+
   async getAllModulesByTitle(module_title: string) {
     return this.moduleRepository.find({
       where: {

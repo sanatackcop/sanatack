@@ -6,6 +6,8 @@ import {
   CreateRoadmapDto,
   LessonDto,
   MaterialLessonMapDto,
+  ModuleDto,
+  ModuleLessonDto,
   QuizDto,
   ResourceDto,
   VideoDto,
@@ -18,6 +20,7 @@ import ResourceService from '../courses/services/resource.service';
 import LessonService from '../courses/services/lesson.service';
 import LessonMapperService from '../courses/services/lesson.mapper';
 import MaterialMapperService from '../courses/services/material.mapper.service';
+import ModuleService from '../courses/services/module.service';
 
 @Controller('admin')
 export class AdminController {
@@ -29,8 +32,9 @@ export class AdminController {
     private readonly videoService: VideoService,
     private readonly resourceService: ResourceService,
     private readonly lessonService: LessonService,
-    private readonly lessonMapper: LessonMapperService,
-    private readonly materialMapper: MaterialMapperService
+    private readonly materialMapper: MaterialMapperService,
+    private readonly moduleService: ModuleService,
+    private readonly lessonMapper: LessonMapperService
   ) {}
 
   @Get('/courses')
@@ -103,7 +107,7 @@ export class AdminController {
     return await this.lessonService.find();
   }
 
-  @Post('/mapper/quiz')
+  @Post('/mapper/material')
   async linkQuizToLesson(@Body() linkQuiz: MaterialLessonMapDto) {
     try {
       const d = await this.materialMapper.create({
@@ -118,10 +122,53 @@ export class AdminController {
     }
   }
 
-  @Get('/mapper/:lesson_id/quizzes')
+  @Get('/mapper/:lesson_id/materials')
   async getAllMappedQuizzes(@Param('lesson_id') lesson_id: string) {
     try {
       return await this.materialMapper.findAllMaterialsByLesson(lesson_id);
+    } catch (error: unknown) {
+      console.log({ error });
+    }
+  }
+
+  @Get('/modules')
+  async getAllModules() {
+    try {
+      return await this.moduleService.getAll();
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  @Post('/modules')
+  async createModule(@Body() module: ModuleDto) {
+    try {
+      return await this.moduleService.create(module);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  @Post('mapper/:module_id/lesson')
+  async linkLessonToModule(
+    @Param('module_id') id: string,
+    @Body() lesson: ModuleLessonDto
+  ) {
+    try {
+      return await this.lessonMapper.create({
+        module: { id },
+        lesson: { id: lesson.lesson_id },
+        order: lesson.order,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  @Get('/mapper/:module_id/lessons')
+  async getAllMappedLessons(@Param('module_id') module_id: string) {
+    try {
+      return await this.lessonMapper.getAllLinkedByLessons(module_id);
     } catch (error: unknown) {
       console.log({ error });
     }

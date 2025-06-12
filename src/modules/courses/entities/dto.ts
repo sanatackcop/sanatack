@@ -132,6 +132,16 @@ export class LessonDto {
   description: string;
 }
 
+export class ModuleDto {
+  @IsNotEmpty()
+  @IsString()
+  title: string;
+
+  @IsNotEmpty()
+  @IsString()
+  description: string;
+}
+
 export class MaterialLessonMapDto {
   @IsNotEmpty()
   @IsUUID('4')
@@ -145,6 +155,16 @@ export class MaterialLessonMapDto {
   @IsLowercase()
   @IsEnum(MaterialType, { message: 'نوع المورد غير صالح' })
   type: MaterialType;
+
+  @IsNotEmpty()
+  @IsNumber()
+  order: number;
+}
+
+export class ModuleLessonDto {
+  @IsNotEmpty()
+  @IsUUID('4')
+  lesson_id: string;
 
   @IsNotEmpty()
   @IsNumber()

@@ -48,6 +48,7 @@ export default class MaterialMapperService {
         return {
           ...item,
           order: matched?.order ?? 0,
+          type: matched.material_type,
         };
       });
     };
