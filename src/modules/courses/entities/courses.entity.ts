@@ -21,7 +21,7 @@ export class Course extends AbstractEntity {
     durationHours: number;
   };
 
-  @Column()
+  @Column({ default: 0 })
   material_count: number;
 
   @Column({ default: false })
