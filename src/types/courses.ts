@@ -83,6 +83,26 @@ export interface VideoDto {
   duration: number;
 }
 
+export interface LessonDto {
+  name: string;
+  description: string;
+}
+
+export interface ModuleDto {
+  title: string;
+  description: string;
+}
+
+export interface CourseDto {
+  title: string;
+  description: string;
+  level: string;
+  course_info: {
+    durationHours: number;
+  };
+  isPublish: boolean;
+}
+
 export interface tagsInterface {
   unitesNum?: number;
   level?: Level;

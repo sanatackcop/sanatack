@@ -4,6 +4,13 @@ import Storage from "@/lib/Storage";
 
 let baseURL = import.meta.env.VITE_REACT_APP_BASEURL;
 
+export interface CustomError {
+  error: {
+    type: string;
+    body: string;
+  };
+}
+
 const baseApi = axios.create({
   baseURL,
   withCredentials: true,

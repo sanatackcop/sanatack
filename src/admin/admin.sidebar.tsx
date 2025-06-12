@@ -13,11 +13,14 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { Link } from "react-router-dom";
+import SanatackLogo from "../assets/logo.svg";
+import SanatackDarkLogo from "../assets/dark_logo.svg";
 
 export interface SidebarItem {
   title: string;
@@ -69,9 +72,16 @@ const items: SidebarItem[] = [
   },
 ];
 
-export function AppSidebar() {
+export default function AppSidebar({ darkMode }: { darkMode: boolean }) {
   return (
-    <Sidebar side="right">
+    <Sidebar collapsible="icon" variant="sidebar" side="right">
+      <SidebarHeader>
+        <img
+          src={darkMode ? SanatackDarkLogo : SanatackLogo}
+          alt="Image"
+          className=" w-20 h-10 object-cover"
+        />
+      </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Admin Dashboard</SidebarGroupLabel>
@@ -80,9 +90,12 @@ export function AppSidebar() {
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <Link to={'/admin'+item.url} className=" flex justify-between">
-                      <span>{item.title}</span>
-                      <item.icon />
+                    <Link
+                      to={"/admin" + item.url}
+                      className="flex items-center gap-2"
+                    >
+                      <item.icon className="w-5 h-5 shrink-0" />
+                      <span className="truncate">{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

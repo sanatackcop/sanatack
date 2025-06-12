@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { Video } from "./types/adminTypes";
 
 export type navItem = {
   cta?: string;
@@ -47,7 +48,7 @@ export interface Course {
   id: string;
   title: string;
   description: string;
-  modules: Module[]
+  modules: Module[];
   isPublish: boolean;
 }
 export type MaterialType = "video" | "reading" | "quiz";
@@ -64,16 +65,12 @@ export interface Material {
 
 export interface Lesson {
   id: string;
-  title: string;
-  duration: string;
-  completedCount: number;
-  totalCount: number;
-  materials: Material[];
+  name: string;
+  description: string;
 }
 
 export interface Module {
   id: string;
   description: string;
   title: string;
-  lessons: Lesson[];
 }

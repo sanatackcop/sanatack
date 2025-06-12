@@ -14,7 +14,7 @@ import {
   Bot,
 } from "lucide-react";
 import LogoLight from "@/assets/logo.svg";
-import LogoDark from "@/assets/logo_black.svg";
+import LogoDark from "@/assets/dark_logo.svg";
 import { Link, useLocation } from "react-router-dom";
 import {
   Sidebar,

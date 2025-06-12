@@ -9,6 +9,10 @@ import CoursePage from "@/admin/pages/course.page";
 import AdminDashboard from "@/admin/Index";
 import LessonPage from "@/admin/pages/lesson.page";
 import MaterialPage from "@/admin/pages/material.page";
+import MappedMaterials from "@/admin/pages/mapped.materials.page";
+import NotFoundPage from "@/lib/not.found";
+import MappedLessons from "@/admin/pages/mapped.lessons.page";
+import MappedModules from "@/admin/pages/mapped.modules.page";
 
 const publicRoutes = [
   { path: "/", element: <HomePAGE /> },
@@ -24,8 +28,11 @@ const adminRoutes = [
     children: [
       { path: "", element: <CoursePage /> },
       { path: "courses", element: <CoursePage /> },
+      { path: "courses/:id", element: <MappedModules /> },
       { path: "modules", element: <ModulesPage /> },
+      { path: "modules/:id", element: <MappedLessons /> },
       { path: "lessons", element: <LessonPage /> },
+      { path: "lessons/:id", element: <MappedMaterials /> },
       { path: "materials", element: <MaterialPage /> },
     ],
   },
@@ -91,7 +98,7 @@ const UsersRouter: React.FC = () => (
         />
       ))}
 
-      <Route path="*" element={<h1>404 – Page Not Found</h1>} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   </BrowserRouter>
 );
@@ -110,7 +117,7 @@ const AdminRouter: React.FC = () => (
           ))}
         </Route>
       ))}
-      <Route path="*" element={<h1>404 – Page Not Found</h1>} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   </BrowserRouter>
 );

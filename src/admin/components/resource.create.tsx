@@ -1,4 +1,3 @@
-import * as React from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,7 +8,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -31,8 +29,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { createNewResource } from "@/utils/_apis/admin-api";
 
-// Example MaterialType enum values — adjust to match your backend
-
 const MaterialTypeEnum = z.enum(["resource", "video", "quiz", "link"]);
 
 const resourceSchema = z.object({
@@ -45,9 +41,15 @@ const resourceSchema = z.object({
 
 type ResourceFormValues = z.infer<typeof resourceSchema>;
 
-export default function ResourceDialogCreate() {
-  const [open, setOpen] = React.useState(false);
-
+export default function ResourceDialogCreate({
+  open,
+  onOpenChange,
+  updateTable,
+}: {
+  open: boolean;
+  onOpenChange: (state: boolean) => void;
+  updateTable: () => void;
+}) {
   const form = useForm<ResourceFormValues>({
     resolver: zodResolver(resourceSchema),
     defaultValues: {
@@ -62,18 +64,15 @@ export default function ResourceDialogCreate() {
   const onSubmit = async (data: ResourceFormValues) => {
     try {
       await createNewResource(data);
-      console.log("✅ Resource created:", data);
-      setOpen(false);
+      updateTable();
+      onOpenChange(false);
     } catch (error) {
       console.log(error);
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline">الموارد</Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>إنشاء مورد</DialogTitle>

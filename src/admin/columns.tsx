@@ -1,6 +1,8 @@
-import { Course } from "@/utils/types";
-import { QuizInput, ResourceInput, VideoInput } from "@/utils/types/adminTypes";
+import { Button } from "@/components/ui/button";
+import { Course, Lesson, Module } from "@/utils/types";
+import { Quiz, Resource, Video } from "@/utils/types/adminTypes";
 import { ColumnDef } from "@tanstack/react-table";
+import { Link } from "react-router-dom";
 
 export const CourseColumns: ColumnDef<Course>[] = [
   {
@@ -15,9 +17,19 @@ export const CourseColumns: ColumnDef<Course>[] = [
     accessorKey: "level",
     header: "Level",
   },
+  {
+    header: "Mapped Modules",
+    cell: ({ row }) => {
+      return (
+        <Link to={`/admin/courses/${row.original.id}`}>
+          <Button size="sm">Mapped Modules</Button>
+        </Link>
+      );
+    },
+  },
 ];
 
-export const QuizColumns: ColumnDef<QuizInput>[] = [
+export const QuizColumns: ColumnDef<Quiz>[] = [
   {
     accessorKey: "question",
     header: "Question",
@@ -28,7 +40,7 @@ export const QuizColumns: ColumnDef<QuizInput>[] = [
   },
 ];
 
-export const VideoColumns: ColumnDef<VideoInput>[] = [
+export const VideoColumns: ColumnDef<Video>[] = [
   {
     accessorKey: "title",
     header: "Title",
@@ -47,7 +59,7 @@ export const VideoColumns: ColumnDef<VideoInput>[] = [
   },
 ];
 
-export const ResourceColumns: ColumnDef<ResourceInput>[] = [
+export const ResourceColumns: ColumnDef<Resource>[] = [
   {
     accessorKey: "title",
     header: "Title",
@@ -59,5 +71,47 @@ export const ResourceColumns: ColumnDef<ResourceInput>[] = [
   {
     accessorKey: "type",
     header: "Type",
+  },
+];
+
+export const LessonColumns: ColumnDef<Lesson>[] = [
+  {
+    accessorKey: "name",
+    header: "Name",
+  },
+  {
+    accessorKey: "description",
+    header: "Description",
+  },
+  {
+    header: "Mapped Materials",
+    cell: ({ row }) => {
+      return (
+        <Link to={`/admin/lessons/${row.original.id}`}>
+          <Button size="sm">Mapped Materials</Button>
+        </Link>
+      );
+    },
+  },
+];
+
+export const ModuleLessons: ColumnDef<Module>[] = [
+  {
+    accessorKey: "title",
+    header: "Title",
+  },
+  {
+    accessorKey: "description",
+    header: "Description",
+  },
+  {
+    header: "Mapped Lessons",
+    cell: ({ row }) => {
+      return (
+        <Link to={`/admin/modules/${row.original.id}`}>
+          <Button size="sm">Mapped Lessons</Button>
+        </Link>
+      );
+    },
   },
 ];

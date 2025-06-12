@@ -59,7 +59,15 @@ const videoSchema = z.object({
 
 type VideoFormValues = z.infer<typeof videoSchema>;
 
-export default function VideoDialogCreate() {
+export default function VideoDialogCreate({
+  open,
+  onOpenChange,
+  updateTable,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  updateTable: () => void;
+}) {
   const form = useForm<VideoFormValues>({
     resolver: zodResolver(videoSchema),
     defaultValues: {
@@ -69,25 +77,18 @@ export default function VideoDialogCreate() {
       duration: undefined,
     },
   });
-  const [open, setOpen] = React.useState(false);
-
   const onSubmit = async (data: VideoFormValues) => {
     try {
       await createNewVideo(data);
-      console.log("✅ Video resource submitted:", data);
-      setOpen(false)
+      updateTable();
+      onOpenChange(false);
     } catch (error) {
       console.log(error);
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button onClick={() => setOpen(!open)} variant="outline">
-          فيديو
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>إنشاء مورد فيديو</DialogTitle>
