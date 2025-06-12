@@ -1,111 +1,209 @@
-import { useEffect, useMemo, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import MaterialViewer from "./_MaterialViewer";
-import { getSingleCoursesApi } from "@/utils/_apis/courses-apis";
-import { Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Course, Material } from "@/utils/types";
-import CourseSidebar from "./_Sidebar";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import React, { useEffect, useMemo, useState } from "react";
+import { Course, Material, SideNavbar } from "./_Sidebar";
+import { MaterialViewer } from "./_MaterialViewer";
+import NavigationPlayground from "./_TopNav";
+import { useSettings } from "@/context/SettingsContexts";
 
-export default function CourseLearningPage() {
-  const { id: course_id } = useParams();
-  const navigate = useNavigate();
-
-  const [course, setCourse] = useState<Course | null>(null);
+export const CoursePlayground: React.FC = () => {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentMaterial, setCurrentMaterial] = useState<Material | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [expandedModules, setExpandedModules] = useState<string[]>(["basics"]);
+  const { darkMode } = useSettings();
+
+  const [courseData] = useState<Course>({
+    id: "1",
+    title: "أساسيات الجافاسكريبت",
+    subtitle: "تعلم أساسيات البرمجة بالجافاسكريبت",
+    progress: 25,
+    totalLessons: 12,
+    completedLessons: 3,
+    completedCount: 3,
+    totalCount: 12,
+    duration: "4 ساعات",
+    modules: [
+      {
+        id: "basics",
+        title: "وحدة التحكم",
+        progress: 60,
+        completedCount: 3,
+        totalCount: 5,
+        lessons: [
+          {
+            id: "lesson-1",
+            title: "الدرس الأول",
+            completedCount: 2,
+            totalCount: 2,
+            duration: "25 دقيقة",
+            materials: [
+              {
+                id: "01-setting-up",
+                title: "الإعداد الأولي",
+                description:
+                  "تعلم كيفية إعداد بيئة التطوير للجافاسكريبت واستخدام وحدة التحكم لكتابة أول برنامج لك.",
+                completed: true,
+                duration: "5 دقائق",
+                type: "text",
+                locked: false,
+              },
+              {
+                id: "02-console",
+                title: "وحدة التحكم",
+                description:
+                  "مقدمة شاملة عن وحدة التحكم في المتصفح وكيفية استخدامها لتنفيذ أوامر الجافاسكريبت وعرض النتائج.",
+                completed: true,
+                duration: "8 دقائق",
+                type: "video",
+                locked: false,
+                url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+              },
+            ],
+          },
+          {
+            id: "lesson-2",
+            title: "الدرس الثاني",
+            completedCount: 1,
+            totalCount: 3,
+            duration: "35 دقيقة",
+            materials: [
+              {
+                id: "03-letter-tree",
+                title: "شجرة الحروف",
+                description:
+                  "تمرين عملي على البرمجة باستخدام الحلقات والشروط لإنشاء أشكال وأنماط من الحروف والرموز.",
+                completed: false,
+                duration: "12 دقيقة",
+                type: "code",
+                current: true,
+                locked: false,
+              },
+              {
+                id: "06-letter-tree",
+                title: "شجرة الحروف",
+                description:
+                  "تمرين عملي على البرمجة باستخدام الحلقات والشروط لإنشاء أشكال وأنماط من الحروف والرموز.",
+                completed: false,
+                duration: "12 دقيقة",
+                type: "quiz",
+                current: false,
+                locked: false,
+              },
+              {
+                id: "06-letter-tree",
+                title: "شجرة الحروف",
+                description:
+                  "تمرين عملي على البرمجة باستخدام الحلقات والشروط لإنشاء أشكال وأنماط من الحروف والرموز.",
+                completed: false,
+                duration: "12 دقيقة",
+                type: "article",
+                current: false,
+                locked: false,
+              },
+              {
+                id: "04-secret-recipe",
+                title: "الوصفة السرية",
+                description:
+                  "تمرين متقدم لحل المشاكل البرمجية باستخدام المتغيرات والدوال للوصول إلى الحل الصحيح.",
+                completed: false,
+                duration: "15 دقيقة",
+                type: "code",
+                locked: true,
+              },
+              {
+                id: "05-receipt",
+                title: "الإيصال",
+                description:
+                  "اختبار شامل للمفاهيم المتعلمة في هذه الوحدة مع تطبيق عملي لإنشاء إيصال حسابي.",
+                completed: false,
+                duration: "10 دقائق",
+                type: "quiz",
+                locked: true,
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  });
 
   const flatMaterials = useMemo(
     () =>
-      course?.modules?.flatMap((m) => m.lessons.flatMap((l) => l.materials)) ??
-      [],
-    [course?.modules]
+      courseData.modules.flatMap((m) => m.lessons.flatMap((l) => l.materials)),
+    [courseData.modules]
   );
 
   useEffect(() => {
-    if (course?.modules?.length || !course_id) return;
-    setLoading(true);
-    let mounted = true;
-
-    Promise.all([getSingleCoursesApi({ course_id })])
-      .then(([course]: [Course]) => {
-        if (!mounted) return;
-
-        setCourse(course);
-        setCurrentMaterial(
-          course.modules?.[0]?.lessons?.[0]?.materials?.[0] ?? null
-        );
-      })
-      .catch((err) => {
-        if (!mounted) return;
-        console.error(err);
-        setError("تعذر تحميل محتوى الدورة، يرجى المحاولة لاحقًا.");
-      })
-      .finally(() => mounted && setLoading(false));
-
-    return () => {
-      mounted = false;
-    };
-  }, [course_id, course?.modules]);
-
-  if (loading) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center gap-2 text-muted-foreground">
-        <Loader2 className="h-5 w-5 animate-spin" /> جاري التحميل…
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex h-screen w-full flex-col items-center justify-center gap-4 text-center">
-        <p className="text-red-500">{error}</p>
-        <Button onClick={() => navigate(-1)}>رجوع</Button>
-      </div>
-    );
-  }
-
-  if (!course?.modules?.length) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center text-muted-foreground">
-        لا يوجد محتوى متاح.
-      </div>
-    );
-  }
+    if (!currentMaterial && flatMaterials.length > 0) {
+      const firstMaterial =
+        flatMaterials.find((m) => m.current) || flatMaterials[0];
+      setCurrentMaterial(firstMaterial);
+    }
+  }, [flatMaterials, currentMaterial]);
 
   const currentIndex = currentMaterial
     ? flatMaterials.findIndex((m) => m.id === currentMaterial.id)
     : -1;
   const nextMaterial =
     currentIndex > -1 ? flatMaterials[currentIndex + 1] : null;
+  const prevMaterial =
+    currentIndex > 0 ? flatMaterials[currentIndex - 1] : null;
+
+  const handleNext = () => {
+    if (nextMaterial && !nextMaterial.locked) setCurrentMaterial(nextMaterial);
+  };
+  const handlePrev = () => {
+    if (prevMaterial) setCurrentMaterial(prevMaterial);
+  };
+
+  const toggleModule = (moduleId: string) => {
+    setExpandedModules((prev) =>
+      prev.includes(moduleId)
+        ? prev.filter((id) => id !== moduleId)
+        : [...prev, moduleId]
+    );
+  };
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-[#eaeaea] dark:bg-[#0C0C0C] text-gray-900 dark:text-white">
-      <SidebarProvider>
-        <CourseSidebar
-        // course={course}
-        // currentMaterial={currentMaterial}
-        // setCurrentMaterial={setCurrentMaterial}
-        // iconMap={iconMap}
-        />
-        <main className="relative flex flex-1 flex-col overflow-auto p-4 pt-0 bg-white dark:bg-[#131313] gap-4">
-          <MaterialViewer
-            material={currentMaterial}
-            onComplete={(e) => console.log(e)}
-          />
+    <div
+      className={`h-screen flex flex-col ${darkMode ? "dark" : ""}`}
+      dir="rtl"
+    >
+      <NavigationPlayground
+        courseData={courseData}
+        sidebarOpen={sidebarOpen}
+        prevMaterial={prevMaterial}
+        nextMaterial={nextMaterial}
+        handlePrev={handlePrev}
+        handleNext={handleNext}
+        currentIndex={currentIndex}
+        totalMaterials={flatMaterials.length}
+        setSidebarOpen={setSidebarOpen}
+        currentMaterial={currentMaterial}
+        handleComplete={function (): void {
+          throw new Error("Function not implemented.");
+        }}
+        handleRestart={function (): void {
+          throw new Error("Function not implemented.");
+        }}
+      />
 
-          <div className="absolute bottom-10 left-10">
-            <Button
-              disabled={!nextMaterial}
-              onClick={() => nextMaterial && setCurrentMaterial(nextMaterial)}
-            >
-              التالي
-            </Button>
-          </div>
+      <div className="flex flex-1 overflow-hidden">
+        <SideNavbar
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+          courseData={courseData}
+          expandedModules={expandedModules}
+          toggleModule={toggleModule}
+          currentMaterial={currentMaterial}
+          setCurrentMaterial={setCurrentMaterial}
+          darkMode={darkMode}
+        />
+
+        <main className="flex-1 flex flex-col">
+          <MaterialViewer material={currentMaterial} />
         </main>
-      </SidebarProvider>
+      </div>
     </div>
   );
-}
+};
+
+export default CoursePlayground;

@@ -8,6 +8,7 @@ import Roadmap from "./RoadMap";
 import RoadMapView from "./RoadMap/View";
 import CareerPaths from "./CareerPath/Index";
 import CareerView from "./CareerPath/View";
+import UserProfile from "./userProfile/Index";
 
 export default function MainDashboard() {
   return (
@@ -23,6 +24,7 @@ export default function MainDashboard() {
       >
         <Route index element={<Navigate to="overview" replace />} />
         <Route path="overview" element={<DashboardHome />} />
+        <Route path="profile" element={<UserProfile />} />
         <Route path="courses" element={<CardList />} />
         <Route path="courses/:id" element={<CourseView />} />
         <Route path="careerPath" element={<CareerPaths />} />

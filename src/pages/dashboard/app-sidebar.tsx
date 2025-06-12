@@ -1,11 +1,17 @@
 import {
   Home,
-  Inbox,
-  Bell,
   Sun,
   Moon,
-  GalleryHorizontal,
-  ListStart,
+  Crown,
+  Zap,
+  Briefcase,
+  BookOpen,
+  ClipboardList,
+  FolderOpen,
+  Code,
+  Map,
+  ChartScatter,
+  Bot,
 } from "lucide-react";
 import LogoLight from "@/assets/logo.svg";
 import LogoDark from "@/assets/dark_logo.svg";
@@ -21,59 +27,179 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
-import { CommandMenu } from "@/components/ui/CommandDialog";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useSettings } from "@/context/SettingsContexts";
-import { NavUser } from "@/components/ui/nav-user";
+import UserProfileMenu from "@/components/UserProfile";
 
 const items = [
-  { title: "الرئيسية", url: "/dashboard/overview", icon: Home },
+  {
+    title: "الرئيسية",
+    url: "/dashboard/overview",
+    icon: Home,
+    requiresPaid: false,
+    comingSoon: false,
+  },
+  {
+    title: "الدورات",
+    url: "/dashboard/courses",
+    icon: BookOpen,
+    requiresPaid: false,
+    comingSoon: false,
+  },
+  {
+    title: "المسارات",
+    url: "/dashboard/roadMap",
+    icon: Map,
+    requiresPaid: true,
+    comingSoon: true,
+  },
   {
     title: "المسار المهني",
     url: "/dashboard/careerPath",
-    icon: GalleryHorizontal,
+    icon: Briefcase,
+    requiresPaid: true,
+    comingSoon: true,
   },
-  { title: "المسارات", url: "/dashboard/roadMap", icon: ListStart },
-  { title: "الدورات", url: "/dashboard/courses", icon: Inbox },
+  {
+    title: "صناعة خطة تعليم",
+    url: "/dashboard/assessments",
+    icon: ClipboardList,
+    requiresPaid: true,
+    comingSoon: true,
+  },
+  {
+    title: "المشاريع",
+    url: "/dashboard/assessments",
+    icon: FolderOpen,
+    requiresPaid: true,
+    comingSoon: true,
+  },
+  {
+    title: "ليت كود",
+    url: "/dashboard/assessments",
+    icon: Code,
+    requiresPaid: true,
+    comingSoon: true,
+  },
+
+  {
+    title: "مدرب  AI",
+    url: "/dashboard/assessments",
+    icon: Bot,
+    requiresPaid: true,
+    comingSoon: true,
+  },
+
+  {
+    title: "التحليل العميق",
+    url: "/dashboard/assessments",
+    icon: ChartScatter,
+    requiresPaid: true,
+    comingSoon: true,
+  },
 ];
+
+function SubscriptionBanner({ onUpgrade }: any) {
+  return (
+    <div
+      className="mx-3 mb-3 p-4  border-2
+     border-blue-500 rounded-lg"
+    >
+      <div className="flex items-center gap-2 mb-2">
+        <Crown size={18} className="text-blue-600 " />
+        <h3 className="font-bold text-sm text-blue-500 ">
+          ترقية إلى النسخة المدفوعة
+        </h3>
+      </div>
+      <p className="text-xs text-blue-300 300 mb-3">
+        احصل على وصول كامل لجميع الميزات والدورات المتقدمة
+      </p>
+      <button
+        onClick={onUpgrade}
+        className="w-full bg-blue-500  text-white 
+         hover:bg-gray-800  transition-colors duration-200 py-2 px-3 rounded-md text-sm font-semibold flex items-center justify-center gap-2"
+      >
+        <Zap size={14} />
+        ترقية الآن
+      </button>
+    </div>
+  );
+}
+
 export function AppSidebar() {
   const location = useLocation();
   const activePath = location.pathname;
   const { darkMode } = useSettings();
+  // const { state } = useSidebar();
+  // const isCollapsed = state === "collapsed";
+  const isUserPaid = false;
+  const handleUpgrade = () => {
+    console.log("Upgrade");
+  };
+
   return (
     <Sidebar
       side="right"
       collapsible="offcanvas"
-      className=" bg-[#eaeaea] dark:bg-[#0C0C0C] border-l border-gray-500 border-opacity-20 w-full sm:w-64"
+      className="bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 w-full sm:w-64"
     >
-      <SidebarContent className="bg-[#eaeaea] dark:bg-[#0C0C0C]">
-        <div className=" h-[60px] flex justify-normal items-center overflow-hidden">
+      <SidebarContent className="bg-white dark:bg-gray-900">
+        <div className="h-[60px] flex justify-normal items-center overflow-hidden">
           <img
             src={darkMode ? String(LogoDark) : String(LogoLight)}
             alt="logo"
-            className="h-full w-auto object-contain transform scale-[2] pr-6 pt-1 "
+            className="h-full w-auto object-contain transform scale-[2] pr-6 pt-1"
           />
         </div>
-        <Separator className="bg-gray-500 dark:opacity-70 opacity-20" />
-        <SidebarGroup>
+        <Separator className="bg-gray-200 dark:bg-gray-700" />
+
+        <SidebarGroup className="flex-1">
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
+            <SidebarMenu className="space-y-1 text-right">
               {items.map((item) => {
                 const isActive = activePath.startsWith(item.url);
+                const isLocked = item.requiresPaid && !isUserPaid;
+                const isComingSoon = item.comingSoon;
+                const isDisabled = isLocked || isComingSoon;
+
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
-                      asChild
+                      asChild={!isDisabled}
                       className={
                         isActive
-                          ? " bg-black dark:bg-[#293546] bg-opacity-40 h-10 px-2 text-black dark:text-white hover:bg-opacity-40"
-                          : "text-gray-500"
+                          ? "bg-blue-600 text-right text-white hover:text-white hover:bg-blue-700 h-10 px-3 rounded-lg font-medium"
+                          : isDisabled
+                          ? "text-gray-400 text-right dark:text-gray-500  h-10 px-3 rounded-lg"
+                          : "text-gray-700 text-right dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-blue-50 dark:hover:bg-blue-900/20 h-10 px-3 rounded-lg transition-all duration-200"
                       }
                     >
-                      <Link to={item.url}>
-                        <item.icon size={20} />
-                        <span>{item.title}</span>
-                      </Link>
+                      {isDisabled ? (
+                        <div className="flex items-center gap-3 opacity-50 relative">
+                          <item.icon size={20} />
+                          <span className="text-nowrap">{item.title}</span>
+                          <div className="ml-auto flex items-center gap-1">
+                            {isComingSoon && (
+                              <>
+                                <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full font-medium">
+                                  قريباً
+                                </span>
+                              </>
+                            )}
+                            {isLocked && (
+                              <Crown size={14} className="text-yellow-500" />
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        <Link
+                          to={item.url}
+                          className="flex items-center gap-3 w-full"
+                        >
+                          <item.icon size={20} />
+                          <span>{item.title}</span>
+                        </Link>
+                      )}
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );
@@ -81,39 +207,57 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        <Separator className="bg-gray-500 dark:opacity-70 opacity-20" />
+
+        <div className="mt-auto">
+          {!isUserPaid && <SubscriptionBanner onUpgrade={handleUpgrade} />}
+        </div>
       </SidebarContent>
       <SidebarRail />
     </Sidebar>
   );
 }
+
 export function DashboardNavbar() {
   const { darkMode, toggleDarkMode } = useSettings();
+
   return (
-    <nav className=" sticky z-50 top-0 h-[69px] flex items-center justify-between px-2 py-3 border-b border-[#8D8D8D] border-opacity-20 bg-[#eaeaea] dark:bg-[#0C0C0C]">
-      <div className="flex items-center gap-3">
+    <nav className="sticky z-50 top-0 h-[69px] flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+      <div className="flex items-center gap-4">
         <SidebarTrigger>
-          <button className="hover:opacity-75"></button>
+          <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200">
+            <div className="w-5 h-4 flex flex-col justify-between">
+              <div className="w-full h-0.5 bg-gray-700 dark:bg-gray-300 rounded"></div>
+              <div className="w-4 h-0.5 bg-gray-700 dark:bg-gray-300 rounded"></div>
+              <div className="w-full h-0.5 bg-gray-700 dark:bg-gray-300 rounded"></div>
+            </div>
+          </button>
         </SidebarTrigger>
-
-        <a href="#" className="mx-1">
-          <Bell
-            size={18}
-            className="stroke-black dark:stroke-white fill-[#1A1A1A] text-gray-500 hover:text-gray-700"
-          />
-        </a>
-
-        <CommandMenu />
       </div>
-      <div className="flex items-center ml-2">
-        <button onClick={toggleDarkMode} className="p-3 rounded transition">
-          {darkMode ? (
-            <Sun size={22} className="text-white" />
-          ) : (
-            <Moon size={22} className="text-black" />
-          )}
+
+      <div className="flex items-center gap-2">
+        <button
+          onClick={toggleDarkMode}
+          className="p-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 group"
+          title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+        >
+          <div className="relative w-6 h-6 flex items-center justify-center">
+            {darkMode ? (
+              <Sun
+                size={20}
+                className="text-gray-700 dark:text-gray-300 group-hover:text-yellow-500 dark:group-hover:text-yellow-400 transition-colors duration-200"
+              />
+            ) : (
+              <Moon
+                size={20}
+                className="text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200"
+              />
+            )}
+          </div>
         </button>
-        <NavUser />
+
+        <div className="ml-2">
+          <UserProfileMenu />
+        </div>
       </div>
     </nav>
   );

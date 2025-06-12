@@ -44,6 +44,7 @@ export type GenericTabsProps<T> = {
   onRetry?: () => void;
 };
 export interface Course {
+  isEnrolled: boolean;
   id: string;
   title: string;
   description: string;
