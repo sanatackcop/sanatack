@@ -17,6 +17,14 @@ import {
   BarChart3,
   CheckCircle2,
   CheckCircle,
+  Tag,
+  Calendar,
+  Download,
+  Languages,
+  Monitor,
+  Code,
+  Brain,
+  Rocket,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -94,10 +102,11 @@ export default function CourseView() {
       ? Math.round((getCompletedLessons() / getTotalLessons()) * 100)
       : 0;
 
+  // Enhanced course stats with better data handling
   const courseStats = [
     {
       title: "إجمالي الساعات",
-      value: course?.tags?.durtionsHours || 0,
+      value: `${course?.tags?.durtionsHours || course?.duration || 23} ساعة`,
       icon: <Clock className="w-5 h-5" />,
       color: "bg-blue-500",
       trend: "+12%",
@@ -111,19 +120,56 @@ export default function CourseView() {
     },
     {
       title: "الطلاب المسجلين",
-      value: "15,427",
+      value: course?.enrolledCount || "15,427",
       icon: <Users className="w-5 h-5" />,
       color: "bg-purple-500",
       trend: "+18%",
     },
     {
       title: "معدل الإكمال",
-      value: "94%",
+      value: course?.completionRate || "94%",
       icon: <Trophy className="w-5 h-5" />,
       color: "bg-orange-500",
       trend: "+2%",
     },
   ];
+
+  // Sample course tags - you can replace with actual course tags from API
+  const courseTags = course?.tags?.skills || [
+    {
+      name: "React.js",
+      color: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+    },
+    {
+      name: "JavaScript",
+      color:
+        "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300",
+    },
+    {
+      name: "Frontend",
+      color:
+        "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
+    },
+    {
+      name: "Web Development",
+      color:
+        "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
+    },
+    {
+      name: "مطور مبتدئ",
+      color: "bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300",
+    },
+    {
+      name: "مشاريع عملية",
+      color:
+        "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300",
+    },
+  ];
+
+  // Course difficulty and level info
+  const courseLevel = course?.level || "مبتدئ";
+  const courseProjects = course?.projectsCount || 13;
+  const coursePrerequisites = course?.prerequisites || "لا يوجد";
 
   const learningOutcomes = [
     "إتقان React.js و Redux للتطبيقات الحديثة",
@@ -154,6 +200,10 @@ export default function CourseView() {
                   <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg text-sm font-medium">
                     محدث 2025
                   </span>
+                  <span className="px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-lg text-sm font-medium flex items-center gap-1">
+                    <BarChart3 className="w-3 h-3" />
+                    {courseLevel}
+                  </span>
                 </div>
 
                 <h1 className="text-4xl lg:text-5xl font-bold text-slate-900 dark:text-slate-100 leading-tight mb-6">
@@ -163,6 +213,71 @@ export default function CourseView() {
                 <p className="text-xl text-slate-600 dark:text-slate-300 leading-relaxed mb-8">
                   {course?.description}
                 </p>
+
+                <div className="mb-6">
+                  <h3 className="text-sm font-medium text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2">
+                    <Tag className="w-4 h-4" />
+                    المهارات والتقنيات
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {courseTags.map((tag: any, index: any) => (
+                      <span
+                        key={index}
+                        className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          tag.color ||
+                          "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
+                        }`}
+                      >
+                        {tag.name || tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                      <BarChart3 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                        مستوى المهارة
+                      </div>
+                      <div className="text-xs text-slate-600 dark:text-slate-400">
+                        {courseLevel}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                      <Clock className="w-4 h-4 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                        وقت الإكمال
+                      </div>
+                      <div className="text-xs text-slate-600 dark:text-slate-400">
+                        {course?.tags?.durtionsHours || course?.duration || 23}{" "}
+                        ساعة
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                      <Rocket className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                        المشاريع
+                      </div>
+                      <div className="text-xs text-slate-600 dark:text-slate-400">
+                        {courseProjects} مشروع
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -170,10 +285,10 @@ export default function CourseView() {
               {courseStats.map((stat, index) => (
                 <div
                   key={index}
-                  className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6"
+                  className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 hover:shadow-lg transition-shadow duration-300"
                 >
                   <div className="flex items-center justify-between mb-4">
-                    <div className={`p-3 ${stat.color} rounded-lg`}>
+                    <div className={`p-3 ${stat.color} rounded-lg shadow-sm`}>
                       <div className="text-white">{stat.icon}</div>
                     </div>
                     <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 text-sm font-medium">
@@ -200,7 +315,7 @@ export default function CourseView() {
                 {learningOutcomes.map((outcome, index) => (
                   <div
                     key={index}
-                    className="flex items-start gap-3 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg"
+                    className="flex items-start gap-3 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-200"
                   >
                     <CheckCircle2 className="w-5 h-5 text-emerald-500 mt-0.5 flex-shrink-0" />
                     <span className="text-slate-700 dark:text-slate-300">
@@ -280,7 +395,7 @@ export default function CourseView() {
                 <Button
                   onClick={handleStartCourse}
                   disabled={enrolling}
-                  className={`w-full py-4 text-lg font-semibold rounded-xl transition-all duration-300 mb-4 ${
+                  className={`w-full py-4 text-lg font-semibold rounded-xl transition-all duration-300 mb-6 ${
                     isEnroll
                       ? "bg-emerald-600 hover:bg-emerald-700 text-white"
                       : "bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-slate-200 text-white dark:text-slate-900"
@@ -304,7 +419,7 @@ export default function CourseView() {
                   )}
                 </Button>
 
-                <div className="space-y-3 text-sm">
+                <div className="space-y-3 text-sm mb-6">
                   <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
                     <Shield className="w-5 h-5 text-emerald-500" />
                     <span className="text-slate-700 dark:text-slate-300">
@@ -329,16 +444,61 @@ export default function CourseView() {
                       متاح على الجوال
                     </span>
                   </div>
+                  <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                    <Download className="w-5 h-5 text-indigo-500" />
+                    <span className="text-slate-700 dark:text-slate-300">
+                      تحميل للمشاهدة دون اتصال
+                    </span>
+                  </div>
                 </div>
               </div>
 
               <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
-                <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-4">
-                  إحصائيات سريعة
+                <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+                  <BarChart3 className="w-4 h-4" />
+                  تفاصيل الدورة
                 </h3>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-600 dark:text-slate-400">
+                    <span className="text-slate-600 dark:text-slate-400 flex items-center gap-2">
+                      <BarChart3 className="w-4 h-4" />
+                      مستوى الصعوبة
+                    </span>
+                    <span className="font-medium text-slate-900 dark:text-slate-100">
+                      {courseLevel}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-600 dark:text-slate-400 flex items-center gap-2">
+                      <Clock className="w-4 h-4" />
+                      وقت الإكمال
+                    </span>
+                    <span className="font-medium text-slate-900 dark:text-slate-100">
+                      {course?.tags?.durtionsHours || course?.duration || 23}{" "}
+                      ساعة
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-600 dark:text-slate-400 flex items-center gap-2">
+                      <Code className="w-4 h-4" />
+                      المشاريع
+                    </span>
+                    <span className="font-medium text-slate-900 dark:text-slate-100">
+                      {courseProjects} مشروع
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-600 dark:text-slate-400 flex items-center gap-2">
+                      <Brain className="w-4 h-4" />
+                      المتطلبات
+                    </span>
+                    <span className="font-medium text-slate-900 dark:text-slate-100">
+                      {coursePrerequisites}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-600 dark:text-slate-400 flex items-center gap-2">
+                      <Calendar className="w-4 h-4" />
                       آخر تحديث
                     </span>
                     <span className="font-medium text-slate-900 dark:text-slate-100">
@@ -346,7 +506,8 @@ export default function CourseView() {
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-600 dark:text-slate-400">
+                    <span className="text-slate-600 dark:text-slate-400 flex items-center gap-2">
+                      <Languages className="w-4 h-4" />
                       اللغة
                     </span>
                     <span className="font-medium text-slate-900 dark:text-slate-100">
@@ -354,7 +515,8 @@ export default function CourseView() {
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-600 dark:text-slate-400">
+                    <span className="text-slate-600 dark:text-slate-400 flex items-center gap-2">
+                      <Monitor className="w-4 h-4" />
                       الترجمة
                     </span>
                     <span className="font-medium text-slate-900 dark:text-slate-100">
@@ -367,7 +529,7 @@ export default function CourseView() {
           </div>
         </div>
 
-        <nav className="flex-1 overflow-y-auto p-4 space-y-6">
+        <nav className="flex-1 overflow-y-auto p-4 space-y-6 mt-8">
           {course?.modules.map((module: any) => (
             <div
               key={module.id}
@@ -485,10 +647,20 @@ export default function CourseView() {
       {!isEnroll && (
         <div className="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 p-4 lg:hidden">
           <div className="flex items-center justify-between">
+            <div className="flex flex-col">
+              <div className="text-sm text-slate-600 dark:text-slate-400">
+                {course?.tags?.durtionsHours || course?.duration || 23} ساعة •{" "}
+                {courseLevel}
+              </div>
+              <div className="text-xs text-slate-500 dark:text-slate-500">
+                {courseProjects} مشروع عملي
+              </div>
+            </div>
             <Button
               onClick={handleStartCourse}
-              className="bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-8 py-3 font-semibold rounded-xl"
+              className="bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-8 py-3 font-semibold rounded-xl flex items-center gap-2"
             >
+              <GitBranchPlus className="w-4 h-4" />
               ابدأ الآن
             </Button>
           </div>

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Course, Material, SideNavbar } from "./_Sidebar";
 import { MaterialViewer } from "./_MaterialViewer";
-import { TopNavbar } from "./_TopNav";
+import NavigationPlayground from "./_TopNav";
 import { useSettings } from "@/context/SettingsContexts";
 
 export const CoursePlayground: React.FC = () => {
@@ -145,7 +145,8 @@ export const CoursePlayground: React.FC = () => {
       className={`h-screen flex flex-col ${darkMode ? "dark" : ""}`}
       dir="rtl"
     >
-      <TopNavbar
+
+      <NavigationPlayground
         courseData={courseData}
         sidebarOpen={sidebarOpen}
         prevMaterial={prevMaterial}
