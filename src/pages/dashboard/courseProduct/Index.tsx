@@ -77,6 +77,28 @@ export const CoursePlayground: React.FC = () => {
                 locked: false,
               },
               {
+                id: "06-letter-tree",
+                title: "شجرة الحروف",
+                description:
+                  "تمرين عملي على البرمجة باستخدام الحلقات والشروط لإنشاء أشكال وأنماط من الحروف والرموز.",
+                completed: false,
+                duration: "12 دقيقة",
+                type: "quiz",
+                current: false,
+                locked: false,
+              },
+              {
+                id: "06-letter-tree",
+                title: "شجرة الحروف",
+                description:
+                  "تمرين عملي على البرمجة باستخدام الحلقات والشروط لإنشاء أشكال وأنماط من الحروف والرموز.",
+                completed: false,
+                duration: "12 دقيقة",
+                type: "article",
+                current: false,
+                locked: false,
+              },
+              {
                 id: "04-secret-recipe",
                 title: "الوصفة السرية",
                 description:
@@ -145,7 +167,6 @@ export const CoursePlayground: React.FC = () => {
       className={`h-screen flex flex-col ${darkMode ? "dark" : ""}`}
       dir="rtl"
     >
-
       <NavigationPlayground
         courseData={courseData}
         sidebarOpen={sidebarOpen}
@@ -177,7 +198,7 @@ export const CoursePlayground: React.FC = () => {
           darkMode={darkMode}
         />
 
-        <main className="flex-1 flex flex-col overflow-hidden">
+        <main className="flex-1 flex flex-col">
           <MaterialViewer material={currentMaterial} />
         </main>
       </div>

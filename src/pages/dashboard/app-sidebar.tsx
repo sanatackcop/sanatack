@@ -10,6 +10,8 @@ import {
   FolderOpen,
   Code,
   Map,
+  ChartScatter,
+  Bot,
 } from "lucide-react";
 import LogoLight from "@/assets/logo.svg";
 import LogoDark from "@/assets/logo_black.svg";
@@ -76,6 +78,22 @@ const items = [
     title: "ليت كود",
     url: "/dashboard/assessments",
     icon: Code,
+    requiresPaid: true,
+    comingSoon: true,
+  },
+
+  {
+    title: "مدرب  AI",
+    url: "/dashboard/assessments",
+    icon: Bot,
+    requiresPaid: true,
+    comingSoon: true,
+  },
+
+  {
+    title: "التحليل العميق",
+    url: "/dashboard/assessments",
+    icon: ChartScatter,
     requiresPaid: true,
     comingSoon: true,
   },
@@ -159,7 +177,7 @@ export function AppSidebar() {
                       {isDisabled ? (
                         <div className="flex items-center gap-3 opacity-50 relative">
                           <item.icon size={20} />
-                          <span>{item.title}</span>
+                          <span className="text-nowrap">{item.title}</span>
                           <div className="ml-auto flex items-center gap-1">
                             {isComingSoon && (
                               <>

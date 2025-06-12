@@ -1,8 +1,10 @@
 import React from "react";
 import { BookOpen, FileText } from "lucide-react";
-import { CodeEditorView } from "./_CodeEditorView";
+import CodeEditorView from "./_CodeEditorView";
 import { VideoView } from "./_VideoView";
 import { Material } from "./_Sidebar";
+import QuizView from "./_QuizView";
+import ArticleView from "./_ArticleView";
 
 interface MaterialViewerProps {
   material: Material | null;
@@ -29,6 +31,14 @@ export const MaterialViewer: React.FC<MaterialViewerProps> = ({ material }) => {
 
   if (material.type === "code") {
     return <CodeEditorView />;
+  }
+
+  if (material.type === "article") {
+    return <ArticleView />;
+  }
+
+  if (material.type === "quiz") {
+    return <QuizView />;
   }
 
   return (

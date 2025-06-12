@@ -1,9 +1,6 @@
-// import { useState } from "react";
-import { Download, Share2, Video, Bookmark } from "lucide-react";
+import { Video, Clock, PlayCircle } from "lucide-react";
 
-export const VideoView = ({ material }: any) => {
-  // const [videoEnded, setVideoEnded] = useState(false);
-
+export function VideoView({ material }: any) {
   const isYouTube = !!material.url?.match(/youtu\.?(be|be\.com)/);
   let embedUrl = material.url;
 
@@ -14,70 +11,66 @@ export const VideoView = ({ material }: any) => {
   }
 
   return (
-    <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-900">
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-6 flex-shrink-0">
-        <div className="max-w-4xl mx-auto text-right" dir="rtl">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-red-100 dark:bg-red-900/20 rounded-xl flex items-center justify-center">
-                <Video className="w-5 h-5 text-red-600 dark:text-red-400" />
+    <div className="w-full min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 overflow-y-auto">
+      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 top-0 z-10">
+        <div className="w-full px-6 py-6">
+          <div className="flex items-center justify-between" dir="rtl">
+            <div className="flex items-start gap-4 flex-1">
+              <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <Video className="w-6 h-6 text-white" />
               </div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                <p>درس فيديو • {material.duration}</p>
-                <p>الوحدة الأولى</p>
+
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300">
+                    <PlayCircle className="w-3 h-3" />
+                    درس فيديو
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300">
+                    <Clock className="w-3 h-3" />
+                    {material.duration}
+                  </span>
+                </div>
+
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-3 leading-tight">
+                  {material.title}
+                </h1>
+
+                <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-lg max-w-4xl">
+                  {material.description}
+                </p>
               </div>
-            </div>
-            <div className="flex-1 mr-4">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                {material.title}
-              </h1>
-              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                {material.description}
-              </p>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="flex-1 flex items-center justify-center p-6">
-        <div className="w-full max-w-4xl">
-          {isYouTube && embedUrl ? (
-            <div className="relative aspect-video rounded-xl overflow-hidden shadow-xl bg-black">
-              <iframe
-                className="w-full h-full"
-                src={embedUrl}
-                title={material.title}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            </div>
-          ) : (
-            <div className="relative aspect-video rounded-xl overflow-hidden shadow-xl bg-black">
-              <video
-                className="w-full h-full object-cover"
-                src={material.url}
-                controls
-                // onEnded={() => setVideoEnded(true)}
-              />
-            </div>
-          )}
-
-          <div className="mt-4 flex items-center justify-center gap-3">
-            <button className="flex items-center gap-2 px-3 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-colors text-sm">
-              <Download className="w-4 h-4" />
-              تحميل
-            </button>
-            <button className="flex items-center gap-2 px-3 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-colors text-sm">
-              <Bookmark className="w-4 h-4" />
-              حفظ
-            </button>
-            <button className="flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm">
-              <Share2 className="w-4 h-4" />
-              مشاركة
-            </button>
+      <div className="w-full">
+        {isYouTube && embedUrl ? (
+          <div className="relative w-full aspect-video bg-black shadow-2xl">
+            <iframe
+              className="w-full h-full"
+              src={embedUrl}
+              title={material.title}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
           </div>
-        </div>
+        ) : (
+          <div className="relative w-full aspect-video bg-black shadow-2xl">
+            <video
+              className="w-full h-full object-cover"
+              src={material.url}
+              controls
+              poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1920 1080'%3E%3Crect width='1920' height='1080' fill='%23000'/%3E%3Ctext x='960' y='540' text-anchor='middle' fill='%23fff' font-size='48' font-family='Arial'%3EVideo Loading...%3C/text%3E%3C/svg%3E"
+            />
+          </div>
+        )}
+      </div>
+
+      <div className="w-full px-6 py-8">
+        <div className="max-w-4xl mx-auto"></div>
       </div>
     </div>
   );
-};
+}

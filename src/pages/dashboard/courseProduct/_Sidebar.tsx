@@ -18,7 +18,7 @@ export interface Material {
   id: string;
   title: string;
   description?: string;
-  type: "video" | "code" | "quiz" | "text";
+  type: "video" | "code" | "quiz" | "text" | "article";
   duration: string;
   completed: boolean;
   locked: boolean;
