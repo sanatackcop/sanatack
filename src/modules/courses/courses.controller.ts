@@ -1,15 +1,15 @@
 import {
-  Body,
   Controller,
   Get,
   HttpException,
   Param,
   Patch,
   Post,
+  Query,
   Req,
 } from '@nestjs/common';
 import { CoursesService } from './services/courses.service';
-import { CoursesContext, RequestType } from './entities/dto';
+import { CoursesContext } from './entities/dto';
 import { Request } from 'express';
 import RoadMapService from './services/roadmap.service';
 import CareerPathService from './services/career.path.service';
@@ -24,21 +24,21 @@ export class CoursesController {
 
   @Get('/list')
   async getAllCourses(
-    @Req() req: RequestType,
-    @Param() courseStatus: { inProgress?: string; done?: string }
+    @Query('user_id') user_id: string
+    // @Param() courseStatus: { inProgress?: string; done?: string }
   ): Promise<CoursesContext[]> {
     try {
-      return await this.courseService.list({ courseStatus });
+      return await this.courseService.list(user_id);
     } catch (error: unknown) {
       throw new HttpException(error, 500);
     }
   }
 
   @Get('/current')
-  getCurrent(@Req() req: Request) {
+  async getCurrent(@Req() req: Request) {
     try {
       const userId = req.headers.user_id as string;
-      return this.courseService.getCurrentCoursesForUser(userId);
+      return await this.courseService.getCurrentCoursesForUser(userId);
     } catch (error: unknown) {
       console.log(error);
     }
@@ -84,7 +84,7 @@ export class CoursesController {
   ) {
     try {
       const userId = req.headers.user_id as string;
-      return await this.courseService.enrollinCourse(userId, courseId);
+      return await this.courseService.enrollingCourse(userId, courseId);
     } catch (error: unknown) {
       console.log(error);
       throw new HttpException({ message: error }, 500);
@@ -120,19 +120,18 @@ export class CoursesController {
   }
 
   @Get('/progress/:courseId')
-  get(@Req() req: Request, @Param('courseId') courseId: string) {
-    const userId = req.headers.user_id as string;
-    return { progress: this.courseService.get(userId, courseId) };
+  get(@Query('user_id') user_id: string, @Param('courseId') courseId: string) {
+    return {
+      progress: this.courseService.getProgressCourses(user_id, courseId),
+    };
   }
 
   @Patch('/progress/:courseId')
-  update(
-    @Req() req: Request,
-    @Param('courseId') courseId: string,
-    @Body() dto: any
+  async update(
+    @Query('user_id') userId: string,
+    @Param('courseId') courseId: string
   ) {
-    const userId = req.headers.user_id as string;
-    this.courseService.update(userId, courseId, dto.progress);
+    await this.courseService.increaseProgress(courseId, userId);
     return { success: true };
   }
 

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Equal } from 'typeorm';
-import { Resource } from '../entities/resource.entity';
+import { Repository, Equal, FindManyOptions } from 'typeorm';
+import Resource from '../entities/resource.entity';
 import { ResourceDto } from '../entities/dto';
 
 @Injectable()
@@ -19,6 +19,10 @@ export default class ResourceService {
     return this.resourceRepository.findOne({
       where: { id: Equal(id) },
     });
+  }
+
+  findAll(where: FindManyOptions<Resource>) {
+    return this.resourceRepository.find(where);
   }
 
   getAll() {

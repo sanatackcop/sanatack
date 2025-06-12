@@ -1,8 +1,12 @@
 import { Column, Entity } from 'typeorm';
 import AbstractEntity from '@libs/db/abstract.base.entity';
 
+export declare type LinkQuiz = Quiz & {
+  order: number;
+};
+
 @Entity({ name: 'quiz' })
-export class Quiz extends AbstractEntity {
+export default class Quiz extends AbstractEntity {
   @Column({ nullable: false })
   question: string;
 

@@ -2,8 +2,12 @@ import { Column, Entity } from 'typeorm';
 import AbstractEntity from '@libs/db/abstract.base.entity';
 import { MaterialType } from './material-mapper';
 
+export declare type LinkResource = Resource & {
+  order: number;
+};
+
 @Entity({ name: 'resource' })
-export class Resource extends AbstractEntity {
+export default class Resource extends AbstractEntity {
   @Column({ nullable: false })
   title: string;
 

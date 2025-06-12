@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, Equal, Repository } from 'typeorm';
 import { Lesson } from '../entities/lessons.entity';
-import { MaterialMapper, MaterialType } from '../entities/material-mapper';
+import MaterialMapper, { MaterialType } from '../entities/material-mapper';
 import QuizService from './quiz.service';
 import VideoService from './video.service';
 import ResourceService from './resource.service';
@@ -27,18 +27,20 @@ export default class LessonService {
     });
   }
 
+  find(): Promise<Lesson[]> {
+    return this.lessonRepository.find();
+  }
+
   async getDetails(lesson: DeepPartial<Lesson>): Promise<{
     id: string;
     name: string;
     description: string;
-    order: number;
     materials: any; // MaterialIF;
   }> {
     return {
       id: lesson.id,
       name: lesson.name,
       description: lesson.description,
-      order: lesson.order,
       materials: (
         await Promise.all(
           lesson.materialMapper?.map(async (material: MaterialMapper) => {

@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { AdminController } from './api.controller';
+import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
 import { CoursesModule } from '../courses/courses.module';
 
