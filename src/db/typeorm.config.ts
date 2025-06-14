@@ -57,7 +57,7 @@ const mainDataSource = new DataSource({
   username: cfg.get('MAIN_DB_USERNAME'),
   password: cfg.get('MAIN_DB_PASSWORD'),
   database: cfg.get('MAIN_DB'),
-  // ssl: true,
+  ssl: true,
   // extra: {
   //   ssl: {
   //     rejectUnauthorized: false,
