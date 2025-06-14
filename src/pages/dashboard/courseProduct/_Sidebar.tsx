@@ -57,44 +57,25 @@ export interface Course {
   duration: string;
 }
 
-export interface TopNavbarProps {
-  courseData: Course;
-  darkMode: boolean;
-  toggleDarkMode: () => void;
-  toggleSidebar: () => void;
+export interface SideNavbarProps {
   sidebarOpen: boolean;
-  prevMaterial: Material | null;
-  nextMaterial: Material | null;
-  handlePrev: () => void;
-  handleNext: () => void;
-  currentIndex: number;
-  totalMaterials: number;
-  setSidebarOpen: any;
-  currentMaterial: Material | null;
-  handleComplete: () => void;
-  handleRestart: () => void;
-}
-
-interface SideNavbarProps {
-  sidebarOpen: boolean;
-  courseData: Course;
+  courseData: Course | null;
   expandedModules: string[];
   toggleModule: (id: string) => void;
   currentMaterial: Material | null;
   setCurrentMaterial: (m: Material) => void;
-  setSidebarOpen: any;
-  darkMode: any;
+  setSidebarOpen: (v: boolean) => void;
+  darkMode: boolean;
 }
 
-const iconMap = {
+const iconMap: any = {
   video: Video,
   code: Code,
   quiz: PenTool,
   text: FileText,
-};
+} as const;
 
-export const getIcon = (type: string) =>
-  iconMap[type as keyof typeof iconMap] || FileText;
+export const getIcon = (type: Material["type"]) => iconMap[type] ?? FileText;
 
 export const SideNavbar: React.FC<SideNavbarProps> = ({
   sidebarOpen,
@@ -106,17 +87,26 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
   setCurrentMaterial,
   darkMode,
 }) => {
+  if (!courseData) {
+    return (
+      <div className="p-4 text-center text-gray-500">Loading course …</div>
+    );
+  }
+
   const [searchTerm] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
 
-  const filteredModules = courseData.modules
+  const normalisedSearch = searchTerm.trim().toLowerCase();
+
+  const filteredModules: Module[] = (courseData.modules ?? [])
     .map((module) => ({
       ...module,
-      lessons: module.lessons
+      lessons: (module.lessons ?? [])
         .map((lesson) => ({
           ...lesson,
-          materials: lesson.materials.filter((material) =>
-            material.title.toLowerCase().includes(searchTerm.toLowerCase())
+          materials: (lesson.materials ?? []).filter((material) =>
+            (material?.title ?? "").toLowerCase().includes(normalisedSearch)
           ),
         }))
         .filter((lesson) => lesson.materials.length > 0),
@@ -134,16 +124,117 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
-  const nav = useNavigate();
+
+  const renderMaterialButton = (material: Material, isActive: boolean) => {
+    const Icon = getIcon(material.type);
+
+    const buttonDisabled = material.locked;
+    const baseStyles =
+      "w-full p-3 rounded-xl transition-all duration-200 text-right";
+    const activeStyles =
+      "bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 shadow-sm";
+    const disabledStyles =
+      "opacity-50 cursor-not-allowed bg-gray-50 dark:bg-gray-800";
+    const hoverStyles =
+      "hover:bg-gray-50 dark:hover:bg-gray-800 border border-transparent hover:border-gray-200 dark:hover:border-gray-600";
+
+    return (
+      <button
+        key={material.id}
+        onClick={() => {
+          if (!buttonDisabled) {
+            setCurrentMaterial(material);
+            setSidebarOpen(false);
+          }
+        }}
+        disabled={buttonDisabled}
+        className={[
+          baseStyles,
+          isActive
+            ? activeStyles
+            : buttonDisabled
+            ? disabledStyles
+            : hoverStyles,
+        ].join(" ")}
+      >
+        <div className="flex items-center gap-3">
+          <div className="text-right flex-1 min-w-0">
+            <p
+              className={
+                "text-sm font-medium truncate " +
+                (isActive
+                  ? "text-blue-900 dark:text-blue-100"
+                  : "text-gray-900 dark:text-white")
+              }
+            >
+              {material.title || "بدون عنوان"}
+            </p>
+            <div className="flex items-center justify-start gap-2 mt-1">
+              <span className="text-xs text-gray-500">
+                {material.completed ? "مكتمل" : material.duration}
+              </span>
+              <span
+                className={
+                  "text-xs px-2 py-0.5 rounded-full " +
+                  (material.type === "video"
+                    ? "bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400"
+                    : material.type === "code"
+                    ? "bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400"
+                    : material.type === "quiz"
+                    ? "bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400"
+                    : "bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400")
+                }
+              >
+                {material.type === "video"
+                  ? "فيديو"
+                  : material.type === "code"
+                  ? "كود"
+                  : material.type === "quiz"
+                  ? "اختبار"
+                  : "نص"}
+              </span>
+            </div>
+          </div>
+
+          <div
+            className={
+              "p-2 rounded-xl flex-shrink-0 " +
+              (material.completed
+                ? "bg-green-100 dark:bg-green-900/20"
+                : isActive
+                ? "bg-blue-100 dark:bg-blue-900/20"
+                : "bg-gray-100 dark:bg-gray-800")
+            }
+          >
+            {material.completed ? (
+              <CheckCircle className="w-4 h-4 text-green-600" />
+            ) : material.locked ? (
+              <Lock className="w-4 h-4 text-gray-400" />
+            ) : (
+              <Icon
+                className={
+                  "w-4 h-4 " +
+                  (isActive
+                    ? "text-blue-600"
+                    : "text-gray-600 dark:text-gray-400")
+                }
+              />
+            )}
+          </div>
+        </div>
+      </button>
+    );
+  };
 
   return (
     <>
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50  z-40 transition-opacity"
+          className="fixed inset-0 bg-black/50 z-40 transition-opacity"
           onClick={() => setSidebarOpen(false)}
         />
       )}
+
       <aside
         className={`fixed top-0 right-0 h-full bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 transition-transform duration-300 z-50 w-96 ${
           sidebarOpen ? "translate-x-0" : "translate-x-full"
@@ -154,13 +245,13 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
             <img
               src={darkMode ? String(LogoDark) : String(LogoLight)}
               alt="logo"
-              onClick={() => nav("/")}
-              className="h-full w-auto object-contain transform scale-[2] pr-6 pt-1"
+              onClick={() => navigate("/")}
+              className="h-full w-auto object-contain transform scale-[2] pr-6 pt-1 cursor-pointer"
             />
           </div>
         </div>
 
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900">
+        <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900 relative">
           <button
             onClick={() => setSidebarOpen(false)}
             className="absolute top-7 left-4 p-2 rounded-xl hover:bg-white/50 dark:hover:bg-gray-700 transition-colors"
@@ -224,13 +315,11 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
                   >
                     {module.progress}%
                   </div>
-                  <div
-                    className={`transition-transform duration-200 ${
+                  <ChevronLeft
+                    className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${
                       expandedModules.includes(module.id) ? "rotate-90" : ""
                     }`}
-                  >
-                    <ChevronLeft className="w-4 h-4 text-gray-500" />
-                  </div>
+                  />
                 </div>
 
                 <div className="text-right flex-1 mx-3">
@@ -248,7 +337,7 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
 
               {expandedModules.includes(module.id) && (
                 <div className="pb-4 px-4 space-y-3">
-                  {module.lessons.map((lesson) => (
+                  {(module.lessons ?? []).map((lesson) => (
                     <div
                       key={lesson.id}
                       className="bg-white dark:bg-gray-900 rounded-xl p-4 border border-gray-200 dark:border-gray-700"
@@ -257,103 +346,19 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
                         <h4 className="font-medium text-gray-900 dark:text-white text-right text-sm">
                           {lesson.title}
                         </h4>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-lg flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {lesson.duration}
-                          </span>
-                        </div>
+                        <span className="text-xs text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-lg flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {lesson.duration}
+                        </span>
                       </div>
 
                       <div className="space-y-2">
-                        {lesson.materials.map((material) => {
-                          const Icon = getIcon(material.type);
-                          const isActive = material.id === currentMaterial?.id;
-
-                          return (
-                            <button
-                              key={material.id}
-                              onClick={() => {
-                                if (!material.locked) {
-                                  setCurrentMaterial(material);
-                                  setSidebarOpen(false);
-                                }
-                              }}
-                              disabled={material.locked}
-                              className={`w-full p-3 rounded-xl transition-all duration-200 ${
-                                isActive
-                                  ? "bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 shadow-sm"
-                                  : material.locked
-                                  ? "opacity-50 cursor-not-allowed bg-gray-50 dark:bg-gray-800"
-                                  : "hover:bg-gray-50 dark:hover:bg-gray-800 border border-transparent hover:border-gray-200 dark:hover:border-gray-600"
-                              }`}
-                            >
-                              <div className="flex items-center gap-3">
-                                <div className="text-right flex-1 min-w-0">
-                                  <p
-                                    className={`text-sm font-medium truncate ${
-                                      isActive
-                                        ? "text-blue-900 dark:text-blue-100"
-                                        : "text-gray-900 dark:text-white"
-                                    }`}
-                                  >
-                                    {material.title}
-                                  </p>
-                                  <div className="flex items-center justify-start gap-2 mt-1">
-                                    <span className="text-xs text-gray-500">
-                                      {material.completed
-                                        ? "مكتمل"
-                                        : material.duration}
-                                    </span>
-                                    <span
-                                      className={`text-xs px-2 py-0.5 rounded-full ${
-                                        material.type === "video"
-                                          ? "bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400"
-                                          : material.type === "code"
-                                          ? "bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400"
-                                          : material.type === "quiz"
-                                          ? "bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400"
-                                          : "bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
-                                      }`}
-                                    >
-                                      {material.type === "video"
-                                        ? "فيديو"
-                                        : material.type === "code"
-                                        ? "كود"
-                                        : material.type === "quiz"
-                                        ? "اختبار"
-                                        : "نص"}
-                                    </span>
-                                  </div>
-                                </div>
-
-                                <div
-                                  className={`p-2 rounded-xl flex-shrink-0 ${
-                                    material.completed
-                                      ? "bg-green-100 dark:bg-green-900/20"
-                                      : isActive
-                                      ? "bg-blue-100 dark:bg-blue-900/20"
-                                      : "bg-gray-100 dark:bg-gray-800"
-                                  }`}
-                                >
-                                  {material.completed ? (
-                                    <CheckCircle className="w-4 h-4 text-green-600" />
-                                  ) : material.locked ? (
-                                    <Lock className="w-4 h-4 text-gray-400" />
-                                  ) : (
-                                    <Icon
-                                      className={`w-4 h-4 ${
-                                        isActive
-                                          ? "text-blue-600"
-                                          : "text-gray-600 dark:text-gray-400"
-                                      }`}
-                                    />
-                                  )}
-                                </div>
-                              </div>
-                            </button>
-                          );
-                        })}
+                        {(lesson.materials ?? []).map((material) =>
+                          renderMaterialButton(
+                            material,
+                            material.id === currentMaterial?.id
+                          )
+                        )}
                       </div>
                     </div>
                   ))}

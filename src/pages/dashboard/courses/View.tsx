@@ -11,7 +11,6 @@ import {
   Award,
   Target,
   TrendingUp,
-  Shield,
   Smartphone,
   Globe,
   BarChart3,
@@ -421,12 +420,6 @@ export default function CourseView() {
 
                 <div className="space-y-3 text-sm mb-6">
                   <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
-                    <Shield className="w-5 h-5 text-emerald-500" />
-                    <span className="text-slate-700 dark:text-slate-300">
-                      ضمان استرداد 30 يوم
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
                     <Award className="w-5 h-5 text-blue-500" />
                     <span className="text-slate-700 dark:text-slate-300">
                       شهادة معتمدة
@@ -535,7 +528,7 @@ export default function CourseView() {
               key={module.id}
               className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden"
             >
-              <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+              <div className="px-4 py-3 mb-5 border-b border-gray-200 dark:border-gray-700">
                 <h3 className="text-base font-semibold text-gray-900 dark:text-white">
                   {module.title}
                 </h3>
