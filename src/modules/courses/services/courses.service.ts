@@ -157,7 +157,20 @@ export class CoursesService {
     return this.courseRepository.update(course_id, course);
   }
 
-  getCurrentCoursesForUser(userId: string) {
-    return this.enrollmentService.getCurrentCoursesForUser(userId);
+  async getCurrentCoursesForUser(userId: string) {
+    const currentCourses =
+      await this.enrollmentService.getCurrentCoursesForUser(userId);
+
+    const response = currentCourses.map((cc) => ({
+      id: cc.course.id,
+      title: cc.course.title,
+      description: cc.course.description?.substring(0, 100),
+      level: cc.course.level,
+      isPublished: cc.course.isPublished,
+      course_info: cc.course.course_info,
+      created_at: cc.course.created_at,
+    }));
+
+    return response;
   }
 }
