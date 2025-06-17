@@ -1,4 +1,6 @@
 import { ReactNode } from "react";
+import { Level } from "./types/adminTypes";
+import { LevelEnum } from "@/types/courses";
 
 export type navItem = {
   cta?: string;
@@ -42,14 +44,40 @@ export type GenericTabsProps<T> = {
   error?: string | null;
   onRetry?: () => void;
 };
+
+export interface Roadmap {
+  id: string;
+  description: string;
+  title: string;
+}
 export interface Course {
-  isEnrolled: boolean;
   id: string;
   title: string;
   description: string;
-  modules: Module[];
-  isPublish: boolean;
+  level: LevelEnum;
+  course_info: {
+    durationHours: number;
+    tags: string[];
+    new_skills_result: string[];
+    learning_outcome: { [key: string]: number };
+    prerequisites: string[];
+  };
+  projectsCount: number;
+  isPublished: boolean;
 }
+
+export interface Module {
+  id: string;
+  description: string;
+  title: string;
+}
+
+export interface Lesson {
+  id: string;
+  name: string;
+  description: string;
+}
+
 export type MaterialType = "video" | "reading" | "quiz";
 
 export interface Material {
@@ -62,14 +90,47 @@ export interface Material {
   url?: string | null;
 }
 
-export interface Lesson {
-  id: string;
+export interface ResourceDto {
+  title: string;
+  description: string;
+  url: string;
+  content: string;
+}
+
+export interface QuizDto {
+  question: string;
+  options: string[];
+  correctAnswer: string;
+  explanation?: string;
+  duration: number;
+}
+
+export interface VideoDto {
+  youtubeId: string;
+  title: string;
+  description: string;
+  duration: number;
+}
+
+export interface LessonDto {
   name: string;
   description: string;
 }
 
-export interface Module {
-  id: string;
-  description: string;
+export interface ModuleDto {
   title: string;
+  description: string;
+}
+
+export interface CourseDto {
+  title: string;
+  description: string;
+  level: Level;
+  course_info: {
+    tags: string[];
+    new_skills_result: string[];
+    learning_outcome: { [key: string]: number };
+    prerequisites: string[];
+  };
+  isPublished: boolean;
 }

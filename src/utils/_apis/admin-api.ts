@@ -5,7 +5,7 @@ import {
   QuizDto,
   ResourceDto,
   VideoDto,
-} from "./../../types/courses";
+} from "../types";
 import {
   CourseModuleLink,
   LessonModuleLink,
@@ -13,6 +13,16 @@ import {
 } from "../types/adminTypes";
 import { trackPromise } from "react-promise-tracker";
 import Api from "./api";
+
+export const getAllRoadmaps = async <T>({}) => {
+  const response = await trackPromise(
+    Api({
+      method: "get",
+      url: "admin/roadmaps",
+    })
+  );
+  return response.data as T;
+};
 
 export const getListCoursesApi = async ({}) => {
   try {

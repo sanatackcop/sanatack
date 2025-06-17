@@ -1,27 +1,6 @@
+import { QuizDto, VideoDto, ResourceDto } from "@/utils/types";
 import { Level } from "@/utils/types/adminTypes";
 export type TabType = "all" | "started" | "done";
-export interface CourseInterface {
-  id: number;
-  title: string;
-  description: string;
-  unitesNum: number;
-  level: Level;
-  duration: string;
-  courseType: string;
-  isEnrolled?: boolean;
-}
-export interface CoursesContext {
-  id: string;
-  title: string;
-  description: string;
-  level: Level;
-  tags: {
-    durtionsHours: number;
-    unitesNum?: number;
-    courseType?: string;
-  };
-  isEnrolled?: boolean;
-}
 export interface CareerPathInterface {
   id: string;
   title: string;
@@ -37,79 +16,71 @@ export interface RoadMapInterface {
   isEnrolled?: boolean;
   courses: CourseDetails[];
 }
-export interface CourseDetails extends CoursesContext {
-  modules: ModuleDetailsDto[];
-}
-
-export interface MaterialDto {
-  type: "quiz" | "video" | "resource";
-  order?: number;
-  quiz?: QuizDto;
-  video?: VideoDto;
-  resource?: ResourceDto;
-}
-export interface ModuleDetailsDto {
+export interface CoursesContext {
   id: string;
   title: string;
-  lessons: LessonDetailsDto[];
+  description: string;
+  level: LevelEnum;
+  course_info: {
+    durationHours: number;
+    tags: string[];
+    new_skills_result: string[];
+    learning_outcome: { [key: string]: number };
+    prerequisites: string[];
+  };
+  projectsCount: number;
+  isPublished: boolean;
+  isEnrolled: boolean;
+  enrolledCount: number;
+  completionRate: number;
+  progress?: number;
+  current_material?: string;
+}
+export interface CourseDetails extends CoursesContext {
+  modules: ModuleDetails[];
 }
 
-export interface LessonDetailsDto {
+export interface ModuleDetails {
+  id: string;
+  title: string;
+  lessons: LessonDetails[];
+}
+
+export declare type Material = Resource | Video | Quiz;
+
+export interface LessonDetails {
   id: string;
   name: string;
   description?: string;
   order: number;
-  materials: MaterialDto[];
+  materials: Material[];
 }
 
-export interface ResourceDto {
+export interface Resource {
+  id: string;
   title: string;
-  description: string;
-  url: string;
-  content: string;
+  description?: string;
+  type: "resource";
 }
 
-export interface QuizDto {
+export interface Video {
+  id: string;
+  title: string;
+  youtubeId: string;
+  duration: number;
+  description: string;
+  type: "video";
+}
+
+export interface Quiz {
+  id: string;
   question: string;
   options: string[];
   correctAnswer: string;
   explanation?: string;
+  type: "quiz";
 }
 
-export interface VideoDto {
-  youtubeId: string;
-  title: string;
-  description: string;
-  duration: number;
-}
-
-export interface LessonDto {
-  name: string;
-  description: string;
-}
-
-export interface ModuleDto {
-  title: string;
-  description: string;
-}
-
-export interface CourseDto {
-  title: string;
-  description: string;
-  level: string;
-  course_info: {
-    durationHours: number;
-  };
-  isPublish: boolean;
-}
-
-export interface tagsInterface {
-  unitesNum?: number;
-  level?: Level;
-  duration?: number;
-  courseType?: string;
-  className?: string;
-}
 export enum LevelEnum {
   "BEGINNER" = "BEGINNER",
   "INTERMEDIATE" = "INTERMEDIATE",

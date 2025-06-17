@@ -1,5 +1,5 @@
 import TimeLine from "@/components/timeLine";
-import { CareerPathInterface, LessonDetailsDto } from "@/types/courses";
+import { CareerPathInterface, LessonDetails } from "@/types/courses";
 import { getLessonResourceIcon } from "@/utils/getIcon";
 
 export default function CareerPathTimeline({
@@ -9,7 +9,7 @@ export default function CareerPathTimeline({
   careerPath: CareerPathInterface;
   className?: string;
 }) {
-  const renderResources = (lesson: LessonDetailsDto) => {
+  const renderResources = (lesson: LessonDetails) => {
     if (!lesson.materials || lesson.materials.length === 0) return null;
 
     return (

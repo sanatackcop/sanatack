@@ -1,5 +1,5 @@
 import TimeLine from "@/components/timeLine";
-import { CourseDetails, LessonDetailsDto } from "@/types/courses";
+import { CourseDetails, LessonDetails } from "@/types/courses";
 import { getLessonResourceIcon } from "@/utils/getIcon";
 
 export default function CourseDetailsContent({
@@ -9,7 +9,7 @@ export default function CourseDetailsContent({
   course: CourseDetails;
   className?: string;
 }) {
-  const renderResources = (lesson: LessonDetailsDto) => {
+  const renderResources = (lesson: LessonDetails) => {
     if (!lesson.materials || lesson.materials.length === 0) return null;
 
     return (

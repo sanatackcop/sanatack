@@ -2,7 +2,7 @@ import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HomePAGE, LoginPage, SingupPage } from "./index";
 import Storage from "@/lib/Storage";
-import { DASHBOARDTYPE } from "./types/platfrom";
+import { DASHBOARDTYPE as DASHBOARD_TYPE } from "./types/platfrom";
 import MainDashboard from "@/pages/dashboard/MainDashboard";
 import ModulesPage from "@/admin/pages/modules.page";
 import CoursePage from "@/admin/pages/course.page";
@@ -13,6 +13,7 @@ import MappedMaterials from "@/admin/pages/mapped.materials.page";
 import NotFoundPage from "@/lib/not.found";
 import MappedLessons from "@/admin/pages/mapped.lessons.page";
 import MappedModules from "@/admin/pages/mapped.modules.page";
+import RoadmapsPage from "@/admin/pages/roadmap.page";
 
 const publicRoutes = [
   { path: "/", element: <HomePAGE /> },
@@ -27,6 +28,7 @@ const adminRoutes = [
     element: <AdminDashboard />,
     children: [
       { path: "", element: <CoursePage /> },
+      { path: "roadmaps", element: <RoadmapsPage /> },
       { path: "courses", element: <CoursePage /> },
       { path: "courses/:id", element: <MappedModules /> },
       { path: "modules", element: <ModulesPage /> },
@@ -90,14 +92,6 @@ const UsersRouter: React.FC = () => (
         />
       ))}
 
-      {adminRoutes.map(({ path, element }) => (
-        <Route
-          key={path}
-          path={path}
-          element={<AdminRoute>{element}</AdminRoute>}
-        />
-      ))}
-
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   </BrowserRouter>
@@ -123,12 +117,12 @@ const AdminRouter: React.FC = () => (
 );
 
 interface RouterProps {
-  switch_dashboard: DASHBOARDTYPE;
+  switch_dashboard: DASHBOARD_TYPE;
 }
 
 const Router: React.FC<RouterProps> = ({ switch_dashboard }) => {
   switch (switch_dashboard) {
-    case DASHBOARDTYPE.ADMIN:
+    case DASHBOARD_TYPE.ADMIN:
       return <AdminRouter />;
     default:
       return <UsersRouter />;

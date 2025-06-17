@@ -31,6 +31,9 @@ const quizSchema = z.object({
     .min(2, "يجب أن يكون هناك خياران على الأقل"),
   correctAnswer: z.string().min(1, "يرجى اختيار الإجابة الصحيحة"),
   explanation: z.string().optional(),
+  duration: z
+    .number({ invalid_type_error: "المدة يجب أن تكون رقمًا" })
+    .min(0, "المدة يجب أن تكون رقمًا موجبًا"),
 });
 
 type QuizFormValues = z.infer<typeof quizSchema>;
@@ -51,6 +54,7 @@ export default function QuizDialogCreate({
       options: ["", "", "", ""],
       correctAnswer: "",
       explanation: "",
+      duration: 0,
     },
   });
 
@@ -95,7 +99,6 @@ export default function QuizDialogCreate({
               )}
             />
 
-            {/* Options Field + Correct Answer Selector */}
             <FormField
               control={control}
               name="correctAnswer"
@@ -128,6 +131,31 @@ export default function QuizDialogCreate({
                         </div>
                       ))}
                     </RadioGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="duration"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>المدة (بالثواني)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="مثال: 120"
+                      value={field.value ?? ""}
+                      onChange={(e) =>
+                        field.onChange(
+                          e.target.value === ""
+                            ? undefined
+                            : e.target.valueAsNumber
+                        )
+                      }
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
