@@ -23,9 +23,11 @@ import {
 } from "lucide-react";
 import {
   getAllCoursesApi,
+  getCourseReportApi,
   getCurrentCoursesApi,
 } from "@/utils/_apis/courses-apis";
 import { useNavigate } from "react-router-dom";
+import { CoursesReport } from "@/types/courses";
 
 const AnimatedBackground = () => (
   <div className="fixed inset-0 overflow-hidden pointer-events-none">
@@ -70,7 +72,7 @@ const AnimatedBackground = () => (
   </div>
 );
 
-const StatsCards = () => (
+const StatsCards = ({ stats }: { stats: CoursesReport }) => (
   <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
     <div className="group relative overflow-hidden bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300">
       <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-800/30 dark:to-indigo-800/30 rounded-full blur-2xl opacity-70 group-hover:opacity-100 transition-opacity"></div>
@@ -83,7 +85,7 @@ const StatsCards = () => (
           <BookOpen size={24} className="text-white" />
         </div>
         <div>
-          <p className="text-3xl font-bold text-gray-900 dark:text-white">0</p>
+          <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.completedCourses}</p>
           <p className="text-gray-600 dark:text-gray-400 font-medium">
             دورة مكتملة
           </p>
@@ -99,7 +101,7 @@ const StatsCards = () => (
           <Clock size={24} className="text-white" />
         </div>
         <div>
-          <p className="text-3xl font-bold text-gray-900 dark:text-white">0</p>
+          <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.totalHours}</p>
           <p className="text-gray-600 dark:text-gray-400 font-medium">
             ساعة تعلم
           </p>
@@ -115,7 +117,7 @@ const StatsCards = () => (
           <Award size={24} className="text-white" />
         </div>
         <div>
-          <p className="text-3xl font-bold text-gray-900 dark:text-white">0</p>
+          <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.certifications}</p>
           <p className="text-gray-600 dark:text-gray-400 font-medium">
             شهادة حاصل عليها
           </p>
@@ -131,7 +133,7 @@ const StatsCards = () => (
           <TrendingUp size={24} className="text-white" />
         </div>
         <div>
-          <p className="text-3xl font-bold text-gray-900 dark:text-white">0</p>
+          <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.streakDays}</p>
           <p className="text-gray-600 dark:text-gray-400 font-medium">
             يوم متتالي
           </p>
@@ -491,6 +493,7 @@ export default function DashboardHome() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [stats, setStats] = useState<CoursesReport>({completedCourses: 0, totalHours: 0, streakDays: 0, certifications:0});
 
   const fetchCurrentCourses = async () => {
     try {
@@ -510,10 +513,19 @@ export default function DashboardHome() {
     }
   };
 
+  const fetchStats = async () => {
+    try {
+      const res = await getCourseReportApi();
+      setStats(res);
+    } catch (err) {
+      console.error("Error fetching stats:", err);
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      await Promise.all([fetchCurrentCourses(), fetchAllCourses()]);
+      await Promise.all([fetchCurrentCourses(), fetchAllCourses(),fetchStats()]);
       setLoading(false);
     };
 
@@ -525,7 +537,7 @@ export default function DashboardHome() {
       <AnimatedBackground />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 space-y-16">
-        <StatsCards />
+        <StatsCards stats={stats}/>
 
         {loading ? (
           <div className="flex items-center justify-center py-16">

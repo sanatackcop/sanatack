@@ -4,6 +4,7 @@ import Api from "./api";
 import {
   CareerPathInterface,
   CoursesContext,
+  CoursesReport,
   RoadMapInterface,
 } from "@/types/courses";
 import { Course } from "../types";
@@ -178,6 +179,22 @@ export const getCurrentCoursesApi = async (): Promise<CoursesContext[]> => {
     return response.data;
   } catch (e: any) {
     console.error("getAllCoursesApi error:", e);
+    throw e;
+  }
+};
+
+export const getCourseReportApi = async (): Promise<CoursesReport> => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "get",
+        url: "courses/report",
+        withCredentials: false,
+      }) as Promise<{ data: CoursesReport }>
+    );
+    return response.data;
+  } catch (e: any) {
+    console.error("getCourseReportApi error:", e);
     throw e;
   }
 };

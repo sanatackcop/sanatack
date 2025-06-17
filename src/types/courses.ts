@@ -115,3 +115,10 @@ export enum LevelEnum {
   "INTERMEDIATE" = "INTERMEDIATE",
   "ADVANCED" = "ADVANCED",
 }
+
+export interface CoursesReport{
+  completedCourses: number;
+  totalHours: number;
+  streakDays: number;
+  certifications: number;
+}
