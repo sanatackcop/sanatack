@@ -24,6 +24,16 @@ import {
   Code,
   Brain,
   Rocket,
+  ChevronUp,
+  ChevronDown,
+  Video,
+  PenTool,
+  FileText,
+  Headphones,
+  Timer,
+  Lock,
+  Plus,
+  Minus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,7 +42,6 @@ import {
 } from "@/utils/_apis/courses-apis";
 import AppLayout from "@/components/layout/Applayout";
 import { CourseDetails } from "@/types/courses";
-import { getIcon } from "../courseProduct/_Sidebar";
 
 export default function CourseView() {
   const { id } = useParams<{ id: string }>();
@@ -44,7 +53,14 @@ export default function CourseView() {
   const [timeLeft] = useState<number>(48 * 60 * 60);
   const navigate = useNavigate();
   const location = useLocation();
-
+  const [expandedModules, setExpandedModules] = useState<Set<string>>(
+    new Set()
+  );
+  useEffect(() => {
+    if (course?.modules?.length > 0) {
+      setExpandedModules(new Set([course.modules[0].id]));
+    }
+  }, [course]);
   const fetchCourse = async () => {
     if (!id) return;
     try {
@@ -58,6 +74,16 @@ export default function CourseView() {
       setError(err?.message || "حدث خطأ أثناء جلب بيانات الدورة، حاول مجددًا.");
       setLoading(false);
     }
+  };
+
+  const expandAllModules = () => {
+    if (course?.modules) {
+      setExpandedModules(new Set(course.modules.map((m: any) => m.id)));
+    }
+  };
+
+  const collapseAllModules = () => {
+    setExpandedModules(new Set());
   };
 
   useEffect(() => {
@@ -90,6 +116,36 @@ export default function CourseView() {
       (total: number, module: any) => total + (module.lessons?.length || 0),
       0
     );
+  };
+
+  const toggleModule = (moduleId: string) => {
+    const newExpanded = new Set(expandedModules);
+    if (newExpanded.has(moduleId)) {
+      newExpanded.delete(moduleId);
+    } else {
+      newExpanded.add(moduleId);
+    }
+    setExpandedModules(newExpanded);
+  };
+
+  const getTotalDuration = () => {
+    if (!course?.modules) return 0;
+    return course.modules.reduce((total: number, module: any) => {
+      return (
+        total +
+        module.lessons.reduce((lessonTotal: number, lesson: any) => {
+          return (
+            lessonTotal +
+            lesson.materials.reduce((materialTotal: number, material: any) => {
+              const duration = material.duration
+                ? parseInt(material.duration)
+                : 0;
+              return materialTotal + duration;
+            }, 0)
+          );
+        }, 0)
+      );
+    }, 0);
   };
 
   const getCompletedLessons = () => {
@@ -522,119 +578,251 @@ export default function CourseView() {
           </div>
         </div>
 
-        <nav className="flex-1 overflow-y-auto p-4 space-y-6 mt-8">
-          {course?.modules.map((module: any) => (
-            <div
-              key={module.id}
-              className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden"
-            >
-              <div className="px-4 py-3 mb-5 border-b border-gray-200 dark:border-gray-700">
-                <h3 className="text-base font-semibold text-gray-900 dark:text-white">
-                  {module.title}
+        <div className="space-y-6">
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 mt-5">
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                  محتوى الدورة
                 </h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  {course?.modules?.length || 0} وحدات • {getTotalLessons()} درس
+                  • {Math.floor(getTotalDuration() / 60)} ساعة إجمالية
+                </p>
               </div>
-
-              <div className="pb-4 px-4 space-y-4">
-                {module.lessons.map((lesson: any) => (
-                  <div
-                    key={lesson.id}
-                    className="bg-white dark:bg-gray-900 rounded-xl p-4 border border-gray-200 dark:border-gray-700"
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <h4 className="font-medium text-gray-900 dark:text-white text-right text-sm">
-                          {lesson.name}
-                        </h4>
-                        {lesson.description && (
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            {lesson.description}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      {lesson.materials.map((material: any) => {
-                        const Icon = getIcon(material.type);
-
-                        return (
-                          <button
-                            key={material.id}
-                            disabled={material.locked}
-                            className={`w-full p-3 rounded-xl transition-all duration-200 flex items-center gap-3 ${
-                              true
-                                ? "bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 shadow-sm"
-                                : material.locked
-                                ? "opacity-50 cursor-not-allowed bg-gray-50 dark:bg-gray-800"
-                                : "hover:bg-gray-50 dark:hover:bg-gray-800 border border-transparent hover:border-gray-200 dark:hover:border-gray-600"
-                            }`}
-                          >
-                            <div className="flex-1 text-right min-w-0">
-                              <p
-                                className={`text-sm font-medium truncate text-blue-900 dark:text-blue-100"
-                                `}
-                              >
-                                {material.title}
-                              </p>
-                              <div className="flex items-center gap-2 mt-1">
-                                <span className="text-xs text-gray-500">
-                                  {material.completed
-                                    ? "مكتمل"
-                                    : material.duration}
-                                </span>
-                                <span
-                                  className={`text-xs px-2 py-0.5 rounded-full ${
-                                    material.type === "video"
-                                      ? "bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400"
-                                      : material.type === "code"
-                                      ? "bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400"
-                                      : material.type === "quiz"
-                                      ? "bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400"
-                                      : "bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
-                                  }`}
-                                >
-                                  {material.type === "video"
-                                    ? "فيديو"
-                                    : material.type === "code"
-                                    ? "كود"
-                                    : material.type === "quiz"
-                                    ? "اختبار"
-                                    : "نص"}
-                                </span>
-                              </div>
-                            </div>
-
-                            <div
-                              className={`p-2 rounded-xl flex-shrink-0 ${
-                                material.completed
-                                  ? "bg-green-100 dark:bg-green-900/20"
-                                  : true
-                                  ? "bg-blue-100 dark:bg-blue-900/20"
-                                  : "bg-gray-100 dark:bg-gray-800"
-                              }`}
-                            >
-                              {material.completed ? (
-                                <CheckCircle className="w-4 h-4 text-green-600" />
-                              ) : material.locked ? null : (
-                                <Icon
-                                  className={`w-4 h-4 ${
-                                    true
-                                      ? "text-blue-600"
-                                      : "text-gray-600 dark:text-gray-400"
-                                  }`}
-                                />
-                              )}
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={expandAllModules}
+                  className="text-xs"
+                >
+                  <Plus className="w-3 h-3 mr-1" />
+                  توسيع الكل
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={collapseAllModules}
+                  className="text-xs"
+                >
+                  <Minus className="w-3 h-3 mr-1" />
+                  طي الكل
+                </Button>
               </div>
             </div>
-          ))}
-        </nav>
+
+            <div className="space-y-4">
+              {course?.modules?.map((module: any, moduleIndex: number) => {
+                const isExpanded = expandedModules.has(module.id);
+                const moduleProgress =
+                  module.lessons?.reduce((acc: number, lesson: any) => {
+                    return (
+                      acc +
+                      lesson.materials.filter((m: any) => m.completed).length
+                    );
+                  }, 0) || 0;
+                const totalMaterials =
+                  module.lessons?.reduce((acc: number, lesson: any) => {
+                    return acc + lesson.materials.length;
+                  }, 0) || 0;
+                const progressPercent =
+                  totalMaterials > 0
+                    ? Math.round((moduleProgress / totalMaterials) * 100)
+                    : 0;
+
+                return (
+                  <div
+                    key={module.id}
+                    className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-lg transition-shadow duration-300"
+                  >
+                    <button
+                      onClick={() => toggleModule(module.id)}
+                      className="w-full px-6 py-5 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl font-bold text-sm">
+                          {moduleIndex + 1}
+                        </div>
+                        <div className="text-right">
+                          <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                            {module.title}
+                          </h3>
+                          <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-slate-400 mt-1">
+                            <span>{module.lessons?.length || 0} دروس</span>
+                            <span>•</span>
+                            <span>{totalMaterials} عنصر</span>
+                            {isEnroll && (
+                              <>
+                                <span>•</span>
+                                <span className="text-green-600 dark:text-green-400">
+                                  {progressPercent}% مكتمل
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        {isEnroll && (
+                          <div className="w-16 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-gradient-to-r from-green-500 to-green-600 transition-all duration-500"
+                              style={{ width: `${progressPercent}%` }}
+                            />
+                          </div>
+                        )}
+                        {isExpanded ? (
+                          <ChevronUp className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                        ) : (
+                          <ChevronDown className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                        )}
+                      </div>
+                    </button>
+
+                    {isExpanded && (
+                      <div className="border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
+                        <div className="p-6 space-y-4">
+                          {module.lessons?.map(
+                            (lesson: any, lessonIndex: number) => (
+                              <div
+                                key={lesson.id}
+                                className="bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-200 dark:border-slate-700"
+                              >
+                                <div className="flex items-center gap-3 mb-4">
+                                  <div className="flex items-center justify-center w-8 h-8 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg font-medium text-sm">
+                                    {lessonIndex + 1}
+                                  </div>
+                                  <div className="flex-1">
+                                    <h4 className="font-medium text-slate-900 dark:text-slate-100">
+                                      {lesson.name}
+                                    </h4>
+                                    {lesson.description && (
+                                      <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                                        {lesson.description}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+
+                                <div className="space-y-3">
+                                  {lesson.materials?.map((material: any) => {
+                                    const typeConfig = {
+                                      video: {
+                                        label: "فيديو",
+                                        color:
+                                          "bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400",
+                                        icon: <Video className="w-4 h-4" />,
+                                      },
+                                      code: {
+                                        label: "كود",
+                                        color:
+                                          "bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400",
+                                        icon: <Code className="w-4 h-4" />,
+                                      },
+                                      quiz: {
+                                        label: "اختبار",
+                                        color:
+                                          "bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400",
+                                        icon: <PenTool className="w-4 h-4" />,
+                                      },
+                                      text: {
+                                        label: "نص",
+                                        color:
+                                          "bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400",
+                                        icon: <FileText className="w-4 h-4" />,
+                                      },
+                                      audio: {
+                                        label: "صوت",
+                                        color:
+                                          "bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400",
+                                        icon: (
+                                          <Headphones className="w-4 h-4" />
+                                        ),
+                                      },
+                                    };
+
+                                    const config =
+                                      typeConfig[
+                                        material.type as keyof typeof typeConfig
+                                      ] || typeConfig.text;
+
+                                    return (
+                                      <button
+                                        key={material.id}
+                                        disabled={material.locked && !isEnroll}
+                                        className={`w-full p-4 rounded-xl transition-all duration-200 flex items-center gap-4 group ${
+                                          material.completed
+                                            ? "bg-green-50 dark:bg-green-900/20 border-2 border-green-200 dark:border-green-800"
+                                            : material.locked && !isEnroll
+                                            ? "opacity-50 cursor-not-allowed  dark:bg-slate-800/50"
+                                            : "bg-blue-50 dark:bg-blue-900/20 border-2 border-transparent border-blue-200 dark:border-blue-800 hover:border-blue-400"
+                                        }`}
+                                      >
+                                        <div
+                                          className={`p-3 rounded-xl flex-shrink-0 transition-colors ${
+                                            material.completed
+                                              ? "bg-green-100 dark:bg-green-900/30"
+                                              : material.locked && !isEnroll
+                                              ? "bg-slate-100 dark:bg-slate-700"
+                                              : "bg-white dark:bg-slate-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30"
+                                          }`}
+                                        >
+                                          {material.completed ? (
+                                            <CheckCircle className="w-5 h-5 text-green-600" />
+                                          ) : material.locked && !isEnroll ? (
+                                            <Lock className="w-5 h-5 text-slate-400" />
+                                          ) : (
+                                            config.icon
+                                          )}
+                                        </div>
+
+                                        <div className="flex-1 text-right min-w-0">
+                                          <p className="font-medium text-slate-900 dark:text-slate-100 truncate">
+                                            {material.title}
+                                          </p>
+                                          <div className="flex items-center justify-end gap-3 mt-2">
+                                            <span
+                                              className={`text-xs px-2 py-1 rounded-full font-medium ${config.color}`}
+                                            >
+                                              {config.label}
+                                            </span>
+                                            <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                                              <Timer className="w-3 h-3" />
+                                              {material.duration || "5 دقائق"}
+                                            </div>
+                                            {material.completed && (
+                                              <span className="text-xs text-green-600 dark:text-green-400 font-medium">
+                                                مكتمل
+                                              </span>
+                                            )}
+                                          </div>
+                                        </div>
+
+                                        {material.type === "video" &&
+                                          !material.locked && (
+                                            <div className="flex-shrink-0">
+                                              <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
+                                                <Play className="w-4 h-4 text-white fill-white" />
+                                              </div>
+                                            </div>
+                                          )}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
       </div>
 
       {!isEnroll && (

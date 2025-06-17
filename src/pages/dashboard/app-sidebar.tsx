@@ -50,8 +50,8 @@ const items = [
     title: "المسارات",
     url: "/dashboard/roadMap",
     icon: Map,
-    requiresPaid: true,
-    comingSoon: true,
+    requiresPaid: false,
+    comingSoon: false,
   },
   {
     title: "المسار المهني",
