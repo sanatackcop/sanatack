@@ -173,4 +173,16 @@ export class CoursesService {
 
     return response;
   }
+
+  async countCompletedCourses(userId: string) {
+    return await this.enrollmentService.getCompletedCoursesCount(userId);
+  }
+
+  async getCompletedHours(userId: string) {
+    return await this.enrollmentService.getCompletedHours(userId);
+  }
+
+  async getStreak(userId: string){
+    return await this.enrollmentService.getStreak(userId);
+  }
 }
