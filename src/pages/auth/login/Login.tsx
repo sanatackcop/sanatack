@@ -79,7 +79,7 @@ const LoginPage: React.FC = () => {
 
   return (
     <div>
-      <div className="fixed top-0 left-0 right-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900/20 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700">
         <Navbar />
       </div>
 
@@ -116,9 +116,9 @@ const LoginPage: React.FC = () => {
 
             <div className="relative flex flex-col justify-center h-full p-8 lg:p-12">
               <div className="text-center mb-8">
-                <div className="w-20 h-20 mx-auto bg-gradient-to-br from-gray-900 to-gray-700 dark:from-white dark:to-gray-200 rounded-2xl flex items-center justify-center shadow-lg mb-6">
+                <div className="w-20 h-20 mx-auto bg-gradient-to-br from-indigo-600 to-sky-600 rounded-2xl flex items-center justify-center shadow-lg mb-6">
                   <svg
-                    className="w-10 h-10 text-white dark:text-gray-900"
+                    className="w-10 h-10 text-white "
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"

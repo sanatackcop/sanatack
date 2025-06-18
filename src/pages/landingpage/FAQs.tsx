@@ -70,12 +70,7 @@ const FAQs = () => {
   }, []);
 
   return (
-    <div
-      className={`min-h-screen transition-all duration-300 ${
-        darkMode ? "bg-black text-white" : "bg-white text-black"
-      }`}
-      dir="rtl"
-    >
+    <div className={`min-h-screen transition-all duration-300`} dir="rtl">
       <div className="container mx-auto px-8 py-20">
         <div className="text-left mb-16">
           <h1 className="text-4xl md:text-6xl text-right font-bold mb-4">
@@ -143,7 +138,10 @@ const FAQs = () => {
             انضم إلى آلاف الطلاب الذين غيروا مسارهم المهني من خلال منصتنا
             التعليمية المتقدمة
           </p>
-          <ModernButton to="/signup" className="w-full sm:w-auto">
+          <ModernButton
+            to="/signup"
+            className="w-full sm:w-auto bg-gradient-to-br from-indigo-600 to-sky-600 !text-white"
+          >
             ابدأ مجاناً الآن
           </ModernButton>
         </div>

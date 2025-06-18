@@ -2,9 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
- @layer utilities {
-  .scrollbar-thin::-webkit-scrollbar { width: 6px; }
-  .scrollbar-thin::-webkit-scrollbar-thumb { @apply rounded bg-gray-400/25 dark:bg-white/15; }
+@layer utilities {
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply rounded bg-gray-400/25 dark:bg-white/15;
+  }
+  .direction-rtl {
+    direction: rtl;
+  }
+  .direction-ltr {
+    direction: ltr;
+  }
 }
 
 @layer base {
@@ -12,9 +22,9 @@
     font-family: system-ui, -apple-system, sans-serif;
   }
 
-body {
-  @apply bg-white text-neutral-900 dark:bg-black dark:text-white;
-}
+  body {
+    @apply bg-white text-neutral-900 dark:bg-black dark:text-white;
+  }
   :root {
     --radius: 0.5rem;
     --sidebar: oklch(0.985 0 0);

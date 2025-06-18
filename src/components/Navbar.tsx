@@ -19,7 +19,7 @@ const Navbar = () => {
   return (
     <nav
       className="fixed inset-x-0 top-0 z-50 w-full transition-all duration-500 ease-out 
-    backdrop-blur-xl shadow-2xl shadow-black/5 dark:shadow-black/20 py-2 bg-white/80 dark:bg-gray-900/80 border-b border-gray-200/50 dark:border-gray-700/50"
+    backdrop-blur-xl shadow-2xl shadow-black/5 dark:shadow-black/20 py-2 bg-white dark:bg-gray-900 border-b border-gray-200/50 dark:border-gray-700/50"
     >
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 md:px-8 lg:px-12">
         <Link
@@ -79,13 +79,13 @@ const Navbar = () => {
             asChild
             size="sm"
             className="group relative overflow-hidden
-            from-primary-600 to-primary-500 hover:from-primary-700
+            bg-gradient-to-br from-indigo-600 to-sky-600 hover:from-primary-700
             hover:to-primary-600 text-white  hover:shadow-xl
              transition-all duration-300 hover:scale-105 px-6 py-2 rounded-full"
           >
             <Link to="/login" className="flex items-center gap-2 relative z-10">
-              <span className="font-medium">التسجيل</span>
-              <CircleArrowLeft className="h-4 w-4 transition-transform duration-300 group-hover:-translate-x-1 rtl:group-hover:translate-x-1" />
+              <span className="font-medium text-white">تسجيل الدخول</span>
+              <CircleArrowLeft className="h-4 w-4 text-white transition-transform duration-300 group-hover:-translate-x-1 rtl:group-hover:translate-x-1" />
             </Link>
           </Button>
         </div>
@@ -160,14 +160,14 @@ const Navbar = () => {
                 <Button
                   asChild
                   size="sm"
-                  className="from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 px-4 py-2 rounded-xl"
+                  className="bg-gradient-to-br from-indigo-600 to-sky-600 hover:from-primary-700 hover:to-primary-600 !text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 px-4 py-2 rounded-xl"
                 >
                   <Link
                     to="/login"
                     onClick={() => setIsMenuOpen(false)}
                     className="flex items-center gap-2"
                   >
-                    <span className="font-medium">التسجيل</span>
+                    <span className="font-medium">تسجيل الدخول</span>
                     <CircleArrowLeft className="h-4 w-4" />
                   </Link>
                 </Button>
