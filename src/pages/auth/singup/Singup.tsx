@@ -13,7 +13,6 @@ import {
   Target,
   BookOpen,
   Rocket,
-  X,
   ChevronLeft,
   Loader2,
   AlertCircle,
