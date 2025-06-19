@@ -40,7 +40,9 @@ export default class User extends AbstractEntity {
   @Column({ nullable: true })
   phone: string;
 
-  @OneToOne(() => UsersAttributes, (attributes) => attributes.user)
+  @OneToOne(() => UsersAttributes, (attributes) => attributes.user, {
+    cascade: true,
+  })
   attributes: Relation<UsersAttributes>;
 
   @OneToMany(() => Enrollment, (user) => user.user)

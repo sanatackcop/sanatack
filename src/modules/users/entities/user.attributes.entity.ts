@@ -16,6 +16,12 @@ export default class UsersAttributes extends AbstractEntity {
   @Column({ enum: UserType })
   userType: UserType;
 
+  @Column('text', { nullable: true })
+  bio?: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  organization?: string;
+
   @OneToOne(() => User, (user) => user.attributes)
   @JoinColumn({ name: 'user_id' })
   user: Relation<User>;
