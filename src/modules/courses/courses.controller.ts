@@ -44,26 +44,27 @@ export class CoursesController {
     }
   }
   @Get('/report')
-  async getCoursesReport(@Req() req: Request){
+  async getCoursesReport(@Req() req: Request) {
     try {
       const userId = req.headers.user_id as string;
       const [completedCourses, totalHours, streakDays] = await Promise.all([
         this.courseService.countCompletedCourses(userId),
         this.courseService.getCompletedHours(userId),
         this.courseService.getStreak(userId),
-    ]);
-    return { completedCourses, totalHours, streakDays, certifications: 0 };
+      ]);
+      return { completedCourses, totalHours, streakDays, certifications: 0 };
     } catch (error: unknown) {
       throw new HttpException(error, 500);
     }
   }
 
-
-  @Get('/:id')
-  async getCourseDetails(@Req() req: Request, @Param('id') id: string) {
+  @Get('/:course_id')
+  async getCourseDetails(
+    @Param('course_id') course_id: string,
+    @Query('user_id') user_id: string
+  ) {
     try {
-      const userId = req.headers.user_id as string;
-      return await this.courseService.courseDetailsUser(id, userId);
+      return await this.courseService.courseDetailsUser(course_id, user_id);
     } catch (error: unknown) {
       console.log({ error });
       throw new HttpException(error, 500);

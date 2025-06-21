@@ -108,7 +108,7 @@ export default class EnrollmentService {
     if (activityDates.length === 0) return 0;
 
     let streak = 0;
-    let current = new Date();
+    const current = new Date();
     current.setHours(0, 0, 0, 0);
 
     for (const day of activityDates) {

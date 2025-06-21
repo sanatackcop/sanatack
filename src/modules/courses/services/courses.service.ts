@@ -182,7 +182,7 @@ export class CoursesService {
     return await this.enrollmentService.getCompletedHours(userId);
   }
 
-  async getStreak(userId: string){
+  async getStreak(userId: string) {
     return await this.enrollmentService.getStreak(userId);
   }
 }
