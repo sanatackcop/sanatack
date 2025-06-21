@@ -526,7 +526,7 @@ export default function CourseView() {
           </div>
         </div>
 
-        {course.modules.length && (
+        {course.modules.length > 0 && (
           <div className="space-y-6">
             <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 mt-5">
               <div className="flex items-center justify-between mb-5">

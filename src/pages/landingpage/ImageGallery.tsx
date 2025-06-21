@@ -66,7 +66,7 @@ export default function ImageGallery() {
 
   return (
     <div className="w-full">
-      <div className="sticky top-20 h-screen flex items-center justify-center z-10 relative overflow-hidden">
+      <div className="sticky top-20 h-screen flex items-center justify-center z-10  overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 flex gap-2 pt-20 z-20">
           {images.map((_, i) => (
             <div
