@@ -57,7 +57,7 @@ const mainDataSource = new DataSource({
   username: cfg.get('MAIN_DB_USERNAME'),
   password: cfg.get('MAIN_DB_PASSWORD'),
   database: cfg.get('MAIN_DB'),
-  ssl: cfg.get<string>('MAIN_DB_SSL') === 'true',
+  ssl: true,
   entities: entities,
   logging: false,
   migrations: migrationFiles,
