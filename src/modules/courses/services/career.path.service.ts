@@ -72,7 +72,7 @@ export default class CareerPathService {
     });
   }
 
-  async careerpathEnrollmentCheck(
+  async careerPathEnrollmentCheck(
     userId: string,
     careerpathId: string
   ): Promise<boolean> {
@@ -105,15 +105,18 @@ export default class CareerPathService {
     id: string,
     userId: string
   ): Promise<CareerPathDetails> {
-    const careerpathDetails = await this.carrerPathDetails(id);
-    const isEnrolled = await this.careerpathEnrollmentCheck(userId, id);
+    const careerpathDetails = await this.careerPathDetails(id, userId);
+    const isEnrolled = await this.careerPathEnrollmentCheck(userId, id);
     return {
       ...careerpathDetails,
       isEnrolled: isEnrolled,
     };
   }
 
-  async carrerPathDetails(id: string): Promise<CareerPathDetails> {
+  async careerPathDetails(
+    id: string,
+    user_id: string
+  ): Promise<CareerPathDetails> {
     const careerPath = await this.careerPathRepository
       .createQueryBuilder('careerPath')
       .leftJoinAndSelect('careerPath.roadmaps', 'roadmapMapper')
@@ -125,7 +128,7 @@ export default class CareerPathService {
 
     const roadmaps = await Promise.all(
       careerPath.roadmaps.map((mapper) =>
-        this.roadMapService.roadmapDetails(mapper.roadmap.id)
+        this.roadMapService.roadmapDetails(mapper.roadmap.id, user_id)
       )
     );
 
@@ -147,7 +150,7 @@ export default class CareerPathService {
     const user = await this.userService.findOne(userId);
     if (!user) throw new Error('User not found');
 
-    const isEnrolled = await this.careerpathEnrollmentCheck(
+    const isEnrolled = await this.careerPathEnrollmentCheck(
       userId,
       careerpathId
     );

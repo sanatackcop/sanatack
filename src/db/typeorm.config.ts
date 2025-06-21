@@ -10,7 +10,7 @@ import LessonMapper from 'src/modules/courses/entities/lessons-maper.entity';
 import { Lesson } from 'src/modules/courses/entities/lessons.entity';
 import Resource from 'src/modules/courses/entities/resource.entity';
 import Quiz from 'src/modules/courses/entities/quiz.entity';
-import VideoResource from 'src/modules/courses/entities/video-lessons.entity';
+import Video from 'src/modules/courses/entities/video.entity';
 import { Enrollment } from 'src/modules/courses/entities/enrollment';
 import MaterialMapper from 'src/modules/courses/entities/material-mapper';
 import { CareerPath } from 'src/modules/courses/entities/career-path.entity';
@@ -39,7 +39,7 @@ export const entities = [
   Lesson,
   Resource,
   Quiz,
-  VideoResource,
+  Video,
   Enrollment,
   MaterialMapper,
   CareerPath,

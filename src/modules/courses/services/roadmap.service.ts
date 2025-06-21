@@ -66,6 +66,10 @@ export default class RoadMapService {
     });
   }
 
+  getAll(): Promise<RoadMap[]> {
+    return this.roadmapRepository.find();
+  }
+
   async findOne(id: string) {
     return this.roadmapRepository.findOne({
       where: { id: Equal(id) },
@@ -87,7 +91,7 @@ export default class RoadMapService {
     return !!isEnrolled;
   }
 
-  async roadmapDetails(id: string): Promise<RoadmapDetails> {
+  async roadmapDetails(id: string, user_id: string): Promise<RoadmapDetails> {
     const roadmap = await this.roadmapRepository
       .createQueryBuilder('roadmap')
       .leftJoinAndSelect('roadmap.roadmapMappers', 'mapper')
@@ -102,7 +106,7 @@ export default class RoadMapService {
 
     const courses = await Promise.all(
       roadmap.roadmapMappers.map((mapper) =>
-        this.courseService.courseDetails(mapper.course.id)
+        this.courseService.courseDetails(mapper.course.id, user_id)
       )
     );
 
@@ -133,7 +137,7 @@ export default class RoadMapService {
     id: string,
     userId: string
   ): Promise<RoadmapDetails> {
-    const roadmapDetails = await this.roadmapDetails(id);
+    const roadmapDetails = await this.roadmapDetails(id, userId);
     const isEnrolled = await this.roadmapEnrollmentCheck(userId, id);
     return {
       ...roadmapDetails,

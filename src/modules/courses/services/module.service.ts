@@ -40,12 +40,19 @@ export default class ModuleService {
     return {
       id: module.id,
       title: module.title,
-      lessons: await Promise.all(
-        module.lessonMappers?.map(
-          async (lessonMapper: LessonMapper) =>
-            await this.lessonService.getDetails(lessonMapper.lesson)
-        ) ?? []
-      ),
+      lessons: (
+        await Promise.all(
+          module.lessonMappers?.map(
+            async (lessonMapper: LessonMapper) =>
+              await this.lessonService.getDetails(lessonMapper.lesson)
+          ) ?? []
+        )
+      ).map((lesson) => {
+        const lessonMapper = module.lessonMappers.find(
+          (mapper) => mapper.lesson.id === lesson.id
+        );
+        return { ...lesson, order: lessonMapper.order };
+      }),
     };
   }
 }

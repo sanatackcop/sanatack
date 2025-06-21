@@ -16,7 +16,7 @@ export default class OtpsService {
     private readonly notificationsService: NotificationsService
   ) {}
 
-  async verifyOtp(email: string, code: string) {
+  async verifyOtp(email: string, code: string): Promise<void> {
     const otp = await this.otpRepo.findOne({
       where: {
         to: Equal(email),
@@ -32,7 +32,6 @@ export default class OtpsService {
     } else {
       await this.otpRepo.update({ id: Equal(otp.id) }, { used: true });
       await this.attemptsService.createSuccessAttempt(email, code);
-      return otp;
     }
   }
 

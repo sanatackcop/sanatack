@@ -25,7 +25,6 @@ export class CoursesController {
   @Get('/list')
   async getAllCourses(
     @Query('user_id') user_id: string
-    // @Param() courseStatus: { inProgress?: string; done?: string }
   ): Promise<CoursesContext[]> {
     try {
       return await this.courseService.list(user_id);
@@ -64,7 +63,7 @@ export class CoursesController {
     @Query('user_id') user_id: string
   ) {
     try {
-      return await this.courseService.courseDetailsUser(course_id, user_id);
+      return await this.courseService.courseDetails(course_id, user_id);
     } catch (error: unknown) {
       console.log({ error });
       throw new HttpException(error, 500);
@@ -142,12 +141,13 @@ export class CoursesController {
     };
   }
 
-  @Patch('/progress/:courseId')
+  @Patch('/progress/:courseId/:materialId')
   async update(
     @Query('user_id') userId: string,
-    @Param('courseId') courseId: string
+    @Param('courseId') courseId: string,
+    @Param('materialId') materialId: string
   ) {
-    await this.courseService.increaseProgress(courseId, userId);
+    await this.courseService.increaseProgress(courseId, userId, materialId);
     return { success: true };
   }
 

@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Equal, FindManyOptions } from 'typeorm';
-import VideoResource from '../entities/video-lessons.entity';
+import Video from '../entities/video.entity';
 import { VideoDto } from '../entities/dto';
 
 @Injectable()
 export default class VideoService {
   constructor(
-    @InjectRepository(VideoResource)
-    private readonly videoRepository: Repository<VideoResource>
+    @InjectRepository(Video)
+    private readonly videoRepository: Repository<Video>
   ) {}
 
   create(quiz: VideoDto) {
@@ -21,7 +21,7 @@ export default class VideoService {
     });
   }
 
-  findAll(where: FindManyOptions<VideoResource>) {
+  findAll(where: FindManyOptions<Video>) {
     return this.videoRepository.find(where);
   }
 
