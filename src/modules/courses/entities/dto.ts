@@ -149,20 +149,19 @@ export class LessonDetailsDto {
   videos?: VideoDto[];
 }
 
-export class LessonDto {
+export class ModuleDto {
   @IsNotEmpty()
   @IsString()
-  name: string;
+  title: string;
 
   @IsNotEmpty()
   @IsString()
   description: string;
 }
-
-export class ModuleDto {
+export class LessonDto {
   @IsNotEmpty()
   @IsString()
-  title: string;
+  name: string;
 
   @IsNotEmpty()
   @IsString()
