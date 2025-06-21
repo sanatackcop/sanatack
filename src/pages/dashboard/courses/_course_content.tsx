@@ -1,5 +1,5 @@
 import TimeLine from "@/components/timeLine";
-import { CourseDetails, LessonDetailsDto } from "@/types/courses";
+import { CourseDetails, LessonDetails } from "@/types/courses";
 import { getLessonResourceIcon } from "@/utils/getIcon";
 
 export default function CourseDetailsContent({
@@ -9,7 +9,7 @@ export default function CourseDetailsContent({
   course: CourseDetails;
   className?: string;
 }) {
-  const renderResources = (lesson: LessonDetailsDto) => {
+  const renderResources = (lesson: LessonDetails) => {
     if (!lesson.materials || lesson.materials.length === 0) return null;
 
     return (
@@ -19,19 +19,19 @@ export default function CourseDetailsContent({
           let title = "";
           let url = "";
 
-          if (material.type === "video" && material.video) {
-            url = material.video.youtubeId || "";
-            title = material.video.title || title;
-          } else if (material.type === "resource" && material.resource) {
-            url = material.resource.url || "";
-            title = material.resource.title || title;
-          } else if (material.type === "quiz" && material.quiz) {
+          if (material.type === "video") {
+            url = material.youtubeId || "";
+            title = material.title || title;
+          } else if (material.type === "resource") {
+            url = "";
+            title = material.title || title;
+          } else if (material.type === "quiz") {
             title = "Quiz";
           }
 
           return (
             <li
-              key={`${material.type}-${material.order}`}
+              key={`${material.type}`}
               className="group relative w-fit py-1 mr-[0.2rem]"
             >
               <a

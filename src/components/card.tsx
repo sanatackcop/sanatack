@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/card";
 import { GenericCardProps } from "@/utils/types";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, PlayCircle, Clock, BookOpen } from "lucide-react";
+import { ArrowLeft, PlayCircle } from "lucide-react";
 
 const GenericCard: React.FC<GenericCardProps> = ({
   type,
@@ -136,43 +136,6 @@ export function ProgressBar({ progress }: { progress: number }) {
       <span className="ml-4 text-sm font-semibold text-slate-800 dark:text-slate-200 min-w-[3rem] text-right">
         {pct}%
       </span>
-    </div>
-  );
-}
-
-export function CleanCourseTags({
-  duration,
-  unitesNum,
-  level,
-  courseType,
-}: any) {
-  return (
-    <div className="flex flex-wrap gap-2.5">
-      {duration && (
-        <div className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-medium transition-colors hover:bg-slate-200 dark:hover:bg-slate-700">
-          <Clock size={14} />
-          {duration} ساعات
-        </div>
-      )}
-
-      {unitesNum && (
-        <div className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-medium transition-colors hover:bg-slate-200 dark:hover:bg-slate-700">
-          <BookOpen size={14} />
-          {unitesNum} وحدات
-        </div>
-      )}
-
-      {level && (
-        <div className="px-3 py-2 bg-gradient-to-r from-slate-700 to-slate-800 dark:from-slate-200 dark:to-slate-100 text-white dark:text-slate-900 rounded-lg text-xs font-semibold shadow-sm">
-          {level}
-        </div>
-      )}
-
-      {courseType && (
-        <div className="px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-700/50 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-medium transition-colors hover:bg-slate-100 dark:hover:bg-slate-800">
-          {courseType}
-        </div>
-      )}
     </div>
   );
 }
