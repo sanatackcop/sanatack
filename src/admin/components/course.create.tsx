@@ -44,7 +44,7 @@ const courseSchema = z.object({
   new_skills_result: z.array(z.object({ value: z.string().min(1) })),
   prerequisites: z.array(z.object({ value: z.string().min(1) })),
   learning_outcome: z.array(z.object({ key: z.string(), value: z.number() })),
-  isPublished: z.boolean().default(false),
+  isPublish: z.boolean().default(false),
 });
 
 type CourseFormValues = z.infer<typeof courseSchema>;
@@ -64,7 +64,7 @@ export default function CourseCreate({
       new_skills_result: [{ value: "" }],
       prerequisites: [{ value: "" }],
       learning_outcome: [{ key: "Outcome 1", value: 0 }],
-      isPublished: false,
+      isPublish: false,
     },
   });
 
@@ -125,7 +125,7 @@ export default function CourseCreate({
           learning_outcome: outcomeObject,
           prerequisites: data.prerequisites.map((p) => p.value),
         },
-        isPublished: data.isPublished,
+        isPublish: data.isPublish,
       });
       updateTable();
       setOpen(false);
@@ -312,7 +312,7 @@ export default function CourseCreate({
 
             <FormField
               control={control}
-              name="isPublished"
+              name="isPublish"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>نشر الدورة</FormLabel>
