@@ -6,6 +6,10 @@ import MaterialMapper, { MaterialType } from '../entities/material-mapper';
 import QuizService from './quiz.service';
 import VideoService from './video.service';
 import ResourceService from './resource.service';
+import { Material } from '../entities/dto';
+import { LinkQuiz } from '../entities/quiz.entity';
+import { LinkVideo } from '../entities/video.entity';
+import { LinkResource } from '../entities/resource.entity';
 
 @Injectable()
 export default class LessonService {
@@ -35,7 +39,7 @@ export default class LessonService {
     id: string;
     name: string;
     description: string;
-    materials: any; // MaterialIF;
+    materials: Material[]; // MaterialIF;
   }> {
     return {
       id: lesson.id,
@@ -43,64 +47,60 @@ export default class LessonService {
       description: lesson.description,
       materials: (
         await Promise.all(
-          lesson.materialMapper?.map(async (material: MaterialMapper) => {
-            if (material.material_type === MaterialType.QUIZ) {
-              const quiz = await this.quizService.findOne(material.material_id);
-              return quiz
-                ? {
-                    order: material.order,
-                    type: MaterialType.QUIZ,
-                    quiz: {
-                      id: quiz.id,
-                      question: quiz.question,
-                      options: quiz.options,
-                      correctAnswer: quiz.correctAnswer,
-                      explanation: quiz.explanation,
-                    },
-                  }
-                : null;
-            } else if (material.material_type === MaterialType.VIDEO) {
-              const video = await this.videoService.findOne(
-                material.material_id
-              );
-              return video
-                ? {
-                    order: material.order,
-                    type: MaterialType.VIDEO,
-                    video: {
-                      id: video.id,
-                      title: video.title,
-                      youtubeId: video.youtubeId,
-                      duration: video.duration,
-                      description: video.description,
-                    },
-                  }
-                : null;
-            } else if (material.material_type === MaterialType.RESOURCE) {
-              const resource = await this.resourceService.findOne(
-                material.material_id
-              );
-              console.log({ resource });
-              return resource
-                ? {
-                    order: material.order,
-                    type: MaterialType.RESOURCE,
-                    resource: {
-                      id: resource.id,
-                      title: resource.title,
-                      url: resource.url,
-                      content: resource.content,
-                      description: resource.description,
-                    },
-                  }
-                : null;
+          lesson.materialMapper?.map(
+            async (material: MaterialMapper): Promise<Material | null> => {
+              if (material.material_type === MaterialType.QUIZ) {
+                const quiz = await this.quizService.findOne(
+                  material.material_id
+                );
+                if (!quiz) return null;
+
+                const result: LinkQuiz = {
+                  ...quiz,
+                  order: material.order,
+                  type: MaterialType.QUIZ,
+                };
+
+                return result;
+              }
+
+              if (material.material_type === MaterialType.VIDEO) {
+                const video = await this.videoService.findOne(
+                  material.material_id
+                );
+                if (!video) return null;
+
+                const result: LinkVideo = {
+                  ...video,
+                  order: material.order,
+                  type: MaterialType.VIDEO,
+                };
+
+                return result;
+              }
+
+              if (material.material_type === MaterialType.RESOURCE) {
+                const resource = await this.resourceService.findOne(
+                  material.material_id
+                );
+                if (!resource) return null;
+
+                const result: LinkResource = {
+                  ...resource,
+                  order: material.order,
+                  type: MaterialType.RESOURCE,
+                };
+
+                return result;
+              }
+
+              return null;
             }
-            return null;
-          }) ?? []
+          ) ?? []
         )
-      ).sort((a, b) => {
-        return a.order - b.order;
-      }),
+      )
+        .filter((m): m is Material => m !== null)
+        .sort((a, b) => a.order - b.order),
     };
   }
 }

@@ -10,35 +10,6 @@ export enum MaterialType {
   LINK = 'link',
 }
 
-export declare type MaterialResource = {
-  title: string;
-  description: string;
-  url: string;
-  content: string;
-  type: MaterialType.RESOURCE;
-};
-
-export declare type MaterialVideo = {
-  title: string;
-  youtubeId: string;
-  description: string;
-  duration: number;
-  type: MaterialType.VIDEO;
-};
-
-export declare type MaterialQuiz = {
-  question: string;
-  options: string[];
-  correctAnswer: string;
-  explanation: string;
-  type: MaterialType.QUIZ;
-};
-
-export declare type MaterialIF =
-  | MaterialResource
-  | MaterialVideo
-  | MaterialQuiz;
-
 @Entity({ name: 'material_mapper' })
 @Unique('lesson_material_unique', ['lesson', 'material_id'])
 export default class MaterialMapper extends AbstractEntity {
@@ -57,4 +28,7 @@ export default class MaterialMapper extends AbstractEntity {
 
   @Column({ type: 'enum', enum: MaterialType, nullable: false })
   material_type: MaterialType;
+
+  @Column()
+  material_duration: number;
 }

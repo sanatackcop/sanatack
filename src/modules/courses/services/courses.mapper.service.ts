@@ -18,7 +18,6 @@ export default class CourseMapperService {
     const course = await this.courseService.findOne(map.course.id);
     const moduleEntity = await this.courseService.findModuleById(map.module.id);
 
-    console.log({ map });
     if (!course || !moduleEntity) {
       throw new HttpException(
         `Invalid ${!course ? 'course' : 'module'} ID`,
@@ -32,23 +31,33 @@ export default class CourseMapperService {
       order: map.order,
     });
     await this.courseMapper.save(courseMapper);
-    await this.addModuleToCourseProgress(map.course.id, map.module.id);
+    await this.addModuleToCourse(map.course.id, map.module.id);
   }
 
-  async addModuleToCourseProgress(course_id: string, module_id: string) {
-    const course = await this.courseMapper.findOne({
+  async addModuleToCourse(course_id: string, module_id: string) {
+    const courseMapper = await this.courseMapper.findOne({
       where: { course: { id: Equal(course_id) } },
       relations: { course: true },
     });
-    if (!course)
+    if (!courseMapper)
       throw new HttpException('No Course Found', HttpStatus.NOT_FOUND);
 
-    const getNewMaterialCount =
-      await this.moduleMapper.getMaterialCount(module_id);
+    const materialCountAndTotalduration =
+      await this.moduleMapper.getMaterialsTotalDurationAndCount(module_id);
 
-    const updatedCount = course.course.material_count + getNewMaterialCount;
+    const updatedCount =
+      courseMapper.course.material_count + materialCountAndTotalduration.sum;
+
+    const updatedDuration =
+      (courseMapper.course.course_info.durationHours ?? 0) +
+      materialCountAndTotalduration.totalDuration;
+
     await this.courseService.update(course_id, {
       material_count: updatedCount,
+      course_info: {
+        ...courseMapper.course.course_info,
+        durationHours: updatedDuration,
+      },
     });
   }
 

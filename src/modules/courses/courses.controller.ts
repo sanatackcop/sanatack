@@ -25,7 +25,6 @@ export class CoursesController {
   @Get('/list')
   async getAllCourses(
     @Query('user_id') user_id: string
-    // @Param() courseStatus: { inProgress?: string; done?: string }
   ): Promise<CoursesContext[]> {
     try {
       return await this.courseService.list(user_id);
@@ -59,11 +58,13 @@ export class CoursesController {
   }
 
 
-  @Get('/:id')
-  async getCourseDetails(@Req() req: Request, @Param('id') id: string) {
+  @Get('/:course_id')
+  async getCourseDetails(
+    @Param('course_id') course_id: string,
+    @Query('user_id') user_id: string
+  ) {
     try {
-      const userId = req.headers.user_id as string;
-      return await this.courseService.courseDetailsUser(id, userId);
+      return await this.courseService.courseDetails(course_id, user_id);
     } catch (error: unknown) {
       console.log({ error });
       throw new HttpException(error, 500);
@@ -141,12 +142,13 @@ export class CoursesController {
     };
   }
 
-  @Patch('/progress/:courseId')
+  @Patch('/progress/:courseId/:materialId')
   async update(
     @Query('user_id') userId: string,
-    @Param('courseId') courseId: string
+    @Param('courseId') courseId: string,
+    @Param('materialId') materialId: string
   ) {
-    await this.courseService.increaseProgress(courseId, userId);
+    await this.courseService.increaseProgress(courseId, userId, materialId);
     return { success: true };
   }
 
