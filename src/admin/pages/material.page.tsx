@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import {
   getQuizList,
-  getResourcesList,
+  getArticlesList,
   getVideosList,
 } from "@/utils/_apis/admin-api";
 import { DataTable } from "@/components/ui/data-table";
-import { QuizColumns, ResourceColumns, VideoColumns } from "../columns";
+import { ArticlesColumns, QuizColumns, VideoColumns } from "../columns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   DropdownMenu,
@@ -20,17 +20,18 @@ import VideoDialogCreate from "../components/video.create";
 import ResourceDialogCreate from "../components/resource.create";
 import { Quiz, Resource, Video } from "@/utils/types/adminTypes";
 import { CustomError } from "@/utils/_apis/api";
+import ArticleDialogCreate from "../components/article.create";
 
 export default function MaterialsPage() {
   const [quiz, setQuiz] = useState<Quiz[]>([]);
   const [video, setVideo] = useState<Video[]>([]);
-  const [resource, setResource] = useState<Resource[]>([]);
+  const [article, setArticles] = useState<Resource[]>([]);
 
   const [error, setError] = useState<string | null>(null);
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [openDialog, setOpenDialog] = useState<
-    "quiz" | "video" | "resource" | null
+    "quiz" | "video" | "resource" | "article" | null
   >(null);
 
   async function fetchCourses() {
@@ -38,12 +39,12 @@ export default function MaterialsPage() {
       const [quizList, videoList, resourceList] = await Promise.all([
         getQuizList<Quiz[]>(),
         getVideosList<Video[]>(),
-        getResourcesList<Resource[]>(),
+        getArticlesList<Resource[]>(),
       ]);
 
       if (quizList?.length) setQuiz(quizList);
       if (videoList?.length) setVideo(videoList);
-      if (resourceList?.length) setResource(resourceList);
+      if (resourceList?.length) setArticles(resourceList);
     } catch (err: unknown) {
       if ((err as CustomError).error.type == "network")
         setError("Error when trying to fetch data.");
@@ -76,9 +77,18 @@ export default function MaterialsPage() {
         updateTable={() => fetchCourses()}
       />
     ),
+    article: (
+      <ArticleDialogCreate
+        open
+        onOpenChange={(open) => !open && setOpenDialog(null)}
+        updateTable={() => fetchCourses()}
+      />
+    ),
   };
 
-  const handleDialogOpen = (type: "quiz" | "video" | "resource") => {
+  const handleDialogOpen = (
+    type: "quiz" | "video" | "resource" | "article"
+  ) => {
     setMenuOpen(false); // close dropdown
     setTimeout(() => setOpenDialog(type), 0); // wait for DOM to clean up
   };
@@ -93,7 +103,7 @@ export default function MaterialsPage() {
             إنشاء مورد
           </DropdownMenuTrigger>
           <DropdownMenuContent className="relative left-5">
-            <DropdownMenuLabel>الموارد</DropdownMenuLabel>
+            <DropdownMenuLabel>Matrials</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => handleDialogOpen("quiz")}>
               اختبار
@@ -104,6 +114,9 @@ export default function MaterialsPage() {
             <DropdownMenuItem onClick={() => handleDialogOpen("resource")}>
               مورد
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleDialogOpen("article")}>
+              article{" "}
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -112,9 +125,9 @@ export default function MaterialsPage() {
 
       <Tabs defaultValue="quiz">
         <TabsList className="mt-2 w-full justify-end">
-          <TabsTrigger value="quiz">اختبار</TabsTrigger>
-          <TabsTrigger value="video">فيديو</TabsTrigger>
-          <TabsTrigger value="resource">الموارد</TabsTrigger>
+          <TabsTrigger value="quiz">quiz</TabsTrigger>
+          <TabsTrigger value="video">video</TabsTrigger>
+          <TabsTrigger value="article">article</TabsTrigger>
         </TabsList>
         <TabsContent value="quiz">
           <DataTable columns={QuizColumns} data={quiz} />
@@ -122,8 +135,8 @@ export default function MaterialsPage() {
         <TabsContent value="video">
           <DataTable columns={VideoColumns} data={video} />
         </TabsContent>
-        <TabsContent value="resource">
-          <DataTable columns={ResourceColumns} data={resource} />
+        <TabsContent value="article">
+          <DataTable columns={ArticlesColumns} data={article} />
         </TabsContent>
       </Tabs>
     </div>

@@ -80,17 +80,17 @@ export const VideoColumns: ColumnDef<Video>[] = [
   },
 ];
 
-export const ResourceColumns: ColumnDef<Resource>[] = [
+export const ArticlesColumns: ColumnDef<Resource>[] = [
   {
-    accessorKey: "title",
+    accessorKey: "id",
+    id: "id",
+  },
+  {
+    accessorKey: "data.data.title",
     header: "Title",
   },
   {
-    accessorKey: "description",
-    header: "Description",
-  },
-  {
-    accessorKey: "type",
+    accessorKey: "data.type",
     header: "Type",
   },
 ];

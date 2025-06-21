@@ -2,13 +2,9 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  LinkedQuiz,
-  LinkedResource,
-  LinkedVideo,
-} from "@/utils/types/adminTypes";
+import { LinkedQuiz, LinkedVideo } from "@/utils/types/adminTypes";
 import { DataTable } from "@/components/ui/data-table";
-import { QuizColumns, ResourceColumns, VideoColumns } from "../columns";
+import { ArticlesColumns, QuizColumns, VideoColumns } from "../columns";
 import { getLinkedLessonMaterials } from "@/utils/_apis/admin-api";
 import { lazy } from "react";
 const MappedMaterialsCreate = lazy(
@@ -18,13 +14,13 @@ const MappedMaterialsCreate = lazy(
 export declare type MappedMaterials = {
   quizzes: LinkedQuiz[];
   videos: LinkedVideo[];
-  resources: LinkedResource[];
+  article: any[];
 };
 
 export default function MappedMaterials() {
   const [quiz, setQuiz] = useState<LinkedQuiz[]>([]);
   const [video, setVideo] = useState<LinkedVideo[]>([]);
-  const [resource, setResource] = useState<LinkedResource[]>([]);
+  const [article, setarticle] = useState<any[]>([]);
   const location = useLocation();
   const { pathname } = location;
   const id = pathname.split("/").at(-1) ?? "";
@@ -38,7 +34,7 @@ export default function MappedMaterials() {
       if (linkedMaterials) {
         if (linkedMaterials.quizzes) setQuiz(linkedMaterials.quizzes);
         if (linkedMaterials.videos) setVideo(linkedMaterials.videos);
-        if (linkedMaterials.resources) setResource(linkedMaterials.resources);
+        if (linkedMaterials.article) setarticle(linkedMaterials.article);
       }
     } catch (err) {
       console.error(err);
@@ -49,7 +45,7 @@ export default function MappedMaterials() {
     fetchCourses();
   }, []);
 
-  const combinedMaterial = [...quiz, ...video, ...resource].sort(
+  const combinedMaterial = [...quiz, ...video, ...article].sort(
     (a, b) => a.order - b.order
   );
 
@@ -68,7 +64,7 @@ export default function MappedMaterials() {
           <TabsTrigger value="all">الكل</TabsTrigger>
           <TabsTrigger value="quiz">اختبار</TabsTrigger>
           <TabsTrigger value="video">فيديو</TabsTrigger>
-          <TabsTrigger value="resource">الموارد</TabsTrigger>
+          <TabsTrigger value="article">article</TabsTrigger>
         </TabsList>
         <TabsContent value="all">
           <DataTable
@@ -97,13 +93,13 @@ export default function MappedMaterials() {
             data={video}
           />
         </TabsContent>
-        <TabsContent value="resource">
+        <TabsContent value="article">
           <DataTable
             columns={[
-              ...ResourceColumns,
+              ...ArticlesColumns,
               { accessorKey: "order", header: "Order" },
             ]}
-            data={resource}
+            data={article}
           />
         </TabsContent>
       </Tabs>
