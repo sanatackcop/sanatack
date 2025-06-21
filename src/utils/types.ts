@@ -132,5 +132,5 @@ export interface CourseDto {
     learning_outcome: { [key: string]: number };
     prerequisites: string[];
   };
-  isPublished: boolean;
+  isPublish: boolean;
 }
