@@ -1,5 +1,3 @@
-import { QuizDto, VideoDto, ResourceDto } from "@/utils/types";
-import { Level } from "@/utils/types/adminTypes";
 export type TabType = "all" | "started" | "done";
 export interface CareerPathInterface {
   id: string;
@@ -87,7 +85,7 @@ export enum LevelEnum {
   "ADVANCED" = "ADVANCED",
 }
 
-export interface CoursesReport{
+export interface CoursesReport {
   completedCourses: number;
   totalHours: number;
   streakDays: number;

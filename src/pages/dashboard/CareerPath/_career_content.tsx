@@ -18,17 +18,17 @@ export default function CareerPathTimeline({
           const isLast = index === lesson.materials.length - 1;
           let title = "";
 
-          if (material.type === "video" && material.video) {
-            title = material.video.title || "video";
-          } else if (material.type === "resource" && material.resource) {
-            title = material.resource.title || "resource";
-          } else if (material.type === "quiz" && material.quiz) {
+          if (material.type === "video" && material) {
+            title = material.title || "video";
+          } else if (material.type === "resource") {
+            title = material.title || "resource";
+          } else if (material.type === "quiz" && material) {
             title = "quiz";
           }
 
           return (
             <li
-              key={`${material.type}-${material.order}`}
+              key={`${material.type}`}
               className="group relative w-fit py-1 text-sm flex items-center gap-1 mr-[0.2rem]"
             >
               {getLessonResourceIcon(material.type)}

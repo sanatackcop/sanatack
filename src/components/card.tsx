@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/card";
 import { GenericCardProps } from "@/utils/types";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, PlayCircle, Clock, BookOpen } from "lucide-react";
+import { ArrowLeft, PlayCircle } from "lucide-react";
 
 const GenericCard: React.FC<GenericCardProps> = ({
   type,
