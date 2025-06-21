@@ -93,7 +93,7 @@ export default class EnrollmentService {
     for (const enrollment of enrollments) {
       const duration = enrollment.course.course_info.durationHours ?? 0;
       const totalMaterials = enrollment.course.material_count ?? 0;
-      const progressDone = enrollment.progress_count ?? 0;
+      const progressDone = enrollment.progress_counter ?? 0;
 
       if (enrollment.is_finished) {
         totalHours += duration;
@@ -120,7 +120,7 @@ export default class EnrollmentService {
     if (activityDates.length === 0) return 0;
 
     let streak = 0;
-    let current = new Date();
+    const current = new Date();
     current.setHours(0, 0, 0, 0);
 
     for (const day of activityDates) {
