@@ -13,7 +13,6 @@ import {
   Target,
   BookOpen,
   Rocket,
-  X,
   ChevronLeft,
   Loader2,
   AlertCircle,
@@ -53,22 +52,29 @@ interface ApiError {
   field?: string;
 }
 
-const phoneRegex = new RegExp(/^\+?[1-9]\d{1,14}$/);
+const phoneRegex = /^05\d{8}$/;
 
-const SignupFormSchema = z.object({
-  firstName: z.string().min(3, "الاسم الأول مطلوب"),
-  lastName: z.string().min(3, "اسم العائلة مطلوب"),
-  phone: z
-    .string()
-    .regex(phoneRegex, "يجب الرقم ان يكون من هذا النوع: 966555555555+")
-    .min(10, "رقم الهاتف يجب أن يكون 10 أرقام على الأقل"),
-  email: z.string().email("بريد إلكتروني غير صحيح"),
-  password: z.string().min(6, "كلمة المرور يجب أن تكون 6 أحرف على الأقل"),
-});
+const SignupFormSchema = z
+  .object({
+    firstName: z.string().min(3, "الاسم الأول مطلوب"),
+    lastName: z.string().min(3, "اسم العائلة مطلوب"),
+    phone: z
+      .string()
+      .regex(phoneRegex, "يجب الرقم ان يكون من هذا النوع: 966555555555+")
+      .min(10, "رقم الهاتف يجب أن يكون 10 أرقام على الأقل"),
+    email: z.string().email("بريد إلكتروني غير صحيح"),
+    password: z.string().min(6, "كلمة المرور يجب أن تكون 6 أحرف على الأقل"),
+    confirmPassword: z.string().min(6, "يجب تأكيد كلمة المرور"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "كلمتا المرور غير متطابقتين",
+    path: ["confirmPassword"],
+  });
 
 type SignupFormData = z.infer<typeof SignupFormSchema>;
 
 const SignupFlow: React.FC = () => {
+  const [errors, setErrors] = useState<ApiError[]>([]);
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [userType, setUserType] = useState<string>("");
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
@@ -77,8 +83,7 @@ const SignupFlow: React.FC = () => {
   const [formData, setFormData] = useState<SignupFormData | null>(null);
   const [focusedInput, setFocusedInput] = useState<string | null>(null);
   const [showMobileSteps, setShowMobileSteps] = useState<boolean>(false);
-  const [loading] = useState<boolean>(false);
-  const [errors, setErrors] = useState<ApiError[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
   const [otpSent] = useState<boolean>(false);
 
   const form = useForm<SignupFormData>({
@@ -89,6 +94,7 @@ const SignupFlow: React.FC = () => {
       phone: "",
       email: "",
       password: "",
+      confirmPassword: "",
     },
   });
 
@@ -104,7 +110,11 @@ const SignupFlow: React.FC = () => {
       icon: Target,
     },
     { title: "الاهتمامات", description: "اختر مجالات اهتمامك", icon: BookOpen },
-    { title: "تأكيد الهوية", description: "تحقق من رقم الهاتف", icon: Shield },
+    {
+      title: "تأكيد الهوية",
+      description: "تحقق من البريد الإلكتروني ",
+      icon: Shield,
+    },
   ];
 
   const userOptions: UserOption[] = [
@@ -162,8 +172,9 @@ const SignupFlow: React.FC = () => {
   const handleInterestsNext = async (): Promise<void> => {
     if (selectedInterests.length >= 3) {
       setErrors([]);
+      setLoading(true);
       if (formData) {
-        const success = await sendEmailOtpApi(formData.email);
+        const success = await sendEmailOtpApi(formData?.email);
         console.log({ success });
         if (success) {
           setCurrentStep(3);
@@ -172,6 +183,7 @@ const SignupFlow: React.FC = () => {
     } else {
       setErrors([{ message: "يرجى اختيار 3 مجالات على الأقل" }]);
     }
+    setLoading(false);
   };
 
   const toggleInterest = (interest: string): void => {
@@ -186,44 +198,6 @@ const SignupFlow: React.FC = () => {
   const navigate = useNavigate();
   const userContext = useContext(UserContext);
   const login = userContext?.login;
-
-  const handleFinalSubmit = async (): Promise<void> => {
-    if (!formData) {
-      console.log("Error Occurred @DE");
-      return;
-    }
-
-    const success = await verifyOtpApi(otp, formData?.email);
-    console.log("بيانات التسجيل:", {
-      personalInfo: formData,
-      userType,
-      interests: selectedInterests,
-      otp: otp,
-    });
-    if (success) {
-      const result = (await signupApi({
-        email: formData?.email,
-        password: formData?.password,
-        phone: formData.phone,
-        first_name: formData.firstName,
-        last_name: formData.lastName,
-        interests: interests,
-        userType: userType,
-      })) as unknown as LoginResult;
-
-      if (result.role && login) {
-        login({
-          role: result.role,
-          type: result.type as ContextType,
-          user: result.user,
-          refresh_token: result.refresh_token,
-        });
-        navigate("/dashboard", { replace: true });
-      } else {
-      }
-    }
-  };
-
   const ErrorDisplay = (): JSX.Element | null => {
     if (errors.length === 0) return null;
 
@@ -242,11 +216,70 @@ const SignupFlow: React.FC = () => {
     );
   };
 
+  const handleFinalSubmit = async (): Promise<void> => {
+    try {
+      if (!formData) {
+        console.log("Error Occurred @DE");
+        return;
+      }
+
+      const success = await verifyOtpApi(otp, formData.email);
+
+      console.log("بيانات التسجيل:", {
+        personalInfo: formData,
+        userType,
+        interests: selectedInterests,
+        otp: otp,
+      });
+
+      if (!success) {
+        setErrors([{ message: "رمز التحقق غير صحيح. حاول مرة أخرى" }]);
+        return;
+      }
+      setErrors([]);
+      setLoading(true);
+
+      const result = (await signupApi({
+        email: formData.email,
+        password: formData.password,
+        phone: formData.phone,
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        interests: interests,
+        userType: userType,
+      })) as unknown as LoginResult;
+
+      if (result.role && login) {
+        login({
+          role: result.role,
+          type: result.type as ContextType,
+          user: result.user,
+          refresh_token: result.refresh_token,
+        });
+        navigate("/dashboard", { replace: true });
+      } else {
+        console.error("Signup failed: Missing role or login context");
+      }
+    } catch (err: any) {
+      console.error("تفاصيل الخطأ:", err);
+
+      const message =
+        err?.error?.body ||
+        err?.error?.message ||
+        err?.response?.data?.message ||
+        err?.message ||
+        "حدث خطأ غير متوقع";
+
+      setErrors([{ message }]);
+    }
+    setLoading(false);
+  };
+
   const renderMobileHeader = (): JSX.Element => (
-    <div className="md:hidden sticky top-16 z-40 bg-white/90 dark:bg-black/90 border-b border-gray-200 dark:border-gray-800 backdrop-blur-md">
+    <div className="md:hidden sticky top-16 z-40 bg-gradient-to-b from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-blue-900/20 border-b border-gray-200 dark:border-gray-800 backdrop-blur-md">
       <div className="flex items-center justify-between p-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-black text-white dark:bg-white dark:text-black">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-indigo-600 to-sky-600 text-white  ">
             <Rocket className="w-5 h-5" />
           </div>
           <div>
@@ -261,7 +294,7 @@ const SignupFlow: React.FC = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowMobileSteps(!showMobileSteps)}
-            className="p-2 rounded-lg bg-gray-100 text-black dark:bg-gray-800 dark:text-white"
+            className="p-2 rounded-lg bg-gradient-to-br from-indigo-600 to-sky-600 text-white"
           >
             <Target className="w-4 h-4" />
           </button>
@@ -271,7 +304,7 @@ const SignupFlow: React.FC = () => {
       <div className="px-4 pb-4">
         <div className="w-full h-2 rounded-full bg-gray-200 dark:bg-gray-800">
           <div
-            className="h-2 rounded-full transition-all duration-500 bg-black dark:bg-white"
+            className="h-2 rounded-full transition-all duration-500 bg-gradient-to-r from-blue-700 to-sky-400"
             style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
           />
         </div>
@@ -289,9 +322,9 @@ const SignupFlow: React.FC = () => {
                   <div
                     className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                       isCompleted
-                        ? "bg-black text-white dark:bg-white dark:text-black"
+                        ? "bg-gradient-to-br from-indigo-600 to-sky-600 text-white"
                         : isCurrent
-                        ? "bg-black text-white dark:bg-white dark:text-black"
+                        ? "bg-gradient-to-br from-indigo-600 to-sky-600 text-white"
                         : "bg-gray-200 text-gray-400 dark:bg-gray-800 dark:text-gray-400"
                     }`}
                   >
@@ -325,7 +358,7 @@ const SignupFlow: React.FC = () => {
   );
 
   const renderStepsProgress = (): JSX.Element => (
-    <div className="h-full flex flex-col bg-gradient-to-b from-gray-50 to-white dark:from-black dark:to-gray-900 border-l border-gray-200 dark:border-gray-800 overflow-hidden">
+    <div className="h-full flex flex-col bg-gradient-to-b from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-blue-900/20 border-l border-gray-200 dark:border-gray-800 overflow-hidden">
       <div className="p-6 shrink-0 mt-2">
         <h3 className="text-xl font-bold text-black dark:text-white mb-2">
           خطوات التسجيل
@@ -346,9 +379,9 @@ const SignupFlow: React.FC = () => {
                   <div
                     className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 ${
                       isCompleted
-                        ? "bg-black text-white shadow-lg shadow-black/30 dark:bg-white dark:text-black dark:shadow-white/30"
+                        ? " text-white shadow-lg shadow-black/30 bg-gradient-to-br from-indigo-600 to-sky-600 dark:shadow-white/30"
                         : isCurrent
-                        ? "bg-black text-white shadow-lg shadow-black/30 dark:bg-white dark:text-black dark:shadow-white/30"
+                        ? "text-white shadow-lg shadow-black/30 bg-gradient-to-br from-indigo-600 to-sky-600 dark:shadow-white/30"
                         : "bg-white text-gray-400 border-2 border-gray-300 shadow-sm dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700"
                     }`}
                   >
@@ -362,7 +395,7 @@ const SignupFlow: React.FC = () => {
                     <div
                       className={`w-0.5 h-10 mt-3 rounded-full transition-all duration-500 ${
                         isCompleted
-                          ? "bg-black dark:bg-white"
+                          ? "bg-gradient-to-r from-blue-700 to-sky-400"
                           : "bg-gray-300 dark:bg-gray-800"
                       }`}
                     />
@@ -404,7 +437,7 @@ const SignupFlow: React.FC = () => {
           </div>
           <div className="w-full h-3 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden">
             <div
-              className="h-3 rounded-full transition-all duration-500 bg-black dark:bg-white"
+              className="h-3 rounded-full transition-all duration-500 bg-gradient-to-r from-blue-700 to-sky-400"
               style={{ width: `${(currentStep / (steps.length - 1)) * 100}%` }}
             />
           </div>
@@ -466,11 +499,11 @@ const SignupFlow: React.FC = () => {
   );
 
   const renderPersonalInfoStep = (): JSX.Element => (
-    <div className="h-full flex flex-col bg-gradient-to-br from-gray-50 to-white dark:from-black dark:to-gray-900 overflow-y-auto">
+    <div className="h-full flex flex-col bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:to-gray-800 overflow-y-auto">
       <div className="flex-1 flex items-center justify-center p-4 sm:p-6">
         <div className="w-full max-w-md">
           <div className="text-center mb-6">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl mb-4 shadow-2xl bg-black text-white dark:bg-white dark:text-black">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl mb-4 shadow-2xl bg-gradient-to-br from-indigo-600 to-sky-600 text-white ">
               <User className="w-6 h-6" />
             </div>
             <h2 className="text-2xl md:text-3xl font-bold mb-3 text-black dark:text-white">
@@ -484,7 +517,7 @@ const SignupFlow: React.FC = () => {
             <ErrorDisplay />
             {renderInput("firstName", "الاسم الأول", "أدخل اسمك الأول")}
             {renderInput("lastName", "اسم العائلة", "أدخل اسم العائلة")}
-            {renderInput("phone", "رقم الهاتف", "+966555555555", "tel")}
+            {renderInput("phone", "رقم الهاتف", "0555555555", "tel")}
             {renderInput(
               "email",
               "البريد الإلكتروني",
@@ -497,11 +530,17 @@ const SignupFlow: React.FC = () => {
               "أدخل كلمة المرور",
               "password"
             )}
+            {renderInput(
+              "confirmPassword",
+              "تأكيد كلمة المرور",
+              "أعد كتابة كلمة المرور",
+              "password"
+            )}
             <div className="flex gap-3 pt-2">
               <Button
                 onClick={form.handleSubmit(handleFormSubmit)}
                 disabled={loading}
-                className="flex-1 py-3 rounded-xl font-bold text-base transition-all duration-300 transform hover:scale-105 shadow-2xl flex items-center justify-center gap-2 bg-black text-white hover:bg-gray-800 shadow-black/25 dark:bg-white dark:text-black dark:hover:bg-gray-100 dark:shadow-white/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                className="flex-1 py-3 rounded-xl font-bold text-base transition-all duration-300 transform hover:scale-105 shadow-2xl flex items-center justify-center gap-2 bg-gradient-to-br from-indigo-600 to-sky-600 !text-white hover:bg-gray-800 shadow-black/25 dark:hover:bg-gray-100 dark:shadow-white/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
                 {loading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -520,11 +559,11 @@ const SignupFlow: React.FC = () => {
   );
 
   const renderUserTypeStep = (): JSX.Element => (
-    <div className="h-full flex flex-col bg-gradient-to-br from-gray-50 to-white dark:from-black dark:to-gray-900 overflow-y-auto">
+    <div className="h-full flex flex-col bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:to-gray-800 overflow-y-auto">
       <div className="flex-1 flex items-center justify-center p-4 sm:p-6">
         <div className="w-full max-w-md">
           <div className="text-center mb-6">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl mb-4 shadow-2xl bg-black text-white dark:bg-white dark:text-black">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl mb-4 shadow-2xl bg-gradient-to-br from-indigo-600 to-sky-600 text-white">
               <Target className="w-6 h-6" />
             </div>
             <h2 className="text-2xl md:text-3xl font-bold mb-3 text-black dark:text-white">
@@ -553,7 +592,7 @@ const SignupFlow: React.FC = () => {
                     <div
                       className={`p-3 rounded-xl transition-all duration-300 ${
                         isSelected
-                          ? "bg-black text-white shadow-lg dark:bg-white dark:text-black"
+                          ? "bg-gradient-to-br from-indigo-600 to-sky-600 text-white shadow-lg "
                           : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
                       }`}
                     >
@@ -581,7 +620,7 @@ const SignupFlow: React.FC = () => {
             <button
               onClick={handleUserTypeNext}
               disabled={!userType || loading}
-              className="flex-1 py-3 rounded-xl font-bold text-base transition-all duration-300 transform hover:scale-105 shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 bg-black text-white hover:bg-gray-800 shadow-black/25 dark:bg-white dark:text-black dark:hover:bg-gray-100 dark:shadow-white/25"
+              className="flex-1 py-3 rounded-xl font-bold text-base transition-all duration-300 transform hover:scale-105 shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 bg-gradient-to-br from-indigo-600 to-sky-600 text-white hover:bg-gray-800 shadow-black/25 dark:hover:bg-gray-100 dark:shadow-white/25"
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -599,10 +638,10 @@ const SignupFlow: React.FC = () => {
   );
 
   const renderInterestsStep = (): JSX.Element => (
-    <div className="h-full flex flex-col bg-gradient-to-br from-gray-50 to-white dark:from-black dark:to-gray-900 overflow-hidden">
-      <div className="p-4 sm:p-6 shrink-0">
-        <div className="text-center max-w-md mx-auto">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl mb-4 shadow-2xl bg-black text-white dark:bg-white dark:text-black">
+    <div className="h-full flex flex-col bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:to-gray-800  overflow-hidden">
+      <div className="p-4 sm:p-6 shrink-0 ">
+        <div className="text-center max-w-md mx-auto pt-12">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl mb-4 shadow-2xl bg-gradient-to-br from-indigo-600 to-sky-600 text-white ">
             <BookOpen className="w-6 h-6" />
           </div>
           <h2 className="text-2xl md:text-3xl font-bold mb-3 text-black dark:text-white">
@@ -611,17 +650,22 @@ const SignupFlow: React.FC = () => {
           <p className="text-base text-gray-600 dark:text-gray-400 mb-4">
             اختر على الأقل 3 مجالات من اهتماماتك (الحد الأقصى 10)
           </p>
-          <div
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${
-              selectedInterests.length >= 3
-                ? "bg-green-100 text-green-700 border-2 border-green-300 dark:bg-green-900/20 dark:text-green-400 dark:border-green-700"
-                : "bg-gray-200 text-gray-700 border-2 border-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600"
-            }`}
-          >
-            تم اختيار {selectedInterests.length} من أصل 3 (
-            {selectedInterests.length}/10)
-            {selectedInterests.length >= 3 && <Check className="w-4 h-4" />}
-          </div>
+          {selectedInterests.length > 0 && (
+            <div
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${
+                selectedInterests.length >= 3
+                  ? "bg-green-100 text-green-700 border-2 border-green-300 dark:bg-green-900/20 dark:text-green-400 dark:border-green-700"
+                  : "bg-gray-200 text-gray-700 border-2 border-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600"
+              }`}
+            >
+              <div className="flex items-center gap-1">
+                تم اختيار {selectedInterests.length} مجالات
+                {selectedInterests.length >= 3 && (
+                  <Check className="w-4 h-4 text-green-500" />
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -629,9 +673,9 @@ const SignupFlow: React.FC = () => {
         <div className="max-w-2xl mx-auto w-full h-full flex flex-col">
           <ErrorDisplay />
 
-          <div className="bg-white/80 dark:bg-gray-800/80 border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl p-4 md:p-6 flex flex-col h-full overflow-hidden border-2 backdrop-blur-sm">
+          <div className=" p-4  md:p-6 flex flex-col h-full overflow-hidden">
             <div className="flex-1 overflow-y-auto">
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
+              <div className="flex flex-wrap justify-center gap-3 md:gap-4">
                 {interests.map((interest) => {
                   const isSelected = selectedInterests.includes(interest);
                   const isDisabled =
@@ -641,51 +685,28 @@ const SignupFlow: React.FC = () => {
                       key={interest}
                       onClick={() => !isDisabled && toggleInterest(interest)}
                       disabled={isDisabled}
-                      className={`p-3 rounded-xl text-sm font-medium transition-all duration-300 transform hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:transform-none ${
+                      className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 transform hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:transform-none whitespace-nowrap ${
                         isSelected
-                          ? "bg-black text-white shadow-lg dark:bg-white dark:text-black"
+                          ? "bg-gradient-to-br from-indigo-600 to-sky-600 text-white shadow-lg"
                           : isDisabled
                           ? "bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500"
                           : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                       }`}
                     >
+                      <span className="text-lg font-bold">+</span>
                       {interest}
                     </button>
                   );
                 })}
               </div>
             </div>
-
-            {selectedInterests.length > 0 && (
-              <div className="pt-4 border-t-2 border-gray-200 dark:border-gray-700 shrink-0 mt-4">
-                <h4 className="text-sm font-medium mb-3 text-black dark:text-white">
-                  اهتماماتك المختارة:
-                </h4>
-                <div className="flex flex-wrap gap-2 max-h-20 overflow-y-auto">
-                  {selectedInterests.map((interest) => (
-                    <span
-                      key={interest}
-                      className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs shrink-0 bg-black/10 text-black border border-gray-300 dark:bg-white/10 dark:text-white dark:border-gray-600"
-                    >
-                      {interest}
-                      <button
-                        onClick={() => toggleInterest(interest)}
-                        className="hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full p-0.5 transition-colors ml-1"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
-          <div className="flex gap-3 mt-4 shrink-0">
+          <div className="flex gap-3 mt-4 -translate-y-4 shrink-0">
             <button
               onClick={handleInterestsNext}
               disabled={selectedInterests.length < 3 || loading}
-              className="flex-1 py-3 rounded-xl font-bold text-base transition-all duration-300 transform hover:scale-105 shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 bg-black text-white hover:bg-gray-800 shadow-black/25 dark:bg-white dark:text-black dark:hover:bg-gray-100 dark:shadow-white/25"
+              className="flex-1 py-3 rounded-xl font-bold text-base transition-all duration-300 transform hover:scale-105 shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 bg-gradient-to-br from-indigo-600 to-sky-600 text-white hover:bg-gray-800 shadow-black/25 dark:hover:bg-gray-100 dark:shadow-white/25"
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -703,22 +724,22 @@ const SignupFlow: React.FC = () => {
   );
 
   const renderOtpStep = (): JSX.Element => (
-    <div className="h-full flex flex-col bg-gradient-to-br from-gray-50 to-white dark:from-black dark:to-gray-900 overflow-y-auto">
+    <div className="h-full flex flex-col bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:to-gray-800 overflow-y-auto">
       <div className="flex-1 flex items-center justify-center p-4 sm:p-6">
         <div className="w-full max-w-md">
           <div className="text-center mb-6">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl mb-4 shadow-2xl bg-black text-white dark:bg-white dark:text-black">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl mb-4 shadow-2xl bg-gradient-to-br from-indigo-600 to-sky-600 text-white ">
               <Shield className="w-6 h-6" />
             </div>
             <h2 className="text-2xl md:text-3xl font-bold mb-3 text-black dark:text-white">
-              تأكيد رقم الهاتف
+              تأكيد البريد الإلكتروني
             </h2>
             <p className="text-base text-gray-600 dark:text-gray-400 mb-4">
-              أدخل الرمز المرسل إلى رقم هاتفك
+              أدخل الرمز المرسل إلى بريدك الإلكتروني
             </p>
             {formData && (
               <div className="inline-flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium bg-black/10 text-black border border-black dark:bg-white/20 dark:text-white dark:border-white">
-                📱 {formData.phone}
+                {formData.email}
               </div>
             )}
             {otpSent && (
@@ -729,7 +750,7 @@ const SignupFlow: React.FC = () => {
           </div>
           <div className="bg-white/80 dark:bg-gray-800/80 border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl p-6 border-2 backdrop-blur-sm">
             <ErrorDisplay />
-            <div className="flex justify-center gap2 mb-6">
+            <div className="flex justify-center gap-2 mb-6 direction-ltr">
               {/* {otp.map((digit, index) => (
                 <input
                   key={index}
@@ -760,12 +781,13 @@ const SignupFlow: React.FC = () => {
                 <InputOTPSlot index={5} />
               </InputOTP>
             </div>
+
             <div className="space-y-3">
               <div className="flex gap-3">
                 <button
                   onClick={handleFinalSubmit}
                   disabled={otp.length != 6}
-                  className="flex-1 py-3 rounded-xl font-bold text-base transition-all duration-300 transform hover:scale-105 shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 bg-black text-white hover:bg-gray-800 shadow-black/25 dark:bg-white dark:text-black dark:hover:bg-gray-100 dark:shadow-white/25"
+                  className="flex-1 py-3 rounded-xl font-bold text-base transition-all duration-300 transform hover:scale-105 shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 bg-gradient-to-br from-indigo-600 to-sky-600 text-white hover:bg-gray-800 shadow-black/25  dark:hover:bg-gray-100 dark:shadow-white/25"
                 >
                   {loading ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -781,6 +803,7 @@ const SignupFlow: React.FC = () => {
                 onClick={async () => {
                   if (formData) {
                     await sendEmailOtpApi(formData.email);
+                    setErrors([]);
                   }
                 }}
                 disabled={loading}

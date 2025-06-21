@@ -66,9 +66,7 @@ const WhyUs = () => {
 
   return (
     <div
-      className={`min-h-screen transition-colors duration-300 mt-10 ${
-        darkMode ? "bg-black text-white" : "bg-white text-black"
-      }`}
+      className={`min-h-screen transition-colors duration-300 mt-10  }`}
       dir="rtl"
     >
       <div className="container mx-auto px-4">
@@ -83,11 +81,7 @@ const WhyUs = () => {
             <Button
               size="lg"
               onClick={() => navigate("/signup")}
-              className={`${
-                darkMode
-                  ? "bg-white text-black hover:bg-gray-200"
-                  : "bg-black text-white hover:bg-gray-800"
-              } font-bold px-8 py-4 rounded-full text-lg transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl`}
+              className={`bg-black dark:bg-white text-white dark:text-black font-bold px-8 py-4 rounded-full text-lg transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl`}
             >
               تصفح البرامج
             </Button>
@@ -100,22 +94,13 @@ const WhyUs = () => {
             return (
               <Card
                 key={index}
-                className={`${
-                  darkMode
-                    ? "bg-gray-900 border-gray-800 hover:border-gray-700"
-                    : "bg-gray-50 border-gray-200 hover:border-gray-300"
-                } transition-all duration-300 hover:shadow-xl hover:scale-105 group relative overflow-hidden`}
+                className={`bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 transition-all duration-300 hover:shadow-xl hover:scale-105 group relative overflow-hidden`}
               >
                 {feature.isSoon && (
                   <div className="absolute top-4 left-4 z-10">
                     <div
                       className={`
-                      flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold
-                      ${
-                        darkMode ? "bg-white text-black" : "bg-black text-white"
-                      }
-                      shadow-lg
-                    `}
+                      flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 shadow-lg`}
                     >
                       <Clock className="w-3 h-3" />
                       <span>قريباً</span>
@@ -125,15 +110,9 @@ const WhyUs = () => {
 
                 <CardContent className="p-8 h-full flex flex-col relative z-10">
                   <div
-                    className={`w-16 h-16 rounded-2xl ${
-                      darkMode ? "bg-gray-800" : "bg-white"
-                    } flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg`}
+                    className={`w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-600 to-sky-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg`}
                   >
-                    <IconComponent
-                      className={`w-8 h-8 ${
-                        darkMode ? "text-white" : "text-black"
-                      }`}
-                    />
+                    <IconComponent className={`w-8 h-8 text-white `} />
                   </div>
 
                   <h3 className="text-2xl font-bold mb-4 group-hover:scale-105 transition-transform duration-300">
