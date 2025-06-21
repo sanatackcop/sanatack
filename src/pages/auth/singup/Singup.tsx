@@ -499,7 +499,7 @@ const SignupFlow: React.FC = () => {
   );
 
   const renderPersonalInfoStep = (): JSX.Element => (
-    <div className="h-full flex flex-col bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900/20 overflow-y-auto">
+    <div className="h-full flex flex-col bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:to-gray-800 overflow-y-auto">
       <div className="flex-1 flex items-center justify-center p-4 sm:p-6">
         <div className="w-full max-w-md">
           <div className="text-center mb-6">
@@ -559,7 +559,7 @@ const SignupFlow: React.FC = () => {
   );
 
   const renderUserTypeStep = (): JSX.Element => (
-    <div className="h-full flex flex-col bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-blue-900/20 overflow-y-auto">
+    <div className="h-full flex flex-col bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:to-gray-800 overflow-y-auto">
       <div className="flex-1 flex items-center justify-center p-4 sm:p-6">
         <div className="w-full max-w-md">
           <div className="text-center mb-6">
@@ -638,9 +638,9 @@ const SignupFlow: React.FC = () => {
   );
 
   const renderInterestsStep = (): JSX.Element => (
-    <div className="h-full flex flex-col bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-blue-900/20 overflow-hidden">
-      <div className="p-4 sm:p-6 shrink-0">
-        <div className="text-center max-w-md mx-auto">
+    <div className="h-full flex flex-col bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:to-gray-800  overflow-hidden">
+      <div className="p-4 sm:p-6 shrink-0 ">
+        <div className="text-center max-w-md mx-auto pt-12">
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl mb-4 shadow-2xl bg-gradient-to-br from-indigo-600 to-sky-600 text-white ">
             <BookOpen className="w-6 h-6" />
           </div>
@@ -650,22 +650,22 @@ const SignupFlow: React.FC = () => {
           <p className="text-base text-gray-600 dark:text-gray-400 mb-4">
             اختر على الأقل 3 مجالات من اهتماماتك (الحد الأقصى 10)
           </p>
-          <div
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${
-              selectedInterests.length >= 3
-                ? "bg-green-100 text-green-700 border-2 border-green-300 dark:bg-green-900/20 dark:text-green-400 dark:border-green-700"
-                : "bg-gray-200 text-gray-700 border-2 border-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600"
-            }`}
-          >
-            {selectedInterests.length > 0 && (
+          {selectedInterests.length > 0 && (
+            <div
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${
+                selectedInterests.length >= 3
+                  ? "bg-green-100 text-green-700 border-2 border-green-300 dark:bg-green-900/20 dark:text-green-400 dark:border-green-700"
+                  : "bg-gray-200 text-gray-700 border-2 border-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600"
+              }`}
+            >
               <div className="flex items-center gap-1">
                 تم اختيار {selectedInterests.length} مجالات
                 {selectedInterests.length >= 3 && (
                   <Check className="w-4 h-4 text-green-500" />
                 )}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -724,7 +724,7 @@ const SignupFlow: React.FC = () => {
   );
 
   const renderOtpStep = (): JSX.Element => (
-    <div className="h-full flex flex-col bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-blue-900/20 overflow-y-auto">
+    <div className="h-full flex flex-col bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:to-gray-800 overflow-y-auto">
       <div className="flex-1 flex items-center justify-center p-4 sm:p-6">
         <div className="w-full max-w-md">
           <div className="text-center mb-6">

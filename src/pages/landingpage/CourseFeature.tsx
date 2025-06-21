@@ -118,8 +118,8 @@ export function CourseFeature() {
               key={feature.id}
               className={`group relative rounded-2xl md:rounded-3xl border-2 transition-all duration-500 overflow-hidden ${
                 isOpen
-                  ? "border-gray-900 dark:border-white bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900/20 shadow-2xl scale-105"
-                  : "border-gray-300 dark:border-gray-700 bg-gradient-to-br from-white via-gray-50 to-white dark:from-gray-800 dark:via-gray-900 dark:to-gray-800 hover:border-black dark:hover:border-white hover:shadow-xl hover:bg-gradient-to-br hover:from-gray-50 hover:via-white hover:to-gray-100 dark:hover:from-gray-800 dark:hover:via-gray-900 dark:hover:to-black"
+                  ? "border-gray-600 dark:border-white bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900/20 shadow-2xl scale-105"
+                  : "border-gray-300 dark:border-gray-700 bg-gradient-to-br from-white via-gray-50 to-white dark:from-gray-800 dark:via-gray-900 dark:to-gray-800 hover:border-gray-600  dark:hover:border-white hover:shadow-xl hover:bg-gradient-to-br hover:from-gray-50 hover:via-white hover:to-gray-100 dark:hover:from-gray-600 dark:hover:via-gray-700 dark:hover:to-black"
               } backdrop-blur-md`}
             >
               <button
@@ -131,15 +131,15 @@ export function CourseFeature() {
                     <div
                       className={`flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-xl md:rounded-2xl border-2 transition-all duration-300  bg-gradient-to-br from-indigo-600 to-sky-600 ${
                         isOpen
-                          ? "border-gray-900 shadow-lg"
-                          : "border-gray-400 dark:border-gray-600 group-hover/btn:border-black dark:group-hover/btn:border-white group-hover/btn:bg-black/5 dark:group-hover/btn:bg-white/5"
+                          ? "border-gray-600 shadow-lg"
+                          : "border-gray-400 dark:border-gray-600 group-hover/btn:border-gray-700 dark:group-hover/btn:border-white group-hover/btn:bg-black/5 dark:group-hover/btn:bg-white/5"
                       }`}
                     >
                       <IconComponent
                         className={`h-6 w-6 md:h-7 md:w-7 transition-all text-white duration-300 ${
                           isOpen
                             ? "scale-110"
-                            : " group-hover/btn:text-black dark:group-hover/btn:text-white group-hover/btn:scale-110"
+                            : "group-hover/btn:text-white group-hover/btn:scale-110"
                         }`}
                       />
                     </div>
@@ -158,14 +158,14 @@ export function CourseFeature() {
                       <div
                         className={`flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-full border-2 transition-all duration-300 flex-shrink-0 ml-2 ${
                           isOpen
-                            ? "border-black dark:border-white bg-black/10 dark:bg-white/10 rotate-45"
-                            : "border-gray-400 dark:border-gray-600 group-hover/btn:border-black dark:group-hover/btn:border-white group-hover/btn:bg-black/5 dark:group-hover/btn:bg-white/5"
+                            ? "border-gray-600 dark:border-white bg-black/10 dark:bg-white/10 rotate-45"
+                            : "border-gray-400 dark:border-gray-600 group-hover/btn:border-gray-600 dark:group-hover/btn:border-white group-hover/btn:bg-black/5 dark:group-hover/btn:bg-white/5"
                         }`}
                       >
                         {isOpen ? (
-                          <X className="h-4 w-4 md:h-5 md:w-5 text-black dark:text-white" />
+                          <X className="h-4 w-4 md:h-5 md:w-5 text-gray-500 dark:text-white" />
                         ) : (
-                          <Plus className="h-4 w-4 md:h-5 md:w-5 text-gray-600 dark:text-gray-400 group-hover/btn:text-black dark:group-hover/btn:text-white transition-colors duration-300" />
+                          <Plus className="h-4 w-4 md:h-5 md:w-5 text-gray-600 dark:text-gray-400 group-hover/btn:text-gray-600 dark:group-hover/btn:text-white transition-colors duration-300" />
                         )}
                       </div>
                     </div>
@@ -197,7 +197,7 @@ export function CourseFeature() {
                       <Button
                         size="sm"
                         variant="outline"
-                        className="border-2 border-gray-400 dark:border-gray-600 !bg-white text-black  hover:text-gray-300 hover:border-black dark:hover:border-white px-4 md:px-6 py-2 rounded-full transition-all duration-300 text-sm"
+                        className="border-2 border-gray-400 dark:border-gray-600 !bg-white text-black  hover:text-gray-700 hover:dark:text-gray-700 hover:border-gray-600 dark:hover:border-white px-4 md:px-6 py-2 rounded-full transition-all duration-300 text-sm"
                         onClick={(e) => {
                           e.stopPropagation();
                           toggle(feature.id);
