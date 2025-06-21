@@ -185,6 +185,7 @@ export class CoursesService {
       isPublished: cc.course.isPublished,
       course_info: cc.course.course_info,
       created_at: cc.course.created_at,
+      progress: cc.progress_counter,
     }));
 
     return response;
