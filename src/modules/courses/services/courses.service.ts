@@ -111,7 +111,13 @@ export class CoursesService {
     const enrollment = await this.enrollmentService.findOneByCourseAndUser(
       course_id,
       user_id,
-      { course: { courseMappers: true } }
+      {
+        course: {
+          courseMappers: {
+            module: { lessonMappers: { lesson: { materialMapper: true } } },
+          },
+        },
+      }
     );
 
     let course: Course;
@@ -119,7 +125,11 @@ export class CoursesService {
     if (!enrollment)
       course = await this.courseRepository.findOne({
         where: { id: Equal(course_id) },
-        relations: { courseMappers: true },
+        relations: {
+          courseMappers: {
+            module: { lessonMappers: { lesson: { materialMapper: true } } },
+          },
+        },
       });
     else course = enrollment.course;
 
@@ -145,9 +155,9 @@ export class CoursesService {
 
       modules: (
         await Promise.all(
-          course.courseMappers.map((mapper) => {
+          course.courseMappers.map(async (mapper) => {
             if (mapper.module)
-              return this.moduleService.getDetails(mapper.module);
+              return await this.moduleService.getDetails(mapper.module);
           })
         )
       ).map((module) => {
