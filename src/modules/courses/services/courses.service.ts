@@ -1,8 +1,13 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeepPartial, Equal, Repository } from 'typeorm';
+import { Equal, Repository } from 'typeorm';
 import { Course } from '../entities/courses.entity';
-import { CourseDetails, CoursesContext, ModuleDetails } from '../entities/dto';
+import {
+  CourseDetails,
+  CoursesContext,
+  CreateNewCourseDto,
+  ModuleDetails,
+} from '../entities/dto';
 import UsersService from 'src/modules/users/users.service';
 import EnrollmentService from './enrollment.service';
 import ModuleService from './module.service';
@@ -17,14 +22,14 @@ export class CoursesService {
     private readonly enrollmentService: EnrollmentService
   ) {}
 
-  create(course: DeepPartial<Course>): Promise<Course> {
+  create(course: CreateNewCourseDto): Promise<Course> {
     return this.courseRepository.save(
       this.courseRepository.create({
         title: course.title,
         description: course.description,
         level: course.level,
         course_info: course.course_info,
-        isPublished: course.isPublished,
+        isPublished: course.isPublish,
         material_count: 0,
       })
     );

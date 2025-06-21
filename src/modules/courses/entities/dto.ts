@@ -111,7 +111,7 @@ export class CreateNewCourseDto {
 
   @IsNotEmpty()
   @IsBoolean()
-  isPublished: boolean;
+  isPublish: boolean;
 }
 
 export interface CoursesReport {
