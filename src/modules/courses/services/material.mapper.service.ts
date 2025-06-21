@@ -5,9 +5,9 @@ import MaterialMapper, { MaterialType } from '../entities/material-mapper';
 import QuizService from './quiz.service';
 import { LinkQuiz } from '../entities/quiz.entity';
 import { LinkVideo } from '../entities/video.entity';
-import { LinkResource } from '../entities/resource.entity';
 import VideoService from './video.service';
-import ResourceService from './resource.service';
+import ArticleService from './article.service';
+import { LinkArticle } from '../entities/article.entity';
 
 @Injectable()
 export default class MaterialMapperService {
@@ -16,7 +16,7 @@ export default class MaterialMapperService {
     private readonly lessonMapperRepo: Repository<MaterialMapper>,
     private readonly quizService: QuizService,
     private readonly videoService: VideoService,
-    private readonly resourceService: ResourceService
+    private readonly articleService: ArticleService
   ) {}
 
   create(map: DeepPartial<MaterialMapper>) {
@@ -32,19 +32,19 @@ export default class MaterialMapperService {
   async findAllMaterialsByLesson(lesson_id: string): Promise<{
     quizzes: LinkQuiz[];
     videos: LinkVideo[];
-    resources: LinkResource[];
+    article: LinkArticle[];
   }> {
-    const [quizzes, videos, resources] = await Promise.all([
+    const [quizzes, videos, article] = await Promise.all([
       this.getTypedMaterials(lesson_id, MaterialType.QUIZ, this.quizService),
       this.getTypedMaterials(lesson_id, MaterialType.VIDEO, this.videoService),
       this.getTypedMaterials(
         lesson_id,
-        MaterialType.RESOURCE,
-        this.resourceService
+        MaterialType.ARTICLE,
+        this.articleService
       ),
     ]);
 
-    return { quizzes, videos, resources };
+    return { quizzes, videos, article };
   }
 
   getTypedMaterials = async <T extends { id: string }, U extends MaterialType>(

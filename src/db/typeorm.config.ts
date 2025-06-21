@@ -22,6 +22,7 @@ import { RoadmapEnrollment } from 'src/modules/courses/entities/roadmap-enrollme
 import UsersAttributes from 'src/modules/users/entities/user.attributes.entity';
 import { Otps } from 'src/modules/auth/entities/otp.entity';
 import { Attempts } from 'src/modules/auth/entities/attempts.entity';
+import { Article } from 'src/modules/courses/entities/article.entity';
 
 config();
 
@@ -48,6 +49,7 @@ export const entities = [
   RoadmapMapper,
   CareerEnrollment,
   RoadmapEnrollment,
+  Article,
 ];
 
 const mainDataSource = new DataSource({

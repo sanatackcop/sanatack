@@ -33,6 +33,8 @@ import LessonService from './services/lesson.service';
 import LessonMapperService from './services/lesson.mapper';
 import MaterialMapperService from './services/material.mapper.service';
 import CourseMapperService from './services/courses.mapper.service';
+import ArticleService from './services/article.service';
+import { Article } from './entities/article.entity';
 
 @Module({
   imports: [
@@ -55,6 +57,7 @@ import CourseMapperService from './services/courses.mapper.service';
       CareerEnrollment,
       RoadmapEnrollment,
       User,
+      Article,
     ]),
   ],
   controllers: [CoursesController],
@@ -73,12 +76,14 @@ import CourseMapperService from './services/courses.mapper.service';
     LessonMapperService,
     MaterialMapperService,
     CourseMapperService,
+    ArticleService,
   ],
   exports: [
     CareerPathService,
     RoadMapService,
     CoursesService,
     QuizService,
+    ArticleService,
     VideoService,
     ResourceService,
     LessonService,

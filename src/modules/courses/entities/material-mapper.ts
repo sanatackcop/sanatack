@@ -2,12 +2,12 @@ import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm';
 import { Lesson } from './lessons.entity';
 import AbstractEntity from '@libs/db/abstract.base.entity';
 
-// type: "video" | "document" | "link" | "code";
 export enum MaterialType {
   RESOURCE = 'resource',
   VIDEO = 'video',
   QUIZ = 'quiz',
   LINK = 'link',
+  ARTICLE = 'article',
 }
 
 @Entity({ name: 'material_mapper' })
