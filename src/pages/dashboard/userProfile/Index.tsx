@@ -1,4 +1,4 @@
-import { useState, memo } from "react";
+import { useState, memo, useEffect } from "react";
 import {
   User,
   BookOpen,
@@ -22,7 +22,8 @@ import {
   LucideIcon,
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import Storage from "@/lib/Storage";
+import { getProfileApi, updateProfileApi } from "@/utils/_apis/user-api";
+import { UpdateProfileDto , UserProfileDto} from "@/types/user";
 
 interface StatCardProps {
   icon: LucideIcon;
@@ -60,7 +61,8 @@ interface SubscriptionPlan {
 }
 
 interface UserData {
-  name: string;
+  firstName: string;
+  lastName: string;
   role: string;
   avatar: string;
   joinDate: string;
@@ -81,7 +83,8 @@ interface UserData {
 }
 
 interface FormData {
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   phone: string;
   bio: string;
@@ -303,7 +306,8 @@ const ProfileForm = memo<{
 }>(({ userData, onSave }) => {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [formData, setFormData] = useState<FormData>({
-    name: userData.name,
+    firstName: userData.firstName,
+    lastName: userData.lastName,
     email: userData.email,
     phone: userData.phone,
     bio: userData.bio,
@@ -326,7 +330,8 @@ const ProfileForm = memo<{
     type: string;
     icon: LucideIcon;
   }> = [
-    { key: "name", label: "الاسم الكامل", type: "text", icon: User },
+    { key: "firstName", label: "الاسم الأول", type: "text", icon: User },
+    { key: "lastName", label: "اسم العائلة", type: "text", icon: User },
     { key: "email", label: "البريد الإلكتروني", type: "email", icon: Mail },
     { key: "phone", label: "رقم الهاتف", type: "tel", icon: Phone },
     { key: "company", label: "الجامعة/المؤسسة", type: "text", icon: Building2 },
@@ -405,81 +410,98 @@ ProfileForm.displayName = "ProfileForm";
 export default function UserProfile(): JSX.Element {
   const [activeTab, setActiveTab] = useState<string>("overview");
   const [showUpgradeAlert, setShowUpgradeAlert] = useState<boolean>(false);
-  const auth = Storage.get("auth");
+  const [userData, setUserData] = useState<UserData | null>(null);
+  //const auth = Storage.get("auth");
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const profile = await getProfileApi();
 
-  const [userData, setUserData] = useState<UserData>({
-    name: auth.user.firstName + " " + auth.user.lastName,
-    role: auth.user.role,
-    avatar: auth.user.firstName[0] + auth.user.lastName[0],
-    joinDate: auth.user.created_at,
-    email: auth.user.email,
-    phone: auth.user.mobile,
-    bio: auth.user?.bio,
-    company: auth.user?.company || "غير معروف",
-    location: auth.user?.location || "الرياض، المملكة العربية السعودية",
-    subscription: "Premium",
-    stats: {
-      coursesCompleted: 0,
-      hoursLearned: 0,
-      certificates: 0,
-      currentStreak: 0,
-    },
-    currentCourses: [
-      {
-        title: "هندسة البرمجيات المتقدمة والأنماط المعمارية",
-        progress: 87,
-        lessons: 32,
-        duration: "12 ساعة",
-        level: "متقدم",
-        isCompleted: false,
-        instructor: "د. محمد العبدالله",
-        category: "هندسة برمجيات",
-      },
-      {
-        title: "الذكاء الاصطناعي وتعلم الآلة التطبيقي",
-        progress: 100,
-        lessons: 28,
-        duration: "16 ساعة",
-        level: "خبير",
-        isCompleted: true,
-        instructor: "د. سارة الحربي",
-        category: "ذكاء اصطناعي",
-      },
-      {
-        title: "تصميم واجهات المستخدم وتجربة المستخدم",
-        progress: 65,
-        lessons: 20,
-        duration: "8 ساعات",
-        level: "متوسط",
-        isCompleted: false,
-        instructor: "أ. فهد المطيري",
-        category: "تصميم",
-      },
-    ],
-    recentAchievements: [
-      {
-        icon: Crown,
-        title: "باحث متميز في الذكاء الاصطناعي",
-        date: "منذ 3 أيام",
-        type: "premium",
-        description: "حصل على أعلى الدرجات في برنامج الذكاء الاصطناعي",
-      },
-      {
-        icon: GraduationCap,
-        title: "شهادة معتمدة في هندسة البرمجيات",
-        date: "منذ أسبوع",
-        type: "premium",
-        description: "إتمام برنامج متقدم مع تقدير امتياز",
-      },
-      {
-        icon: Target,
-        title: "إنجاز هدف 300 ساعة تعلم",
-        date: "منذ أسبوعين",
-        type: "regular",
-        description: "تحقيق الهدف السنوي للتعلم المستمر",
-      },
-    ],
-  });
+        setUserData({
+          firstName: profile.firstName,
+          lastName: profile.lastName,
+          role: profile.role,
+          avatar: profile.firstName[0] + profile.lastName[0],
+          joinDate: profile.created_at,
+          email: profile.email,
+          phone: profile.phone || "غير معروف",
+          bio: profile.attributes?.bio || "",
+          company: profile.attributes?.organization || "غير معروف",
+          location: "الرياض، المملكة العربية السعودية",
+          subscription: "Premium",
+          stats: {
+            coursesCompleted: 0,
+            hoursLearned: 0,
+            certificates: 0,
+            currentStreak: 0,
+          },
+          currentCourses: [
+            {
+              title: "هندسة البرمجيات المتقدمة والأنماط المعمارية",
+              progress: 87,
+              lessons: 32,
+              duration: "12 ساعة",
+              level: "متقدم",
+              isCompleted: false,
+              instructor: "د. محمد العبدالله",
+              category: "هندسة برمجيات",
+            },
+            {
+              title: "الذكاء الاصطناعي وتعلم الآلة التطبيقي",
+              progress: 100,
+              lessons: 28,
+              duration: "16 ساعة",
+              level: "خبير",
+              isCompleted: true,
+              instructor: "د. سارة الحربي",
+              category: "ذكاء اصطناعي",
+            },
+            {
+              title: "تصميم واجهات المستخدم وتجربة المستخدم",
+              progress: 65,
+              lessons: 20,
+              duration: "8 ساعات",
+              level: "متوسط",
+              isCompleted: false,
+              instructor: "أ. فهد المطيري",
+              category: "تصميم",
+            },
+          ],
+          recentAchievements: [
+            {
+              icon: Crown,
+              title: "باحث متميز في الذكاء الاصطناعي",
+              date: "منذ 3 أيام",
+              type: "premium",
+              description: "حصل على أعلى الدرجات في برنامج الذكاء الاصطناعي",
+            },
+            {
+              icon: GraduationCap,
+              title: "شهادة معتمدة في هندسة البرمجيات",
+              date: "منذ أسبوع",
+              type: "premium",
+              description: "إتمام برنامج متقدم مع تقدير امتياز",
+            },
+            {
+              icon: Target,
+              title: "إنجاز هدف 300 ساعة تعلم",
+              date: "منذ أسبوعين",
+              type: "regular",
+              description: "تحقيق الهدف السنوي للتعلم المستمر",
+            },
+          ],
+        });
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  if (!userData) {
+    return <div>جاري تحميل الملف الشخصي...</div>;
+  }
 
   const subscriptionPlans: SubscriptionPlan[] = [
     {
@@ -523,9 +545,25 @@ export default function UserProfile(): JSX.Element {
     setTimeout(() => setShowUpgradeAlert(false), 4000);
   };
 
-  const handleProfileSave = (formData: FormData): void => {
-    setUserData((prev) => ({ ...prev, ...formData }));
-  };
+  const handleProfileSave = async (formData: UpdateProfileDto): Promise<void> => {
+  try {
+    const updatedUser = await updateProfileApi(formData) as UserProfileDto;
+
+    setUserData((prev) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        firstName: updatedUser.firstName ?? prev.firstName,
+        lastName: updatedUser.lastName ?? prev.lastName,
+        phone: updatedUser.phone ?? prev.phone,
+        bio: updatedUser.attributes?.bio ?? prev.bio,
+        company: updatedUser.attributes?.organization ?? prev.company,
+      };
+    });
+  } catch (error) {
+    console.error("Error updating profile:", error);
+  }
+};
 
   return (
     <div className={`min-h-screen transition-colors duration-300`} dir="rtl">
@@ -559,7 +597,7 @@ export default function UserProfile(): JSX.Element {
               <div className="flex-1 space-y-3">
                 <div className="flex items-center gap-4">
                   <h1 className="text-4xl font-black tracking-tight">
-                    {userData.name}
+                    {userData.firstName} {userData.lastName}
                   </h1>
                   {userData.subscription === "Premium" && (
                     <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-400 to-blue-500 rounded-full">
