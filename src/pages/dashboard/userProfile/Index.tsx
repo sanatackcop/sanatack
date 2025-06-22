@@ -22,7 +22,6 @@ import {
   LucideIcon,
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import Storage from "@/lib/Storage";
 import { getProfileApi, updateProfileApi } from "@/utils/_apis/user-api";
 import { UpdateProfileDto , UserProfileDto} from "@/types/user";
 
