@@ -3,9 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Equal, Repository } from 'typeorm';
 import User from './entities/user.entity';
 import { PersonalInfoDto } from '../auth/dto/auth.dto';
-import { UpdateProfileDto, UserProfile } from './entities/user.dto';
+import { UpdateProfileDto } from './entities/user.dto';
 import UsersAttributes from './entities/user.attributes.entity';
-import { instanceToPlain } from 'class-transformer';
 
 @Injectable()
 export default class UsersService {
@@ -22,12 +21,11 @@ export default class UsersService {
     });
   }
 
-  async getUserProfile(id: string): Promise<UserProfile> {
-    const user =  this.userRepo.findOne({
+  getUserProfile(id: string): Promise<User> {
+    return this.userRepo.findOne({
       where: { id },
       relations: ['attributes'],
     });
-    return instanceToPlain(user) as UserProfile;
   }
 
   createUser(personalInfo: PersonalInfoDto) {
