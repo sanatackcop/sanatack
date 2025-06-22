@@ -10,7 +10,7 @@ import LessonMapper from 'src/modules/courses/entities/lessons-maper.entity';
 import { Lesson } from 'src/modules/courses/entities/lessons.entity';
 import Resource from 'src/modules/courses/entities/resource.entity';
 import Quiz from 'src/modules/courses/entities/quiz.entity';
-import VideoResource from 'src/modules/courses/entities/video-lessons.entity';
+import Video from 'src/modules/courses/entities/video.entity';
 import { Enrollment } from 'src/modules/courses/entities/enrollment';
 import MaterialMapper from 'src/modules/courses/entities/material-mapper';
 import { CareerPath } from 'src/modules/courses/entities/career-path.entity';
@@ -22,6 +22,7 @@ import { RoadmapEnrollment } from 'src/modules/courses/entities/roadmap-enrollme
 import UsersAttributes from 'src/modules/users/entities/user.attributes.entity';
 import { Otps } from 'src/modules/auth/entities/otp.entity';
 import { Attempts } from 'src/modules/auth/entities/attempts.entity';
+import { Article } from 'src/modules/courses/entities/article.entity';
 
 config();
 
@@ -39,7 +40,7 @@ export const entities = [
   Lesson,
   Resource,
   Quiz,
-  VideoResource,
+  Video,
   Enrollment,
   MaterialMapper,
   CareerPath,
@@ -48,6 +49,7 @@ export const entities = [
   RoadmapMapper,
   CareerEnrollment,
   RoadmapEnrollment,
+  Article,
 ];
 
 const mainDataSource = new DataSource({
@@ -57,12 +59,7 @@ const mainDataSource = new DataSource({
   username: cfg.get('MAIN_DB_USERNAME'),
   password: cfg.get('MAIN_DB_PASSWORD'),
   database: cfg.get('MAIN_DB'),
-  ssl: cfg.get<string>('MAIN_DB_SSL') === 'true',
-  // extra: {
-  //   ssl: {
-  //     rejectUnauthorized: false,
-  //   },
-  // },
+  ssl: true,
   entities: entities,
   logging: false,
   migrations: migrationFiles,

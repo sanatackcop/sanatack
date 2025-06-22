@@ -20,7 +20,10 @@ export class Enrollment extends AbstractEntity {
   user: Relation<User>;
 
   @Column()
-  progress_count: number;
+  progress_counter: number;
+
+  @Column({ nullable: true })
+  current_material_id: string;
 
   @Column()
   is_finished: boolean;

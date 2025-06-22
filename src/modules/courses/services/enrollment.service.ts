@@ -1,7 +1,7 @@
 import { Enrollment } from 'src/modules/courses/entities/enrollment';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Equal } from 'typeorm';
+import { Repository, Equal, FindOptionsRelations } from 'typeorm';
 import User from 'src/modules/users/entities/user.entity';
 import { Course } from '../entities/courses.entity';
 
@@ -17,7 +17,7 @@ export default class EnrollmentService {
       this.enrollmentRepo.create({
         user,
         course,
-        progress_count: 0,
+        progress_counter: 0,
         is_finished: false,
       })
     );
@@ -29,18 +29,25 @@ export default class EnrollmentService {
     });
   }
 
-  async updateProgressCount(userId: string, course_id: string) {
+  async updateProgressCount(
+    userId: string,
+    course_id: string,
+    current_material_id: string
+  ) {
     const enrollment = await this.enrollmentRepo.findOne({
       where: {
         course: { id: Equal(course_id) },
         user: { id: Equal(userId) },
       },
       relations: { course: true },
-      select: { progress_count: true, course: { material_count: true } },
+      select: { progress_counter: true, course: { material_count: true } },
     });
-    if (enrollment.progress_count + 1 <= enrollment.course.material_count)
+    if (!enrollment) throw new Error('Enrollment not found');
+
+    if (enrollment.progress_counter + 1 <= enrollment.course.material_count)
       await this.enrollmentRepo.update(enrollment, {
-        progress_count: enrollment.progress_count++,
+        progress_counter: enrollment.progress_counter++,
+        current_material_id,
       });
     else if (!enrollment.is_finished) {
       await this.enrollmentRepo.update(enrollment, {
@@ -49,9 +56,14 @@ export default class EnrollmentService {
     }
   }
 
-  async findOneByCourseAndUser(course_id: string, user_id: string) {
+  async findOneByCourseAndUser(
+    course_id: string,
+    user_id: string,
+    relations?: FindOptionsRelations<Enrollment>
+  ) {
     return this.enrollmentRepo.findOne({
       where: { course: { id: Equal(course_id) }, user: { id: Equal(user_id) } },
+      relations,
     });
   }
 
@@ -81,7 +93,7 @@ export default class EnrollmentService {
     for (const enrollment of enrollments) {
       const duration = enrollment.course.course_info.durationHours ?? 0;
       const totalMaterials = enrollment.course.material_count ?? 0;
-      const progressDone = enrollment.progress_count ?? 0;
+      const progressDone = enrollment.progress_counter ?? 0;
 
       if (enrollment.is_finished) {
         totalHours += duration;
@@ -108,7 +120,7 @@ export default class EnrollmentService {
     if (activityDates.length === 0) return 0;
 
     let streak = 0;
-    let current = new Date();
+    const current = new Date();
     current.setHours(0, 0, 0, 0);
 
     for (const day of activityDates) {

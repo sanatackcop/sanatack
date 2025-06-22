@@ -20,6 +20,9 @@ import {
 import { MaterialType } from './material-mapper';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
+import { LinkQuiz } from './quiz.entity';
+import { LinkVideo } from './video.entity';
+import { LinkArticle } from './article.entity';
 
 export enum Level {
   'BEGINNER' = 'BEGINNER',
@@ -69,9 +72,20 @@ export interface CreateModuleDto {
 }
 
 export class CourseInfoDto {
-  @IsNotEmpty()
-  @IsNumber()
-  durationHours: number;
+  @IsArray()
+  @IsString({ each: true })
+  tags: string[];
+
+  @IsArray()
+  @IsString({ each: true })
+  prerequisites: string[];
+
+  @IsArray()
+  @IsString({ each: true })
+  new_skills_result: string[];
+
+  @IsObject()
+  learning_outcome: { [key: string]: number };
 }
 
 export class CreateNewCourseDto {
@@ -100,6 +114,13 @@ export class CreateNewCourseDto {
   isPublish: boolean;
 }
 
+export interface CoursesReport {
+  completedCourses: number;
+  totalHours: number;
+  streakDays: number;
+  certifications: number;
+}
+
 export class CreateRoadmapDto {
   title: string;
   description?: string;
@@ -120,49 +141,59 @@ export class CareerPathContext {
   description?: string;
 }
 
-export class CoursesContext {
+export interface CoursesContext {
   id: string;
   title: string;
   description: string;
   level: Level;
-  course_info?: { durationHours: number };
-  isPublished?: boolean;
+  course_info: {
+    durationHours: number;
+    tags: string[];
+    new_skills_result: string[];
+    learning_outcome: { [key: string]: number };
+    prerequisites: string[];
+  };
+  projectsCount: number;
+  isPublished: boolean;
+  isEnrolled: boolean;
+  enrolledCount: number;
+  completionRate: number;
+  progress?: number;
+  current_material?: string;
+}
+export interface CourseDetails extends CoursesContext {
+  modules: ModuleDetails[];
 }
 
-export class CourseDetails extends CoursesContext {
-  isEnrolled?: boolean;
-  modules: ModuleDetailsDto[];
-}
-
-export class ModuleDetailsDto {
+export interface ModuleDetails {
   id: string;
   title: string;
-  lessons: LessonDetailsDto[];
+  lessons: LessonDetails[];
 }
 
-export class LessonDetailsDto {
+export declare type Material = LinkArticle | LinkVideo | LinkQuiz;
+
+export interface LessonDetails {
   id: string;
   name: string;
   description?: string;
-  resources?: ResourceDto[];
-  quizzes?: QuizDto[];
-  videos?: VideoDto[];
-}
-
-export class LessonDto {
-  @IsNotEmpty()
-  @IsString()
-  name: string;
-
-  @IsNotEmpty()
-  @IsString()
-  description: string;
+  order: number;
+  materials: Material[];
 }
 
 export class ModuleDto {
   @IsNotEmpty()
   @IsString()
   title: string;
+
+  @IsNotEmpty()
+  @IsString()
+  description: string;
+}
+export class LessonDto {
+  @IsNotEmpty()
+  @IsString()
+  name: string;
 
   @IsNotEmpty()
   @IsString()
@@ -247,6 +278,10 @@ export class QuizDto {
   @ArrayMaxSize(4)
   @IsString({ each: true }) // validate that each element is a string
   options: string[];
+
+  @IsNumber({}, { message: 'المدة يجب أن تكون رقمًا' })
+  @Min(0, { message: 'المدة يجب أن تكون رقمًا موجبًا' })
+  duration: number;
 }
 
 export class VideoDto {
@@ -262,10 +297,69 @@ export class VideoDto {
   @IsString({ message: 'الوصف يجب أن يكون نصًا' })
   description?: string;
 
-  @IsOptional()
   @IsNumber({}, { message: 'المدة يجب أن تكون رقمًا' })
   @Min(0, { message: 'المدة يجب أن تكون رقمًا موجبًا' })
-  duration?: number;
+  duration: number;
+}
+
+class CodeDto {
+  @IsString()
+  code: string;
+
+  @IsString()
+  language: string;
+}
+
+class QuoteDto {
+  @IsString()
+  text: string;
+
+  @IsOptional()
+  @IsString()
+  author?: string;
+}
+
+type ArticleTypes = 'hero' | 'section' | 'conclusion';
+
+export class ArticleDto {
+  @IsOptional()
+  @IsNumber()
+  id?: number;
+
+  @IsEnum(['hero', 'section', 'conclusion'])
+  type: ArticleTypes;
+
+  @IsOptional()
+  @IsString()
+  title?: string;
+
+  @IsOptional()
+  @IsString()
+  image?: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @IsOptional()
+  @IsString()
+  body?: string;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CodeDto)
+  code?: CodeDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => QuoteDto)
+  quote?: QuoteDto;
+
+  @IsOptional()
+  @IsNumber()
+  order?: number;
+
+  duration: number;
 }
 
 export interface User {

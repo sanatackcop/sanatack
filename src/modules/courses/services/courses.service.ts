@@ -1,11 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Equal, FindOptionsWhere, Repository } from 'typeorm';
+import { Equal, Repository } from 'typeorm';
 import { Course } from '../entities/courses.entity';
 import {
   CourseDetails,
   CoursesContext,
   CreateNewCourseDto,
+  ModuleDetails,
 } from '../entities/dto';
 import UsersService from 'src/modules/users/users.service';
 import EnrollmentService from './enrollment.service';
@@ -44,30 +45,16 @@ export class CoursesService {
     return this.moduleService.findOne(id);
   }
 
-  async list(userId?: string): Promise<CoursesContext[]> {
-    const where: FindOptionsWhere<Course> = {};
-    if (userId) where.isPublished = true;
-
-    //! fix me
-    // if (courseStatus) {
-    //   const courses = this.getProgressCourses(userId, courseStatus);
-    //   return courses;
-    // }
+  async list(userId: string): Promise<CoursesContext[]> {
     const courses = await this.courseRepository.find({
-      where,
       order: { created_at: 'DESC' },
     });
 
-    const response = courses.map((course) => ({
-      id: course.id,
-      title: course.title,
-      description: course.description?.substring(0, 100),
-      level: course.level,
-      isPublished: course.isPublished,
-      course_info: course.course_info,
-    }));
+    if (!courses || courses.length === 0) return [];
 
-    return response;
+    return Promise.all(
+      courses.map((course) => this.courseDetails(course.id, userId))
+    );
   }
 
   async getProgressCourses(userId: string, course_id: string): Promise<number> {
@@ -78,11 +65,19 @@ export class CoursesService {
       course.id,
       userId
     );
-    return (getEnrollment.progress_count / course.material_count) * 100;
+    return (getEnrollment.progress_counter / course.material_count) * 100;
   }
 
-  async increaseProgress(userId: string, course_id: string): Promise<void> {
-    return await this.enrollmentService.updateProgressCount(userId, course_id);
+  async increaseProgress(
+    userId: string,
+    course_id: string,
+    current_material_id: string
+  ): Promise<void> {
+    return await this.enrollmentService.updateProgressCount(
+      userId,
+      course_id,
+      current_material_id
+    );
   }
 
   async enrollingCourse(userId: string, courseId: string) {
@@ -97,59 +92,90 @@ export class CoursesService {
       throw new Error('User not found');
     }
 
-    const isEnrolled = await this.courseEnrollmentCheck(userId, courseId);
-    if (isEnrolled) {
-      throw new Error('User is already enrolled in this course');
-    }
+    const enrollment = await this.enrollmentService.findOneByCourseAndUser(
+      courseId,
+      userId
+    );
+    if (enrollment) throw new Error('User is already enrolled in this course');
 
+    await this.update(course.id, {
+      enrolledCount: course.enrolledCount + 1,
+    });
     return await this.enrollmentService.create(user, course);
   }
 
-  private async courseEnrollmentCheck(
-    userId: string,
-    courseId: string
-  ): Promise<boolean> {
-    const isEnrolled = await this.courseRepository
-      .createQueryBuilder('course')
-      .leftJoin('course.enrollment', 'enrollment')
-      .leftJoin('enrollment.user', 'user')
-      .where('course.id = :courseId', { courseId })
-      .andWhere('user.id = :userId', { userId })
-      .getOne();
-
-    return !!isEnrolled;
-  }
-
-  async courseDetails(id: string): Promise<CourseDetails> {
-    const course = await this.courseRepository.findOneOrFail({
-      where: { id: Equal(id) },
-      relations: {
-        courseMappers: {
-          module: { lessonMappers: { lesson: { materialMapper: true } } },
+  async courseDetails(
+    course_id: string,
+    user_id: string
+  ): Promise<CourseDetails> {
+    const enrollment = await this.enrollmentService.findOneByCourseAndUser(
+      course_id,
+      user_id,
+      {
+        course: {
+          courseMappers: {
+            module: { lessonMappers: { lesson: { materialMapper: true } } },
+          },
         },
-      },
-    });
+      }
+    );
+
+    let course: Course;
+
+    if (!enrollment)
+      course = await this.courseRepository.findOne({
+        where: { id: Equal(course_id) },
+        relations: {
+          courseMappers: {
+            module: { lessonMappers: { lesson: { materialMapper: true } } },
+          },
+        },
+      });
+    else course = enrollment.course;
+
+    if (!course)
+      throw new HttpException('Course not found', HttpStatus.NOT_FOUND);
 
     return {
       id: course.id,
       title: course.title,
       description: course.description,
       level: course.level,
-      course_info: course.course_info,
-      modules: await Promise.all(
-        course.courseMappers.map(
-          async (mapper) => await this.moduleService.getDetails(mapper.module)
-        ) ?? []
-      ),
-    };
-  }
+      course_info: {
+        ...course.course_info,
+        durationHours: Math.floor(course.course_info.durationHours / 60 / 60),
+      },
+      isPublished: course.isPublished,
+      isEnrolled: enrollment ? true : false,
+      enrolledCount: course.enrolledCount,
+      projectsCount: 0,
+      completionRate: course.completionCount
+        ? (course.completionCount / course.enrolledCount) * 100
+        : 0,
 
-  async courseDetailsUser(id: string, userId: string): Promise<CourseDetails> {
-    const courseDetails = await this.courseDetails(id);
-    const isEnrolled = await this.courseEnrollmentCheck(userId, id);
-    return {
-      ...courseDetails,
-      isEnrolled: isEnrolled,
+      modules: (
+        await Promise.all(
+          course.courseMappers.map(async (mapper) => {
+            if (mapper.module)
+              return await this.moduleService.getDetails(mapper.module);
+          })
+        )
+      ).map((module) => {
+        if (!module) return [] as unknown as ModuleDetails;
+        const courseMapper = course.courseMappers.find(
+          (mapper) => mapper.module.id === module.id
+        );
+        return { ...module, order: courseMapper.order };
+      }),
+
+      ...() => {
+        return enrollment
+          ? {
+              progress:
+                (enrollment.progress_counter / course.material_count) * 100,
+            }
+          : {};
+      },
     };
   }
 
@@ -169,6 +195,7 @@ export class CoursesService {
       isPublished: cc.course.isPublished,
       course_info: cc.course.course_info,
       created_at: cc.course.created_at,
+      progress: cc.progress_counter,
     }));
 
     return response;
@@ -182,7 +209,7 @@ export class CoursesService {
     return await this.enrollmentService.getCompletedHours(userId);
   }
 
-  async getStreak(userId: string){
+  async getStreak(userId: string) {
     return await this.enrollmentService.getStreak(userId);
   }
 }

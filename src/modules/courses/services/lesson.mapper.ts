@@ -16,16 +16,27 @@ export default class LessonMapperService {
     return this.lessonMapper.save(this.lessonMapper.create(map));
   }
 
-  async getMaterialCount(module_id: string) {
+  async getMaterialsTotalDurationAndCount(module_id: string): Promise<{
+    sum: number;
+    totalDuration: number;
+  }> {
     const linkedLessons = await this.lessonMapper.find({
       where: { module: { id: module_id } },
       relations: { lesson: true },
     });
     let sum = 0;
+    let totalDuration = 0;
     for (const lesson of linkedLessons) {
-      sum += await this.materialMapper.getMaterialCount(lesson.lesson.id);
+      const materials = await this.materialMapper.getMaterials(
+        lesson.lesson.id
+      );
+      sum += materials.length;
+      totalDuration += materials.reduce(
+        (acc, material) => (acc += material.material_duration),
+        0
+      );
     }
-    return sum;
+    return { sum, totalDuration };
   }
 
   getAllLinkedByLessons(module_id: string) {

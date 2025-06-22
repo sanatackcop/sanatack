@@ -1,12 +1,14 @@
 import { Column, Entity } from 'typeorm';
 import AbstractEntity from '@libs/db/abstract.base.entity';
+import { MaterialType } from './material-mapper';
 
-export declare type LinkVideo = VideoResource & {
+export declare type LinkVideo = Video & {
   order: number;
+  type: MaterialType.VIDEO;
 };
 
-@Entity({ name: 'video_resource' })
-export default class VideoResource extends AbstractEntity {
+@Entity({ name: 'video' })
+export default class Video extends AbstractEntity {
   @Column({ nullable: false })
   title: string;
 

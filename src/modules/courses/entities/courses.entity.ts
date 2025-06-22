@@ -10,19 +10,29 @@ export class Course extends AbstractEntity {
   @Column({ length: 255 })
   title: string;
 
-  @Column({ type: 'text', nullable: true })
-  description?: string;
+  @Column({ type: 'text' })
+  description: string;
 
   @Column({ type: 'text' })
   level: Level;
 
-  @Column({ type: 'jsonb', nullable: true })
-  course_info?: {
+  @Column({ type: 'jsonb' })
+  course_info: {
     durationHours: number;
+    tags: string[];
+    new_skills_result: string[];
+    learning_outcome: { [key: string]: number };
+    prerequisites: string[];
   };
 
   @Column({ default: 0 })
   material_count: number;
+
+  @Column({ default: 0 })
+  enrolledCount: number;
+
+  @Column({ default: 0 })
+  completionCount: number;
 
   @Column({ default: false })
   isPublished: boolean;

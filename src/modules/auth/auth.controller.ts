@@ -29,9 +29,10 @@ export class AuthController {
   }
 
   @Post('/send-email-otp')
-  async sendEmailOtp(@Body() body: SendEmailOtpBody) {
+  sendEmailOtp(@Body() body: SendEmailOtpBody) {
     try {
-      return await this.authService.sendOtp(body.email);
+      void this.authService.sendOtp(body.email);
+      return { message: 'OTP sent successfully' };
     } catch (error: unknown) {
       console.log({ err: error });
     }

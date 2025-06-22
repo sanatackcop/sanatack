@@ -6,9 +6,11 @@ import {
   HttpStatus,
   Param,
   Post,
+  Query,
 } from '@nestjs/common';
 import { CoursesService } from '../courses/services/courses.service';
 import {
+  ArticleDto,
   CourseModuleDto,
   CreateCareerPathDto,
   CreateNewCourseDto,
@@ -31,6 +33,12 @@ import LessonMapperService from '../courses/services/lesson.mapper';
 import MaterialMapperService from '../courses/services/material.mapper.service';
 import ModuleService from '../courses/services/module.service';
 import CourseMapperService from '../courses/services/courses.mapper.service';
+import { MaterialType } from '../courses/entities/material-mapper';
+import Quiz from '../courses/entities/quiz.entity';
+import Video from '../courses/entities/video.entity';
+import Resource from '../courses/entities/resource.entity';
+import ArticleService from '../courses/services/article.service';
+import { Article } from '../courses/entities/article.entity';
 
 @Controller('admin')
 export class AdminController {
@@ -40,6 +48,7 @@ export class AdminController {
     private readonly careerPathService: CareerPathService,
     private readonly quizService: QuizService,
     private readonly videoService: VideoService,
+    private readonly articleService: ArticleService,
     private readonly resourceService: ResourceService,
     private readonly lessonService: LessonService,
     private readonly materialMapper: MaterialMapperService,
@@ -49,8 +58,8 @@ export class AdminController {
   ) {}
 
   @Get('/courses')
-  async getCourses() {
-    return await this.coursesService.list();
+  async getCourses(@Query('userId') userId: string) {
+    return await this.coursesService.list(userId);
   }
 
   @Post('/courses/new-course')
@@ -115,6 +124,16 @@ export class AdminController {
     return await this.videoService.getAll();
   }
 
+  // *** Articles
+  @Post('/article')
+  async createNewArticle(@Body() data: ArticleDto[]) {
+    return await this.articleService.create(data);
+  }
+  @Get('/articles')
+  async getAllArticles() {
+    return await this.articleService.getAll();
+  }
+
   @Post('/resources')
   async createNewResource(@Body() data: ResourceDto) {
     return await this.resourceService.create(data);
@@ -136,18 +155,29 @@ export class AdminController {
   }
 
   @Post('/mapper/material')
-  async linkQuizToLesson(@Body() linkQuiz: MaterialLessonMapDto) {
-    try {
-      const d = await this.materialMapper.create({
-        lesson: { id: linkQuiz.lesson_id },
-        material_id: linkQuiz.material_id,
-        material_type: linkQuiz.type,
-        order: linkQuiz.order,
-      });
-      return d;
-    } catch (error: unknown) {
-      console.log({ error });
-    }
+  async linkMaterial(@Body() linkQuiz: MaterialLessonMapDto) {
+    let material: Quiz | Video | Resource | Article;
+    if (linkQuiz.type == MaterialType.QUIZ)
+      material = await this.quizService.findOne(linkQuiz.material_id);
+    else if (linkQuiz.type == MaterialType.VIDEO)
+      material = await this.videoService.findOne(linkQuiz.material_id);
+    else if (linkQuiz.type == MaterialType.RESOURCE)
+      material = await this.resourceService.findOne(linkQuiz.material_id);
+    else if (linkQuiz.type == MaterialType.ARTICLE)
+      material = await this.articleService.findOne(linkQuiz.material_id);
+
+    if (!material)
+      throw new HttpException(
+        `Material with ID ${linkQuiz.material_id} not found`,
+        HttpStatus.NOT_FOUND
+      );
+    return await this.materialMapper.create({
+      lesson: { id: linkQuiz.lesson_id },
+      material_id: material.id,
+      material_type: linkQuiz.type,
+      order: linkQuiz.order,
+      material_duration: material.duration,
+    });
   }
 
   @Get('/mapper/:lesson_id/materials')
@@ -199,6 +229,15 @@ export class AdminController {
       return await this.lessonMapper.getAllLinkedByLessons(module_id);
     } catch (error: unknown) {
       console.log({ error });
+    }
+  }
+
+  @Get('/roadmaps')
+  async getAllRoadmaps() {
+    try {
+      return await this.roadmapService.getAll();
+    } catch (err) {
+      console.log(err);
     }
   }
 }
