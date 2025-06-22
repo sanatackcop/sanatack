@@ -3,11 +3,11 @@ import { trackPromise } from "react-promise-tracker";
 import Api from "./api";
 import {
   CareerPathInterface,
+  CourseDetails,
   CoursesContext,
   CoursesReport,
   RoadMapInterface,
-} from "@/types/courses";
-import { Course } from "../types";
+} from "@/types/courses"; /*  */
 
 export const getCareerPathApi = async (): Promise<CareerPathInterface[]> => {
   try {
@@ -84,7 +84,7 @@ export const getAllCoursesApi = async (): Promise<CoursesContext[]> => {
     const response = await trackPromise(
       Api({
         method: "get",
-        url: "admin/courses",
+        url: "/courses/list",
         withCredentials: false,
       }) as Promise<{ data: CoursesContext[] }>
     );
@@ -99,10 +99,10 @@ export const getSingleCoursesApi = async ({
   course_id,
 }: {
   course_id: string;
-}): Promise<Course> => {
+}): Promise<CourseDetails> => {
   try {
     const response = await trackPromise(
-      Api<Course>({
+      Api<CourseDetails>({
         method: "get",
         url: `courses/${course_id}`,
         withCredentials: false,
@@ -169,6 +169,7 @@ export const enrollCareerPathApi = async ({
 
 export const getCurrentCoursesApi = async (): Promise<CoursesContext[]> => {
   try {
+    console.log("Fetching current courses...");
     const response = await trackPromise(
       Api({
         method: "get",

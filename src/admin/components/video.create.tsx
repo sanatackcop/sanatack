@@ -72,7 +72,7 @@ export default function VideoDialogCreate({
       title: "",
       youtubeId: "",
       description: "",
-      duration: undefined,
+      duration: 0,
     },
   });
   const onSubmit = async (data: VideoFormValues) => {
@@ -97,7 +97,6 @@ export default function VideoDialogCreate({
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Title */}
             <FormField
               control={form.control}
               name="title"
@@ -112,7 +111,6 @@ export default function VideoDialogCreate({
               )}
             />
 
-            {/* YouTube ID */}
             <FormField
               control={form.control}
               name="youtubeId"
@@ -127,7 +125,6 @@ export default function VideoDialogCreate({
               )}
             />
 
-            {/* Description */}
             <FormField
               control={form.control}
               name="description"

@@ -1,10 +1,11 @@
 import {
   Blocks,
   BrickWall,
+  Building2,
   Cuboid,
   House,
   LucideProps,
-  NotebookText,
+  School,
 } from "lucide-react";
 
 import {
@@ -34,6 +35,16 @@ export interface SidebarItem {
 // Menu items.
 const items: SidebarItem[] = [
   {
+    title: "Career Paths",
+    url: "/careerPaths",
+    icon: Building2,
+  },
+  {
+    title: "Roadmaps",
+    url: "/roadmaps",
+    icon: School,
+  },
+  {
     title: "Courses",
     url: "/courses",
     icon: House,
@@ -52,23 +63,6 @@ const items: SidebarItem[] = [
     title: "Materials",
     url: "/materials",
     icon: Blocks,
-    children: [
-      {
-        title: "Quiz",
-        url: "/quizes",
-        icon: NotebookText,
-      },
-      {
-        title: "Video",
-        url: "/videos",
-        icon: NotebookText,
-      },
-      {
-        title: "Resources",
-        url: "/resources",
-        icon: NotebookText,
-      },
-    ],
   },
 ];
 

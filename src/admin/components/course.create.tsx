@@ -1,5 +1,8 @@
+// Updated full version using object arrays for useFieldArray compatibility
+"use client";
+
 import { z } from "zod";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Dialog,
@@ -28,6 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 
 const LEVEL_VALUES = ["BEGINNER", "INTERMEDIATE", "ADVANCED"] as const;
 export const Level = LEVEL_VALUES;
@@ -36,9 +40,10 @@ const courseSchema = z.object({
   title: z.string().min(5),
   description: z.string().min(5),
   level: z.enum(Level),
-  course_info: z.object({
-    durationHours: z.preprocess((val) => Number(val), z.number().min(1)),
-  }),
+  tags: z.array(z.object({ value: z.string().min(1) })),
+  new_skills_result: z.array(z.object({ value: z.string().min(1) })),
+  prerequisites: z.array(z.object({ value: z.string().min(1) })),
+  learning_outcome: z.array(z.object({ key: z.string(), value: z.number() })),
   isPublish: z.boolean().default(false),
 });
 
@@ -55,24 +60,78 @@ export default function CourseCreate({
       title: "",
       description: "",
       level: "BEGINNER",
-      course_info: {
-        durationHours: 1,
-      },
+      tags: [{ value: "" }],
+      new_skills_result: [{ value: "" }],
+      prerequisites: [{ value: "" }],
+      learning_outcome: [{ key: "Outcome 1", value: 0 }],
+      isPublish: false,
     },
   });
 
-  const { control, handleSubmit } = form;
+  const { control, handleSubmit, register } = form;
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
 
+  const {
+    fields: tagFields,
+    append: appendTag,
+    remove: removeTag,
+  } = useFieldArray({
+    control,
+    name: "tags",
+  });
+
+  const {
+    fields: skillFields,
+    append: appendSkill,
+    remove: removeSkill,
+  } = useFieldArray({
+    control,
+    name: "new_skills_result",
+  });
+
+  const {
+    fields: prereqFields,
+    append: appendPrereq,
+    remove: removePrereq,
+  } = useFieldArray({
+    control,
+    name: "prerequisites",
+  });
+
+  const {
+    fields: outcomeFields,
+    append: appendOutcome,
+    remove: removeOutcome,
+  } = useFieldArray({
+    control,
+    name: "learning_outcome",
+  });
+
   const onSubmit = async (data: CourseFormValues) => {
     try {
-      await createNewCourse(data);
+      const outcomeObject = data.learning_outcome.reduce((acc, curr) => {
+        acc[curr.key] = curr.value;
+        return acc;
+      }, {} as Record<string, number>);
+
+      await createNewCourse({
+        title: data.title,
+        description: data.description,
+        level: data.level,
+        course_info: {
+          tags: data.tags.map((t) => t.value),
+          new_skills_result: data.new_skills_result.map((s) => s.value),
+          learning_outcome: outcomeObject,
+          prerequisites: data.prerequisites.map((p) => p.value),
+        },
+        isPublish: data.isPublish,
+      });
       updateTable();
       setOpen(false);
     } catch (error) {
       setError("فشل حفظ الدورة، حاول مرة أخرى");
-      console.log(error);
+      console.error(error);
     }
   };
 
@@ -83,7 +142,7 @@ export default function CourseCreate({
           Create new Course
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create Course</DialogTitle>
         </DialogHeader>
@@ -111,7 +170,7 @@ export default function CourseCreate({
                 <FormItem>
                   <FormLabel>الشرح</FormLabel>
                   <FormControl>
-                    <Input placeholder="اكتب الشرح هنا" {...field} />
+                    <Textarea placeholder="اكتب الشرح هنا" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -129,7 +188,7 @@ export default function CourseCreate({
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger>
                         <SelectValue placeholder="اختر المستوى" />
                       </SelectTrigger>
                       <SelectContent>
@@ -146,19 +205,122 @@ export default function CourseCreate({
               )}
             />
 
+            {/* Tags */}
+            <div>
+              <FormLabel>الكلمات المفتاحية</FormLabel>
+              {tagFields.map((field, index) => (
+                <div
+                  key={field.id}
+                  className="flex items-center space-x-2 mt-2"
+                >
+                  <Input {...register(`tags.${index}.value`)} />
+                  <Button
+                    type="button"
+                    onClick={() => removeTag(index)}
+                    size="sm"
+                  >
+                    حذف
+                  </Button>
+                </div>
+              ))}
+              <Button type="button" onClick={() => appendTag({ value: "" })}>
+                + أضف كلمة مفتاحية
+              </Button>
+            </div>
+
+            {/* Skills */}
+            <div>
+              <FormLabel>المهارات المكتسبة</FormLabel>
+              {skillFields.map((field, index) => (
+                <div
+                  key={field.id}
+                  className="flex items-center space-x-2 mt-2"
+                >
+                  <Input {...register(`new_skills_result.${index}.value`)} />
+                  <Button
+                    type="button"
+                    onClick={() => removeSkill(index)}
+                    size="sm"
+                  >
+                    حذف
+                  </Button>
+                </div>
+              ))}
+              <Button type="button" onClick={() => appendSkill({ value: "" })}>
+                + أضف مهارة
+              </Button>
+            </div>
+
+            {/* Prerequisites */}
+            <div>
+              <FormLabel>المتطلبات المسبقة</FormLabel>
+              {prereqFields.map((field, index) => (
+                <div
+                  key={field.id}
+                  className="flex items-center space-x-2 mt-2"
+                >
+                  <Input {...register(`prerequisites.${index}.value`)} />
+                  <Button
+                    type="button"
+                    onClick={() => removePrereq(index)}
+                    size="sm"
+                  >
+                    حذف
+                  </Button>
+                </div>
+              ))}
+              <Button type="button" onClick={() => appendPrereq({ value: "" })}>
+                + أضف متطلب
+              </Button>
+            </div>
+
+            {/* Learning Outcomes */}
+            <div>
+              <FormLabel>النتائج التعليمية</FormLabel>
+              {outcomeFields.map((field, index) => (
+                <div
+                  key={field.id}
+                  className="flex items-center space-x-2 mt-2"
+                >
+                  <Input
+                    {...register(`learning_outcome.${index}.key`)}
+                    placeholder="اسم النتيجة"
+                  />
+                  <Input
+                    type="number"
+                    {...register(`learning_outcome.${index}.value`, {
+                      valueAsNumber: true,
+                    })}
+                    placeholder="القيمة"
+                  />
+                  <Button
+                    type="button"
+                    onClick={() => removeOutcome(index)}
+                    size="sm"
+                  >
+                    حذف
+                  </Button>
+                </div>
+              ))}
+              <Button
+                type="button"
+                onClick={() => appendOutcome({ key: "", value: 0 })}
+              >
+                + أضف نتيجة تعليمية
+              </Button>
+            </div>
+
             <FormField
               control={control}
-              name="course_info.durationHours"
+              name="isPublish"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>عدد الساعات</FormLabel>
+                  <FormLabel>نشر الدورة</FormLabel>
                   <FormControl>
-                    <Input
-                      type="number"
-                      min="1"
-                      placeholder="مثلاً: 10"
-                      {...field}
-                      value={field.value ?? ""}
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      ref={field.ref}
                     />
                   </FormControl>
                   <FormMessage />
@@ -166,32 +328,13 @@ export default function CourseCreate({
               )}
             />
 
-            <div>
-              <FormField
-                control={control}
-                name="isPublish"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>يجب نشرها</FormLabel>
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        ref={field.ref}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
             <Button type="submit" className="w-full">
               حفظ الدورة
             </Button>
           </form>
         </Form>
-        {error && <div className="text-red-500">{error}</div>}
+
+        {error && <div className="text-red-500 mt-4">{error}</div>}
       </DialogContent>
     </Dialog>
   );

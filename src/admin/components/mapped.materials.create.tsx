@@ -6,12 +6,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MaterialType, Quiz, Resource, Video } from "@/utils/types/adminTypes";
+import { MaterialType, Quiz, Video } from "@/utils/types/adminTypes";
 import { useEffect, useState } from "react";
-import { QuizColumns, ResourceColumns, VideoColumns } from "../columns";
+import { ArticlesColumns, QuizColumns, VideoColumns } from "../columns";
 import {
+  getArticlesList,
   getQuizList,
-  getResourcesList,
   getVideosList,
   linkLessonMaterial,
 } from "@/utils/_apis/admin-api";
@@ -20,24 +20,25 @@ import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ArticleCardDto } from "./article.create";
 
 export default function MappedMaterialsCreate({ id }: { id: string }) {
   const [quiz, setQuiz] = useState<Quiz[]>([]);
   const [video, setVideo] = useState<Video[]>([]);
-  const [resource, setResource] = useState<Resource[]>([]);
   const [order, setOrder] = useState<number | "">("");
+  const [article, setArticle] = useState<ArticleCardDto[]>([]);
 
   async function fetchCourses() {
     try {
-      const [quizList, videoList, resourceList] = await Promise.all([
+      const [quizList, videoList, articleList] = await Promise.all([
         getQuizList<Quiz[]>(),
         getVideosList<Video[]>(),
-        getResourcesList<Resource[]>(),
+        getArticlesList<ArticleCardDto[]>(),
       ]);
 
       if (quizList && quizList.length) setQuiz(quizList);
+      if (articleList && articleList.length) setArticle(articleList);
       if (videoList && videoList.length) setVideo(videoList);
-      if (resourceList && resourceList.length) setResource(resourceList);
     } catch (err) {
       console.error(err);
     }
@@ -92,8 +93,9 @@ export default function MappedMaterialsCreate({ id }: { id: string }) {
       },
     },
   ];
-  const ResourceColumnsLink: ColumnDef<Resource>[] = [
-    ...ResourceColumns,
+
+  const ArticleColumnsLink: ColumnDef<any>[] = [
+    ...ArticlesColumns,
     {
       header: "Link",
       cell: ({ row }) => {
@@ -103,7 +105,7 @@ export default function MappedMaterialsCreate({ id }: { id: string }) {
               await linkLessonMaterial({
                 material_id: row.original.id,
                 lesson_id: id ?? "",
-                type: MaterialType.Resource,
+                type: MaterialType.ARTICLE,
                 order: order || 0,
               })
             }
@@ -144,7 +146,7 @@ export default function MappedMaterialsCreate({ id }: { id: string }) {
           <TabsList className="mt-2 w-full justify-end">
             <TabsTrigger value="quiz">اختبار</TabsTrigger>
             <TabsTrigger value="video">فيديو</TabsTrigger>
-            <TabsTrigger value="resource">الموارد</TabsTrigger>
+            <TabsTrigger value="article">article</TabsTrigger>
           </TabsList>
           <TabsContent value="quiz">
             <DataTable columns={QuizColumnsLink} data={quiz} />
@@ -152,8 +154,8 @@ export default function MappedMaterialsCreate({ id }: { id: string }) {
           <TabsContent value="video">
             <DataTable columns={VideoColumnsLink} data={video} />
           </TabsContent>
-          <TabsContent value="resource">
-            <DataTable columns={ResourceColumnsLink} data={resource} />
+          <TabsContent value="article">
+            <DataTable columns={ArticleColumnsLink} data={article} />
           </TabsContent>
         </Tabs>
       </DialogContent>

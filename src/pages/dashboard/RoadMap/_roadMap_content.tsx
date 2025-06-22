@@ -1,5 +1,5 @@
 import TimeLine from "@/components/timeLine";
-import { RoadMapInterface, LessonDetailsDto } from "@/types/courses";
+import { RoadMapInterface, LessonDetails } from "@/types/courses";
 import { getLessonResourceIcon } from "@/utils/getIcon";
 
 export default function RoadMapContent({
@@ -9,7 +9,7 @@ export default function RoadMapContent({
   RoadMap: RoadMapInterface;
   className?: string;
 }) {
-  const renderResources = (lesson: LessonDetailsDto) => {
+  const renderResources = (lesson: LessonDetails) => {
     if (!lesson.materials || lesson.materials.length === 0) return null;
 
     return (
@@ -18,17 +18,17 @@ export default function RoadMapContent({
           const isLast = index === lesson.materials.length - 1;
           let title = "";
 
-          if (material.type === "video" && material.video) {
-            title = material.video.title || "video";
-          } else if (material.type === "resource" && material.resource) {
-            title = material.resource.title || "resource";
-          } else if (material.type === "quiz" && material.quiz) {
+          if (material.type === "video") {
+            title = material.title || "video";
+          } else if (material.type === "resource") {
+            title = material.title || "resource";
+          } else if (material.type === "quiz") {
             title = "quiz";
           }
 
           return (
             <li
-              key={`${material.type}-${material.order}`}
+              key={`${material.type}`}
               className="group relative w-fit py-1 text-sm flex items-center gap-1 mr-[0.2rem]"
             >
               {getLessonResourceIcon(material.type)}

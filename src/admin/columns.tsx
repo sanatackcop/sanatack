@@ -1,8 +1,29 @@
 import { Button } from "@/components/ui/button";
-import { Course, Lesson, Module } from "@/utils/types";
+import { Course, Lesson, Module, Roadmap } from "@/utils/types";
 import { Quiz, Resource, Video } from "@/utils/types/adminTypes";
 import { ColumnDef } from "@tanstack/react-table";
 import { Link } from "react-router-dom";
+
+export const RoadmapColumns: ColumnDef<Roadmap>[] = [
+  {
+    accessorKey: "title",
+    header: "Title",
+  },
+  {
+    accessorKey: "description",
+    header: "Description",
+  },
+  {
+    header: "Mapped Courses",
+    cell: ({ row }) => {
+      return (
+        <Link to={`/admin/roadmaps/${row.original.id}`}>
+          <Button size="sm">Mapped Courses</Button>
+        </Link>
+      );
+    },
+  },
+];
 
 export const CourseColumns: ColumnDef<Course>[] = [
   {
@@ -59,17 +80,17 @@ export const VideoColumns: ColumnDef<Video>[] = [
   },
 ];
 
-export const ResourceColumns: ColumnDef<Resource>[] = [
+export const ArticlesColumns: ColumnDef<Resource>[] = [
   {
-    accessorKey: "title",
+    accessorKey: "id",
+    id: "id",
+  },
+  {
+    accessorKey: "data.data.title",
     header: "Title",
   },
   {
-    accessorKey: "description",
-    header: "Description",
-  },
-  {
-    accessorKey: "type",
+    accessorKey: "data.type",
     header: "Type",
   },
 ];

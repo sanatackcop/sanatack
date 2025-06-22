@@ -5,7 +5,7 @@ import {
   QuizDto,
   ResourceDto,
   VideoDto,
-} from "./../../types/courses";
+} from "../types";
 import {
   CourseModuleLink,
   LessonModuleLink,
@@ -13,6 +13,17 @@ import {
 } from "../types/adminTypes";
 import { trackPromise } from "react-promise-tracker";
 import Api from "./api";
+import { ArticleCardDto } from "@/admin/components/article.create";
+
+export const getAllRoadmaps = async <T>({}) => {
+  const response = await trackPromise(
+    Api({
+      method: "get",
+      url: "admin/roadmaps",
+    })
+  );
+  return response.data as T;
+};
 
 export const getListCoursesApi = async ({}) => {
   try {
@@ -71,11 +82,11 @@ export const createNewVideo = async (quiz: VideoDto) => {
   return response.data;
 };
 
-export const getResourcesList = async <T>() => {
+export const getArticlesList = async <T>() => {
   const response = await trackPromise(
     Api({
       method: "get",
-      url: "admin/resources",
+      url: "admin/articles",
     })
   );
   return response.data as T;
@@ -87,6 +98,17 @@ export const createNewResource = async (quiz: ResourceDto) => {
       method: "post",
       url: "admin/resources",
       data: quiz,
+    })
+  );
+  return response.data;
+};
+
+export const createNewArticleApi = async (article: ArticleCardDto[]) => {
+  const response = await trackPromise(
+    Api({
+      method: "post",
+      url: "admin/article",
+      data: article,
     })
   );
   return response.data;

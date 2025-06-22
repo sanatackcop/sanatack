@@ -137,7 +137,7 @@ const Footer: React.FC = () => {
   const { darkMode } = useSettings();
 
   return (
-    <footer className="w-full px-6 sm:px-10 md:px-20 py-6 border-t border-gray-300 dark:border-gray-700">
+    <footer className="w-full px-6 sm:px-10 md:px-20 py-6 border-t border-gray-300 bg-white dark:bg-gray-900 dark:border-gray-700">
       <div className="flex flex-col md:flex-row justify-between items-center gap-6">
         <div className="flex-shrink-0 transition-transform duration-300 hover:scale-105">
           <img

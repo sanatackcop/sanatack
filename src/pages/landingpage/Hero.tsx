@@ -71,7 +71,7 @@ const CourseFloatingCard: React.FC<CourseFloatingCardProps> = ({
 
   return (
     <div ref={cardRef} className={`absolute ${className}`} {...props}>
-      <div className="group bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:-translate-y-2 hover:scale-105">
+      <div className="group bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:-translate-y-2 hover:scale-105">
         {children}
       </div>
     </div>
@@ -120,8 +120,8 @@ const FloatingTechIcon: React.FC<FloatingTechIconProps> = ({
 
   return (
     <div ref={iconRef} className={`absolute ${className}`}>
-      <div className="group w-10 h-10 sm:w-12 sm:h-12 lg:w-16 lg:h-16 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl border border-gray-200/60 dark:border-gray-700/60 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 hover:rotate-6">
-        <Icon className="w-4 h-4 sm:w-5 sm:h-5 lg:w-7 lg:h-7 text-gray-700 dark:text-gray-300 group-hover:text-black dark:group-hover:text-white group-hover:scale-110 transition-all duration-300" />
+      <div className="group w-10 h-10 sm:w-12 sm:h-12 lg:w-16 lg:h-16 bg-gradient-to-br from-blue-50/50 to-indigo-50/30 dark:from-blue-800/20 dark:to-indigo-900/10 backdrop-blur-xl border border-gray-200/60 dark:border-gray-700/60 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 hover:rotate-6">
+        <Icon className="w-4 h-4 sm:w-5 sm:h-5 lg:w-7 lg:h-7 text-blue-600 dark:text-blue-400group-hover:text-black dark:group-hover:text-white group-hover:scale-110 transition-all duration-300" />
       </div>
     </div>
   );
@@ -254,7 +254,7 @@ const CoursesHero: React.FC = () => {
   return (
     <section
       ref={heroRef}
-      className="relative min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-black dark:to-gray-800 overflow-hidden"
+      className="relative min-h-screen overflow-hidden"
       dir="rtl"
     >
       <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05]">
@@ -302,7 +302,7 @@ const CoursesHero: React.FC = () => {
           <div className="space-y-6 sm:space-y-8 text-right ">
             <div className="animate-on-load mt-10">
               <span
-                className="inline-flex items-center gap-2 sm:gap-3 bg-gray-100/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/60
+                className="inline-flex items-center gap-2 sm:gap-3 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200/60
                dark:border-gray-700/60 rounded-full px-4 sm:px-6 py-2 sm:py-3 font-bold text-xs sm:text-sm shadow-lg"
               >
                 <div className="relative">
@@ -337,14 +337,17 @@ const CoursesHero: React.FC = () => {
             </div>
 
             <div className="animate-on-load flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
-              <ModernButton to="/signup" className="w-full sm:w-auto">
+              <ModernButton
+                to="/signup"
+                className="w-full sm:w-auto bg-gradient-to-br from-indigo-600 to-sky-600 !text-white"
+              >
                 <Play className="w-4 h-4 sm:w-5 sm:h-5" />
                 ابدأ رحلتك مجاناً
               </ModernButton>
               <ModernButton
                 to="/signup"
                 variant="secondary"
-                className="w-full sm:w-auto"
+                className="w-full bg-white/95 dark:bg-gray-900/95 sm:w-auto"
               >
                 استكشف الدورات
                 <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -374,10 +377,10 @@ const CoursesHero: React.FC = () => {
                 return (
                   <div
                     key={index}
-                    className="flex items-center gap-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group cursor-pointer"
+                    className="flex items-center gap-3 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group cursor-pointer"
                   >
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-black dark:bg-white flex items-center justify-center shadow-md group-hover:scale-110 transition-transform flex-shrink-0">
-                      <IconCmp className="w-4 h-4 sm:w-5 sm:h-5 text-white dark:text-black" />
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-sky-600 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform flex-shrink-0">
+                      <IconCmp className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                     </div>
                     <div className="text-right min-w-0">
                       <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
@@ -398,8 +401,8 @@ const CoursesHero: React.FC = () => {
             <div className="animate-on-load relative bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl sm:rounded-3xl shadow-2xl p-4 sm:p-6 w-full max-w-sm sm:max-w-md">
               {/* Course Header */}
               <div className="flex items-center gap-3 pb-3 sm:pb-4 border-b border-gray-200 dark:border-gray-700">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-black dark:bg-white flex items-center justify-center shadow-lg">
-                  <Code className="w-5 h-5 sm:w-6 sm:h-6 text-white dark:text-black" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-indigo-600 to-sky-600 flex items-center justify-center shadow-lg">
+                  <Code className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
                 <div className="text-right flex-1">
                   <p className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
@@ -428,7 +431,7 @@ const CoursesHero: React.FC = () => {
                 </div>
                 <div className="w-full h-2 sm:h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-black dark:bg-white rounded-full transition-all duration-1000"
+                    className="h-full bg-gradient-to-r from-green-700 to-green-400 rounded-full transition-all duration-1000"
                     style={{ width: "65%" }}
                   ></div>
                 </div>
@@ -493,8 +496,8 @@ const CoursesHero: React.FC = () => {
               className="hidden sm:block -top-6 sm:-top-8 -right-6 sm:-right-8 lg:-right-12"
             >
               <div className="flex items-center gap-2 sm:gap-3">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-black dark:bg-white flex items-center justify-center shadow-lg">
-                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-white dark:text-black" />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-br from-indigo-600 to-sky-600 flex items-center justify-center shadow-lg">
+                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                 </div>
                 <div className="text-right">
                   <p className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white">
@@ -502,7 +505,7 @@ const CoursesHero: React.FC = () => {
                   </p>
                   <div className="flex items-center gap-2 mt-1">
                     <div className="w-12 sm:w-16 h-1.5 sm:h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                      <div className="w-[98%] h-full bg-black dark:bg-white rounded-full"></div>
+                      <div className="w-[98%] h-full bg-gradient-to-r from-green-700 to-green-400  rounded-full"></div>
                     </div>
                     <span className="text-xs text-gray-600 dark:text-gray-400">
                       98%
@@ -517,8 +520,8 @@ const CoursesHero: React.FC = () => {
               className="hidden sm:block -bottom-6 sm:-bottom-8 -left-6 sm:-left-8 lg:-left-12"
             >
               <div className="flex items-center gap-2 sm:gap-3">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-black dark:bg-white flex items-center justify-center shadow-lg relative">
-                  <Award className="w-4 h-4 sm:w-5 sm:h-5 text-white dark:text-black" />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-br from-indigo-600 to-sky-600 flex items-center justify-center shadow-lg relative">
+                  <Award className="w-4 h-4 sm:w-5 sm:h-5 text-white " />
                   <div className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 w-2 h-2 sm:w-3 sm:h-3 bg-yellow-400 rounded-full animate-ping"></div>
                 </div>
                 <div className="text-right">

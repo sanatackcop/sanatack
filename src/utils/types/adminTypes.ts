@@ -31,13 +31,10 @@ export declare type LinkedVideo = Video & {
   order: number;
 };
 
-export declare type LinkedResource = Resource & {
-  order: number;
-};
-
 export enum MaterialType {
   Resource = "resource",
   Video = "video",
+  ARTICLE = "article",
   Quiz = "quiz",
 }
 export declare type Material = Resource | Video | Quiz;
