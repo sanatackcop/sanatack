@@ -257,6 +257,10 @@ export class ResourceDto {
 
   @IsString()
   content?: string;
+
+  @IsNumber({}, { message: 'المدة يجب أن تكون رقمًا' })
+  @Min(0, { message: 'المدة يجب أن تكون رقمًا موجبًا' })
+  duration: number;
 }
 
 export class QuizDto {
@@ -358,8 +362,6 @@ export class ArticleDto {
   @IsOptional()
   @IsNumber()
   order?: number;
-
-  duration: number;
 }
 
 export interface User {

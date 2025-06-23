@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, Equal, Repository } from 'typeorm';
 import { Lesson } from '../entities/lessons.entity';
@@ -104,5 +104,12 @@ export default class LessonService {
         .filter((m): m is Material => m !== null)
         .sort((a, b) => a.order - b.order),
     };
+  }
+
+  async delete(lessonId: string) {
+    const result = await this.lessonRepository.delete(lessonId);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Lesson with ID ${lessonId} not found`);
+    }
   }
 }

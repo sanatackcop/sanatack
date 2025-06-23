@@ -1,4 +1,9 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Equal, Repository } from 'typeorm';
 import { Course } from '../entities/courses.entity';
@@ -55,6 +60,13 @@ export class CoursesService {
     return Promise.all(
       courses.map((course) => this.courseDetails(course.id, userId))
     );
+  }
+
+  async delete(courseId: string) {
+    const result = await this.courseRepository.delete(courseId);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Course with ID ${courseId} not found`);
+    }
   }
 
   async getProgressCourses(userId: string, course_id: string): Promise<number> {

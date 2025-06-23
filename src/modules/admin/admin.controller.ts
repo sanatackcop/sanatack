@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpException,
   HttpStatus,
@@ -240,4 +241,67 @@ export class AdminController {
       console.log(err);
     }
   }
+
+  @Delete('/courses/:course_id')
+  async deleteCourse(@Param('course_id') course_id: string) {
+    try {
+      return await this.coursesService.delete(course_id);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  @Delete('/lessons/:lesson_id')
+  async deleteLesson(@Param('lesson_id') lesson_id: string) {
+    try {
+      return await this.lessonService.delete(lesson_id);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  @Delete('/quizzes/:quiz_id')
+  async deleteQuiz(@Param('quiz_id') quiz_id: string) {
+    try {
+      return await this.quizService.delete(quiz_id);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  @Delete('/resources/:resource_id')
+  async deleteResource(@Param('resource_id') resource_id: string) {
+    try {
+      return await this.resourceService.delete(resource_id);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  @Delete('/articles/:article_id')
+  async deleteArticle(@Param('article_id') article_id: string) {
+    try {
+      return await this.articleService.delete(article_id);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  @Delete('/videos/:video_id')
+  async deleteVideo(@Param('video_id') video_id: string) {
+    try {
+      return await this.videoService.delete(video_id);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+  @Delete('/modules/:module_id')
+  async deleteModule(@Param('module_id') module_id: string) {
+    try {
+      return await this.moduleService.delete(module_id);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
 }
