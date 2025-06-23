@@ -235,3 +235,93 @@ export const linkModuleToCourse = async (
   );
   return response.data;
 };
+
+export const deleteCourse = async (course_id: string) => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "delete",
+        url: `admin/courses/${course_id}`,
+      })
+    );
+    return response.data;
+  } catch (e: any) {
+    console.log("error while deleting course", { e });
+    throw e;
+  }
+};
+
+export const deleteLesson = async (lesson_id: string) => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "delete",
+        url: `admin/lessons/${lesson_id}`,
+      })
+    );
+    return response.data;
+  } catch (e: any) {
+    console.log("error while deleting lesson", { e });
+    throw e;
+  }
+};
+
+export const deleteQuiz = async (quiz_id: string) => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "delete",
+        url: `admin/quizzes/${quiz_id}`,
+      })
+    );
+    return response.data;
+  } catch (e: any) {
+    console.log("error while deleting quiz", { e });
+    throw e;
+  }
+};
+
+export const deleteArticle = async (article_id: string) => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "delete",
+        url: `admin/articles/${article_id}`,
+      })
+    );
+    return response.data;
+  } catch (e: any) {
+    console.log("error while deleting article", { e });
+    throw e;
+  }
+};
+
+export const deleteVideo = async (video_id: string) => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "delete",
+        url: `admin/videos/${video_id}`,
+      })
+    );
+    return response.data;
+  } catch (e: any) {
+    console.log("error while deleting video", { e });
+    throw e;
+  }
+};
+
+export const deleteModule = async (module_id: string) => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "delete",
+        url: `admin/modules/${module_id}`,
+      })
+    );
+    return response.data;
+  } catch (e: any) {
+    console.log("error while deleting module", { e });
+    throw e;
+  }
+};

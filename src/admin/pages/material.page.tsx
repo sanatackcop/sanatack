@@ -3,6 +3,9 @@ import {
   getQuizList,
   getArticlesList,
   getVideosList,
+  deleteQuiz,
+  deleteArticle,
+  deleteVideo,
 } from "@/utils/_apis/admin-api";
 import { DataTable } from "@/components/ui/data-table";
 import { ArticlesColumns, QuizColumns, VideoColumns } from "../columns";
@@ -21,11 +24,12 @@ import ResourceDialogCreate from "../components/resource.create";
 import { Quiz, Resource, Video } from "@/utils/types/adminTypes";
 import { CustomError } from "@/utils/_apis/api";
 import ArticleDialogCreate from "../components/article.create";
+import { Article } from "@/types/articles/articles";
 
 export default function MaterialsPage() {
   const [quiz, setQuiz] = useState<Quiz[]>([]);
   const [video, setVideo] = useState<Video[]>([]);
-  const [article, setArticles] = useState<Resource[]>([]);
+  const [article, setArticles] = useState<Article[]>([]);
 
   const [error, setError] = useState<string | null>(null);
 
@@ -36,18 +40,44 @@ export default function MaterialsPage() {
 
   async function fetchCourses() {
     try {
-      const [quizList, videoList, resourceList] = await Promise.all([
+      const [quizList, videoList, articleList] = await Promise.all([
         getQuizList<Quiz[]>(),
         getVideosList<Video[]>(),
-        getArticlesList<Resource[]>(),
+        getArticlesList<Article[]>(),
       ]);
 
       if (quizList?.length) setQuiz(quizList);
       if (videoList?.length) setVideo(videoList);
-      if (resourceList?.length) setArticles(resourceList);
+      if (articleList?.length) setArticles(articleList);
     } catch (err: unknown) {
       if ((err as CustomError).error.type == "network")
         setError("Error when trying to fetch data.");
+    }
+  }
+
+  async function handleDeleteQuiz(id: string) {
+    try {
+      await deleteQuiz(id);
+      fetchCourses();
+    } catch (err) {
+      console.error("Failed to delete quiz:", err);
+    }
+  }
+  async function handleDeleteVideo(id: string) {
+    try {
+      await deleteVideo(id);
+      fetchCourses();
+    } catch (err) {
+      console.error("Failed to delete video:", err);
+    }
+  }
+
+  async function handleDeleteArticle(id: string) {
+    try {
+      await deleteArticle(id);
+      fetchCourses();
+    } catch (err) {
+      console.error("Failed to delete article:", err);
     }
   }
 
@@ -130,13 +160,16 @@ export default function MaterialsPage() {
           <TabsTrigger value="article">article</TabsTrigger>
         </TabsList>
         <TabsContent value="quiz">
-          <DataTable columns={QuizColumns} data={quiz} />
+          <DataTable columns={QuizColumns(handleDeleteQuiz)} data={quiz} />
         </TabsContent>
         <TabsContent value="video">
-          <DataTable columns={VideoColumns} data={video} />
+          <DataTable columns={VideoColumns(handleDeleteVideo)} data={video} />
         </TabsContent>
         <TabsContent value="article">
-          <DataTable columns={ArticlesColumns} data={article} />
+          <DataTable
+            columns={ArticlesColumns(handleDeleteArticle)}
+            data={article}
+          />
         </TabsContent>
       </Tabs>
     </div>

@@ -3,7 +3,7 @@ import LessonCreate from "../components/lesson.create";
 import { LessonColumns } from "../columns";
 import { useEffect, useState } from "react";
 import { Lesson } from "@/utils/types";
-import { fetchAllLesson } from "@/utils/_apis/admin-api";
+import { deleteLesson, fetchAllLesson } from "@/utils/_apis/admin-api";
 import { CustomError } from "@/utils/_apis/api";
 
 export default function LessonPage() {
@@ -20,6 +20,14 @@ export default function LessonPage() {
         setError("Error when trying to fetch data.");
     }
   };
+  async function handleDelete(courseId: string) {
+    try {
+      await deleteLesson(courseId);
+      getAllLesson();
+    } catch (err) {
+      console.error("Failed to delete lesson:", err);
+    }
+  }
   useEffect(() => {
     getAllLesson();
   }, []);
@@ -31,7 +39,7 @@ export default function LessonPage() {
       <div className=" mb-2">
         <LessonCreate updateTable={() => getAllLesson()} />
       </div>
-      <DataTable columns={LessonColumns} data={lessons} />
+      <DataTable columns={LessonColumns(handleDelete)} data={lessons} />
     </div>
   );
 }

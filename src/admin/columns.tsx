@@ -1,8 +1,10 @@
 import { Button } from "@/components/ui/button";
+import { Article } from "@/types/articles/articles";
 import { Course, Lesson, Module, Roadmap } from "@/utils/types";
 import { Quiz, Resource, Video } from "@/utils/types/adminTypes";
 import { ColumnDef } from "@tanstack/react-table";
 import { Link } from "react-router-dom";
+import DeleteDialog from "./components/deleteModal";
 
 export const RoadmapColumns: ColumnDef<Roadmap>[] = [
   {
@@ -25,7 +27,9 @@ export const RoadmapColumns: ColumnDef<Roadmap>[] = [
   },
 ];
 
-export const CourseColumns: ColumnDef<Course>[] = [
+export const CourseColumns = (
+  onDelete: (id: string) => void
+): ColumnDef<Course>[] => [
   {
     accessorKey: "title",
     header: "Title",
@@ -48,9 +52,19 @@ export const CourseColumns: ColumnDef<Course>[] = [
       );
     },
   },
+  {
+    header: "Actions",
+    cell: ({ row }) => (
+      <DeleteDialog
+        onDelete={() => onDelete(row.original.id)}
+        label="this course"
+      />
+    ),
+  },
 ];
-
-export const QuizColumns: ColumnDef<Quiz>[] = [
+export const QuizColumns = (
+  onDelete: (id: string) => void
+): ColumnDef<Quiz>[] => [
   {
     accessorKey: "question",
     header: "Question",
@@ -59,9 +73,20 @@ export const QuizColumns: ColumnDef<Quiz>[] = [
     accessorKey: "correctAnswer",
     header: "Answer",
   },
+  {
+    header: "Actions",
+    cell: ({ row }) => (
+      <DeleteDialog
+        onDelete={() => onDelete(row.original.id)}
+        label={`the quiz "${row.original.question}"`}
+      />
+    ),
+  },
 ];
 
-export const VideoColumns: ColumnDef<Video>[] = [
+export const VideoColumns = (
+  onDelete: (id: string) => void
+): ColumnDef<Video>[] => [
   {
     accessorKey: "title",
     header: "Title",
@@ -78,24 +103,46 @@ export const VideoColumns: ColumnDef<Video>[] = [
     accessorKey: "duration",
     header: "Duration",
   },
+  {
+    header: "Actions",
+    cell: ({ row }) => (
+      <DeleteDialog
+        onDelete={() => onDelete(row.original.id)}
+        label={`the video "${row.original.title}"`}
+      />
+    ),
+  },
 ];
 
-export const ArticlesColumns: ColumnDef<Resource>[] = [
+export const ArticlesColumns = (
+  onDelete: (id: string) => void
+): ColumnDef<Article>[] => [
   {
     accessorKey: "id",
     id: "id",
   },
   {
-    accessorKey: "data.data.title",
+    accessorKey: "data[0].title", // first section title
     header: "Title",
   },
   {
-    accessorKey: "data.type",
+    accessorKey: "data[0].type", // type of first section
     header: "Type",
+  },
+  {
+    header: "Actions",
+    cell: ({ row }) => (
+      <DeleteDialog
+        onDelete={() => onDelete(row.original.id)}
+        label={`the article ID ${row.original.id}`}
+      />
+    ),
   },
 ];
 
-export const LessonColumns: ColumnDef<Lesson>[] = [
+export const LessonColumns = (
+  onDelete: (id: string) => void
+): ColumnDef<Lesson>[] => [
   {
     accessorKey: "name",
     header: "Name",
@@ -114,9 +161,20 @@ export const LessonColumns: ColumnDef<Lesson>[] = [
       );
     },
   },
+  {
+    header: "Actions",
+    cell: ({ row }) => (
+      <DeleteDialog
+        onDelete={() => onDelete(row.original.id)}
+        label={`the lesson "${row.original.name}"`}
+      />
+    ),
+  },
 ];
 
-export const ModuleLessons: ColumnDef<Module>[] = [
+export const ModuleLessons = (
+  onDelete: (id: string) => void
+): ColumnDef<Module>[] => [
   {
     accessorKey: "title",
     header: "Title",
@@ -127,12 +185,19 @@ export const ModuleLessons: ColumnDef<Module>[] = [
   },
   {
     header: "Mapped Lessons",
-    cell: ({ row }) => {
-      return (
-        <Link to={`/admin/modules/${row.original.id}`}>
-          <Button size="sm">Mapped Lessons</Button>
-        </Link>
-      );
-    },
+    cell: ({ row }) => (
+      <Link to={`/admin/modules/${row.original.id}`}>
+        <Button size="sm">Mapped Lessons</Button>
+      </Link>
+    ),
+  },
+  {
+    header: "Actions",
+    cell: ({ row }) => (
+      <DeleteDialog
+        onDelete={() => onDelete(row.original.id)}
+        label={`the module "${row.original.title}"`}
+      />
+    ),
   },
 ];
