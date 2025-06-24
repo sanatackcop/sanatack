@@ -39,15 +39,10 @@ export default class ArticleService {
   }
 
   async delete(articleId: string) {
-    const deleteMapper = await this.materialMapperRepository.delete({
+    await this.materialMapperRepository.delete({
       material_id: articleId,
       material_type: MaterialType.ARTICLE,
     });
-    if (deleteMapper.affected === 0) {
-      throw new NotFoundException(
-        `Material mapping for Arcticle ID ${articleId} not found`
-      );
-    }
     const result = await this.articleRepository.delete(articleId);
     if (result.affected === 0) {
       throw new NotFoundException(`Article with ID ${articleId} not found`);

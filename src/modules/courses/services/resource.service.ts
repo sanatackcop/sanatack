@@ -35,15 +35,10 @@ export default class ResourceService {
   }
 
   async delete(resourceId: string) {
-    const deleteMapper = await this.materialMapperRepository.delete({
+    await this.materialMapperRepository.delete({
       material_id: resourceId,
       material_type: MaterialType.RESOURCE,
     });
-    if (deleteMapper.affected === 0) {
-      throw new NotFoundException(
-        `Material mapping for Resource ID ${resourceId} not found`
-      );
-    }
     const result = await this.resourceRepository.delete(resourceId);
     if (result.affected === 0) {
       throw new NotFoundException(`Resource with ID ${resourceId} not found`);

@@ -33,15 +33,10 @@ export default class QuizService {
   }
 
   async delete(quizId: string) {
-    const deleteMapper = await this.materialMapperRepository.delete({
+    await this.materialMapperRepository.delete({
       material_id: quizId,
       material_type: MaterialType.QUIZ,
     });
-    if (deleteMapper.affected === 0) {
-      throw new NotFoundException(
-        `Material mapping for Quiz ID ${quizId} not found`
-      );
-    }
     const result = await this.quizRepository.delete(quizId);
     if (result.affected === 0) {
       throw new NotFoundException(`Quiz with ID ${quizId} not found`);

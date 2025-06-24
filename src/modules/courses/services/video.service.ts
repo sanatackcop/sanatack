@@ -33,15 +33,10 @@ export default class VideoService {
   }
 
   async delete(videoId: string) {
-    const deleteMapper = await this.materialMapperRepository.delete({
+    await this.materialMapperRepository.delete({
       material_id: videoId,
       material_type: MaterialType.VIDEO,
     });
-    if (deleteMapper.affected === 0) {
-      throw new NotFoundException(
-        `Material mapping for Video ID ${videoId} not found`
-      );
-    }
     const result = await this.videoRepository.delete(videoId);
     if (result.affected === 0) {
       throw new NotFoundException(`Video with ID ${videoId} not found`);
