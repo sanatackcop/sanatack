@@ -384,3 +384,121 @@ export class CareerPathDetails extends CareerPathContext {
   roadmaps: RoadmapDetails[];
   isEnrolled?: boolean;
 }
+
+export class UpdateCourseDto {
+  @IsOptional()
+  title?: string;
+
+  @IsOptional()
+  description?: string;
+
+  @IsOptional()
+  level?: Level;
+
+  @IsOptional()
+  course_info?: {
+    durationHours: number;
+    tags: string[];
+    new_skills_result: string[];
+    learning_outcome: { [key: string]: number };
+    prerequisites: string[];
+  };
+
+  @IsOptional()
+  isPublished?: boolean;
+}
+
+export class UpdateModuleDto {
+  @IsOptional()
+  @IsString()
+  title?: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+}
+
+export class UpdateLessonDto {
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+}
+
+export class UpdateArticleDto {
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ArticleDto)
+  data?: ArticleDto[];
+
+  @IsOptional()
+  @IsNumber()
+  duration?: number;
+}
+
+export class UpdateQuizDto {
+  @IsOptional()
+  @IsString()
+  question?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  options?: string[];
+
+  @IsOptional()
+  @IsString()
+  correctAnswer?: string;
+
+  @IsOptional()
+  @IsString()
+  explanation?: string;
+
+  @IsOptional()
+  @IsNumber()
+  duration?: number;
+}
+
+export class UpdateResourceDto {
+  @IsOptional()
+  @IsString()
+  title?: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @IsOptional()
+  @IsUrl()
+  url?: string;
+
+  @IsOptional()
+  @IsString()
+  content?: string;
+
+  @IsOptional()
+  @IsNumber()
+  duration?: number;
+}
+
+export class UpdateVideoDto {
+  @IsOptional()
+  @IsString()
+  title?: string;
+
+  @IsOptional()
+  @IsString()
+  youtubeId?: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @IsOptional()
+  @IsNumber()
+  duration?: number;
+}

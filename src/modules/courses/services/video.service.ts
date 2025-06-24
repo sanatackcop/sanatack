@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Equal, FindManyOptions } from 'typeorm';
 import Video from '../entities/video.entity';
-import { VideoDto } from '../entities/dto';
+import { UpdateVideoDto, VideoDto } from '../entities/dto';
 import MaterialMapper, { MaterialType } from '../entities/material-mapper';
 
 @Injectable()
@@ -41,5 +41,13 @@ export default class VideoService {
     if (result.affected === 0) {
       throw new NotFoundException(`Video with ID ${videoId} not found`);
     }
+  }
+
+  async update(videoId: string, dto: UpdateVideoDto) {
+    const result = await this.videoRepository.update(videoId, dto);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Video with ID ${videoId} not found`);
+    }
+    return result;
   }
 }

@@ -12,6 +12,7 @@ import {
   CoursesContext,
   CreateNewCourseDto,
   ModuleDetails,
+  UpdateCourseDto,
 } from '../entities/dto';
 import UsersService from 'src/modules/users/users.service';
 import EnrollmentService from './enrollment.service';
@@ -67,6 +68,14 @@ export class CoursesService {
     if (result.affected === 0) {
       throw new NotFoundException(`Course with ID ${courseId} not found`);
     }
+  }
+
+  async updateCourse(courseId: string, dto: UpdateCourseDto) {
+    const result = await this.courseRepository.update(courseId, dto);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Course with ID ${courseId} not found`);
+    }
+    return result;
   }
 
   async getProgressCourses(userId: string, course_id: string): Promise<number> {

@@ -6,7 +6,7 @@ import MaterialMapper, { MaterialType } from '../entities/material-mapper';
 import QuizService from './quiz.service';
 import VideoService from './video.service';
 import ResourceService from './resource.service';
-import { Material } from '../entities/dto';
+import { Material, UpdateLessonDto } from '../entities/dto';
 import { LinkQuiz } from '../entities/quiz.entity';
 import { LinkVideo } from '../entities/video.entity';
 import { LinkArticle } from '../entities/article.entity';
@@ -111,5 +111,13 @@ export default class LessonService {
     if (result.affected === 0) {
       throw new NotFoundException(`Lesson with ID ${lessonId} not found`);
     }
+  }
+
+  async update(lessonId: string, dto: UpdateLessonDto){
+    const result = await this.lessonRepository.update(lessonId, dto);
+      if (result.affected === 0) {
+        throw new NotFoundException(`Lesson with ID ${lessonId} not found`);
+      }
+      return result;
   }
 }

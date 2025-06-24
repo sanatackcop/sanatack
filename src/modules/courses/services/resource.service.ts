@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Equal, FindManyOptions } from 'typeorm';
 import Resource from '../entities/resource.entity';
-import { ResourceDto } from '../entities/dto';
+import { ResourceDto, UpdateResourceDto } from '../entities/dto';
 import MaterialMapper, { MaterialType } from '../entities/material-mapper';
 
 @Injectable()
@@ -43,5 +43,13 @@ export default class ResourceService {
     if (result.affected === 0) {
       throw new NotFoundException(`Resource with ID ${resourceId} not found`);
     }
+  }
+
+  async update(resourceId: string, dto: UpdateResourceDto) {
+    const result = await this.resourceRepository.update(resourceId, dto);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Resource with ID ${resourceId} not found`);
+    }
+    return result;
   }
 }
