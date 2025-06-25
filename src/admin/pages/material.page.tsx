@@ -21,7 +21,7 @@ import {
 import QuizDialogCreate from "../components/quiz.create";
 import VideoDialogCreate from "../components/video.create";
 import ResourceDialogCreate from "../components/resource.create";
-import { Quiz, Resource, Video } from "@/utils/types/adminTypes";
+import { Quiz, Video } from "@/utils/types/adminTypes";
 import { CustomError } from "@/utils/_apis/api";
 import ArticleDialogCreate from "../components/article.create";
 import { Article } from "@/types/articles/articles";

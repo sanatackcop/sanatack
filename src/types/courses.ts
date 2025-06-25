@@ -1,5 +1,4 @@
 import { ArticleDto, Level } from "@/utils/types/adminTypes";
-import { Article } from "./articles/articles";
 
 export type TabType = "all" | "started" | "done";
 export interface CareerPathInterface {

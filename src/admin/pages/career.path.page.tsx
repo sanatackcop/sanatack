@@ -37,7 +37,10 @@ export default function CoursePage() {
         <CourseCreate updateTable={() => fetchCourses()} />
       </div>
 
-      <DataTable columns={CourseColumns(handleDelete)} data={courses} />
+      <DataTable
+        columns={CourseColumns(handleDelete, (id) => (id))}
+        data={courses}
+      />
     </div>
   );
 }

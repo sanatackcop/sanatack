@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Article } from "@/types/articles/articles";
 import { Course, Lesson, Module, Roadmap } from "@/utils/types";
-import { Quiz, Resource, Video } from "@/utils/types/adminTypes";
+import { Quiz, Video } from "@/utils/types/adminTypes";
 import { ColumnDef } from "@tanstack/react-table";
 import { Link } from "react-router-dom";
 import DeleteDialog from "./components/deleteModal";

@@ -28,7 +28,6 @@ import {
   UpdateResourceDto,
   UpdateVideoDto,
 } from "@/types/courses";
-import { Article } from "@/types/articles/articles";
 
 export const getAllRoadmaps = async <T>({}) => {
   const response = await trackPromise(
