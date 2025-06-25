@@ -28,7 +28,7 @@ export interface Material {
 
 export interface Lesson {
   id: string;
-  title: string;
+  name: string;
   materials: Material[];
   completedCount: number;
   totalCount: number;
@@ -47,14 +47,14 @@ export interface Module {
 export interface Course {
   id: string;
   title: string;
-  subtitle: string;
+  description: string;
   modules: Module[];
-  progress: number;
-  totalLessons: number;
-  completedLessons: number;
-  completedCount: number;
+  completionRate: number;
+  enrolledCount: number;
   totalCount: number;
-  duration: string;
+  course_info?: {
+    durationHours: number;
+  };
 }
 
 export interface SideNavbarProps {
@@ -100,17 +100,34 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
   const normalisedSearch = searchTerm.trim().toLowerCase();
 
   const filteredModules: Module[] = (courseData.modules ?? [])
-    .map((module) => ({
-      ...module,
-      lessons: (module.lessons ?? [])
+    .map((module) => {
+      const filteredLessons = (module.lessons ?? [])
         .map((lesson) => ({
           ...lesson,
           materials: (lesson.materials ?? []).filter((material) =>
             (material?.title ?? "").toLowerCase().includes(normalisedSearch)
           ),
         }))
-        .filter((lesson) => lesson.materials.length > 0),
-    }))
+        .filter((lesson) => lesson.materials.length > 0);
+
+      const allMaterials = filteredLessons.flatMap(
+        (lesson) => lesson.materials ?? []
+      );
+      const totalMaterials = allMaterials.length;
+      const completedMaterials = allMaterials.filter((m) => m.completed).length;
+      const progress =
+        totalMaterials > 0
+          ? Math.round((completedMaterials / totalMaterials) * 100)
+          : 0;
+
+      return {
+        ...module,
+        lessons: filteredLessons,
+        completedCount: completedMaterials,
+        totalCount: totalMaterials,
+        progress,
+      };
+    })
     .filter((module) => module.lessons.length > 0);
 
   useEffect(() => {
@@ -124,6 +141,22 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
+
+  const courseMeterials =
+    courseData?.modules?.flatMap((module) =>
+      module?.lessons?.flatMap((lesson) => lesson?.materials ?? [])
+    ) ?? [];
+
+  const totalMaterials = courseMeterials.length;
+  const completedMaterials = courseMeterials.filter((m) => m.completed).length;
+  const totalDuration = courseMeterials.reduce(
+    (sum, material) => sum + Number(material.duration || 0),
+    0
+  );
+
+  const completionRate = totalMaterials
+    ? Math.round((completedMaterials / totalMaterials) * 100)
+    : 0;
 
   const renderMaterialButton = (material: Material, isActive: boolean) => {
     const Icon = getIcon(material.type);
@@ -167,12 +200,20 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
                   : "text-gray-900 dark:text-white")
               }
             >
-              {material.title || "بدون عنوان"}
+              {material.type || "بدون عنوان"}
             </p>
             <div className="flex items-center justify-start gap-2 mt-1">
-              <span className="text-xs text-gray-500">
-                {material.completed ? "مكتمل" : material.duration}
+              <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-900/20 text-gray-600 dark:text-gray-400">
+                {material.completed ? (
+                  "مكتمل"
+                ) : (
+                  <>
+                    <Clock className="w-3 h-3 inline-block ml-1" />
+                    {material.duration} دقيقة
+                  </>
+                )}
               </span>
+
               <span
                 className={
                   "text-xs px-2 py-0.5 rounded-full " +
@@ -264,22 +305,21 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
               {courseData.title}
             </h2>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              {courseData.subtitle}
+              {courseData.description}
             </p>
           </div>
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-2xl font-bold text-green-600 dark:text-green-400">
-                {courseData.progress}%
+                {completionRate}%
               </span>
               <div className="text-right">
                 <div className="text-sm font-medium text-gray-900 dark:text-white">
-                  {courseData.completedLessons} من {courseData.totalLessons}{" "}
-                  دروس
+                  {completedMaterials} من {totalMaterials} دروس
                 </div>
                 <div className="text-xs text-gray-500">
-                  المدة الإجمالية: {courseData.duration}
+                  المدة الإجمالية: {totalDuration} دقيقة
                 </div>
               </div>
             </div>
@@ -287,7 +327,7 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-green-500 to-green-600 rounded-full transition-all duration-1000 relative"
-                style={{ width: `${courseData.progress}%` }}
+                style={{ width: `${courseData.completionRate}%` }}
               >
                 <div className="absolute inset-0 bg-white/20 animate-pulse rounded-full" />
               </div>
@@ -295,7 +335,7 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
           </div>
         </div>
 
-        <nav className="flex-1 overflow-y-auto p-4 space-y-4">
+        <nav className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hidden">
           {filteredModules.map((module) => (
             <div
               key={module.id}
@@ -316,9 +356,13 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
                     {module.progress}%
                   </div>
                   <ChevronLeft
-                    className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${
-                      expandedModules.includes(module.id) ? "rotate-90" : ""
-                    }`}
+                    className={`w-4 h-4 text-gray-500 transition-transform duration-200`}
+                    style={{
+                      transform: expandedModules.includes(module.id)
+                        ? "rotate(270deg)"
+                        : "rotate(0deg)",
+                      transition: "transform 0.2s",
+                    }}
                   />
                 </div>
 
@@ -336,32 +380,43 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
               </button>
 
               {expandedModules.includes(module.id) && (
-                <div className="pb-4 px-4 space-y-3">
-                  {(module.lessons ?? []).map((lesson) => (
-                    <div
-                      key={lesson.id}
-                      className="bg-white dark:bg-gray-900 rounded-xl p-4 border border-gray-200 dark:border-gray-700"
-                    >
-                      <div className="flex items-center justify-between mb-3">
-                        <h4 className="font-medium text-gray-900 dark:text-white text-right text-sm">
-                          {lesson.title}
-                        </h4>
-                        <span className="text-xs text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-lg flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {lesson.duration}
-                        </span>
-                      </div>
+                <div className="pb-4 px-4 space-y-3 ">
+                  {(module.lessons ?? []).map((lesson) => {
+                    const lessonDuration = (lesson.materials ?? []).reduce(
+                      (sum, material) => sum + Number(material.duration || 0),
+                      0
+                    );
 
-                      <div className="space-y-2">
-                        {(lesson.materials ?? []).map((material) =>
-                          renderMaterialButton(
-                            material,
-                            material.id === currentMaterial?.id
-                          )
-                        )}
+                    return (
+                      <div
+                        key={lesson.id}
+                        className="bg-white  dark:bg-gray-900 rounded-xl p-4 border border-gray-200 dark:border-gray-700"
+                      >
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex-1 text-right">
+                            <h4 className="font-medium text-gray-900 dark:text-white text-right text-sm">
+                              {lesson.name}
+                            </h4>
+                          </div>
+                          <div className="flex-shrink-0 mx-2 max-w-[90px]">
+                            <span className="text-xs text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-lg flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              {lessonDuration} دقيقة
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          {(lesson.materials ?? []).map((material) =>
+                            renderMaterialButton(
+                              material,
+                              material.id === currentMaterial?.id
+                            )
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -372,13 +427,13 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
           <div className="grid grid-cols-2 gap-3 text-center">
             <div className="p-3 bg-white dark:bg-gray-900 rounded-xl">
               <div className="text-lg font-bold text-green-600 dark:text-green-400">
-                {courseData.completedLessons}
+                {completedMaterials}
               </div>
               <div className="text-xs text-gray-500">دروس مكتملة</div>
             </div>
             <div className="p-3 bg-white dark:bg-gray-900 rounded-xl">
               <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                {courseData.totalLessons - courseData.completedLessons}
+                {totalMaterials - completedMaterials}
               </div>
               <div className="text-xs text-gray-500">متبقية</div>
             </div>

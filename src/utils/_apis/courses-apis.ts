@@ -7,6 +7,7 @@ import {
   CoursesContext,
   CoursesReport,
   RoadMapInterface,
+  PatchCourseProgressParams,
 } from "@/types/courses"; /*  */
 
 export const getCareerPathApi = async (): Promise<CareerPathInterface[]> => {
@@ -196,6 +197,30 @@ export const getCourseReportApi = async (): Promise<CoursesReport> => {
     return response.data;
   } catch (e: any) {
     console.error("getCourseReportApi error:", e);
+    throw e;
+  }
+};
+
+export const patchCourseProgressApi = async (
+  params: PatchCourseProgressParams
+): Promise<any> => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "patch",
+        url: `courses/progress/${params.courseId}/${params.materialId}`,
+        params: {
+          userId: params.userId,
+          courseId: params.courseId,
+          materialId: params.materialId,
+        },
+        withCredentials: false,
+      }) as Promise<{ data: any }>
+    );
+
+    return response.data;
+  } catch (e: any) {
+    console.error("patchCourseProgressApi error:", e);
     throw e;
   }
 };
