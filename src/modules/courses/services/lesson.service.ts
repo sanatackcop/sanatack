@@ -7,9 +7,10 @@ import VideoService from './video.service';
 import ResourceService from './resource.service';
 import { Material } from '../entities/dto';
 import { LinkVideo } from '../entities/video.entity';
-import { LinkResource } from '../entities/resource.entity';
+import { LinkArticle } from '../entities/article.entity';
 import QuizGroupService from './quiz.group.service';
 import { QuizGroupIF } from '../entities/quiz.group.entity';
+import ArticleService from './article.service';
 
 @Injectable()
 export default class LessonService {
@@ -18,7 +19,8 @@ export default class LessonService {
     private readonly lessonRepository: Repository<Lesson>,
     private readonly quizGroupService: QuizGroupService,
     private readonly videoService: VideoService,
-    private readonly resourceService: ResourceService
+    private readonly resourceService: ResourceService,
+    private readonly articleService: ArticleService
   ) {}
 
   async create(module: DeepPartial<Lesson>) {
@@ -85,16 +87,16 @@ export default class LessonService {
                 return result;
               }
 
-              if (material.material_type === MaterialType.RESOURCE) {
-                const resource = await this.resourceService.findOne(
+              if (material.material_type === MaterialType.ARTICLE) {
+                const resource = await this.articleService.findOne(
                   material.material_id
                 );
                 if (!resource) return null;
 
-                const result: LinkResource = {
+                const result: LinkArticle = {
                   ...resource,
                   order: material.order,
-                  type: MaterialType.RESOURCE,
+                  type: MaterialType.ARTICLE,
                 };
 
                 return result;

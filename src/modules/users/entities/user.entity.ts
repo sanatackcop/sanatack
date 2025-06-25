@@ -5,12 +5,14 @@ import { Enrollment } from 'src/modules/courses/entities/enrollment';
 import { RoadmapEnrollment } from 'src/modules/courses/entities/roadmap-enrollment.entity';
 import { Entity, Column, OneToMany, Relation, OneToOne } from 'typeorm';
 import UsersAttributes from './user.attributes.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity({ name: 'users' })
 export default class User extends AbstractEntity {
   @Column({ unique: true })
   email: string;
 
+  @Exclude()
   @Column({
     transformer: {
       to: (value: string) => (value ? encrypt(value) : value),
@@ -40,7 +42,9 @@ export default class User extends AbstractEntity {
   @Column({ nullable: true })
   phone: string;
 
-  @OneToOne(() => UsersAttributes, (attributes) => attributes.user)
+  @OneToOne(() => UsersAttributes, (attributes) => attributes.user, {
+    cascade: true,
+  })
   attributes: Relation<UsersAttributes>;
 
   @OneToMany(() => Enrollment, (user) => user.user)

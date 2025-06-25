@@ -3,11 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, Equal, In, Repository } from 'typeorm';
 import MaterialMapper, { MaterialType } from '../entities/material-mapper';
 import { LinkVideo } from '../entities/video.entity';
-import { LinkResource } from '../entities/resource.entity';
 import VideoService from './video.service';
-import ResourceService from './resource.service';
+import ArticleService from './article.service';
 import QuizGroupService from './quiz.group.service';
 import { QuizGroupIF } from '../entities/quiz.group.entity';
+import { LinkArticle } from '../entities/article.entity';
 
 @Injectable()
 export default class MaterialMapperService {
@@ -16,7 +16,7 @@ export default class MaterialMapperService {
     private readonly lessonMapperRepo: Repository<MaterialMapper>,
     private readonly quizGroupService: QuizGroupService,
     private readonly videoService: VideoService,
-    private readonly resourceService: ResourceService
+    private readonly articleService: ArticleService
   ) {}
 
   create(map: DeepPartial<MaterialMapper>) {
@@ -32,14 +32,14 @@ export default class MaterialMapperService {
   async findAllMaterialsByLesson(lesson_id: string): Promise<{
     quiz_groups: QuizGroupIF[];
     videos: LinkVideo[];
-    resources: LinkResource[];
+    article: LinkArticle[];
   }> {
-    const [videos, resources] = await Promise.all([
+    const [videos, article] = await Promise.all([
       this.getTypedMaterials(lesson_id, MaterialType.VIDEO, this.videoService),
       this.getTypedMaterials(
         lesson_id,
-        MaterialType.RESOURCE,
-        this.resourceService
+        MaterialType.ARTICLE,
+        this.articleService
       ),
     ]);
 
@@ -70,7 +70,7 @@ export default class MaterialMapperService {
       type: MaterialType.QUIZ_GROUP,
     }));
 
-    return { quiz_groups, videos, resources };
+    return { quiz_groups, videos, article };
   }
 
   getTypedMaterials = async <T extends { id: string }, U extends MaterialType>(

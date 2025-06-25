@@ -21,7 +21,7 @@ import { MaterialType } from './material-mapper';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { LinkVideo } from './video.entity';
-import { LinkResource } from './resource.entity';
+import { LinkArticle } from './article.entity';
 import { QuizGroupIF } from './quiz.group.entity';
 
 export enum Level {
@@ -171,7 +171,7 @@ export interface ModuleDetails {
   lessons: LessonDetails[];
 }
 
-export declare type Material = LinkResource | LinkVideo | QuizGroupIF;
+export declare type Material = LinkArticle | LinkVideo | QuizGroupIF;
 
 export interface LessonDetails {
   id: string;
@@ -309,6 +309,66 @@ export class VideoDto {
 
   @IsNumber({}, { message: 'المدة يجب أن تكون رقمًا' })
   @Min(0, { message: 'المدة يجب أن تكون رقمًا موجبًا' })
+  duration: number;
+}
+
+class CodeDto {
+  @IsString()
+  code: string;
+
+  @IsString()
+  language: string;
+}
+
+class QuoteDto {
+  @IsString()
+  text: string;
+
+  @IsOptional()
+  @IsString()
+  author?: string;
+}
+
+type ArticleTypes = 'hero' | 'section' | 'conclusion';
+
+export class ArticleDto {
+  @IsOptional()
+  @IsNumber()
+  id?: number;
+
+  @IsEnum(['hero', 'section', 'conclusion'])
+  type: ArticleTypes;
+
+  @IsOptional()
+  @IsString()
+  title?: string;
+
+  @IsOptional()
+  @IsString()
+  image?: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @IsOptional()
+  @IsString()
+  body?: string;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CodeDto)
+  code?: CodeDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => QuoteDto)
+  quote?: QuoteDto;
+
+  @IsOptional()
+  @IsNumber()
+  order?: number;
+
   duration: number;
 }
 

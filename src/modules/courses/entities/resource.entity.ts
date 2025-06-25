@@ -1,11 +1,7 @@
 import { Column, Entity } from 'typeorm';
 import AbstractEntity from '@libs/db/abstract.base.entity';
 import { MaterialType } from './material-mapper';
-
-export declare type LinkResource = Resource & {
-  order: number;
-  type: MaterialType.RESOURCE;
-};
+import Article from './article.entity';
 
 @Entity({ name: 'resource' })
 export default class Resource extends AbstractEntity {

@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { CoursesService } from '../courses/services/courses.service';
 import {
+  ArticleDto,
   CourseModuleDto,
   CreateCareerPathDto,
   CreateNewCourseDto,
@@ -33,9 +34,10 @@ import ModuleService from '../courses/services/module.service';
 import CourseMapperService from '../courses/services/courses.mapper.service';
 import { MaterialType } from '../courses/entities/material-mapper';
 import Video from '../courses/entities/video.entity';
-import Resource from '../courses/entities/resource.entity';
 import QuizGroupService from '../courses/services/quiz.group.service';
 import QuizGroup from '../courses/entities/quiz.group.entity';
+import ArticleService from '../courses/services/article.service';
+import Article from '../courses/entities/article.entity';
 
 @Controller('admin')
 export class AdminController {
@@ -45,6 +47,7 @@ export class AdminController {
     private readonly careerPathService: CareerPathService,
     private readonly quizGroupService: QuizGroupService,
     private readonly videoService: VideoService,
+    private readonly articleService: ArticleService,
     private readonly resourceService: ResourceService,
     private readonly lessonService: LessonService,
     private readonly materialMapper: MaterialMapperService,
@@ -123,6 +126,16 @@ export class AdminController {
     return await this.videoService.getAll();
   }
 
+  // *** Articles
+  @Post('/article')
+  async createNewArticle(@Body() data: ArticleDto[]) {
+    return await this.articleService.create(data as any);
+  }
+  @Get('/articles')
+  async getAllArticles() {
+    return await this.articleService.getAll();
+  }
+
   @Post('/resources')
   async createNewResource(@Body() data: ResourceDto) {
     return await this.resourceService.create(data);
@@ -144,15 +157,15 @@ export class AdminController {
   }
 
   @Post('/mapper/material')
-  async linkQuizToLesson(@Body() link_material: MaterialLessonMapDto) {
-    let material: QuizGroup | Video | Resource;
+  async linkMaterial(@Body() link_material: MaterialLessonMapDto) {
+    let material: QuizGroup | Video | Article;
 
     if (link_material.type == MaterialType.QUIZ_GROUP)
       material = await this.quizGroupService.findOne(link_material.material_id);
     else if (link_material.type == MaterialType.VIDEO)
       material = await this.videoService.findOne(link_material.material_id);
-    else if (link_material.type == MaterialType.RESOURCE)
-      material = await this.resourceService.findOne(link_material.material_id);
+    else if (link_material.type == MaterialType.ARTICLE)
+      material = await this.articleService.findOne(link_material.material_id);
 
     console.log({ material, link_material });
     if (!material)
@@ -160,7 +173,6 @@ export class AdminController {
         `Material with ID ${link_material.material_id} not found`,
         HttpStatus.NOT_FOUND
       );
-
     return await this.materialMapper.create({
       lesson: { id: link_material.lesson_id },
       material_type: link_material.type,
