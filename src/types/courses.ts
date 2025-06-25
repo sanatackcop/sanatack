@@ -145,3 +145,9 @@ export interface UpdateVideoDto {
   description?: string;
   duration?: number;
 }
+
+export interface PatchCourseProgressParams {
+  userId: string;
+  courseId: string;
+  materialId: string;
+}

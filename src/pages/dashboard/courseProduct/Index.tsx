@@ -1,9 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Lesson, Material, SideNavbar } from "./_Sidebar";
+import UserContext from "@/context/UserContext";
+import { useContext } from "react";
 import { MaterialViewer } from "./_MaterialViewer";
 import NavigationPlayground from "./_TopNav";
 import { useSettings } from "@/context/SettingsContexts";
-import { getSingleCoursesApi } from "@/utils/_apis/courses-apis";
+import {
+  getSingleCoursesApi,
+  patchCourseProgressApi,
+} from "@/utils/_apis/courses-apis";
 import { useParams } from "react-router-dom";
 
 export const CoursePlayground: React.FC = () => {
@@ -28,8 +33,25 @@ export const CoursePlayground: React.FC = () => {
     () =>
       courseData?.modules?.flatMap((m: any) =>
         m?.lessons.flatMap((l: Lesson) => l?.materials)
-      ),
+      ) ?? [],
     [courseData?.modules]
+  );
+  const allMaterials = flatMaterials ?? [];
+
+  const totalMaterials = allMaterials.length;
+
+  const completedMaterials = allMaterials.filter(
+    (m: any) => m.completed
+  ).length;
+
+  const progress =
+    totalMaterials > 0
+      ? Math.round((completedMaterials / totalMaterials) * 100)
+      : 0;
+
+  const totalDuration = allMaterials.reduce(
+    (sum: any, material: any) => sum + Number(material.duration || 0),
+    0
   );
 
   useEffect(() => {
@@ -62,6 +84,77 @@ export const CoursePlayground: React.FC = () => {
         : [...prev, moduleId]
     );
   };
+  const userContext = useContext(UserContext);
+  if (!userContext || !userContext.auth?.user) {
+    return null;
+  }
+  const user = userContext.auth.user;
+
+  const handleComplete = async () => {
+    if (!currentMaterial || !user?.id) return;
+
+    const updatedCourseData = {
+      ...courseData,
+      modules: courseData.modules.map((module: any) => ({
+        ...module,
+        lessons: module.lessons.map((lesson: Lesson) => ({
+          ...lesson,
+          materials: lesson.materials.map((material: Material) =>
+            material.id === currentMaterial.id
+              ? { ...material, completed: true }
+              : material
+          ),
+        })),
+      })),
+    };
+    setCourseData(updatedCourseData);
+    setCurrentMaterial({ ...currentMaterial, completed: true });
+
+    try {
+      await patchCourseProgressApi({
+        userId: user.id,
+        courseId: courseData.id,
+        materialId: currentMaterial.id,
+      });
+    } catch (err) {
+      console.error("خطأ في PATCH complete:", err);
+      setCourseData(courseData);
+      setCurrentMaterial(currentMaterial);
+    }
+  };
+
+  const handleRestart = async () => {
+    if (!currentMaterial || !user?.id) return;
+
+    const updatedCourseData = {
+      ...courseData,
+      modules: courseData.modules.map((module: any) => ({
+        ...module,
+        lessons: module.lessons.map((lesson: Lesson) => ({
+          ...lesson,
+          materials: lesson.materials.map((material: Material) =>
+            material.id === currentMaterial.id
+              ? { ...material, completed: false }
+              : material
+          ),
+        })),
+      })),
+    };
+    setCourseData(updatedCourseData);
+    setCurrentMaterial({ ...currentMaterial, completed: false });
+
+    try {
+      await patchCourseProgressApi({
+        userId: user.id,
+        courseId: courseData.id,
+        materialId: currentMaterial.id,
+      });
+    } catch (err) {
+      console.error("خطأ في PATCH restart:", err);
+      setCourseData(courseData);
+      setCurrentMaterial(currentMaterial);
+    }
+  };
 
   return (
     <div
@@ -69,22 +162,24 @@ export const CoursePlayground: React.FC = () => {
       dir="rtl"
     >
       <NavigationPlayground
-        courseData={courseData}
+        courseData={{
+          ...courseData,
+          completedLessons: completedMaterials,
+          totalLessons: totalMaterials,
+          progress: progress,
+        }}
+        totalMaterials={totalMaterials}
+        totalDuration={totalDuration}
         sidebarOpen={sidebarOpen}
         prevMaterial={prevMaterial}
         nextMaterial={nextMaterial}
         handlePrev={handlePrev}
         handleNext={handleNext}
         currentIndex={currentIndex}
-        totalMaterials={flatMaterials?.length}
         setSidebarOpen={setSidebarOpen}
         currentMaterial={currentMaterial}
-        handleComplete={function (): void {
-          throw new Error("Function not implemented.");
-        }}
-        handleRestart={function (): void {
-          throw new Error("Function not implemented.");
-        }}
+        handleComplete={handleComplete}
+        handleRestart={handleRestart}
       />
 
       <div className="flex flex-1 overflow-hidden">
