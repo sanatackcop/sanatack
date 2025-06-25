@@ -91,3 +91,9 @@ export interface CoursesReport {
   streakDays: number;
   certifications: number;
 }
+
+export interface PatchCourseProgressParams {
+  userId: string;
+  courseId: string;
+  materialId: string;
+}
