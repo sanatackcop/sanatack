@@ -206,6 +206,54 @@ export class AdminController {
       console.log(err);
     }
   }
+  @Get('modules/:id')
+  async getSingleModule(@Param('id') id: string) {
+    try {
+      return await this.moduleService.findOne(id);
+    } catch (error: unknown) {
+      console.log({ error });
+      throw new HttpException(error, 500);
+    }
+  }
+
+  @Get('lessons/:id')
+  async getSingleLesson(@Param('id') id: string) {
+    try {
+      return await this.lessonService.findOne(id);
+    } catch (error: unknown) {
+      console.log({ error });
+      throw new HttpException(error, 500);
+    }
+  }
+
+  @Get('quizzes/:id')
+  async getSingleQuiz(@Param('id') id: string) {
+    try {
+      return await this.quizService.findOne(id);
+    } catch (error: unknown) {
+      console.log({ error });
+      throw new HttpException(error, 500);
+    }
+  }
+  @Get('videos/:id')
+  async getSingleVideo(@Param('id') id: string) {
+    try {
+      return await this.videoService.findOne(id);
+    } catch (error: unknown) {
+      console.log({ error });
+      throw new HttpException(error, 500);
+    }
+  }
+
+  @Get('articles/:id')
+  async getSingleArticle(@Param('id') id: string) {
+    try {
+      return await this.articleService.findOne(id);
+    } catch (error: unknown) {
+      console.log({ error });
+      throw new HttpException(error, 500);
+    }
+  }
 
   @Post('/modules')
   async createModule(@Body() module: ModuleDto) {
