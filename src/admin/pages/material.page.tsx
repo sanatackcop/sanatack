@@ -25,11 +25,18 @@ import { Quiz, Resource, Video } from "@/utils/types/adminTypes";
 import { CustomError } from "@/utils/_apis/api";
 import ArticleDialogCreate from "../components/article.create";
 import { Article } from "@/types/articles/articles";
+import QuizEdit from "../components/quiz.edit";
+import VideoEdit from "../components/video.edit";
+import ArticleEdit from "../components/article.edit";
 
 export default function MaterialsPage() {
   const [quiz, setQuiz] = useState<Quiz[]>([]);
   const [video, setVideo] = useState<Video[]>([]);
   const [article, setArticles] = useState<Article[]>([]);
+
+  const [editingQuizId, setEditingQuizId] = useState<string | null>(null);
+  const [editingVideoId, setEditingVideoId] = useState<string | null>(null);
+  const [editingArticleId, setEditingArticleId] = useState<string | null>(null);
 
   const [error, setError] = useState<string | null>(null);
 
@@ -160,18 +167,53 @@ export default function MaterialsPage() {
           <TabsTrigger value="article">article</TabsTrigger>
         </TabsList>
         <TabsContent value="quiz">
-          <DataTable columns={QuizColumns(handleDeleteQuiz)} data={quiz} />
+          <DataTable
+            columns={QuizColumns(handleDeleteQuiz, (id) =>
+              setEditingQuizId(id)
+            )}
+            data={quiz}
+          />
         </TabsContent>
         <TabsContent value="video">
-          <DataTable columns={VideoColumns(handleDeleteVideo)} data={video} />
+          <DataTable
+            columns={VideoColumns(handleDeleteVideo, (id) =>
+              setEditingVideoId(id)
+            )}
+            data={video}
+          />
         </TabsContent>
         <TabsContent value="article">
           <DataTable
-            columns={ArticlesColumns(handleDeleteArticle)}
+            columns={ArticlesColumns(handleDeleteArticle, (id) =>
+              setEditingArticleId(id)
+            )}
             data={article}
           />
         </TabsContent>
       </Tabs>
+      {editingQuizId && (
+        <QuizEdit
+          quizId={editingQuizId}
+          onClose={() => setEditingQuizId(null)}
+          onUpdated={fetchCourses}
+        />
+      )}
+
+      {editingVideoId && (
+        <VideoEdit
+          videoId={editingVideoId}
+          onClose={() => setEditingVideoId(null)}
+          onUpdated={fetchCourses}
+        />
+      )}
+
+      {editingArticleId && (
+        <ArticleEdit
+          articleId={editingArticleId}
+          onClose={() => setEditingArticleId(null)}
+          onUpdated={fetchCourses}
+        />
+      )}
     </div>
   );
 }

@@ -28,7 +28,8 @@ export const RoadmapColumns: ColumnDef<Roadmap>[] = [
 ];
 
 export const CourseColumns = (
-  onDelete: (id: string) => void
+  onDelete: (id: string) => void,
+  onEdit: (id: string) => void
 ): ColumnDef<Course>[] => [
   {
     accessorKey: "title",
@@ -55,149 +56,250 @@ export const CourseColumns = (
   {
     header: "Actions",
     cell: ({ row }) => (
-      <DeleteDialog
-        onDelete={() => onDelete(row.original.id)}
-        label="this course"
-      />
+      <div className="flex gap-2">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => onEdit(row.original.id)}
+        >
+          Edit
+        </Button>
+        <DeleteDialog
+          onDelete={() => onDelete(row.original.id)}
+          label="this course"
+        />
+      </div>
     ),
   },
 ];
+
 export const QuizColumns = (
-  onDelete: (id: string) => void
-): ColumnDef<Quiz>[] => [
-  {
-    accessorKey: "question",
-    header: "Question",
-  },
-  {
-    accessorKey: "correctAnswer",
-    header: "Answer",
-  },
-  {
-    header: "Actions",
-    cell: ({ row }) => (
-      <DeleteDialog
-        onDelete={() => onDelete(row.original.id)}
-        label={`the quiz "${row.original.question}"`}
-      />
-    ),
-  },
-];
+  onDelete?: (id: string) => void,
+  onEdit?: (id: string) => void
+): ColumnDef<Quiz>[] => {
+  const columns: ColumnDef<Quiz>[] = [
+    {
+      accessorKey: "question",
+      header: "Question",
+    },
+    {
+      accessorKey: "correctAnswer",
+      header: "Answer",
+    },
+  ];
+
+  if (onDelete || onEdit) {
+    columns.push({
+      header: "Actions",
+      cell: ({ row }) => (
+        <div className="flex gap-2">
+          {onEdit && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onEdit(row.original.id)}
+            >
+              Edit
+            </Button>
+          )}
+          {onDelete && (
+            <DeleteDialog
+              onDelete={() => onDelete(row.original.id)}
+              label={`the quiz "${row.original.question}"`}
+            />
+          )}
+        </div>
+      ),
+    });
+  }
+
+  return columns;
+};
 
 export const VideoColumns = (
-  onDelete: (id: string) => void
-): ColumnDef<Video>[] => [
-  {
-    accessorKey: "title",
-    header: "Title",
-  },
-  {
-    accessorKey: "description",
-    header: "Description",
-  },
-  {
-    accessorKey: "youtubeId",
-    header: "Youtube Url",
-  },
-  {
-    accessorKey: "duration",
-    header: "Duration",
-  },
-  {
-    header: "Actions",
-    cell: ({ row }) => (
-      <DeleteDialog
-        onDelete={() => onDelete(row.original.id)}
-        label={`the video "${row.original.title}"`}
-      />
-    ),
-  },
-];
+  onDelete?: (id: string) => void,
+  onEdit?: (id: string) => void
+): ColumnDef<Video>[] => {
+  const columns: ColumnDef<Video>[] = [
+    {
+      accessorKey: "title",
+      header: "Title",
+    },
+    {
+      accessorKey: "description",
+      header: "Description",
+    },
+    {
+      accessorKey: "youtubeId",
+      header: "Youtube URL",
+    },
+    {
+      accessorKey: "duration",
+      header: "Duration",
+    },
+  ];
+
+  if (onDelete || onEdit) {
+    columns.push({
+      header: "Actions",
+      cell: ({ row }) => (
+        <div className="flex gap-2">
+          {onEdit && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onEdit(row.original.id)}
+            >
+              Edit
+            </Button>
+          )}
+          {onDelete && (
+            <DeleteDialog
+              onDelete={() => onDelete(row.original.id)}
+              label={`the video "${row.original.title}"`}
+            />
+          )}
+        </div>
+      ),
+    });
+  }
+
+  return columns;
+};
 
 export const ArticlesColumns = (
-  onDelete: (id: string) => void
-): ColumnDef<Article>[] => [
-  {
-    accessorKey: "id",
-    id: "id",
-  },
-  {
-    accessorKey: "data[0].title", // first section title
-    header: "Title",
-  },
-  {
-    accessorKey: "data[0].type", // type of first section
-    header: "Type",
-  },
-  {
-    header: "Actions",
-    cell: ({ row }) => (
-      <DeleteDialog
-        onDelete={() => onDelete(row.original.id)}
-        label={`the article ID ${row.original.id}`}
-      />
-    ),
-  },
-];
+  onDelete?: (id: string) => void,
+  onEdit?: (id: string) => void
+): ColumnDef<Article>[] => {
+  const columns: ColumnDef<Article>[] = [
+    {
+      accessorKey: "id",
+      id: "id",
+    },
+    {
+      accessorKey: "data[0].title",
+      header: "Title",
+    },
+    {
+      accessorKey: "data[0].type",
+      header: "Type",
+    },
+  ];
+
+  if (onDelete || onEdit) {
+    columns.push({
+      header: "Actions",
+      cell: ({ row }) => (
+        <div className="flex gap-2">
+          {onEdit && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onEdit(row.original.id)}
+            >
+              Edit
+            </Button>
+          )}
+          {onDelete && (
+            <DeleteDialog
+              onDelete={() => onDelete(row.original.id)}
+              label={`the article ID ${row.original.id}`}
+            />
+          )}
+        </div>
+      ),
+    });
+  }
+
+  return columns;
+};
 
 export const LessonColumns = (
-  onDelete: (id: string) => void
-): ColumnDef<Lesson>[] => [
-  {
-    accessorKey: "name",
-    header: "Name",
-  },
-  {
-    accessorKey: "description",
-    header: "Description",
-  },
-  {
-    header: "Mapped Materials",
-    cell: ({ row }) => {
-      return (
+  onDelete?: (id: string) => void,
+  onEdit?: (id: string) => void
+): ColumnDef<Lesson>[] => {
+  const columns: ColumnDef<Lesson>[] = [
+    {
+      accessorKey: "name",
+      header: "Name",
+    },
+    {
+      accessorKey: "description",
+      header: "Description",
+    },
+    {
+      header: "Mapped Materials",
+      cell: ({ row }) => (
         <Link to={`/admin/lessons/${row.original.id}`}>
           <Button size="sm">Mapped Materials</Button>
         </Link>
-      );
+      ),
     },
-  },
-  {
-    header: "Actions",
-    cell: ({ row }) => (
-      <DeleteDialog
-        onDelete={() => onDelete(row.original.id)}
-        label={`the lesson "${row.original.name}"`}
-      />
-    ),
-  },
-];
+  ];
 
-export const ModuleLessons = (
-  onDelete: (id: string) => void
-): ColumnDef<Module>[] => [
-  {
-    accessorKey: "title",
-    header: "Title",
-  },
-  {
-    accessorKey: "description",
-    header: "Description",
-  },
-  {
-    header: "Mapped Lessons",
-    cell: ({ row }) => (
-      <Link to={`/admin/modules/${row.original.id}`}>
-        <Button size="sm">Mapped Lessons</Button>
-      </Link>
-    ),
-  },
-  {
-    header: "Actions",
-    cell: ({ row }) => (
-      <DeleteDialog
-        onDelete={() => onDelete(row.original.id)}
-        label={`the module "${row.original.title}"`}
-      />
-    ),
-  },
-];
+  if (onDelete || onEdit) {
+    columns.push({
+      header: "Actions",
+      cell: ({ row }) => (
+        <div className="flex gap-2">
+          {onEdit && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onEdit(row.original.id)}
+            >
+              Edit
+            </Button>
+          )}
+          {onDelete && (
+            <DeleteDialog
+              onDelete={() => onDelete(row.original.id)}
+              label={`the lesson "${row.original.name}"`}
+            />
+          )}
+        </div>
+      ),
+    });
+  }
+
+  return columns;
+};
+
+export function ModuleLessons(
+  onDelete?: (id: string) => void,
+  onEdit?: (id: string) => void
+): ColumnDef<Module>[] {
+  const baseColumns: ColumnDef<Module>[] = [
+    {
+      header: "Title",
+      accessorKey: "title",
+    },
+    {
+      header: "Duration",
+      accessorKey: "duration",
+    },
+  ];
+
+  if (onDelete && onEdit) {
+    baseColumns.push({
+      header: "Actions",
+      cell: ({ row }) => (
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => onEdit?.(row.original.id)}
+          >
+            Edit
+          </Button>
+          <DeleteDialog
+            onDelete={() => onDelete?.(row.original.id)}
+            label={`the module "${row.original.title}"`}
+          />
+        </div>
+      ),
+    });
+  }
+
+  return baseColumns;
+}

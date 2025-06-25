@@ -1,6 +1,8 @@
 import {
   CourseDto,
+  Lesson,
   LessonDto,
+  Module,
   ModuleDto,
   QuizDto,
   ResourceDto,
@@ -8,12 +10,25 @@ import {
 } from "../types";
 import {
   CourseModuleLink,
+  EditableArticle,
   LessonModuleLink,
   MaterialLessonLink,
+  Quiz,
+  Video,
 } from "../types/adminTypes";
 import { trackPromise } from "react-promise-tracker";
 import Api from "./api";
 import { ArticleCardDto } from "@/admin/components/article.create";
+import {
+  UpdateArticleDto,
+  UpdateCourseDto,
+  UpdateLessonDto,
+  UpdateModuleDto,
+  UpdateQuizDto,
+  UpdateResourceDto,
+  UpdateVideoDto,
+} from "@/types/courses";
+import { Article } from "@/types/articles/articles";
 
 export const getAllRoadmaps = async <T>({}) => {
   const response = await trackPromise(
@@ -164,6 +179,101 @@ export const fetchAllModules = async <T>() => {
     })
   );
   return response.data as T;
+};
+
+export const getSingleModule = async ({
+  module_id,
+}: {
+  module_id: string;
+}): Promise<Module> => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "get",
+        url: `admin/modules/${module_id}`,
+      }) as Promise<{ data: Module }>
+    );
+    return response.data;
+  } catch (e) {
+    console.error("getSingleModule error:", e);
+    throw e;
+  }
+};
+
+export const getSingleLesson = async ({
+  lesson_id,
+}: {
+  lesson_id: string;
+}): Promise<Lesson> => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "get",
+        url: `admin/lessons/${lesson_id}`,
+      }) as Promise<{ data: Lesson }>
+    );
+    return response.data;
+  } catch (e) {
+    console.error("getSingleLesson error:", e);
+    throw e;
+  }
+};
+
+export const getSingleQuiz = async ({
+  quiz_id,
+}: {
+  quiz_id: string;
+}): Promise<Quiz> => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "get",
+        url: `admin/quizzes/${quiz_id}`,
+      }) as Promise<{ data: Quiz }>
+    );
+    return response.data;
+  } catch (e) {
+    console.error("getSingleQuiz error:", e);
+    throw e;
+  }
+};
+
+export const getSingleVideo = async ({
+  video_id,
+}: {
+  video_id: string;
+}): Promise<Video> => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "get",
+        url: `admin/videos/${video_id}`,
+      }) as Promise<{ data: Video }>
+    );
+    return response.data;
+  } catch (e) {
+    console.error("getSingleVideo error:", e);
+    throw e;
+  }
+};
+
+export const getSingleArticle = async ({
+  article_id,
+}: {
+  article_id: string;
+}): Promise<EditableArticle> => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "get",
+        url: `admin/articles/${article_id}`,
+      }) as Promise<{ data: EditableArticle }>
+    );
+    return response.data;
+  } catch (e) {
+    console.error("getSingleArticle error:", e);
+    throw e;
+  }
 };
 
 export const createNewModule = async (module: ModuleDto) => {
@@ -322,6 +432,133 @@ export const deleteModule = async (module_id: string) => {
     return response.data;
   } catch (e: any) {
     console.log("error while deleting module", { e });
+    throw e;
+  }
+};
+
+export const updateCourse = async (
+  course_id: string,
+  data: UpdateCourseDto
+) => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "patch",
+        url: `admin/courses/${course_id}`,
+        data,
+      })
+    );
+    return response.data;
+  } catch (e: any) {
+    console.log("error while updating course", { e });
+    throw e;
+  }
+};
+
+export const updateModule = async (
+  module_id: string,
+  data: UpdateModuleDto
+) => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "patch",
+        url: `admin/modules/${module_id}`,
+        data,
+      })
+    );
+    return response.data;
+  } catch (e: any) {
+    console.log("error while updating module", { e });
+    throw e;
+  }
+};
+
+export const updateLesson = async (
+  lesson_id: string,
+  data: UpdateLessonDto
+) => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "patch",
+        url: `admin/lessons/${lesson_id}`,
+        data,
+      })
+    );
+    return response.data;
+  } catch (e: any) {
+    console.log("error while updating lesson", { e });
+    throw e;
+  }
+};
+
+export const updateArticle = async (
+  article_id: string,
+  data: UpdateArticleDto
+) => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "patch",
+        url: `admin/articles/${article_id}`,
+        data,
+      })
+    );
+    return response.data;
+  } catch (e: any) {
+    console.log("error while updating article", { e });
+    throw e;
+  }
+};
+
+export const updateQuiz = async (quiz_id: string, data: UpdateQuizDto) => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "patch",
+        url: `admin/quizzes/${quiz_id}`,
+        data,
+      })
+    );
+    return response.data;
+  } catch (e: any) {
+    console.log("error while updating quiz", { e });
+    throw e;
+  }
+};
+
+export const updateResource = async (
+  resource_id: string,
+  data: UpdateResourceDto
+) => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "patch",
+        url: `admin/resources/${resource_id}`,
+        data,
+      })
+    );
+    return response.data;
+  } catch (e: any) {
+    console.log("error while updating resource", { e });
+    throw e;
+  }
+};
+
+export const updateVideo = async (video_id: string, data: UpdateVideoDto) => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "patch",
+        url: `admin/videos/${video_id}`,
+        data,
+      })
+    );
+    return response.data;
+  } catch (e: any) {
+    console.log("error while updating video", { e });
     throw e;
   }
 };

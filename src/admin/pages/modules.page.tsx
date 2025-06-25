@@ -5,10 +5,12 @@ import { Module } from "@/utils/types";
 import { deleteModule, fetchAllModules } from "@/utils/_apis/admin-api";
 import { CustomError } from "@/utils/_apis/api";
 import ModuleCreate from "../components/modules.create";
+import ModuleEdit from "../components/modules.edit";
 
 export default function ModulesPage() {
   const [modules, setModules] = useState<Module[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [editingModuleId, setEditingModuleId] = useState<string | null>(null);
 
   const getAllModules = async () => {
     try {
@@ -41,7 +43,17 @@ export default function ModulesPage() {
       <div className=" mb-2">
         <ModuleCreate updateTable={() => getAllModules()} />
       </div>
-      <DataTable columns={ModuleLessons(handleDelete)} data={modules} />
+      <DataTable
+        columns={ModuleLessons(handleDelete, (id) => setEditingModuleId(id))}
+        data={modules}
+      />
+      {editingModuleId && (
+        <ModuleEdit
+          moduleId={editingModuleId}
+          onClose={() => setEditingModuleId(null)}
+          onUpdated={getAllModules}
+        />
+      )}
     </div>
   );
 }
