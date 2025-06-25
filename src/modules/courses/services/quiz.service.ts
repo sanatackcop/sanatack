@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import Quiz from '../entities/quiz.entity';
-import { Repository, Equal, FindManyOptions } from 'typeorm';
-import { QuizDto } from '../entities/dto';
+import { Repository, Equal, FindManyOptions, DeepPartial } from 'typeorm';
 
 @Injectable()
 export default class QuizService {
@@ -11,7 +10,7 @@ export default class QuizService {
     private readonly quizRepository: Repository<Quiz>
   ) {}
 
-  create(quiz: QuizDto) {
+  create(quiz: DeepPartial<Quiz>) {
     return this.quizRepository.save(this.quizRepository.create(quiz));
   }
 

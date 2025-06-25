@@ -143,7 +143,7 @@ export class CoursesService {
       level: course.level,
       course_info: {
         ...course.course_info,
-        durationHours: Math.floor(course.course_info.durationHours / 60 / 60),
+        durationHours: Math.floor(course.course_info.durationHours / 60),
       },
       isPublished: course.isPublished,
       isEnrolled: enrollment ? true : false,
@@ -168,14 +168,14 @@ export class CoursesService {
         return { ...module, order: courseMapper.order };
       }),
 
-      ...() => {
+      ...(() => {
         return enrollment
           ? {
               progress:
                 (enrollment.progress_counter / course.material_count) * 100,
             }
           : {};
-      },
+      })(),
     };
   }
 

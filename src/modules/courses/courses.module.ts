@@ -33,6 +33,8 @@ import LessonService from './services/lesson.service';
 import LessonMapperService from './services/lesson.mapper';
 import MaterialMapperService from './services/material.mapper.service';
 import CourseMapperService from './services/courses.mapper.service';
+import QuizGroup from './entities/quiz.group.entity';
+import QuizGroupService from './services/quiz.group.service';
 
 @Module({
   imports: [
@@ -55,6 +57,7 @@ import CourseMapperService from './services/courses.mapper.service';
       CareerEnrollment,
       RoadmapEnrollment,
       User,
+      QuizGroup,
     ]),
   ],
   controllers: [CoursesController],
@@ -73,6 +76,7 @@ import CourseMapperService from './services/courses.mapper.service';
     LessonMapperService,
     MaterialMapperService,
     CourseMapperService,
+    QuizGroupService,
   ],
   exports: [
     CareerPathService,
@@ -86,6 +90,7 @@ import CourseMapperService from './services/courses.mapper.service';
     MaterialMapperService,
     ModuleService,
     CourseMapperService,
+    QuizGroupService,
   ],
 })
 export class CoursesModule {}

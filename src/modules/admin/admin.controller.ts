@@ -24,7 +24,6 @@ import {
 } from '../courses/entities/dto';
 import RoadMapService from '../courses/services/roadmap.service';
 import CareerPathService from '../courses/services/career.path.service';
-import QuizService from '../courses/services/quiz.service';
 import VideoService from '../courses/services/video.service';
 import ResourceService from '../courses/services/resource.service';
 import LessonService from '../courses/services/lesson.service';
@@ -33,9 +32,10 @@ import MaterialMapperService from '../courses/services/material.mapper.service';
 import ModuleService from '../courses/services/module.service';
 import CourseMapperService from '../courses/services/courses.mapper.service';
 import { MaterialType } from '../courses/entities/material-mapper';
-import Quiz from '../courses/entities/quiz.entity';
 import Video from '../courses/entities/video.entity';
 import Resource from '../courses/entities/resource.entity';
+import QuizGroupService from '../courses/services/quiz.group.service';
+import QuizGroup from '../courses/entities/quiz.group.entity';
 
 @Controller('admin')
 export class AdminController {
@@ -43,7 +43,7 @@ export class AdminController {
     private readonly coursesService: CoursesService,
     private readonly roadmapService: RoadMapService,
     private readonly careerPathService: CareerPathService,
-    private readonly quizService: QuizService,
+    private readonly quizGroupService: QuizGroupService,
     private readonly videoService: VideoService,
     private readonly resourceService: ResourceService,
     private readonly lessonService: LessonService,
@@ -102,12 +102,15 @@ export class AdminController {
 
   @Post('/quizzes')
   async createNewQuiz(@Body() data: QuizDto) {
-    return await this.quizService.create(data);
+    return await this.quizGroupService.create(data);
   }
 
   @Get('/quizzes')
   async getAllQuiz() {
-    return await this.quizService.getAll();
+    return (await this.quizGroupService.getAll()).map((quizGroup) => ({
+      ...quizGroup,
+      type: MaterialType.QUIZ_GROUP,
+    }));
   }
 
   @Post('/videos')
@@ -141,26 +144,28 @@ export class AdminController {
   }
 
   @Post('/mapper/material')
-  async linkQuizToLesson(@Body() linkQuiz: MaterialLessonMapDto) {
-    let material: Quiz | Video | Resource;
-    if (linkQuiz.type == MaterialType.QUIZ)
-      material = await this.quizService.findOne(linkQuiz.material_id);
-    else if (linkQuiz.type == MaterialType.VIDEO)
-      material = await this.videoService.findOne(linkQuiz.material_id);
-    else if (linkQuiz.type == MaterialType.RESOURCE)
-      material = await this.resourceService.findOne(linkQuiz.material_id);
+  async linkQuizToLesson(@Body() link_material: MaterialLessonMapDto) {
+    let material: QuizGroup | Video | Resource;
 
+    if (link_material.type == MaterialType.QUIZ_GROUP)
+      material = await this.quizGroupService.findOne(link_material.material_id);
+    else if (link_material.type == MaterialType.VIDEO)
+      material = await this.videoService.findOne(link_material.material_id);
+    else if (link_material.type == MaterialType.RESOURCE)
+      material = await this.resourceService.findOne(link_material.material_id);
+
+    console.log({ material, link_material });
     if (!material)
       throw new HttpException(
-        `Material with ID ${linkQuiz.material_id} not found`,
+        `Material with ID ${link_material.material_id} not found`,
         HttpStatus.NOT_FOUND
       );
 
     return await this.materialMapper.create({
-      lesson: { id: linkQuiz.lesson_id },
+      lesson: { id: link_material.lesson_id },
+      material_type: link_material.type,
+      order: link_material.order,
       material_id: material.id,
-      material_type: linkQuiz.type,
-      order: linkQuiz.order,
       material_duration: material.duration,
     });
   }
@@ -168,7 +173,9 @@ export class AdminController {
   @Get('/mapper/:lesson_id/materials')
   async getAllMappedQuizzes(@Param('lesson_id') lesson_id: string) {
     try {
-      return await this.materialMapper.findAllMaterialsByLesson(lesson_id);
+      const h = await this.materialMapper.findAllMaterialsByLesson(lesson_id);
+      console.dir({ h }, { depth: null });
+      return h;
     } catch (error: unknown) {
       console.log({ error });
     }

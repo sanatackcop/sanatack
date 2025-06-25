@@ -20,9 +20,9 @@ import {
 import { MaterialType } from './material-mapper';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { LinkQuiz } from './quiz.entity';
 import { LinkVideo } from './video.entity';
 import { LinkResource } from './resource.entity';
+import { QuizGroupIF } from './quiz.group.entity';
 
 export enum Level {
   'BEGINNER' = 'BEGINNER',
@@ -171,7 +171,7 @@ export interface ModuleDetails {
   lessons: LessonDetails[];
 }
 
-export declare type Material = LinkResource | LinkVideo | LinkQuiz;
+export declare type Material = LinkResource | LinkVideo | QuizGroupIF;
 
 export interface LessonDetails {
   id: string;
@@ -259,7 +259,7 @@ export class ResourceDto {
   content?: string;
 }
 
-export class QuizDto {
+export class QuizItemDto {
   @IsString()
   @IsNotEmpty()
   question: string;
@@ -269,19 +269,29 @@ export class QuizDto {
   correctAnswer: string;
 
   @IsString()
-  @IsNotEmpty()
   @IsOptional()
   explanation?: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  order: number;
 
   @IsArray()
   @ArrayMinSize(4)
   @ArrayMaxSize(4)
-  @IsString({ each: true }) // validate that each element is a string
+  @IsString({ each: true })
   options: string[];
+}
+export class QuizDto {
+  @IsNotEmpty()
+  @IsString()
+  title: string;
 
-  @IsNumber({}, { message: 'المدة يجب أن تكون رقمًا' })
-  @Min(0, { message: 'المدة يجب أن تكون رقمًا موجبًا' })
-  duration: number;
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => QuizItemDto)
+  @ApiProperty({ type: [QuizItemDto] })
+  quizzes: QuizItemDto[];
 }
 
 export class VideoDto {

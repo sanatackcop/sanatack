@@ -2,19 +2,19 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, Equal, In, Repository } from 'typeorm';
 import MaterialMapper, { MaterialType } from '../entities/material-mapper';
-import QuizService from './quiz.service';
-import { LinkQuiz } from '../entities/quiz.entity';
 import { LinkVideo } from '../entities/video.entity';
 import { LinkResource } from '../entities/resource.entity';
 import VideoService from './video.service';
 import ResourceService from './resource.service';
+import QuizGroupService from './quiz.group.service';
+import { QuizGroupIF } from '../entities/quiz.group.entity';
 
 @Injectable()
 export default class MaterialMapperService {
   constructor(
     @InjectRepository(MaterialMapper)
     private readonly lessonMapperRepo: Repository<MaterialMapper>,
-    private readonly quizService: QuizService,
+    private readonly quizGroupService: QuizGroupService,
     private readonly videoService: VideoService,
     private readonly resourceService: ResourceService
   ) {}
@@ -30,12 +30,11 @@ export default class MaterialMapperService {
   }
 
   async findAllMaterialsByLesson(lesson_id: string): Promise<{
-    quizzes: LinkQuiz[];
+    quiz_groups: QuizGroupIF[];
     videos: LinkVideo[];
     resources: LinkResource[];
   }> {
-    const [quizzes, videos, resources] = await Promise.all([
-      this.getTypedMaterials(lesson_id, MaterialType.QUIZ, this.quizService),
+    const [videos, resources] = await Promise.all([
       this.getTypedMaterials(lesson_id, MaterialType.VIDEO, this.videoService),
       this.getTypedMaterials(
         lesson_id,
@@ -44,7 +43,34 @@ export default class MaterialMapperService {
       ),
     ]);
 
-    return { quizzes, videos, resources };
+    const lessonMapper = await this.lessonMapperRepo.find({
+      where: { lesson: { id: Equal(lesson_id) } },
+    });
+
+    const raw_quiz_groups = await this.quizGroupService.findAll({
+      where: {
+        id: In(
+          lessonMapper
+            .filter((m) => m.material_type == MaterialType.QUIZ_GROUP)
+            .map((m) => m.material_id)
+        ),
+      },
+      relations: { quizzes: true },
+    });
+
+    const quiz_groups: QuizGroupIF[] = raw_quiz_groups.map((mapper, ind) => ({
+      id: mapper.id,
+      title: mapper.title,
+      quizzes: mapper.quizzes.map((quiz) => ({
+        ...quiz,
+        order: quiz.order,
+        type: MaterialType.QUIZ,
+      })),
+      order: lessonMapper.find((m) => m.material_id == mapper.id).order ?? ind,
+      type: MaterialType.QUIZ_GROUP,
+    }));
+
+    return { quiz_groups, videos, resources };
   }
 
   getTypedMaterials = async <T extends { id: string }, U extends MaterialType>(
@@ -55,7 +81,7 @@ export default class MaterialMapperService {
     const material = await this.lessonMapperRepo.find({
       where: { lesson: { id: Equal(lesson_id) } },
     });
-    const filtered = material.filter((m) => m.material_type === type);
+    const filtered = material.filter((m) => m.material_type == type);
     const items = await service.findAll({
       where: {
         id: In(filtered.map((m) => m.material_id)),

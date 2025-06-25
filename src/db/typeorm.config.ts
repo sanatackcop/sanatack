@@ -22,6 +22,7 @@ import { RoadmapEnrollment } from 'src/modules/courses/entities/roadmap-enrollme
 import UsersAttributes from 'src/modules/users/entities/user.attributes.entity';
 import { Otps } from 'src/modules/auth/entities/otp.entity';
 import { Attempts } from 'src/modules/auth/entities/attempts.entity';
+import QuizGroup from 'src/modules/courses/entities/quiz.group.entity';
 
 config();
 
@@ -39,6 +40,7 @@ export const entities = [
   Lesson,
   Resource,
   Quiz,
+  QuizGroup,
   Video,
   Enrollment,
   MaterialMapper,
@@ -57,7 +59,7 @@ const mainDataSource = new DataSource({
   username: cfg.get('MAIN_DB_USERNAME'),
   password: cfg.get('MAIN_DB_PASSWORD'),
   database: cfg.get('MAIN_DB'),
-  ssl: true,
+  ssl: cfg.get('MAIN_DB_SSL') == 'true',
   entities: entities,
   logging: false,
   migrations: migrationFiles,

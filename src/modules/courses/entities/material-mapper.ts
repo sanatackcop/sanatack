@@ -6,6 +6,7 @@ import AbstractEntity from '@libs/db/abstract.base.entity';
 export enum MaterialType {
   RESOURCE = 'resource',
   VIDEO = 'video',
+  QUIZ_GROUP = 'quiz_group',
   QUIZ = 'quiz',
   LINK = 'link',
 }
