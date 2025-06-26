@@ -1,14 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import Quiz from '../entities/quiz.entity';
 import { Repository, Equal, FindManyOptions } from 'typeorm';
-import { QuizDto } from '../entities/dto';
+import { QuizDto, UpdateQuizDto } from '../entities/dto';
+import MaterialMapper, { MaterialType } from '../entities/material-mapper';
 
 @Injectable()
 export default class QuizService {
   constructor(
     @InjectRepository(Quiz)
-    private readonly quizRepository: Repository<Quiz>
+    private readonly quizRepository: Repository<Quiz>,
+    @InjectRepository(MaterialMapper)
+    private readonly materialMapperRepository: Repository<MaterialMapper>
   ) {}
 
   create(quiz: QuizDto) {
@@ -27,5 +30,24 @@ export default class QuizService {
 
   getAll() {
     return this.quizRepository.find();
+  }
+
+  async delete(quizId: string) {
+    await this.materialMapperRepository.delete({
+      material_id: quizId,
+      material_type: MaterialType.QUIZ,
+    });
+    const result = await this.quizRepository.delete(quizId);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Quiz with ID ${quizId} not found`);
+    }
+  }
+
+  async update(quizId: string, dto: UpdateQuizDto) {
+    const result = await this.quizRepository.update(quizId, dto);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Quiz with ID ${quizId} not found`);
+    }
+    return result;
   }
 }

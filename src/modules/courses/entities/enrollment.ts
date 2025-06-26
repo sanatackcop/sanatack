@@ -7,7 +7,7 @@ import AbstractEntity from '@libs/db/abstract.base.entity';
 export class Enrollment extends AbstractEntity {
   @ManyToOne(() => Course, (course) => course.enrollment, {
     onDelete: 'SET NULL',
-    nullable: false,
+    nullable: true,
   })
   @JoinColumn({ name: 'course_id' })
   course: Relation<Course>;

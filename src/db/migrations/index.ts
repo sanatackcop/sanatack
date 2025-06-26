@@ -3,6 +3,8 @@ import { UpdateCourseCreation1750185723559 } from './1750185723559-UpdateCourseC
 import { UpdateCourseEntity1750500683013 } from './1750500683013-UpdateCourseEntity';
 import { AddedArticleTable1750524459147 } from './1750524459147-AddedArticleTable';
 import { UserAttributesTable1750264341355 } from './1750264341355-UserAttributesTable';
+import { EnrollmentCourseDelete1750673629147 } from './1750673629147-EnrollmentCourseDelete';
+import { LessonDelete1750674908389 } from './1750674908389-LessonDelete';
 
 export const migrationFiles = [
   FullMig1749751469450,
@@ -10,4 +12,6 @@ export const migrationFiles = [
   UpdateCourseCreation1750185723559,
   UpdateCourseEntity1750500683013,
   AddedArticleTable1750524459147,
+  EnrollmentCourseDelete1750673629147,
+  LessonDelete1750674908389
 ];

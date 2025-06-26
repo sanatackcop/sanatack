@@ -1,10 +1,12 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpException,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Query,
 } from '@nestjs/common';
@@ -21,6 +23,13 @@ import {
   ModuleLessonDto,
   QuizDto,
   ResourceDto,
+  UpdateArticleDto,
+  UpdateCourseDto,
+  UpdateLessonDto,
+  UpdateModuleDto,
+  UpdateQuizDto,
+  UpdateResourceDto,
+  UpdateVideoDto,
   VideoDto,
 } from '../courses/entities/dto';
 import RoadMapService from '../courses/services/roadmap.service';
@@ -197,6 +206,54 @@ export class AdminController {
       console.log(err);
     }
   }
+  @Get('modules/:id')
+  async getSingleModule(@Param('id') id: string) {
+    try {
+      return await this.moduleService.findOne(id);
+    } catch (error: unknown) {
+      console.log({ error });
+      throw new HttpException(error, 500);
+    }
+  }
+
+  @Get('lessons/:id')
+  async getSingleLesson(@Param('id') id: string) {
+    try {
+      return await this.lessonService.findOne(id);
+    } catch (error: unknown) {
+      console.log({ error });
+      throw new HttpException(error, 500);
+    }
+  }
+
+  @Get('quizzes/:id')
+  async getSingleQuiz(@Param('id') id: string) {
+    try {
+      return await this.quizService.findOne(id);
+    } catch (error: unknown) {
+      console.log({ error });
+      throw new HttpException(error, 500);
+    }
+  }
+  @Get('videos/:id')
+  async getSingleVideo(@Param('id') id: string) {
+    try {
+      return await this.videoService.findOne(id);
+    } catch (error: unknown) {
+      console.log({ error });
+      throw new HttpException(error, 500);
+    }
+  }
+
+  @Get('articles/:id')
+  async getSingleArticle(@Param('id') id: string) {
+    try {
+      return await this.articleService.findOne(id);
+    } catch (error: unknown) {
+      console.log({ error });
+      throw new HttpException(error, 500);
+    }
+  }
 
   @Post('/modules')
   async createModule(@Body() module: ModuleDto) {
@@ -236,6 +293,152 @@ export class AdminController {
   async getAllRoadmaps() {
     try {
       return await this.roadmapService.getAll();
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  @Delete('/courses/:course_id')
+  async deleteCourse(@Param('course_id') course_id: string) {
+    try {
+      return await this.coursesService.delete(course_id);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  @Delete('/lessons/:lesson_id')
+  async deleteLesson(@Param('lesson_id') lesson_id: string) {
+    try {
+      return await this.lessonService.delete(lesson_id);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  @Delete('/quizzes/:quiz_id')
+  async deleteQuiz(@Param('quiz_id') quiz_id: string) {
+    try {
+      return await this.quizService.delete(quiz_id);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  @Delete('/resources/:resource_id')
+  async deleteResource(@Param('resource_id') resource_id: string) {
+    try {
+      return await this.resourceService.delete(resource_id);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  @Delete('/articles/:article_id')
+  async deleteArticle(@Param('article_id') article_id: string) {
+    try {
+      return await this.articleService.delete(article_id);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  @Delete('/videos/:video_id')
+  async deleteVideo(@Param('video_id') video_id: string) {
+    try {
+      return await this.videoService.delete(video_id);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+  @Delete('/modules/:module_id')
+  async deleteModule(@Param('module_id') module_id: string) {
+    try {
+      return await this.moduleService.delete(module_id);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  @Patch('/courses/:course_id')
+  async updateCourse(
+    @Param('course_id') course_id: string,
+    @Body() dto: UpdateCourseDto
+  ) {
+    try {
+      return await this.coursesService.updateCourse(course_id, dto);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  @Patch('/modules/:module_id')
+  async updateModule(
+    @Param('module_id') module_id: string,
+    @Body() dto: UpdateModuleDto
+  ) {
+    try {
+      return await this.moduleService.update(module_id, dto);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  @Patch('/lessons/:lesson_id')
+  async updateLesson(
+    @Param('lesson_id') lesson_id: string,
+    @Body() dto: UpdateLessonDto
+  ) {
+    try {
+      return await this.lessonService.update(lesson_id, dto);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  @Patch('/articles/:article_id')
+  async updateArticle(
+    @Param('article_id') article_id: string,
+    @Body() dto: UpdateArticleDto
+  ) {
+    try {
+      return await this.articleService.update(article_id, dto);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  @Patch('/quizzes/:quiz_id')
+  async updateQuiz(
+    @Param('quiz_id') quiz_id: string,
+    @Body() dto: UpdateQuizDto
+  ) {
+    try {
+      return await this.quizService.update(quiz_id, dto);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  @Patch('/resources/:resource_id')
+  async updateResource(
+    @Param('resource_id') resource_id: string,
+    @Body() dto: UpdateResourceDto
+  ) {
+    try {
+      return await this.resourceService.update(resource_id, dto);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  @Patch('/videos/:video_id')
+  async updateVideo(
+    @Param('video_id') video_id: string,
+    @Body() dto: UpdateVideoDto
+  ) {
+    try {
+      return await this.videoService.update(video_id, dto);
     } catch (err) {
       console.log(err);
     }
