@@ -35,22 +35,22 @@ import {
   Minus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  enrollCoursesApi,
-  getSingleCoursesApi,
-} from "@/utils/_apis/courses-apis";
+import { enrollCoursesApi } from "@/utils/_apis/courses-apis";
 import AppLayout from "@/components/layout/Applayout";
-import { CourseDetails, ModuleDetails } from "@/types/courses";
+import { useCourseData } from "@/hooks/useCourseData";
 
 export default function CourseView() {
   const { id } = useParams<{ id: string }>();
-  const [course, setCourse] = useState<CourseDetails>();
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
   const [enrolling, setEnrolling] = useState<boolean>(false);
-  const [timeLeft] = useState<number>(48 * 60 * 60);
   const navigate = useNavigate();
   const location = useLocation();
+  const {
+    course,
+    getTotalLessons,
+    getCompletedLessonsCount,
+    materialsDuration,
+  } = useCourseData(id as string);
+
   const [expandedModules, setExpandedModules] = useState<Set<string>>(
     new Set()
   );
@@ -58,23 +58,9 @@ export default function CourseView() {
   useEffect(() => {
     if (!course) return;
 
-    if (course.modules.length > 0)
+    if (course.modules?.length > 0)
       setExpandedModules(new Set([course.modules[0].id]));
   }, [course]);
-
-  const fetchCourse = async () => {
-    if (!id) return;
-    try {
-      setLoading(true);
-      const response = await getSingleCoursesApi({ course_id: id });
-      setCourse(response);
-      setLoading(false);
-      console.log(loading, error, timeLeft);
-    } catch (err: any) {
-      setError(err?.message || "حدث خطأ أثناء جلب بيانات الدورة، حاول مجددًا.");
-      setLoading(false);
-    }
-  };
 
   const expandAllModules = () => {
     if (course?.modules) {
@@ -85,10 +71,6 @@ export default function CourseView() {
   const collapseAllModules = () => {
     setExpandedModules(new Set());
   };
-
-  useEffect(() => {
-    fetchCourse();
-  }, []);
 
   if (!course) {
     return <h1 className="text-center">There is no course</h1>;
@@ -111,30 +93,6 @@ export default function CourseView() {
       setEnrolling(false);
     }
   };
-
-  const getCompletedLessonsCount = (): number => {
-    if (course.isEnrolled)
-      return (
-        course.modules.forEach((module, module_index) =>
-          module.lessons.map((lesson, lesson_index) => {
-            const material = lesson.materials.find(
-              (material) => material.id == course.current_material
-            );
-            if (material) return module_index++ * lesson_index++;
-          })
-        ) ?? 0
-      );
-    return 0;
-  };
-
-  const getTotalLessons = () => {
-    return course.modules.reduce(
-      (total: number, module: ModuleDetails) =>
-        total + (module.lessons?.length || 0),
-      0
-    );
-  };
-
   const toggleModule = (moduleId: string) => {
     const newExpanded = new Set(expandedModules);
     if (newExpanded.has(moduleId)) {
@@ -145,30 +103,10 @@ export default function CourseView() {
     setExpandedModules(newExpanded);
   };
 
-  const getTotalDuration = () => {
-    if (!course?.modules) return 0;
-    return course.modules.reduce((total: number, module: any) => {
-      return (
-        total +
-        module?.lessons?.reduce((lessonTotal: number, lesson: any) => {
-          return (
-            lessonTotal +
-            lesson.materials.reduce((materialTotal: number, material: any) => {
-              const duration = material.duration
-                ? parseInt(material.duration)
-                : 0;
-              return materialTotal + duration;
-            }, 0)
-          );
-        }, 0)
-      );
-    }, 0);
-  };
-
   const courseStats = [
     {
       title: "إجمالي الساعات",
-      value: `${course.course_info.durationHours} ساعة`,
+      value: `${materialsDuration / 60} ساعة`,
       icon: <Clock className="w-5 h-5" />,
       color: "bg-blue-500",
       trend: "+12%",
@@ -227,7 +165,7 @@ export default function CourseView() {
                     المهارات والتقنيات
                   </h3>
                   <div className="flex flex-wrap gap-2">
-                    {course.course_info.tags.map((tag: any, index: any) => (
+                    {course.course_info?.tags.map((tag: any, index: any) => (
                       <span
                         key={index}
                         className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -265,7 +203,7 @@ export default function CourseView() {
                         وقت الإكمال
                       </div>
                       <div className="text-xs text-slate-600 dark:text-slate-400">
-                        {course.course_info.durationHours} ساعة
+                        {materialsDuration / 60} ساعة
                       </div>
                     </div>
                   </div>
@@ -318,17 +256,19 @@ export default function CourseView() {
                 أهداف التعلم
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {course.course_info.new_skills_result.map((outcome, index) => (
-                  <div
-                    key={index}
-                    className="flex items-start gap-3 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-200"
-                  >
-                    <CheckCircle2 className="w-5 h-5 text-emerald-500 mt-0.5 flex-shrink-0" />
-                    <span className="text-slate-700 dark:text-slate-300">
-                      {outcome}
-                    </span>
-                  </div>
-                ))}
+                {course.course_info?.new_skills_result.map(
+                  (outcome: string, index: number) => (
+                    <div
+                      key={index}
+                      className="flex items-start gap-3 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-200"
+                    >
+                      <CheckCircle2 className="w-5 h-5 text-emerald-500 mt-0.5 flex-shrink-0" />
+                      <span className="text-slate-700 dark:text-slate-300">
+                        {outcome}
+                      </span>
+                    </div>
+                  )
+                )}
               </div>
             </div>
 
@@ -338,30 +278,26 @@ export default function CourseView() {
                 المهارات المكتسبة
               </h2>
               <div className="space-y-6">
-                {Object.entries(course.course_info.learning_outcome).map(
-                  ([skill, level], index) => (
-                    <div key={index} className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium text-slate-900 dark:text-slate-100">
-                          {skill}
-                        </span>
-                        <span className="text-sm text-slate-600 dark:text-slate-400">
-                          {level}%
-                        </span>
-                      </div>
-                      <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3">
-                        <div
-                          className={`bg-[#4F46E5] h-3 rounded-full transition-all duration-1000 ease-out`}
-                          style={
-                            {
-                              width: `${level}%`,
-                            } /* Replace with dynamic color if needed */
-                          }
-                        ></div>
-                      </div>
+                {Object.entries(
+                  course?.course_info?.learning_outcome ?? {}
+                ).map(([skill, level], index) => (
+                  <div key={index} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-slate-900 dark:text-slate-100">
+                        {skill}
+                      </span>
+                      <span className="text-sm text-slate-600 dark:text-slate-400">
+                        {course.level}%
+                      </span>
                     </div>
-                  )
-                )}
+                    <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3">
+                      <div
+                        className="bg-[#4F46E5] h-3 rounded-full transition-all duration-1000 ease-out"
+                        style={{ width: `${level}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -386,7 +322,7 @@ export default function CourseView() {
                   <div className="mb-6 p-6 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-200 dark:border-emerald-800">
                     <div className="text-center">
                       <div className="text-3xl font-bold text-emerald-700 dark:text-emerald-300 mb-2">
-                        {course.progress}%
+                        {course.completionRate}%
                       </div>
                       <div className="text-sm text-emerald-600 dark:text-emerald-400 mb-4">
                         تقدمك في الدورة
@@ -394,7 +330,7 @@ export default function CourseView() {
                       <div className="w-full bg-emerald-200 dark:bg-emerald-800 rounded-full h-3 mb-4">
                         <div
                           className="bg-emerald-500 h-3 rounded-full transition-all duration-500"
-                          style={{ width: `${course.progress}%` }}
+                          style={{ width: `${course.completionRate}%` }}
                         ></div>
                       </div>
                       <div className="text-xs text-emerald-500 dark:text-emerald-400">
@@ -481,7 +417,7 @@ export default function CourseView() {
                       وقت الإكمال
                     </span>
                     <span className="font-medium text-slate-900 dark:text-slate-100">
-                      {course.course_info.durationHours} ساعة
+                      {materialsDuration / 60} ساعة
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -526,7 +462,7 @@ export default function CourseView() {
           </div>
         </div>
 
-        {course.modules.length > 0 && (
+        {course.modules?.length > 0 && (
           <div className="space-y-6">
             <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 mt-5">
               <div className="flex items-center justify-between mb-5">
@@ -536,8 +472,7 @@ export default function CourseView() {
                   </h3>
                   <p className="text-sm text-slate-600 dark:text-slate-400">
                     {course?.modules?.length || 0} وحدات • {getTotalLessons()}{" "}
-                    درس • {Math.floor(getTotalDuration() / 60) || 0} ساعة
-                    إجمالية
+                    درس • {materialsDuration / 60 || 0} ساعة إجمالية
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -734,21 +669,25 @@ export default function CourseView() {
                                               config.icon
                                             )}
                                           </div>
+                                          <div className="flex justify-between items-center gap-4 w-full">
+                                            <div className="flex items-center gap-2 text-right">
+                                              <p className="font-medium text-slate-900 dark:text-slate-100 truncate">
+                                                {material.type}
+                                              </p>
+                                            </div>
 
-                                          <div className="flex-1 text-right min-w-0">
-                                            <p className="font-medium text-slate-900 dark:text-slate-100 truncate">
-                                              {material.title}
-                                            </p>
-                                            <div className="flex items-center justify-end gap-3 mt-2">
+                                            <div className="flex flex-wrap items-center justify-end gap-2 text-left">
                                               <span
                                                 className={`text-xs px-2 py-1 rounded-full font-medium ${config.color}`}
                                               >
                                                 {config.label}
                                               </span>
+
                                               <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
                                                 <Timer className="w-3 h-3" />
-                                                {material.duration || "5 دقائق"}
+                                                {material.duration} دقيقة
                                               </div>
+
                                               {material.completed && (
                                                 <span className="text-xs text-green-600 dark:text-green-400 font-medium">
                                                   مكتمل
@@ -789,7 +728,7 @@ export default function CourseView() {
           <div className="flex items-center justify-between">
             <div className="flex flex-col">
               <div className="text-sm text-slate-600 dark:text-slate-400">
-                {course.course_info.durationHours} ساعة • {course.level}
+                {course.course_info?.durationHours} ساعة • {course.level}
               </div>
               <div className="text-xs text-slate-500 dark:text-slate-500">
                 {course.projectsCount} مشروع عملي
