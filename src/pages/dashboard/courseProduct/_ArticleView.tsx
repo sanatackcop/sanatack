@@ -4,11 +4,7 @@ import {
   ChevronRight,
   Copy,
   Check,
-  Heart,
-  Share,
   BookOpen,
-  Clock,
-  User,
   Code,
   Lightbulb,
   AlertTriangle,
@@ -76,8 +72,6 @@ export default function ArticleView({
 }: ArticleViewProps): JSX.Element {
   const [currentSlide, setCurrentSlide] = useState<number>(0);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
-  const [isLiked, setIsLiked] = useState<boolean>(false);
-  const [likes, setLikes] = useState<number>(127);
   const [touchStart, setTouchStart] = useState<number>(0);
   const [touchEnd, setTouchEnd] = useState<number>(0);
   const [slides, setSlides] = useState<ArticleSlide[]>([]);
@@ -86,6 +80,10 @@ export default function ArticleView({
   useEffect(() => {
     if (material && material.data) {
       const convertedSlides: ArticleSlide[] = Object.values(material.data)
+        .filter(
+          (item): item is any =>
+            typeof item === "object" && item !== null && "type" in item
+        )
         .sort((a, b) => a.id - b.id)
         .map((item) => ({
           id: item.id,
@@ -112,15 +110,11 @@ export default function ArticleView({
     };
 
     return (
-      <div className="bg-gray-900 dark:bg-gray-800 rounded-2xl overflow-hidden shadow-2xl">
+      <div className="bg-gray-900 dark:bg-gray-800 rounded-2xl overflow-hidden shadow-2xl w--">
         <div className="flex items-center justify-between px-6 py-4 bg-gray-800 dark:bg-gray-700">
-          <div className="flex items-center gap-3">
-            <Code className="text-blue-400" size={20} />
-            <span className="text-gray-300 font-medium">{language}</span>
-          </div>
           <button
             onClick={handleCopy}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white transition-all rounded-lg"
+            className="flex items-center gap-2 p-2 bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white transition-all rounded-lg"
           >
             {copiedCode === code ? (
               <>
@@ -134,6 +128,10 @@ export default function ArticleView({
               </>
             )}
           </button>
+          <div className="flex items-center gap-3">
+            <Code className="text-blue-400" size={20} />
+            <span className="text-gray-300 font-medium">{language}</span>
+          </div>
         </div>
         <pre className="p-6 text-gray-100 overflow-x-auto text-sm leading-relaxed">
           <code>{code}</code>
@@ -144,8 +142,8 @@ export default function ArticleView({
 
   const Quote = ({ text, author }: QuoteProps) => (
     <div className="text-center py-8">
-      <div className="text-6xl text-blue-500 mb-6">"</div>
-      <blockquote className="text-2xl italic text-gray-700 dark:text-gray-300 mb-6 leading-relaxed max-w-3xl mx-auto">
+      <div className="text-5xl text-blue-500 mb-1">"</div>
+      <blockquote className="text-xl italic text-gray-700 dark:text-gray-300 mb-6 leading-relaxed max-w-3xl mx-auto">
         {text}
       </blockquote>
       {author && (
@@ -236,54 +234,27 @@ export default function ArticleView({
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, []);
 
-  const handleLike = () => {
-    setIsLiked(!isLiked);
-    setLikes((prev) => (isLiked ? prev - 1 : prev + 1));
-  };
-
   const renderSlide = (slide: ArticleSlide) => {
     switch (slide.type) {
       case "hero":
         return (
-          <div className="text-center bg-gradient-to-br from-blue-600 via-purple-700 to-blue-800 text-white rounded-3xl p-12 shadow-2xl">
-            <BookOpen className="mx-auto mb-6 text-blue-200" size={64} />
-            <h1 className="text-4xl font-bold mb-6 leading-tight">
-              {slide.title}
-            </h1>
-            {slide.description && (
-              <p className="text-xl opacity-90 mb-4">{slide.description}</p>
-            )}
-            {slide.body && (
-              <p className="text-lg opacity-80 mb-8">{slide.body}</p>
-            )}
-
-            <div className="flex items-center justify-center gap-6 text-sm opacity-80 mb-8">
-              <div className="flex items-center gap-2">
-                <User size={16} />
-                <span>مؤلف المقال</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock size={16} />
-                <span>قراءة ممتعة</span>
-              </div>
+          <div className="space-y-8 text-justify">
+            <div className="text-start">
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
+                {slide.title}
+              </h2>
+              {slide.description && (
+                <p className="text-xl text-gray-600 dark:text-blue-400 mb-6 ">
+                  {slide.description}
+                </p>
+              )}
             </div>
-
-            <div className="flex items-center justify-center gap-4">
-              <button
-                onClick={handleLike}
-                className={`flex items-center gap-2 px-6 py-3 rounded-full transition-all font-medium ${
-                  isLiked
-                    ? "bg-red-500 hover:bg-red-600"
-                    : "bg-white/20 hover:bg-white/30 backdrop-blur-sm"
-                }`}
-              >
-                <Heart size={16} className={isLiked ? "fill-current" : ""} />
-                <span>{likes}</span>
-              </button>
-              <button className="flex items-center gap-2 px-6 py-3 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm transition-all font-medium">
-                <Share size={16} />
-                <span>مشاركة</span>
-              </button>
+            <div className="flex flex-col justify-between flex-grow">
+              {slide.body && (
+                <p className="text-base sm:text-lg mt-2 text-gray-900 dark:text-gray-300 whitespace-pre-line">
+                  {slide.body}
+                </p>
+              )}
             </div>
           </div>
         );
@@ -291,24 +262,29 @@ export default function ArticleView({
       case "section":
         return (
           <div className="space-y-8">
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 text-white rounded-full mb-6 text-2xl font-bold">
-                📝
-              </div>
+            <div className="text-start">
               <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
                 {slide.title}
               </h2>
               {slide.description && (
-                <p className="text-xl text-blue-600 dark:text-blue-400 mb-6">
+                <p className="text-xl text-gray-600 dark:text-blue-400 mb-6">
                   {slide.description}
                 </p>
               )}
             </div>
-
-            <div className="space-y-8">
+            {slide.image && (
+              <div className="flex justify-start">
+                <img
+                  src={slide.image}
+                  alt={slide.title || "صورة المقال"}
+                  className="w-full h-auto rounded-xl shadow-lg max-h-80 object-cover"
+                />
+              </div>
+            )}
+            <div className="space-y-4">
               {slide.body && (
-                <div className="text-center">
-                  <div className="text-lg leading-relaxed text-gray-700 dark:text-gray-300 max-w-3xl mx-auto">
+                <div className="text-start">
+                  <div className="text-lg text-justify leading-relaxed text-gray-900 dark:text-gray-300 max-w-full">
                     {slide.body.split("\n").map((line, index) => (
                       <p key={index} className="mb-3">
                         {line}
@@ -318,18 +294,8 @@ export default function ArticleView({
                 </div>
               )}
 
-              {slide.image && (
-                <div className="flex justify-center">
-                  <img
-                    src={slide.image}
-                    alt={slide.title || "صورة المقال"}
-                    className="max-w-full h-auto rounded-xl shadow-lg max-h-80 object-cover"
-                  />
-                </div>
-              )}
-
               {slide.code && (
-                <div className="max-w-4xl mx-auto">
+                <div className="max-w-full mx-auto">
                   <CodeBlock
                     code={slide.code.code}
                     language={slide.code.language}
@@ -353,32 +319,40 @@ export default function ArticleView({
       case "conclusion":
         return (
           <div className="space-y-8">
-            <div className="text-center bg-gradient-to-br from-green-500 via-teal-600 to-blue-600 text-white rounded-3xl p-12 shadow-2xl">
-              <CheckCircle className="mx-auto mb-6 text-green-200" size={64} />
-              <h2 className="text-3xl font-bold mb-6">{slide.title}</h2>
+            <div className="text-start">
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
+                {slide.title}
+              </h2>
               {slide.description && (
-                <p className="text-xl opacity-90 mb-4">{slide.description}</p>
-              )}
-              {slide.body && (
-                <p className="text-lg leading-relaxed opacity-90 mb-8 max-w-3xl mx-auto">
-                  {slide.body}
+                <p className="text-xl text-gray-600 dark:text-blue-400 mb-6">
+                  {slide.description}
                 </p>
               )}
             </div>
-
-            <div className="space-y-8">
-              {slide.image && (
-                <div className="flex justify-center">
-                  <img
-                    src={slide.image}
-                    alt={slide.title || "صورة المقال"}
-                    className="max-w-full h-auto rounded-xl shadow-lg max-h-80 object-cover"
-                  />
+            {slide.image && (
+              <div className="flex justify-start">
+                <img
+                  src={slide.image}
+                  alt={slide.title || "صورة المقال"}
+                  className="max-w-full h-auto rounded-xl shadow-lg max-h-80 object-cover"
+                />
+              </div>
+            )}
+            <div className="space-y-4">
+              {slide.body && (
+                <div className="text-start">
+                  <div className="text-lg text-justify leading-relaxed text-gray-900 dark:text-gray-300 max-w-full">
+                    {slide.body.split("\n").map((line, index) => (
+                      <p key={index} className="mb-3">
+                        {line}
+                      </p>
+                    ))}
+                  </div>
                 </div>
               )}
 
               {slide.code && (
-                <div className="max-w-4xl mx-auto">
+                <div className="max-w-full mx-auto">
                   <CodeBlock
                     code={slide.code.code}
                     language={slide.code.language}
@@ -398,7 +372,6 @@ export default function ArticleView({
             </div>
           </div>
         );
-
       default:
         return null;
     }
@@ -455,7 +428,7 @@ export default function ArticleView({
         onTouchEnd={handleTouchEnd}
       >
         <div className="h-full flex items-center justify-center p-6">
-          <div className="w-full max-w-5xl mx-auto">
+          <div className="w-full max-w-5xl mx-auto pb-40 h-full max-h-[calc(100vh-80px)] overflow-y-auto scrollbar-hidden">
             {renderSlide(slides[currentSlide])}
           </div>
         </div>
@@ -463,7 +436,7 @@ export default function ArticleView({
         <button
           onClick={prevSlide}
           disabled={currentSlide === 0}
-          className={`absolute left-6 top-1/2 transform -translate-y-1/2 p-3 rounded-full shadow-lg transition-all ${
+          className={`absolute hidden md:block right-6 top-1/2 transform -translate-y-1/2 p-3 rounded-full shadow-lg transition-all ${
             currentSlide === 0
               ? "bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed"
               : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:scale-110"
@@ -475,7 +448,7 @@ export default function ArticleView({
         <button
           onClick={nextSlide}
           disabled={currentSlide === slides.length - 1}
-          className={`absolute right-6 top-1/2 transform -translate-y-1/2 p-3 rounded-full shadow-lg transition-all ${
+          className={`absolute hidden md:block left-6 top-1/2 transform -translate-y-1/2 p-3 rounded-full shadow-lg transition-all ${
             currentSlide === slides.length - 1
               ? "bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed"
               : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:scale-110"
@@ -497,11 +470,6 @@ export default function ArticleView({
             }`}
           />
         ))}
-      </div>
-
-      <div className="fixed top-40 right-6 bg-white dark:bg-gray-800 p-3 rounded-lg shadow-lg text-xs text-gray-600 dark:text-gray-400 hidden md:block">
-        <p>← → للتنقل</p>
-        <p>أو اسحب يسار/يمين</p>
       </div>
     </div>
   );

@@ -6,7 +6,6 @@ import {
   Check,
   RotateCcw,
   Sparkles,
-  Trophy,
   Target,
   TrendingUp,
   Clock,
@@ -35,6 +34,7 @@ interface navigationPlaygroundProps {
   handleNext: () => void;
   currentIndex: number;
   totalMaterials: number;
+  totalDuration: number;
   setSidebarOpen: (open: boolean) => void;
   sidebarOpen: boolean;
   currentMaterial: {
@@ -59,6 +59,7 @@ export const NavigationPlayground: React.FC<navigationPlaygroundProps> = ({
   handlePrev,
   handleNext,
   totalMaterials,
+  totalDuration,
   setSidebarOpen,
   sidebarOpen,
   currentMaterial,
@@ -74,8 +75,10 @@ export const NavigationPlayground: React.FC<navigationPlaygroundProps> = ({
 
   return (
     <>
-      <nav className="sticky top-0 z-50 
-      flex-shrink-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-600 shadow-sm ">
+      <nav
+        className="sticky top-0 z-50 
+      flex-shrink-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-600 shadow-sm "
+      >
         <div className="w-full">
           <div className="flex h-16 items-center justify-between px-4 lg:px-8 gap-4">
             <div className="flex items-center gap-4 flex-shrink-0">
@@ -100,7 +103,7 @@ export const NavigationPlayground: React.FC<navigationPlaygroundProps> = ({
                 <div className="hidden sm:flex items-center gap-2">
                   <Clock className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                   <span className="text-gray-600 dark:text-gray-400 font-medium">
-                    ≈ 15 دقيقة
+                    ≈ {totalDuration} دقيقة
                   </span>
                 </div>
               </div>
@@ -111,14 +114,14 @@ export const NavigationPlayground: React.FC<navigationPlaygroundProps> = ({
                     التقدم الإجمالي
                   </span>
                   <span className="text-xs font-bold text-gray-700 dark:text-gray-300">
-                    {12}%
+                    {courseData.progress}%
                   </span>
                 </div>
                 <div className="relative">
                   <div className="h-3 w-full rounded-full bg-gray-200 dark:bg-gray-700 shadow-inner">
                     <div
                       className="h-full rounded-full bg-gradient-to-r from-green-200 via-green-500 to-green-600 transition-all duration-700 ease-out shadow-sm"
-                      style={{ width: `${12}%` }}
+                      style={{ width: `${courseData.progress}%` }}
                     />
                   </div>
                   <div className="absolute top-0 left-0 w-full h-3 flex items-center justify-between">
@@ -173,19 +176,6 @@ export const NavigationPlayground: React.FC<navigationPlaygroundProps> = ({
               </Button>
             </div>
 
-            <div className="flex items-center gap-4">
-              <div className="w-20 sm:w-24">
-                <div className="relative">
-                  <div className="h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-green-400 to-blue-500 transition-all duration-500 ease-out"
-                      style={{ width: `${courseData.progress}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
             <div className="flex items-center gap-3">
               {currentMaterial && (
                 <>
@@ -218,9 +208,6 @@ export const NavigationPlayground: React.FC<navigationPlaygroundProps> = ({
       <Dialog open={congratsOpen} onOpenChange={setCongratsOpen}>
         <DialogContent className="max-w-md border-gray-200 dark:border-gray-700">
           <DialogHeader>
-            <div className="mx-auto mb-4 h-24 w-24 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center animate-bounce shadow-2xl">
-              <Trophy className="h-12 w-12 text-white" />
-            </div>
             <DialogTitle className="text-2xl font-bold text-center text-gray-900 dark:text-gray-100">
               إنجاز رائع! 🎉
             </DialogTitle>
