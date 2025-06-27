@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, Equal, Like, Repository } from 'typeorm';
 import { Module } from '../entities/module.entity';
 import LessonMapper from '../entities/lessons-maper.entity';
 import LessonService from './lesson.service';
+import { UpdateModuleDto } from '../entities/dto';
 
 @Injectable()
 export default class ModuleService {
@@ -54,5 +55,20 @@ export default class ModuleService {
         return { ...lesson, order: lessonMapper.order };
       }),
     };
+  }
+
+  async delete(moduleId: string) {
+    const result = await this.moduleRepository.delete(moduleId);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Course with ID ${moduleId} not found`);
+    }
+  }
+
+  async update(moduleId: string, dto: UpdateModuleDto) {
+    const result = await this.moduleRepository.update(moduleId, dto);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Module with ID ${moduleId} not found`);
+    }
+    return result;
   }
 }

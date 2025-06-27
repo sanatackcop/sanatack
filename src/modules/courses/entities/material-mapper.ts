@@ -14,7 +14,7 @@ export enum MaterialType {
 @Unique('lesson_material_unique', ['lesson', 'material_id'])
 export default class MaterialMapper extends AbstractEntity {
   @ManyToOne(() => Lesson, (lesson) => lesson.materialMapper, {
-    onDelete: 'SET NULL',
+    onDelete: 'CASCADE',
     nullable: false,
   })
   @JoinColumn({ name: 'lesson_id' })
