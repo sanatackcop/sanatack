@@ -3,13 +3,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, Equal, Repository } from 'typeorm';
 import { Lesson } from '../entities/lessons.entity';
 import MaterialMapper, { MaterialType } from '../entities/material-mapper';
-import QuizService from './quiz.service';
 import VideoService from './video.service';
 import ResourceService from './resource.service';
 import { Material, UpdateLessonDto } from '../entities/dto';
-import { LinkQuiz } from '../entities/quiz.entity';
 import { LinkVideo } from '../entities/video.entity';
 import { LinkArticle } from '../entities/article.entity';
+import QuizGroupService from './quiz.group.service';
+import { QuizGroupIF } from '../entities/quiz.group.entity';
 import ArticleService from './article.service';
 
 @Injectable()
@@ -17,9 +17,8 @@ export default class LessonService {
   constructor(
     @InjectRepository(Lesson)
     private readonly lessonRepository: Repository<Lesson>,
-    private readonly quizService: QuizService,
+    private readonly quizGroupService: QuizGroupService,
     private readonly videoService: VideoService,
-    private readonly resourceService: ResourceService,
     private readonly articleService: ArticleService
   ) {}
 
@@ -51,16 +50,22 @@ export default class LessonService {
         await Promise.all(
           lesson.materialMapper?.map(
             async (material: MaterialMapper): Promise<Material | null> => {
-              if (material.material_type === MaterialType.QUIZ) {
-                const quiz = await this.quizService.findOne(
+              if (material.material_type === MaterialType.QUIZ_GROUP) {
+                const quizGroup = await this.quizGroupService.findOne(
                   material.material_id
                 );
-                if (!quiz) return null;
+                if (!quizGroup) return null;
 
-                const result: LinkQuiz = {
-                  ...quiz,
+                const result: QuizGroupIF = {
+                  ...quizGroup,
+                  quizzes: (
+                    await this.quizGroupService.getQuizzes(quizGroup.id)
+                  ).quizzes.map((quiz) => ({
+                    ...quiz,
+                    type: MaterialType.QUIZ,
+                  })),
                   order: material.order,
-                  type: MaterialType.QUIZ,
+                  type: MaterialType.QUIZ_GROUP,
                 };
 
                 return result;
@@ -113,11 +118,11 @@ export default class LessonService {
     }
   }
 
-  async update(lessonId: string, dto: UpdateLessonDto){
+  async update(lessonId: string, dto: UpdateLessonDto) {
     const result = await this.lessonRepository.update(lessonId, dto);
-      if (result.affected === 0) {
-        throw new NotFoundException(`Lesson with ID ${lessonId} not found`);
-      }
-      return result;
+    if (result.affected === 0) {
+      throw new NotFoundException(`Lesson with ID ${lessonId} not found`);
+    }
+    return result;
   }
 }

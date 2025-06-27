@@ -27,14 +27,12 @@ import {
   UpdateCourseDto,
   UpdateLessonDto,
   UpdateModuleDto,
-  UpdateQuizDto,
   UpdateResourceDto,
   UpdateVideoDto,
   VideoDto,
 } from '../courses/entities/dto';
 import RoadMapService from '../courses/services/roadmap.service';
 import CareerPathService from '../courses/services/career.path.service';
-import QuizService from '../courses/services/quiz.service';
 import VideoService from '../courses/services/video.service';
 import ResourceService from '../courses/services/resource.service';
 import LessonService from '../courses/services/lesson.service';
@@ -43,11 +41,11 @@ import MaterialMapperService from '../courses/services/material.mapper.service';
 import ModuleService from '../courses/services/module.service';
 import CourseMapperService from '../courses/services/courses.mapper.service';
 import { MaterialType } from '../courses/entities/material-mapper';
-import Quiz from '../courses/entities/quiz.entity';
 import Video from '../courses/entities/video.entity';
-import Resource from '../courses/entities/resource.entity';
+import QuizGroupService from '../courses/services/quiz.group.service';
+import QuizGroup from '../courses/entities/quiz.group.entity';
 import ArticleService from '../courses/services/article.service';
-import { Article } from '../courses/entities/article.entity';
+import Article from '../courses/entities/article.entity';
 
 @Controller('admin')
 export class AdminController {
@@ -55,7 +53,7 @@ export class AdminController {
     private readonly coursesService: CoursesService,
     private readonly roadmapService: RoadMapService,
     private readonly careerPathService: CareerPathService,
-    private readonly quizService: QuizService,
+    private readonly quizGroupService: QuizGroupService,
     private readonly videoService: VideoService,
     private readonly articleService: ArticleService,
     private readonly resourceService: ResourceService,
@@ -115,12 +113,15 @@ export class AdminController {
 
   @Post('/quizzes')
   async createNewQuiz(@Body() data: QuizDto) {
-    return await this.quizService.create(data);
+    return await this.quizGroupService.create(data);
   }
 
   @Get('/quizzes')
   async getAllQuiz() {
-    return await this.quizService.getAll();
+    return (await this.quizGroupService.getAll()).map((quizGroup) => ({
+      ...quizGroup,
+      type: MaterialType.QUIZ_GROUP,
+    }));
   }
 
   @Post('/videos')
@@ -136,7 +137,7 @@ export class AdminController {
   // *** Articles
   @Post('/article')
   async createNewArticle(@Body() data: ArticleDto[]) {
-    return await this.articleService.create(data);
+    return await this.articleService.create(data as any);
   }
   @Get('/articles')
   async getAllArticles() {
@@ -164,27 +165,27 @@ export class AdminController {
   }
 
   @Post('/mapper/material')
-  async linkMaterial(@Body() linkQuiz: MaterialLessonMapDto) {
-    let material: Quiz | Video | Resource | Article;
-    if (linkQuiz.type == MaterialType.QUIZ)
-      material = await this.quizService.findOne(linkQuiz.material_id);
-    else if (linkQuiz.type == MaterialType.VIDEO)
-      material = await this.videoService.findOne(linkQuiz.material_id);
-    else if (linkQuiz.type == MaterialType.RESOURCE)
-      material = await this.resourceService.findOne(linkQuiz.material_id);
-    else if (linkQuiz.type == MaterialType.ARTICLE)
-      material = await this.articleService.findOne(linkQuiz.material_id);
+  async linkMaterial(@Body() link_material: MaterialLessonMapDto) {
+    let material: QuizGroup | Video | Article;
 
+    if (link_material.type == MaterialType.QUIZ_GROUP)
+      material = await this.quizGroupService.findOne(link_material.material_id);
+    else if (link_material.type == MaterialType.VIDEO)
+      material = await this.videoService.findOne(link_material.material_id);
+    else if (link_material.type == MaterialType.ARTICLE)
+      material = await this.articleService.findOne(link_material.material_id);
+
+    console.log({ material, link_material });
     if (!material)
       throw new HttpException(
-        `Material with ID ${linkQuiz.material_id} not found`,
+        `Material with ID ${link_material.material_id} not found`,
         HttpStatus.NOT_FOUND
       );
     return await this.materialMapper.create({
-      lesson: { id: linkQuiz.lesson_id },
+      lesson: { id: link_material.lesson_id },
+      material_type: link_material.type,
+      order: link_material.order,
       material_id: material.id,
-      material_type: linkQuiz.type,
-      order: linkQuiz.order,
       material_duration: material.duration,
     });
   }
@@ -192,7 +193,9 @@ export class AdminController {
   @Get('/mapper/:lesson_id/materials')
   async getAllMappedQuizzes(@Param('lesson_id') lesson_id: string) {
     try {
-      return await this.materialMapper.findAllMaterialsByLesson(lesson_id);
+      const h = await this.materialMapper.findAllMaterialsByLesson(lesson_id);
+      console.dir({ h }, { depth: null });
+      return h;
     } catch (error: unknown) {
       console.log({ error });
     }
@@ -229,7 +232,7 @@ export class AdminController {
   @Get('quizzes/:id')
   async getSingleQuiz(@Param('id') id: string) {
     try {
-      return await this.quizService.findOne(id);
+      return await this.quizGroupService.findOne(id);
     } catch (error: unknown) {
       console.log({ error });
       throw new HttpException(error, 500);
@@ -316,19 +319,19 @@ export class AdminController {
     }
   }
 
-  @Delete('/quizzes/:quiz_id')
-  async deleteQuiz(@Param('quiz_id') quiz_id: string) {
-    try {
-      return await this.quizService.delete(quiz_id);
-    } catch (err) {
-      console.log(err);
-    }
-  }
+  // @Delete('/quizzes/:quiz_id')
+  // async deleteQuiz(@Param('quiz_id') quiz_id: string) {
+  //   try {
+  // return await this.quizGroupService.delete(quiz_id);
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+  // }
 
   @Delete('/resources/:resource_id')
   async deleteResource(@Param('resource_id') resource_id: string) {
     try {
-      return await this.resourceService.delete(resource_id);
+      return await this.articleService.delete(resource_id);
     } catch (err) {
       console.log(err);
     }
@@ -408,17 +411,17 @@ export class AdminController {
     }
   }
 
-  @Patch('/quizzes/:quiz_id')
-  async updateQuiz(
-    @Param('quiz_id') quiz_id: string,
-    @Body() dto: UpdateQuizDto
-  ) {
-    try {
-      return await this.quizService.update(quiz_id, dto);
-    } catch (err) {
-      console.log(err);
-    }
-  }
+  // @Patch('/quizzes/:quiz_id')
+  // async updateQuiz(
+  //   @Param('quiz_id') quiz_id: string,
+  //   @Body() dto: UpdateQuizDto
+  // ) {
+  //   try {
+  // return await this.quizGroupService.update(quiz_id, dto);
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+  // }
 
   @Patch('/resources/:resource_id')
   async updateResource(
@@ -426,7 +429,7 @@ export class AdminController {
     @Body() dto: UpdateResourceDto
   ) {
     try {
-      return await this.resourceService.update(resource_id, dto);
+      return await this.articleService.update(resource_id, dto);
     } catch (err) {
       console.log(err);
     }

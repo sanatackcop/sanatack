@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import Quiz from '../entities/quiz.entity';
-import { Repository, Equal, FindManyOptions } from 'typeorm';
-import { QuizDto, UpdateQuizDto } from '../entities/dto';
+import { Repository, Equal, FindManyOptions, DeepPartial } from 'typeorm';
+import { UpdateQuizDto } from '../entities/dto';
 import MaterialMapper, { MaterialType } from '../entities/material-mapper';
 
 @Injectable()
@@ -14,7 +14,7 @@ export default class QuizService {
     private readonly materialMapperRepository: Repository<MaterialMapper>
   ) {}
 
-  create(quiz: QuizDto) {
+  create(quiz: DeepPartial<Quiz>) {
     return this.quizRepository.save(this.quizRepository.create(quiz));
   }
 

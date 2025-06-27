@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Equal, FindManyOptions, Repository } from 'typeorm';
-import { ArticleDto, UpdateArticleDto } from '../entities/dto';
-import { Article } from '../entities/article.entity';
+import { UpdateArticleDto } from '../entities/dto';
 import MaterialMapper, { MaterialType } from '../entities/material-mapper';
+import Article from '../entities/article.entity';
 
 @Injectable()
 export default class ArticleService {
@@ -14,12 +14,10 @@ export default class ArticleService {
     private readonly materialMapperRepository: Repository<MaterialMapper>
   ) {}
 
-  async create(createArticlesDto: any): Promise<Article> {
-    const article = this.articleRepository.create({
-      duration: createArticlesDto.duration,
-      data: createArticlesDto,
-    });
-    return await this.articleRepository.save(article);
+  create(createArticlesDto: Partial<Article>): Promise<Article> {
+    return this.articleRepository.save(
+      this.articleRepository.create(createArticlesDto)
+    );
   }
 
   async getAll(): Promise<Article[]> {

@@ -1,6 +1,7 @@
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, Relation } from 'typeorm';
 import AbstractEntity from '@libs/db/abstract.base.entity';
 import { MaterialType } from './material-mapper';
+import QuizGroup from './quiz.group.entity';
 
 export declare type LinkQuiz = Quiz & {
   order: number;
@@ -21,6 +22,10 @@ export default class Quiz extends AbstractEntity {
   @Column({ type: 'text', nullable: true })
   explanation: string;
 
-  @Column()
-  duration: number;
+  @Column({ default: 0 })
+  order: number;
+
+  @ManyToOne(() => QuizGroup, (QuizGroup) => QuizGroup.quizzes)
+  @JoinColumn({ name: 'quiz_group_id' })
+  quizGroup: Relation<QuizGroup>;
 }

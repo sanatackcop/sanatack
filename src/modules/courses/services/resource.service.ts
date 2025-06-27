@@ -37,7 +37,7 @@ export default class ResourceService {
   async delete(resourceId: string) {
     await this.materialMapperRepository.delete({
       material_id: resourceId,
-      material_type: MaterialType.RESOURCE,
+      material_type: MaterialType.ARTICLE,
     });
     const result = await this.resourceRepository.delete(resourceId);
     if (result.affected === 0) {

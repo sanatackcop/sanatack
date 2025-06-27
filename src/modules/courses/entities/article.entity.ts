@@ -9,7 +9,7 @@ export declare type LinkArticle = Article & {
 };
 
 @Entity('articles')
-export class Article extends AbstractEntity {
+export default class Article extends AbstractEntity {
   @Column({ type: 'json', nullable: false })
   data?: ArticleDto[];
 
