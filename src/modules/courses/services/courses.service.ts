@@ -170,7 +170,7 @@ export class CoursesService {
       isEnrolled: enrollment ? true : false,
       enrolledCount: course.enrolledCount,
       projectsCount: 0,
-      current_material: enrollment.current_material_id,
+      current_material: enrollment?.current_material_id,
       completionRate: course.completionCount
         ? (course.completionCount / course.enrolledCount) * 100
         : 0,
