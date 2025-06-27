@@ -78,7 +78,7 @@ export default function MappedMaterials() {
         <TabsContent value="quiz">
           <DataTable
             columns={[
-              ...QuizColumns,
+              ...QuizColumns(),
               { accessorKey: "order", header: "Order" },
             ]}
             data={quiz}
@@ -87,7 +87,7 @@ export default function MappedMaterials() {
         <TabsContent value="video">
           <DataTable
             columns={[
-              ...VideoColumns,
+              ...VideoColumns(),
               { accessorKey: "order", header: "Order" },
             ]}
             data={video}
@@ -96,7 +96,7 @@ export default function MappedMaterials() {
         <TabsContent value="article">
           <DataTable
             columns={[
-              ...ArticlesColumns,
+              ...ArticlesColumns(),
               { accessorKey: "order", header: "Order" },
             ]}
             data={article}

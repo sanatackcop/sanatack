@@ -2,13 +2,15 @@ import { DataTable } from "@/components/ui/data-table";
 import { ModuleLessons } from "../columns";
 import { useEffect, useState } from "react";
 import { Module } from "@/utils/types";
-import { fetchAllModules } from "@/utils/_apis/admin-api";
+import { deleteModule, fetchAllModules } from "@/utils/_apis/admin-api";
 import { CustomError } from "@/utils/_apis/api";
 import ModuleCreate from "../components/modules.create";
+import ModuleEdit from "../components/modules.edit";
 
 export default function ModulesPage() {
   const [modules, setModules] = useState<Module[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [editingModuleId, setEditingModuleId] = useState<string | null>(null);
 
   const getAllModules = async () => {
     try {
@@ -21,6 +23,15 @@ export default function ModulesPage() {
     }
   };
 
+  async function handleDelete(moduleId: string) {
+    try {
+      await deleteModule(moduleId);
+      getAllModules();
+    } catch (err) {
+      console.error("Failed to delete module:", err);
+    }
+  }
+
   useEffect(() => {
     getAllModules();
   }, []);
@@ -32,7 +43,17 @@ export default function ModulesPage() {
       <div className=" mb-2">
         <ModuleCreate updateTable={() => getAllModules()} />
       </div>
-      <DataTable columns={ModuleLessons} data={modules} />
+      <DataTable
+        columns={ModuleLessons(handleDelete, (id) => setEditingModuleId(id))}
+        data={modules}
+      />
+      {editingModuleId && (
+        <ModuleEdit
+          moduleId={editingModuleId}
+          onClose={() => setEditingModuleId(null)}
+          onUpdated={getAllModules}
+        />
+      )}
     </div>
   );
 }

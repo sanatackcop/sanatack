@@ -20,6 +20,7 @@ export interface Quiz {
   options: string[];
   correctAnswer: string;
   explanation?: string;
+  duration: number;
   type: "quiz";
 }
 
@@ -57,3 +58,33 @@ export interface CourseModuleLink {
   module_id: string;
   order: number;
 }
+
+export type ArticleTypes = "hero" | "section" | "conclusion";
+
+export type CodeDto = {
+  code: string;
+  language: string;
+};
+
+export type QuoteDto = {
+  text: string;
+  author?: string;
+};
+
+export type ArticleDto = {
+  id?: string;
+  type: ArticleTypes;
+  title?: string;
+  image?: string;
+  description?: string;
+  body?: string;
+  code?: CodeDto;
+  quote?: QuoteDto;
+  order?: number;
+};
+
+export type EditableArticle = {
+  id: string;
+  duration?: number;
+  data: ArticleDto[];
+};

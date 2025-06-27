@@ -33,7 +33,7 @@ export default function MappedLessonsCreate({ id }: { id: string }) {
   }, []);
 
   const LessonColumnsLink: ColumnDef<Lesson>[] = [
-    ...LessonColumns,
+    ...LessonColumns(),
     {
       header: "Link",
       cell: ({ row }) => {
