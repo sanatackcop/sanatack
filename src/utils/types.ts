@@ -101,8 +101,13 @@ export interface QuizDto {
   question: string;
   options: string[];
   correctAnswer: string;
-  explanation?: string;
-  duration: number;
+  order: number;
+  explanation?: string | undefined;
+}
+
+export interface QuizGroupDto {
+  title: string;
+  quizzes: QuizDto[];
 }
 
 export interface VideoDto {

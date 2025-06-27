@@ -8,7 +8,7 @@ import {
   deleteVideo,
 } from "@/utils/_apis/admin-api";
 import { DataTable } from "@/components/ui/data-table";
-import { ArticlesColumns, QuizColumns, VideoColumns } from "../columns";
+import { QuizGroupColumns, ArticlesColumns, VideoColumns } from "../columns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   DropdownMenu,
@@ -21,16 +21,15 @@ import {
 import QuizDialogCreate from "../components/quiz.create";
 import VideoDialogCreate from "../components/video.create";
 import ResourceDialogCreate from "../components/resource.create";
-import { Quiz, Video } from "@/utils/types/adminTypes";
+import { QuizGroup, Article, Video } from "@/utils/types/adminTypes";
 import { CustomError } from "@/utils/_apis/api";
 import ArticleDialogCreate from "../components/article.create";
-import { Article } from "@/types/articles/articles";
 import QuizEdit from "../components/quiz.edit";
 import VideoEdit from "../components/video.edit";
 import ArticleEdit from "../components/article.edit";
 
 export default function MaterialsPage() {
-  const [quiz, setQuiz] = useState<Quiz[]>([]);
+  const [quiz, setQuiz] = useState<QuizGroup[]>([]);
   const [video, setVideo] = useState<Video[]>([]);
   const [article, setArticles] = useState<Article[]>([]);
 
@@ -48,7 +47,7 @@ export default function MaterialsPage() {
   async function fetchCourses() {
     try {
       const [quizList, videoList, articleList] = await Promise.all([
-        getQuizList<Quiz[]>(),
+        getQuizList<QuizGroup[]>(),
         getVideosList<Video[]>(),
         getArticlesList<Article[]>(),
       ]);
@@ -168,7 +167,7 @@ export default function MaterialsPage() {
         </TabsList>
         <TabsContent value="quiz">
           <DataTable
-            columns={QuizColumns(handleDeleteQuiz, (id) =>
+            columns={QuizGroupColumns(handleDeleteQuiz, (id) =>
               setEditingQuizId(id)
             )}
             data={quiz}

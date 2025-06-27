@@ -4,7 +4,7 @@ import {
   LessonDto,
   Module,
   ModuleDto,
-  QuizDto,
+  QuizGroupDto,
   ResourceDto,
   VideoDto,
 } from "../types";
@@ -64,7 +64,7 @@ export const getQuizList = async <T>() => {
   return response.data as T;
 };
 
-export const createNewQuiz = async (quiz: QuizDto) => {
+export const createNewQuiz = async (quiz: QuizGroupDto) => {
   const response = await trackPromise(
     Api({
       method: "post",

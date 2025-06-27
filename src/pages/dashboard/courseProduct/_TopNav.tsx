@@ -3,8 +3,6 @@ import {
   Menu,
   ChevronLeft,
   ChevronRight,
-  Check,
-  RotateCcw,
   Sparkles,
   Target,
   TrendingUp,
@@ -19,6 +17,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Material } from "@/types/courses";
 
 interface navigationPlaygroundProps {
   courseData: {
@@ -37,11 +36,7 @@ interface navigationPlaygroundProps {
   totalDuration: number;
   setSidebarOpen: (open: boolean) => void;
   sidebarOpen: boolean;
-  currentMaterial: {
-    title: string;
-    completed?: boolean;
-    locked?: boolean;
-  } | null;
+  currentMaterial: Material;
   handleComplete: () => void;
   handleRestart: () => void;
   userData?: {
@@ -63,15 +58,14 @@ export const NavigationPlayground: React.FC<navigationPlaygroundProps> = ({
   setSidebarOpen,
   sidebarOpen,
   currentMaterial,
-  handleComplete,
-  handleRestart,
+  // handleComplete,
 }) => {
   const [congratsOpen, setCongratsOpen] = useState(false);
 
-  const onCompleteClick = () => {
-    handleComplete();
-    setCongratsOpen(true);
-  };
+  // const onCompleteClick = () => {
+  //   handleComplete();
+  //   setCongratsOpen(true);
+  // };
 
   return (
     <>
@@ -179,7 +173,7 @@ export const NavigationPlayground: React.FC<navigationPlaygroundProps> = ({
             <div className="flex items-center gap-3">
               {currentMaterial && (
                 <>
-                  {currentMaterial.completed ? (
+                  {/* {currentMaterial.completed ? (
                     <Button
                       size="sm"
                       className="gap-2 shadow-lg hover:shadow-xl transition-all duration-200"
@@ -197,7 +191,7 @@ export const NavigationPlayground: React.FC<navigationPlaygroundProps> = ({
                       <Check className="h-4 w-4" />
                       <span className="hidden sm:inline">إكمال</span>
                     </Button>
-                  )}
+                  )} */}
                 </>
               )}
             </div>

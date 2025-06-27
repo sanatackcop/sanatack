@@ -1,44 +1,21 @@
-import React from "react";
-import { BookOpen, FileText } from "lucide-react";
-import CodeEditorView from "./_CodeEditorView";
+import { FileText } from "lucide-react";
 import { VideoView } from "./_VideoView";
-import { Material } from "./_Sidebar";
-import ArticleView from "./_ArticleView";
 import QuizView from "./_QuizView";
+import { Material } from "@/types/courses";
+import { MaterialType } from "@/utils/types/adminTypes";
+import ArticleView from "./_ArticleView";
 
-interface MaterialViewerProps {
-  material: Material | null;
-}
-
-export const MaterialViewer: React.FC<MaterialViewerProps> = ({ material }) => {
-  if (!material) {
-    return (
-      <div className="flex h-full items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900">
-        <div className="text-center">
-          <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <p className="text-lg text-gray-500 dark:text-gray-400 mb-2">
-            اختر مادة من القائمة
-          </p>
-          <p className="text-sm text-gray-400">لبدء رحلة التعلم</p>
-        </div>
-      </div>
-    );
+export default function MaterialViewer({ material }: { material: Material }) {
+  if (material.type === MaterialType.VIDEO) {
+    return <VideoView video={material} />;
   }
 
-  if (material.type === "video") {
-    return <VideoView material={material} />;
+  if (material.type === MaterialType.ARTICLE) {
+    return <ArticleView material={{ ...material, order: 0, duration: 999 }} />;
   }
 
-  if (material.type === "code") {
-    return <CodeEditorView />;
-  }
-
-  if (material.type === "article") {
-    return <ArticleView material={material as any} />;
-  }
-
-  if (material.type === "quiz") {
-    return <QuizView />;
+  if (material.type === MaterialType.QUIZ_GROUP) {
+    return <QuizView quizGroup={material} />;
   }
 
   return (
@@ -60,4 +37,4 @@ export const MaterialViewer: React.FC<MaterialViewerProps> = ({ material }) => {
       </div>
     </div>
   );
-};
+}

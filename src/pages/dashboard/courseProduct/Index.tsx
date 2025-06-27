@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Lesson, Material, SideNavbar } from "./_Sidebar";
+import { Lesson, SideNavbar } from "./_Sidebar";
 import UserContext from "@/context/UserContext";
 import { useContext } from "react";
-import { MaterialViewer } from "./_MaterialViewer";
+import MaterialViewer from "./_MaterialViewer";
 import NavigationPlayground from "./_TopNav";
 import { useSettings } from "@/context/SettingsContexts";
 import {
@@ -10,6 +10,7 @@ import {
   patchCourseProgressApi,
 } from "@/utils/_apis/courses-apis";
 import { useParams } from "react-router-dom";
+import { Material } from "@/types/courses";
 
 export const CoursePlayground: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -84,6 +85,9 @@ export const CoursePlayground: React.FC = () => {
         : [...prev, moduleId]
     );
   };
+
+  if (!currentMaterial) return <p>There is no current Material</p>;
+
   const userContext = useContext(UserContext);
   if (!userContext || !userContext.auth?.user) {
     return null;
@@ -91,7 +95,7 @@ export const CoursePlayground: React.FC = () => {
   const user = userContext.auth.user;
 
   const handleComplete = async () => {
-    if (!currentMaterial || !user?.id) return;
+    if (!user?.id) return;
 
     const updatedCourseData = {
       ...courseData,
@@ -108,7 +112,7 @@ export const CoursePlayground: React.FC = () => {
       })),
     };
     setCourseData(updatedCourseData);
-    setCurrentMaterial({ ...currentMaterial, completed: true });
+    setCurrentMaterial({ ...currentMaterial });
 
     try {
       await patchCourseProgressApi({
@@ -124,7 +128,7 @@ export const CoursePlayground: React.FC = () => {
   };
 
   const handleRestart = async () => {
-    if (!currentMaterial || !user?.id) return;
+    if (!user?.id) return;
 
     const updatedCourseData = {
       ...courseData,
@@ -141,7 +145,7 @@ export const CoursePlayground: React.FC = () => {
       })),
     };
     setCourseData(updatedCourseData);
-    setCurrentMaterial({ ...currentMaterial, completed: false });
+    setCurrentMaterial({ ...currentMaterial });
 
     try {
       await patchCourseProgressApi({

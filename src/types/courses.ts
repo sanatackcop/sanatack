@@ -1,5 +1,7 @@
 import { ArticleDto, Level } from "@/utils/types/adminTypes";
 
+import { MaterialType } from "@/utils/types/adminTypes";
+
 export type TabType = "all" | "started" | "done";
 export interface CareerPathInterface {
   id: string;
@@ -46,7 +48,7 @@ export interface ModuleDetails {
   lessons: LessonDetails[];
 }
 
-export declare type Material = Resource | Video | Quiz;
+export declare type Material = Article | Video | QuizGroup;
 
 export interface LessonDetails {
   id: string;
@@ -56,11 +58,12 @@ export interface LessonDetails {
   materials: Material[];
 }
 
-export interface Resource {
+export interface Article {
   id: string;
   title: string;
   description?: string;
-  type: "resource";
+  duration: number;
+  type: MaterialType.ARTICLE;
 }
 
 export interface Video {
@@ -69,7 +72,7 @@ export interface Video {
   youtubeId: string;
   duration: number;
   description: string;
-  type: "video";
+  type: MaterialType.VIDEO;
 }
 
 export interface Quiz {
@@ -78,7 +81,19 @@ export interface Quiz {
   options: string[];
   correctAnswer: string;
   explanation?: string;
-  type: "quiz";
+  duration: number;
+  type: MaterialType.QUIZ;
+}
+
+export interface QuizGroup {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  title: string;
+  order: number;
+  quizzes: Quiz[];
+  duration: number;
+  type: MaterialType.QUIZ_GROUP;
 }
 
 export enum LevelEnum {

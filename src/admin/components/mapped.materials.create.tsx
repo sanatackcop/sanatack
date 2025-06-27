@@ -6,9 +6,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MaterialType, Quiz, Video } from "@/utils/types/adminTypes";
+import { MaterialType, QuizGroup, Video } from "@/utils/types/adminTypes";
 import { useEffect, useState } from "react";
-import { ArticlesColumns, QuizColumns, VideoColumns } from "../columns";
+import { QuizGroupColumns, ArticlesColumns, VideoColumns } from "../columns";
 import {
   getArticlesList,
   getQuizList,
@@ -23,7 +23,7 @@ import { Label } from "@/components/ui/label";
 import { ArticleCardDto } from "./article.create";
 
 export default function MappedMaterialsCreate({ id }: { id: string }) {
-  const [quiz, setQuiz] = useState<Quiz[]>([]);
+  const [quiz, setQuiz] = useState<QuizGroup[]>([]);
   const [video, setVideo] = useState<Video[]>([]);
   const [order, setOrder] = useState<number | "">("");
   const [article, setArticle] = useState<ArticleCardDto[]>([]);
@@ -31,7 +31,7 @@ export default function MappedMaterialsCreate({ id }: { id: string }) {
   async function fetchCourses() {
     try {
       const [quizList, videoList, articleList] = await Promise.all([
-        getQuizList<Quiz[]>(),
+        getQuizList<QuizGroup[]>(),
         getVideosList<Video[]>(),
         getArticlesList<ArticleCardDto[]>(),
       ]);
@@ -48,8 +48,8 @@ export default function MappedMaterialsCreate({ id }: { id: string }) {
     fetchCourses();
   }, []);
 
-  const QuizColumnsLink: ColumnDef<Quiz>[] = [
-    ...QuizColumns(),
+  const QuizColumnsLink: ColumnDef<QuizGroup>[] = [
+    ...QuizGroupColumns(),
     {
       header: "Link",
       cell: ({ row }) => {
@@ -59,7 +59,7 @@ export default function MappedMaterialsCreate({ id }: { id: string }) {
               await linkLessonMaterial({
                 material_id: row.original.id,
                 lesson_id: id ?? "",
-                type: MaterialType.Quiz,
+                type: MaterialType.QUIZ_GROUP,
                 order: order || 0,
               })
             }
@@ -82,7 +82,7 @@ export default function MappedMaterialsCreate({ id }: { id: string }) {
               await linkLessonMaterial({
                 material_id: row.original.id,
                 lesson_id: id ?? "",
-                type: MaterialType.Video,
+                type: MaterialType.VIDEO,
                 order: order || 0,
               })
             }

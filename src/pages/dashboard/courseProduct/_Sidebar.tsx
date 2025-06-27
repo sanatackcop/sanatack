@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
-  CheckCircle,
-  Lock,
   Video,
   Code,
   PenTool,
@@ -13,18 +11,8 @@ import {
 import LogoLight from "@/assets/logo.svg";
 import LogoDark from "@/assets/dark_logo.svg";
 import { useNavigate } from "react-router-dom";
-
-export interface Material {
-  id: string;
-  title: string;
-  description?: string;
-  type: "video" | "code" | "quiz" | "text" | "article";
-  duration: string;
-  completed: boolean;
-  locked: boolean;
-  current?: boolean;
-  url?: string;
-}
+import { Material } from "@/types/courses";
+import { MaterialType } from "@/utils/types/adminTypes";
 
 export interface Lesson {
   id: string;
@@ -62,7 +50,7 @@ export interface SideNavbarProps {
   courseData: Course | null;
   expandedModules: string[];
   toggleModule: (id: string) => void;
-  currentMaterial: Material | null;
+  currentMaterial: Material;
   setCurrentMaterial: (m: Material) => void;
   setSidebarOpen: (v: boolean) => void;
   darkMode: boolean;
@@ -104,9 +92,9 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
       const filteredLessons = (module.lessons ?? [])
         .map((lesson) => ({
           ...lesson,
-          materials: (lesson.materials ?? []).filter((material) =>
-            (material?.title ?? "").toLowerCase().includes(normalisedSearch)
-          ),
+          materials: (lesson.materials ?? []).filter((material) => {
+            (material?.title ?? "").toLowerCase().includes(normalisedSearch);
+          }),
         }))
         .filter((lesson) => lesson.materials.length > 0);
 
@@ -114,7 +102,9 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
         (lesson) => lesson.materials ?? []
       );
       const totalMaterials = allMaterials.length;
-      const completedMaterials = allMaterials.filter((m) => m.completed).length;
+      const completedMaterials = allMaterials.filter(
+        (m) => m.title == "This is not correct, needs implementation"
+      ).length;
       const progress =
         totalMaterials > 0
           ? Math.round((completedMaterials / totalMaterials) * 100)
@@ -148,7 +138,9 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
     ) ?? [];
 
   const totalMaterials = courseMeterials.length;
-  const completedMaterials = courseMeterials.filter((m) => m.completed).length;
+  const completedMaterials = courseMeterials.filter(
+    (m) => m.title == "This is not correct, needs implementation"
+  ).length;
   const totalDuration = courseMeterials.reduce(
     (sum, material) => sum + Number(material.duration || 0),
     0
@@ -161,7 +153,7 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
   const renderMaterialButton = (material: Material, isActive: boolean) => {
     const Icon = getIcon(material.type);
 
-    const buttonDisabled = material.locked;
+    const buttonDisabled = false; // material.locked;
     const baseStyles =
       "w-full p-3 rounded-xl transition-all duration-200 text-right";
     const activeStyles =
@@ -204,14 +196,14 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
             </p>
             <div className="flex items-center justify-start gap-2 mt-1">
               <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-900/20 text-gray-600 dark:text-gray-400">
-                {material.completed ? (
+                {/* {material.completed ? (
                   "مكتمل"
                 ) : (
-                  <>
-                    <Clock className="w-3 h-3 inline-block ml-1" />
-                    {material.duration} دقيقة
-                  </>
-                )}
+                  <> */}
+                <Clock className="w-3 h-3 inline-block ml-1" />
+                {material.duration} دقيقة
+                {/* </>
+                )} */}
               </span>
 
               <span
@@ -219,18 +211,18 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
                   "text-xs px-2 py-0.5 rounded-full " +
                   (material.type === "video"
                     ? "bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400"
-                    : material.type === "code"
-                    ? "bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400"
-                    : material.type === "quiz"
+                    : // : material.type === "code"
+                    // ? "bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400"
+                    material.type === MaterialType.QUIZ_GROUP
                     ? "bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400"
                     : "bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400")
                 }
               >
-                {material.type === "video"
+                {material.type === MaterialType.VIDEO
                   ? "فيديو"
-                  : material.type === "code"
-                  ? "كود"
-                  : material.type === "quiz"
+                  : // : material.type === "code"
+                  // ? "كود"
+                  material.type === MaterialType.QUIZ_GROUP
                   ? "اختبار"
                   : "نص"}
               </span>
@@ -240,18 +232,20 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
           <div
             className={
               "p-2 rounded-xl flex-shrink-0 " +
-              (material.completed
-                ? "bg-green-100 dark:bg-green-900/20"
-                : isActive
+              // material.completed
+              // ? "bg-green-100 dark:bg-green-900/20":
+              (isActive
                 ? "bg-blue-100 dark:bg-blue-900/20"
                 : "bg-gray-100 dark:bg-gray-800")
             }
           >
-            {material.completed ? (
-              <CheckCircle className="w-4 h-4 text-green-600" />
-            ) : material.locked ? (
-              <Lock className="w-4 h-4 text-gray-400" />
-            ) : (
+            {
+              // material.completed ? (
+              //   <CheckCircle className="w-4 h-4 text-green-600" />
+              // ) :
+              // material.locked ? (
+              //   <Lock className="w-4 h-4 text-gray-400" />
+              // ) :
               <Icon
                 className={
                   "w-4 h-4 " +
@@ -260,7 +254,7 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
                     : "text-gray-600 dark:text-gray-400")
                 }
               />
-            )}
+            }
           </div>
         </div>
       </button>

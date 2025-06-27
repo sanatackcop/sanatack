@@ -1,8 +1,8 @@
-export interface Resource {
+export interface Article {
   id: string;
   title: string;
   description?: string;
-  type: "resource";
+  type: MaterialType.ARTICLE;
 }
 
 export interface Video {
@@ -11,7 +11,7 @@ export interface Video {
   youtubeId: string;
   duration: number;
   description: string;
-  type: "video";
+  type: MaterialType.VIDEO;
 }
 
 export interface Quiz {
@@ -20,11 +20,20 @@ export interface Quiz {
   options: string[];
   correctAnswer: string;
   explanation?: string;
-  duration: number;
-  type: "quiz";
+  type: MaterialType.QUIZ;
 }
 
-export declare type LinkedQuiz = Quiz & {
+export interface QuizGroup {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  title: string;
+  order: number;
+  type: MaterialType.QUIZ_GROUP;
+  quizzes: Quiz[];
+}
+
+export declare type LinkedQuiz = QuizGroup & {
   order: number;
 };
 
@@ -33,12 +42,13 @@ export declare type LinkedVideo = Video & {
 };
 
 export enum MaterialType {
-  Resource = "resource",
-  Video = "video",
+  RESOURCE = "resource",
+  VIDEO = "video",
   ARTICLE = "article",
-  Quiz = "quiz",
+  QUIZ_GROUP = "quiz_group",
+  QUIZ = "quiz",
 }
-export declare type Material = Resource | Video | Quiz;
+export declare type Material = Article | Video | QuizGroup;
 
 export type Level = "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
 
