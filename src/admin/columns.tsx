@@ -278,6 +278,14 @@ export function ModuleLessons(
       header: "Duration",
       accessorKey: "duration",
     },
+    {
+      header: "Mapped Lessons",
+      cell: ({ row }) => (
+        <Link to={`/admin/modules/${row.original.id}`}>
+          <Button size="sm">Mapped Lessons</Button>
+        </Link>
+      ),
+    },
   ];
 
   if (onDelete && onEdit) {

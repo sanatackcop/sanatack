@@ -1,15 +1,15 @@
 import { Video, Clock, PlayCircle } from "lucide-react";
 
 export function VideoView({ material }: any) {
-  const isYouTube = !!material.video.youtubeId?.match(/youtu\.?(be|be\.com)/);
-  let embedUrl = material.video.youtubeId;
-  if (isYouTube && material.video.youtubeId) {
-    embedUrl = material.video.youtubeId
+  const isYouTube = !!material?.youtubeId?.match(/youtu\.?(be|be\.com)/);
+  let embedUrl = material?.youtubeId;
+  if (isYouTube && material?.youtubeId) {
+    embedUrl = material?.youtubeId
       .replace("watch?v=", "embed/")
       .replace("youtu.be/", "www.youtube.com/embed/");
   }
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 overflow-y-auto">
+    <div className="w-full bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 overflow-y-auto">
       <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 top-0 z-10">
         <div className="w-full px-6 py-6">
           <div className="flex items-center justify-between" dir="rtl">
@@ -25,14 +25,14 @@ export function VideoView({ material }: any) {
                   </span>
                   <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300">
                     <Clock className="w-3 h-3" />
-                    {material.video.duration}
+                    {material?.duration}
                   </span>
                 </div>
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-3 leading-tight">
-                  {material.video.title}
+                  {material?.title}
                 </h1>
                 <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-lg max-w-4xl">
-                  {material.video.description}
+                  {material?.description}
                 </p>
               </div>
             </div>
