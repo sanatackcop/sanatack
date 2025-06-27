@@ -20,6 +20,7 @@ export interface Quiz {
   options: string[];
   correctAnswer: string;
   explanation?: string;
+  duration: number;
   type: MaterialType.QUIZ;
 }
 
