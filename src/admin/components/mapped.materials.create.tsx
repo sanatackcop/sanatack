@@ -49,7 +49,7 @@ export default function MappedMaterialsCreate({ id }: { id: string }) {
   }, []);
 
   const QuizColumnsLink: ColumnDef<Quiz>[] = [
-    ...QuizColumns,
+    ...QuizColumns(),
     {
       header: "Link",
       cell: ({ row }) => {
@@ -72,7 +72,7 @@ export default function MappedMaterialsCreate({ id }: { id: string }) {
   ];
 
   const VideoColumnsLink: ColumnDef<Video>[] = [
-    ...VideoColumns,
+    ...VideoColumns(),
     {
       header: "Link",
       cell: ({ row }) => {
@@ -95,7 +95,7 @@ export default function MappedMaterialsCreate({ id }: { id: string }) {
   ];
 
   const ArticleColumnsLink: ColumnDef<any>[] = [
-    ...ArticlesColumns,
+    ...ArticlesColumns(),
     {
       header: "Link",
       cell: ({ row }) => {

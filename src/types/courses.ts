@@ -1,3 +1,5 @@
+import { ArticleDto, Level } from "@/utils/types/adminTypes";
+
 export type TabType = "all" | "started" | "done";
 export interface CareerPathInterface {
   id: string;
@@ -90,6 +92,58 @@ export interface CoursesReport {
   totalHours: number;
   streakDays: number;
   certifications: number;
+}
+
+export interface UpdateCourseDto {
+  title?: string;
+  description?: string;
+  level?: Level;
+  course_info?: {
+    durationHours: number;
+    tags: string[];
+    new_skills_result: string[];
+    learning_outcome: { [key: string]: number };
+    prerequisites: string[];
+  };
+  isPublished?: boolean;
+}
+
+export interface UpdateModuleDto {
+  title?: string;
+  description?: string;
+}
+
+export interface UpdateLessonDto {
+  name?: string;
+  description?: string;
+}
+
+export interface UpdateArticleDto {
+  data?: ArticleDto[];
+  duration?: number;
+}
+
+export interface UpdateQuizDto {
+  question?: string;
+  options?: string[];
+  correctAnswer?: string;
+  explanation?: string;
+  duration?: number;
+}
+
+export interface UpdateResourceDto {
+  title?: string;
+  description?: string;
+  url?: string;
+  content?: string;
+  duration?: number;
+}
+
+export interface UpdateVideoDto {
+  title?: string;
+  youtubeId?: string;
+  description?: string;
+  duration?: number;
 }
 
 export interface PatchCourseProgressParams {

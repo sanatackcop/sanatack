@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
-import { getListCoursesApi } from "@/utils/_apis/admin-api";
+import { deleteCourse, getListCoursesApi } from "@/utils/_apis/admin-api";
 import { Course } from "@/utils/types";
 import { DataTable } from "@/components/ui/data-table";
 import { CourseColumns } from "../columns";
 import CourseCreate from "../components/course.create";
+import CourseEdit from "../components/course.edit";
 
 export default function CoursePage() {
   const [courses, setCourses] = useState<Course[]>([]);
+  const [editingCourseId, setEditingCourseId] = useState<string | null>(null);
 
   async function fetchCourses() {
     try {
@@ -16,6 +18,14 @@ export default function CoursePage() {
       }
     } catch (err) {
       console.error(err);
+    }
+  }
+  async function handleDelete(courseId: string) {
+    try {
+      await deleteCourse(courseId);
+      fetchCourses();
+    } catch (err) {
+      console.error("Failed to delete course:", err);
     }
   }
 
@@ -29,7 +39,18 @@ export default function CoursePage() {
         <CourseCreate updateTable={() => fetchCourses()} />
       </div>
 
-      <DataTable columns={CourseColumns} data={courses} />
+      <DataTable
+        columns={CourseColumns(handleDelete, (id) => setEditingCourseId(id))}
+        data={courses}
+      />
+
+      {editingCourseId && (
+        <CourseEdit
+          courseId={editingCourseId}
+          onClose={() => setEditingCourseId(null)}
+          onUpdated={fetchCourses}
+        />
+      )}
     </div>
   );
 }

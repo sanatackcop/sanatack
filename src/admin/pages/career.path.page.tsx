@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getListCoursesApi } from "@/utils/_apis/admin-api";
+import { deleteCourse, getListCoursesApi } from "@/utils/_apis/admin-api";
 import { Course } from "@/utils/types";
 import { DataTable } from "@/components/ui/data-table";
 import { CourseColumns } from "../columns";
@@ -18,6 +18,14 @@ export default function CoursePage() {
       console.error(err);
     }
   }
+  async function handleDelete(courseId: string) {
+      try {
+        await deleteCourse(courseId);
+        fetchCourses();
+      } catch (err) {
+        console.error("Failed to delete course:", err);
+      }
+    }
 
   useEffect(() => {
     fetchCourses();
@@ -29,7 +37,10 @@ export default function CoursePage() {
         <CourseCreate updateTable={() => fetchCourses()} />
       </div>
 
-      <DataTable columns={CourseColumns} data={courses} />
+      <DataTable
+        columns={CourseColumns(handleDelete, (id) => (id))}
+        data={courses}
+      />
     </div>
   );
 }

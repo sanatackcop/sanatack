@@ -33,7 +33,7 @@ export default function MappedModulesCreate({ id }: { id: string }) {
   }, []);
 
   const ModuleColumnsLink: ColumnDef<Module>[] = [
-    ...ModuleLessons,
+    ...ModuleLessons(),
     {
       header: "Link",
       cell: ({ row }) => {
