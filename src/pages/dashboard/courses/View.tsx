@@ -737,8 +737,10 @@ export default function CourseView() {
 
                                           <div className="flex-1 text-right min-w-0">
                                             <p className="font-medium text-slate-900 dark:text-slate-100 truncate">
-                                              {material.title}
+                                              {material.title ||
+                                                material?.main_title}
                                             </p>
+                                            <p>{material?.description}</p>
                                             <div className="flex items-center justify-end gap-3 mt-2">
                                               <span
                                                 className={`text-xs px-2 py-1 rounded-full font-medium ${config.color}`}

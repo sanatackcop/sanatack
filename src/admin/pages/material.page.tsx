@@ -6,9 +6,15 @@ import {
   deleteQuiz,
   deleteArticle,
   deleteVideo,
+  getCodeList,
 } from "@/utils/_apis/admin-api";
 import { DataTable } from "@/components/ui/data-table";
-import { ArticlesColumns, QuizColumns, VideoColumns } from "../columns";
+import {
+  ArticlesColumns,
+  CodeColumns,
+  QuizColumns,
+  VideoColumns,
+} from "../columns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   DropdownMenu,
@@ -28,11 +34,13 @@ import { Article } from "@/types/articles/articles";
 import QuizEdit from "../components/quiz.edit";
 import VideoEdit from "../components/video.edit";
 import ArticleEdit from "../components/article.edit";
+import CodeMatrialCreate from "../components/code/code.create";
 
 export default function MaterialsPage() {
   const [quiz, setQuiz] = useState<Quiz[]>([]);
   const [video, setVideo] = useState<Video[]>([]);
   const [article, setArticles] = useState<Article[]>([]);
+  const [code, setCode] = useState<any[]>([]);
 
   const [editingQuizId, setEditingQuizId] = useState<string | null>(null);
   const [editingVideoId, setEditingVideoId] = useState<string | null>(null);
@@ -42,20 +50,22 @@ export default function MaterialsPage() {
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [openDialog, setOpenDialog] = useState<
-    "quiz" | "video" | "resource" | "article" | null
+    "quiz" | "video" | "resource" | "article" | "code" | null
   >(null);
 
   async function fetchCourses() {
     try {
-      const [quizList, videoList, articleList] = await Promise.all([
+      const [quizList, videoList, articleList, codeList] = await Promise.all([
         getQuizList<Quiz[]>(),
         getVideosList<Video[]>(),
         getArticlesList<Article[]>(),
+        getCodeList<any[]>(),
       ]);
 
       if (quizList?.length) setQuiz(quizList);
       if (videoList?.length) setVideo(videoList);
       if (articleList?.length) setArticles(articleList);
+      if (codeList?.length) setCode(codeList);
     } catch (err: unknown) {
       if ((err as CustomError).error.type == "network")
         setError("Error when trying to fetch data.");
@@ -121,13 +131,20 @@ export default function MaterialsPage() {
         updateTable={() => fetchCourses()}
       />
     ),
+    code: (
+      <CodeMatrialCreate
+        open
+        onOpenChange={(open: any) => !open && setOpenDialog(null)}
+        updateTable={() => fetchCourses()}
+      />
+    ),
   };
 
   const handleDialogOpen = (
-    type: "quiz" | "video" | "resource" | "article"
+    type: "quiz" | "video" | "resource" | "article" | "code"
   ) => {
-    setMenuOpen(false); // close dropdown
-    setTimeout(() => setOpenDialog(type), 0); // wait for DOM to clean up
+    setMenuOpen(false);
+    setTimeout(() => setOpenDialog(type), 0);
   };
 
   if (error) return <p className="text-red-500">{error}</p>;
@@ -137,7 +154,7 @@ export default function MaterialsPage() {
       <div className="w-full flex justify-start">
         <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
           <DropdownMenuTrigger className="bg-slate-200 p-2 rounded-lg">
-            إنشاء مورد
+            Create Material
           </DropdownMenuTrigger>
           <DropdownMenuContent className="relative left-5">
             <DropdownMenuLabel>Matrials</DropdownMenuLabel>
@@ -154,6 +171,9 @@ export default function MaterialsPage() {
             <DropdownMenuItem onClick={() => handleDialogOpen("article")}>
               article{" "}
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleDialogOpen("code")}>
+              code
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -165,6 +185,7 @@ export default function MaterialsPage() {
           <TabsTrigger value="quiz">quiz</TabsTrigger>
           <TabsTrigger value="video">video</TabsTrigger>
           <TabsTrigger value="article">article</TabsTrigger>
+          <TabsTrigger value="code">code</TabsTrigger>
         </TabsList>
         <TabsContent value="quiz">
           <DataTable
@@ -189,6 +210,10 @@ export default function MaterialsPage() {
             )}
             data={article}
           />
+        </TabsContent>
+
+        <TabsContent value="code">
+          <DataTable columns={CodeColumns()} data={code} />
         </TabsContent>
       </Tabs>
       {editingQuizId && (

@@ -157,10 +157,7 @@ export const CoursePlayground: React.FC = () => {
   };
 
   return (
-    <div
-      className={`h-screen flex flex-col ${darkMode ? "dark" : ""}`}
-      dir="rtl"
-    >
+    <div className={`h-screen flex flex-col ${darkMode ? "dark" : ""}`}>
       <NavigationPlayground
         courseData={{
           ...courseData,
@@ -182,21 +179,19 @@ export const CoursePlayground: React.FC = () => {
         handleRestart={handleRestart}
       />
 
-      <div className="flex flex-1 overflow-hidden">
-        {
-          <SideNavbar
-            sidebarOpen={sidebarOpen}
-            setSidebarOpen={setSidebarOpen}
-            courseData={courseData}
-            expandedModules={expandedModules}
-            toggleModule={toggleModule}
-            currentMaterial={currentMaterial}
-            setCurrentMaterial={setCurrentMaterial}
-            darkMode={darkMode}
-          />
-        }
+      <div className="flex flex-1 overflow-hidden pt-16 pb-16">
+        <SideNavbar
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+          courseData={courseData}
+          expandedModules={expandedModules}
+          toggleModule={toggleModule}
+          currentMaterial={currentMaterial}
+          setCurrentMaterial={setCurrentMaterial}
+          darkMode={darkMode}
+        />
 
-        <main className="flex-1 flex flex-col">
+        <main className="flex-1 flex flex-col overflow-hidden">
           <MaterialViewer material={currentMaterial} />
         </main>
       </div>

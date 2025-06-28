@@ -75,12 +75,9 @@ export const NavigationPlayground: React.FC<navigationPlaygroundProps> = ({
 
   return (
     <>
-      <nav
-        className="sticky top-0 z-50 
-      flex-shrink-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-600 shadow-sm "
-      >
-        <div className="w-full">
-          <div className="flex h-16 items-center justify-between px-4 lg:px-8 gap-4">
+      <nav className="fixed top-0 left-0 right-0 z-50 h-16 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-600 shadow-sm">
+        <div className="w-full h-full">
+          <div className="flex h-full items-center justify-between px-4 lg:px-8 gap-4">
             <div className="flex items-center gap-4 flex-shrink-0">
               <Button
                 variant="ghost"
@@ -108,7 +105,7 @@ export const NavigationPlayground: React.FC<navigationPlaygroundProps> = ({
                 </div>
               </div>
 
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 ">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
                     التقدم الإجمالي
@@ -118,21 +115,21 @@ export const NavigationPlayground: React.FC<navigationPlaygroundProps> = ({
                   </span>
                 </div>
                 <div className="relative">
-                  <div className="h-3 w-full rounded-full bg-gray-200 dark:bg-gray-700 shadow-inner">
+                  <div className="h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700 shadow-inner">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-green-200 via-green-500 to-green-600 transition-all duration-700 ease-out shadow-sm"
+                      className="h-full rounded-full bg-gradient-to-r from-green-400 via-green-500 to-green-600 transition-all duration-700 ease-out shadow-sm"
                       style={{ width: `${courseData.progress}%` }}
                     />
                   </div>
-                  <div className="absolute top-0 left-0 w-full h-3 flex items-center justify-between">
-                    {[0, 25, 50, 75, 100].map((marker) => (
+                  <div className="absolute top-0 left-0 w-full h-2 flex items-center justify-between">
+                    {[25, 50, 75].map((marker) => (
                       <div
                         key={marker}
-                        className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                          12 >= marker
-                            ? "bg-white ring-2 ring-blue-500 shadow-lg"
+                        className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+                          courseData.progress >= marker
+                            ? "bg-white ring-1 ring-green-600 shadow-sm"
                             : "bg-gray-300 dark:bg-gray-600"
-                        } ${marker === 0 || marker === 100 ? "opacity-0" : ""}`}
+                        }`}
                         style={{
                           position: "absolute",
                           left: `${marker}%`,
@@ -147,16 +144,17 @@ export const NavigationPlayground: React.FC<navigationPlaygroundProps> = ({
           </div>
         </div>
       </nav>
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-t border-gray-200 dark:border-gray-600 shadow-2xl">
-        <div className="w-full px-4 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
+
+      <nav className="fixed bottom-0 left-0 right-0 z-50 h-16 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-t border-gray-200 dark:border-gray-600 shadow-lg">
+        <div className="w-full h-full px-4 lg:px-8">
+          <div className="flex h-full items-center justify-between">
             <div className="flex items-center gap-3">
               <Button
                 variant="ghost"
                 size="sm"
                 disabled={!prevMaterial}
                 onClick={handlePrev}
-                className="gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                className="gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ChevronRight className="h-4 w-4" />
                 <span className="hidden sm:inline">السابق</span>
@@ -169,7 +167,7 @@ export const NavigationPlayground: React.FC<navigationPlaygroundProps> = ({
                   !nextMaterial || (nextMaterial && nextMaterial.locked)
                 }
                 onClick={handleNext}
-                className="gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                className="gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span className="hidden sm:inline">التالي</span>
                 <ChevronLeft className="h-4 w-4" />
@@ -182,7 +180,8 @@ export const NavigationPlayground: React.FC<navigationPlaygroundProps> = ({
                   {currentMaterial.completed ? (
                     <Button
                       size="sm"
-                      className="gap-2 shadow-lg hover:shadow-xl transition-all duration-200"
+                      variant="outline"
+                      className="gap-2 shadow-sm hover:shadow-md transition-all duration-200 border-gray-300 dark:border-gray-600"
                       onClick={handleRestart}
                     >
                       <RotateCcw className="h-4 w-4" />
@@ -191,7 +190,7 @@ export const NavigationPlayground: React.FC<navigationPlaygroundProps> = ({
                   ) : (
                     <Button
                       size="sm"
-                      className="gap-2 shadow-lg hover:shadow-xl transition-all duration-200"
+                      className="gap-2 shadow-sm hover:shadow-md transition-all duration-200 bg-green-600 hover:bg-green-700"
                       onClick={onCompleteClick}
                     >
                       <Check className="h-4 w-4" />
