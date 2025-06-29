@@ -12,25 +12,15 @@ import {
   Globe,
   BarChart3,
   CheckCircle2,
-  CheckCircle,
   Tag,
   Calendar,
   Download,
   Languages,
-  Monitor,
   Code,
   Rocket,
   BookOpen,
   Trophy,
   Users,
-  ChevronUp,
-  ChevronDown,
-  Video,
-  PenTool,
-  FileText,
-  Headphones,
-  Timer,
-  Lock,
   Plus,
   Minus,
 } from "lucide-react";
@@ -41,6 +31,8 @@ import {
 } from "@/utils/_apis/courses-apis";
 import AppLayout from "@/components/layout/Applayout";
 import { CourseDetails, ModuleDetails } from "@/types/courses";
+import { DateDisplay } from "@/lib/utils";
+import ModulesPreviewer from "../_course.modules.previewer";
 
 export default function CourseView() {
   const { id } = useParams<{ id: string }>();
@@ -91,7 +83,7 @@ export default function CourseView() {
   }, []);
 
   if (!course) {
-    return <h1 className="text-center">There is no course</h1>;
+    return <h1 className="text-center">Loading Course</h1>;
   }
 
   const handleStartCourse = async () => {
@@ -195,7 +187,6 @@ export default function CourseView() {
       trend: "+2%",
     },
   ];
-
   return (
     <AppLayout>
       <div className="">
@@ -315,7 +306,7 @@ export default function CourseView() {
             <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-8">
               <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6 flex items-center gap-3">
                 <Target className="w-6 h-6 text-blue-500" />
-                أهداف التعلم
+                مخرجات الدورة
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {course.course_info.new_skills_result.map((outcome, index) => (
@@ -499,7 +490,7 @@ export default function CourseView() {
                       آخر تحديث
                     </span>
                     <span className="font-medium text-slate-900 dark:text-slate-100">
-                      ديسمبر 2024
+                      {DateDisplay(course.updated_at)}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -511,7 +502,7 @@ export default function CourseView() {
                       العربية
                     </span>
                   </div>
-                  <div className="flex items-center justify-between">
+                  {/* <div className="flex items-center justify-between">
                     <span className="text-slate-600 dark:text-slate-400 flex items-center gap-2">
                       <Monitor className="w-4 h-4" />
                       الترجمة
@@ -519,7 +510,7 @@ export default function CourseView() {
                     <span className="font-medium text-slate-900 dark:text-slate-100">
                       متوفرة
                     </span>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>
@@ -563,221 +554,11 @@ export default function CourseView() {
               </div>
 
               <div className="space-y-4">
-                {course?.modules?.map((module: any, moduleIndex: number) => {
-                  const isExpanded = expandedModules.has(module.id);
-                  const moduleProgress =
-                    module.lessons?.reduce((acc: number, lesson: any) => {
-                      return (
-                        acc +
-                        lesson.materials.filter((m: any) => m.completed).length
-                      );
-                    }, 0) || 0;
-                  const totalMaterials =
-                    module.lessons?.reduce((acc: number, lesson: any) => {
-                      return acc + lesson.materials.length;
-                    }, 0) || 0;
-                  const progressPercent =
-                    totalMaterials > 0
-                      ? Math.round((moduleProgress / totalMaterials) * 100)
-                      : 0;
-
-                  return (
-                    <div
-                      key={module.id}
-                      className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-lg transition-shadow duration-300"
-                    >
-                      <button
-                        onClick={() => toggleModule(module.id)}
-                        className="w-full px-6 py-5 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
-                      >
-                        <div className="flex items-center gap-4">
-                          <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl font-bold text-sm">
-                            {moduleIndex + 1}
-                          </div>
-                          <div className="text-right">
-                            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                              {module.title}
-                            </h3>
-                            <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-slate-400 mt-1">
-                              <span>{module.lessons?.length || 0} دروس</span>
-                              <span>•</span>
-                              <span>{totalMaterials} عنصر</span>
-                              {course.isEnrolled && (
-                                <>
-                                  <span>•</span>
-                                  <span className="text-green-600 dark:text-green-400">
-                                    {progressPercent}% مكتمل
-                                  </span>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          {course.isEnrolled && (
-                            <div className="w-16 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                              <div
-                                className="h-full bg-gradient-to-r from-green-500 to-green-600 transition-all duration-500"
-                                style={{ width: `${progressPercent}%` }}
-                              />
-                            </div>
-                          )}
-                          {isExpanded ? (
-                            <ChevronUp className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-                          ) : (
-                            <ChevronDown className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-                          )}
-                        </div>
-                      </button>
-
-                      {isExpanded && (
-                        <div className="border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
-                          <div className="p-6 space-y-4">
-                            {module.lessons?.map(
-                              (lesson: any, lessonIndex: number) => (
-                                <div
-                                  key={lesson.id}
-                                  className="bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-200 dark:border-slate-700"
-                                >
-                                  <div className="flex items-center gap-3 mb-4">
-                                    <div className="flex items-center justify-center w-8 h-8 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg font-medium text-sm">
-                                      {lessonIndex + 1}
-                                    </div>
-                                    <div className="flex-1">
-                                      <h4 className="font-medium text-slate-900 dark:text-slate-100">
-                                        {lesson.name}
-                                      </h4>
-                                      {lesson.description && (
-                                        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                                          {lesson.description}
-                                        </p>
-                                      )}
-                                    </div>
-                                  </div>
-
-                                  <div className="space-y-3">
-                                    {lesson.materials?.map((material: any) => {
-                                      const typeConfig = {
-                                        video: {
-                                          label: "فيديو",
-                                          color:
-                                            "bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400",
-                                          icon: <Video className="w-4 h-4" />,
-                                        },
-                                        code: {
-                                          label: "كود",
-                                          color:
-                                            "bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400",
-                                          icon: <Code className="w-4 h-4" />,
-                                        },
-                                        quiz: {
-                                          label: "اختبار",
-                                          color:
-                                            "bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400",
-                                          icon: <PenTool className="w-4 h-4" />,
-                                        },
-                                        text: {
-                                          label: "نص",
-                                          color:
-                                            "bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400",
-                                          icon: (
-                                            <FileText className="w-4 h-4" />
-                                          ),
-                                        },
-                                        audio: {
-                                          label: "صوت",
-                                          color:
-                                            "bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400",
-                                          icon: (
-                                            <Headphones className="w-4 h-4" />
-                                          ),
-                                        },
-                                      };
-
-                                      const config =
-                                        typeConfig[
-                                          material.type as keyof typeof typeConfig
-                                        ] || typeConfig.text;
-
-                                      return (
-                                        <button
-                                          key={material.id}
-                                          disabled={
-                                            material.locked &&
-                                            !course.isEnrolled
-                                          }
-                                          className={`w-full p-4 rounded-xl transition-all duration-200 flex items-center gap-4 group ${
-                                            material.completed
-                                              ? "bg-green-50 dark:bg-green-900/20 border-2 border-green-200 dark:border-green-800"
-                                              : material.locked &&
-                                                !course.isEnrolled
-                                              ? "opacity-50 cursor-not-allowed  dark:bg-slate-800/50"
-                                              : "bg-blue-50 dark:bg-blue-900/20 border-2 border-transparent border-blue-200 dark:border-blue-800 hover:border-blue-400"
-                                          }`}
-                                        >
-                                          <div
-                                            className={`p-3 rounded-xl flex-shrink-0 transition-colors ${
-                                              material.completed
-                                                ? "bg-green-100 dark:bg-green-900/30"
-                                                : material.locked &&
-                                                  !course.isEnrolled
-                                                ? "bg-slate-100 dark:bg-slate-700"
-                                                : "bg-white dark:bg-slate-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30"
-                                            }`}
-                                          >
-                                            {material.completed ? (
-                                              <CheckCircle className="w-5 h-5 text-green-600" />
-                                            ) : material.locked &&
-                                              !course.isEnrolled ? (
-                                              <Lock className="w-5 h-5 text-slate-400" />
-                                            ) : (
-                                              config.icon
-                                            )}
-                                          </div>
-
-                                          <div className="flex-1 text-right min-w-0">
-                                            <p className="font-medium text-slate-900 dark:text-slate-100 truncate">
-                                              {material.title}
-                                            </p>
-                                            <div className="flex items-center justify-end gap-3 mt-2">
-                                              <span
-                                                className={`text-xs px-2 py-1 rounded-full font-medium ${config.color}`}
-                                              >
-                                                {config.label}
-                                              </span>
-                                              <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-                                                <Timer className="w-3 h-3" />
-                                                {material.duration || "5 دقائق"}
-                                              </div>
-                                              {material.completed && (
-                                                <span className="text-xs text-green-600 dark:text-green-400 font-medium">
-                                                  مكتمل
-                                                </span>
-                                              )}
-                                            </div>
-                                          </div>
-
-                                          {material.type === "video" &&
-                                            !material.locked && (
-                                              <div className="flex-shrink-0">
-                                                <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
-                                                  <Play className="w-4 h-4 text-white fill-white" />
-                                                </div>
-                                              </div>
-                                            )}
-                                        </button>
-                                      );
-                                    })}
-                                  </div>
-                                </div>
-                              )
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+                <ModulesPreviewer
+                  course={course}
+                  expandedModules={expandedModules}
+                  toggleModule={toggleModule}
+                />
               </div>
             </div>
           </div>

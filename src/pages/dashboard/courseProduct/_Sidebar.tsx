@@ -11,7 +11,7 @@ import {
 import LogoLight from "@/assets/logo.svg";
 import LogoDark from "@/assets/dark_logo.svg";
 import { useNavigate } from "react-router-dom";
-import { Material } from "@/types/courses";
+import { CourseDetails, Material } from "@/types/courses";
 import { MaterialType } from "@/utils/types/adminTypes";
 
 export interface Lesson {
@@ -47,7 +47,7 @@ export interface Course {
 
 export interface SideNavbarProps {
   sidebarOpen: boolean;
-  courseData: Course | null;
+  courseData: CourseDetails | null;
   expandedModules: string[];
   toggleModule: (id: string) => void;
   currentMaterial: Material;
@@ -89,13 +89,28 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
 
   const filteredModules: Module[] = (courseData.modules ?? [])
     .map((module) => {
-      const filteredLessons = (module.lessons ?? [])
-        .map((lesson) => ({
-          ...lesson,
-          materials: (lesson.materials ?? []).filter((material) => {
-            (material?.title ?? "").toLowerCase().includes(normalisedSearch);
-          }),
-        }))
+      const filteredLessons: Lesson[] = (module.lessons ?? [])
+        .map((lesson) => {
+          const filteredMaterials = (lesson.materials ?? []).filter(
+            (material) =>
+              (material?.title ?? "").toLowerCase().includes(normalisedSearch)
+          );
+          const totalCount = filteredMaterials.length;
+          const completedCount = filteredMaterials.filter(
+            (m) => m.title == "This is not correct, needs implementation"
+          ).length;
+          const duration = filteredMaterials.reduce(
+            (sum, material) => sum + Number(material.duration || 0),
+            0
+          );
+          return {
+            ...lesson,
+            materials: filteredMaterials,
+            completedCount,
+            totalCount,
+            duration: duration.toString(),
+          };
+        })
         .filter((lesson) => lesson.materials.length > 0);
 
       const allMaterials = filteredLessons.flatMap(

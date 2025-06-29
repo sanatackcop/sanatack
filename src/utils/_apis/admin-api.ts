@@ -117,7 +117,11 @@ export const createNewResource = async (quiz: ResourceDto) => {
   return response.data;
 };
 
-export const createNewArticleApi = async (article: ArticleCardDto[]) => {
+export const createNewArticleApi = async (article: {
+  title: string;
+  data: ArticleCardDto[];
+  duration: number;
+}) => {
   const response = await trackPromise(
     Api({
       method: "post",

@@ -21,7 +21,7 @@ export interface Quiz {
   correctAnswer: string;
   explanation?: string;
   duration: number;
-  type: MaterialType.QUIZ;
+  type: MaterialType._QUIZ;
 }
 
 export interface QuizGroup {
@@ -43,15 +43,12 @@ export declare type LinkedVideo = Video & {
 };
 
 export enum MaterialType {
-  RESOURCE = "resource",
   VIDEO = "video",
   ARTICLE = "article",
   QUIZ_GROUP = "quiz_group",
-  QUIZ = "quiz",
+  _QUIZ = "quiz",
 }
 export declare type Material = Article | Video | QuizGroup;
-
-export type Level = "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
 
 export interface MaterialLessonLink {
   lesson_id: string;

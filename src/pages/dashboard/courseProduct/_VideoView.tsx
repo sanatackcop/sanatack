@@ -43,7 +43,7 @@ export function VideoView({ video }: { video: Video }) {
       </div>
 
       <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
-        <div className="w-full max-w-7xl mx-auto">
+        <div className="w-full max-w-7xl mx-auto mb-40">
           {isYouTube && embedUrl && (
             <div className="relative w-full bg-black shadow-2xl rounded-xl overflow-hidden aspect-video">
               <iframe

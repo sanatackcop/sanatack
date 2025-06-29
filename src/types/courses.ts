@@ -1,4 +1,5 @@
-import { ArticleDto, Level } from "@/utils/types/adminTypes";
+import { CoursesContext } from "@/utils/types";
+import { ArticleDto } from "@/utils/types/adminTypes";
 
 import { MaterialType } from "@/utils/types/adminTypes";
 
@@ -17,26 +18,6 @@ export interface RoadMapInterface {
   order?: number;
   isEnrolled?: boolean;
   courses: CourseDetails[];
-}
-export interface CoursesContext {
-  id: string;
-  title: string;
-  description: string;
-  level: LevelEnum;
-  course_info: {
-    durationHours: number;
-    tags: string[];
-    new_skills_result: string[];
-    learning_outcome: { [key: string]: number };
-    prerequisites: string[];
-  };
-  projectsCount: number;
-  isPublished: boolean;
-  isEnrolled: boolean;
-  enrolledCount: number;
-  completionRate: number;
-  progress?: number;
-  current_material?: string;
 }
 export interface CourseDetails extends CoursesContext {
   modules: ModuleDetails[];
@@ -62,6 +43,7 @@ export interface Article {
   id: string;
   title: string;
   description?: string;
+  order: number;
   duration: number;
   type: MaterialType.ARTICLE;
 }
@@ -82,7 +64,7 @@ export interface Quiz {
   correctAnswer: string;
   explanation?: string;
   duration: number;
-  type: MaterialType.QUIZ;
+  type: MaterialType._QUIZ;
 }
 
 export interface QuizGroup {
@@ -97,9 +79,9 @@ export interface QuizGroup {
 }
 
 export enum LevelEnum {
-  "BEGINNER" = "BEGINNER",
-  "INTERMEDIATE" = "INTERMEDIATE",
-  "ADVANCED" = "ADVANCED",
+  BEGINNER = "مبتدئ",
+  INTERMEDIATE = "متوسط",
+  ADVANCED = "متقدم",
 }
 
 export interface CoursesReport {
@@ -112,7 +94,7 @@ export interface CoursesReport {
 export interface UpdateCourseDto {
   title?: string;
   description?: string;
-  level?: Level;
+  level?: LevelEnum;
   course_info?: {
     durationHours: number;
     tags: string[];

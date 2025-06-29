@@ -10,7 +10,7 @@ import {
   patchCourseProgressApi,
 } from "@/utils/_apis/courses-apis";
 import { useParams } from "react-router-dom";
-import { Material } from "@/types/courses";
+import { CourseDetails, Material } from "@/types/courses";
 
 export const CoursePlayground: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -19,7 +19,7 @@ export const CoursePlayground: React.FC = () => {
   const { darkMode } = useSettings();
   const { id } = useParams();
 
-  const [courseData, setCourseData] = useState<any>({});
+  const [courseData, setCourseData] = useState<CourseDetails | null>(null);
 
   const fetchCourseData = async () => {
     const data = await getSingleCoursesApi({ course_id: id as string });
@@ -36,23 +36,6 @@ export const CoursePlayground: React.FC = () => {
         m?.lessons.flatMap((l: Lesson) => l?.materials)
       ) ?? [],
     [courseData?.modules]
-  );
-  const allMaterials = flatMaterials ?? [];
-
-  const totalMaterials = allMaterials.length;
-
-  const completedMaterials = allMaterials.filter(
-    (m: any) => m.completed
-  ).length;
-
-  const progress =
-    totalMaterials > 0
-      ? Math.round((completedMaterials / totalMaterials) * 100)
-      : 0;
-
-  const totalDuration = allMaterials.reduce(
-    (sum: any, material: any) => sum + Number(material.duration || 0),
-    0
   );
 
   useEffect(() => {
@@ -89,9 +72,10 @@ export const CoursePlayground: React.FC = () => {
   if (!currentMaterial) return <p>There is no current Material</p>;
 
   const userContext = useContext(UserContext);
-  if (!userContext || !userContext.auth?.user) {
-    return null;
-  }
+  if (!userContext || !userContext.auth?.user) return null;
+
+  if (!courseData) return;
+
   const user = userContext.auth.user;
 
   const handleComplete = async () => {
@@ -166,14 +150,7 @@ export const CoursePlayground: React.FC = () => {
       dir="rtl"
     >
       <NavigationPlayground
-        courseData={{
-          ...courseData,
-          completedLessons: completedMaterials,
-          totalLessons: totalMaterials,
-          progress: progress,
-        }}
-        totalMaterials={totalMaterials}
-        totalDuration={totalDuration}
+        courseData={courseData}
         sidebarOpen={sidebarOpen}
         prevMaterial={prevMaterial}
         nextMaterial={nextMaterial}
@@ -187,18 +164,16 @@ export const CoursePlayground: React.FC = () => {
       />
 
       <div className="flex flex-1 overflow-hidden">
-        {
-          <SideNavbar
-            sidebarOpen={sidebarOpen}
-            setSidebarOpen={setSidebarOpen}
-            courseData={courseData}
-            expandedModules={expandedModules}
-            toggleModule={toggleModule}
-            currentMaterial={currentMaterial}
-            setCurrentMaterial={setCurrentMaterial}
-            darkMode={darkMode}
-          />
-        }
+        <SideNavbar
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+          courseData={courseData}
+          expandedModules={expandedModules}
+          toggleModule={toggleModule}
+          currentMaterial={currentMaterial}
+          setCurrentMaterial={setCurrentMaterial}
+          darkMode={darkMode}
+        />
 
         <main className="flex-1 flex flex-col">
           <MaterialViewer material={currentMaterial} />

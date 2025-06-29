@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { getProfileApi, updateProfileApi } from "@/utils/_apis/user-api";
-import { UpdateProfileDto , UserProfileDto} from "@/types/user";
+import { UpdateProfileDto, UserProfileDto } from "@/types/user";
 
 interface StatCardProps {
   icon: LucideIcon;
@@ -545,25 +545,27 @@ export default function UserProfile(): JSX.Element {
     setTimeout(() => setShowUpgradeAlert(false), 4000);
   };
 
-  const handleProfileSave = async (formData: UpdateProfileDto): Promise<void> => {
-  try {
-    const updatedUser = await updateProfileApi(formData) as UserProfileDto;
+  const handleProfileSave = async (
+    formData: UpdateProfileDto
+  ): Promise<void> => {
+    try {
+      const updatedUser = (await updateProfileApi(formData)) as UserProfileDto;
 
-    setUserData((prev) => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        firstName: updatedUser.firstName ?? prev.firstName,
-        lastName: updatedUser.lastName ?? prev.lastName,
-        phone: updatedUser.phone ?? prev.phone,
-        bio: updatedUser.attributes?.bio ?? prev.bio,
-        company: updatedUser.attributes?.organization ?? prev.company,
-      };
-    });
-  } catch (error) {
-    console.error("Error updating profile:", error);
-  }
-};
+      setUserData((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          firstName: updatedUser.firstName ?? prev.firstName,
+          lastName: updatedUser.lastName ?? prev.lastName,
+          phone: updatedUser.phone ?? prev.phone,
+          bio: updatedUser.attributes?.bio ?? prev.bio,
+          company: updatedUser.attributes?.organization ?? prev.company,
+        };
+      });
+    } catch (error) {
+      console.error("Error updating profile:", error);
+    }
+  };
 
   return (
     <div className={`min-h-screen transition-colors duration-300`} dir="rtl">

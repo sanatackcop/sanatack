@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
-import { Level } from "./types/adminTypes";
 import { LevelEnum } from "@/types/courses";
+import { MaterialType } from "./types/adminTypes";
 
 export type navItem = {
   cta?: string;
@@ -52,9 +52,12 @@ export interface Roadmap {
 }
 export interface Course {
   id: string;
+  created_at: string;
+  updated_at: string;
   title: string;
   description: string;
   level: LevelEnum;
+  topic: CourseTopic;
   course_info: {
     durationHours: number;
     tags: string[];
@@ -62,8 +65,34 @@ export interface Course {
     learning_outcome: { [key: string]: number };
     prerequisites: string[];
   };
+  material_count: number;
   projectsCount: number;
   isPublished: boolean;
+}
+
+export interface CoursesContext {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  title: string;
+  description: string;
+  level: LevelEnum;
+  topic: CourseTopic;
+  course_info: {
+    durationHours: number;
+    tags: string[];
+    new_skills_result: string[];
+    learning_outcome: { [key: string]: number };
+    prerequisites: string[];
+  };
+  material_count: number;
+  projectsCount: number;
+  isPublished: boolean;
+  isEnrolled: boolean;
+  enrolledCount: number;
+  completionRate: number;
+  progress?: number;
+  current_material?: string;
 }
 
 export interface Module {
@@ -77,8 +106,6 @@ export interface Lesson {
   name: string;
   description: string;
 }
-
-export type MaterialType = "video" | "reading" | "quiz";
 
 export interface Material {
   id: string;
@@ -127,10 +154,18 @@ export interface ModuleDto {
   description: string;
 }
 
+export enum CourseTopic {
+  Artificial_Intelligence = "ذكاء اصطناعي",
+  MACHINE_LEARNING = "تعلم الآلة",
+  BACKEND = "الخلفية",
+  FRONTEND = "الواجهة الأمامية",
+}
+
 export interface CourseDto {
   title: string;
   description: string;
-  level: Level;
+  level: LevelEnum;
+  topic: CourseTopic;
   course_info: {
     tags: string[];
     new_skills_result: string[];

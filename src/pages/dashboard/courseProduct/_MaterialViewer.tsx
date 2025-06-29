@@ -6,17 +6,14 @@ import { MaterialType } from "@/utils/types/adminTypes";
 import ArticleView from "./_ArticleView";
 
 export default function MaterialViewer({ material }: { material: Material }) {
-  if (material.type === MaterialType.VIDEO) {
+  if (material.type === MaterialType.VIDEO)
     return <VideoView video={material} />;
-  }
 
-  if (material.type === MaterialType.ARTICLE) {
-    return <ArticleView material={{ ...material, order: 0, duration: 999 }} />;
-  }
+  if (material.type === MaterialType.ARTICLE)
+    return <ArticleView material={material} />;
 
-  if (material.type === MaterialType.QUIZ_GROUP) {
+  if (material.type === MaterialType.QUIZ_GROUP)
     return <QuizView quizGroup={material} />;
-  }
 
   return (
     <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-900">

@@ -230,16 +230,8 @@ export const ArticlesColumns = (
 ): ColumnDef<Article>[] => {
   const columns: ColumnDef<Article>[] = [
     {
-      accessorKey: "id",
-      id: "id",
-    },
-    {
-      accessorKey: "data[0].title",
+      accessorKey: "title",
       header: "Title",
-    },
-    {
-      accessorKey: "data[0].type",
-      header: "Type",
     },
   ];
 
@@ -334,6 +326,16 @@ export function ModuleLessons(
     {
       header: "Duration",
       accessorKey: "duration",
+    },
+    {
+      header: "Mapped Lessons",
+      cell: ({ row }) => {
+        return (
+          <Link to={`/admin/modules/${row.original.id}`}>
+            <Button size="sm">Mapped Lessons</Button>
+          </Link>
+        );
+      },
     },
   ];
 

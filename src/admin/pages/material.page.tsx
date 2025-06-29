@@ -18,13 +18,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import QuizDialogCreate from "../components/quiz.create";
+import QuizGroupDialogCreate from "../components/quiz.group.create";
 import VideoDialogCreate from "../components/video.create";
-import ResourceDialogCreate from "../components/resource.create";
-import { QuizGroup, Article, Video } from "@/utils/types/adminTypes";
+import {
+  QuizGroup,
+  Article,
+  Video,
+  MaterialType,
+} from "@/utils/types/adminTypes";
 import { CustomError } from "@/utils/_apis/api";
 import ArticleDialogCreate from "../components/article.create";
-import QuizEdit from "../components/quiz.edit";
+import QuizGroupEdit from "../components/quiz.group.edit";
 import VideoEdit from "../components/video.edit";
 import ArticleEdit from "../components/article.edit";
 
@@ -40,9 +44,7 @@ export default function MaterialsPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [menuOpen, setMenuOpen] = useState(false);
-  const [openDialog, setOpenDialog] = useState<
-    "quiz" | "video" | "resource" | "article" | null
-  >(null);
+  const [openDialog, setOpenDialog] = useState<MaterialType | null>(null);
 
   async function fetchCourses() {
     try {
@@ -91,9 +93,9 @@ export default function MaterialsPage() {
     fetchCourses();
   }, []);
 
-  const dialogMap: Record<string, React.ReactNode> = {
-    quiz: (
-      <QuizDialogCreate
+  const dialogMap: Record<MaterialType, React.ReactNode> = {
+    quiz_group: (
+      <QuizGroupDialogCreate
         open
         onOpenChange={(open) => !open && setOpenDialog(null)}
         updateTable={() => fetchCourses()}
@@ -106,13 +108,6 @@ export default function MaterialsPage() {
         updateTable={() => fetchCourses()}
       />
     ),
-    resource: (
-      <ResourceDialogCreate
-        open
-        onOpenChange={(open) => !open && setOpenDialog(null)}
-        updateTable={() => fetchCourses()}
-      />
-    ),
     article: (
       <ArticleDialogCreate
         open
@@ -120,11 +115,10 @@ export default function MaterialsPage() {
         updateTable={() => fetchCourses()}
       />
     ),
+    [MaterialType._QUIZ]: undefined,
   };
 
-  const handleDialogOpen = (
-    type: "quiz" | "video" | "resource" | "article"
-  ) => {
+  const handleDialogOpen = (type: MaterialType) => {
     setMenuOpen(false); // close dropdown
     setTimeout(() => setOpenDialog(type), 0); // wait for DOM to clean up
   };
@@ -141,16 +135,19 @@ export default function MaterialsPage() {
           <DropdownMenuContent className="relative left-5">
             <DropdownMenuLabel>Matrials</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => handleDialogOpen("quiz")}>
+            <DropdownMenuItem
+              onClick={() => handleDialogOpen(MaterialType.QUIZ_GROUP)}
+            >
               اختبار
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleDialogOpen("video")}>
+            <DropdownMenuItem
+              onClick={() => handleDialogOpen(MaterialType.VIDEO)}
+            >
               فيديو
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleDialogOpen("resource")}>
-              مورد
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleDialogOpen("article")}>
+            <DropdownMenuItem
+              onClick={() => handleDialogOpen(MaterialType.ARTICLE)}
+            >
               article{" "}
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -159,13 +156,13 @@ export default function MaterialsPage() {
 
       {openDialog && dialogMap[openDialog]}
 
-      <Tabs defaultValue="quiz">
+      <Tabs defaultValue="quiz_group">
         <TabsList className="mt-2 w-full justify-end">
-          <TabsTrigger value="quiz">quiz</TabsTrigger>
+          <TabsTrigger value="quiz_group">Quiz Group</TabsTrigger>
           <TabsTrigger value="video">video</TabsTrigger>
           <TabsTrigger value="article">article</TabsTrigger>
         </TabsList>
-        <TabsContent value="quiz">
+        <TabsContent value="quiz_group">
           <DataTable
             columns={QuizGroupColumns(handleDeleteQuiz, (id) =>
               setEditingQuizId(id)
@@ -191,7 +188,7 @@ export default function MaterialsPage() {
         </TabsContent>
       </Tabs>
       {editingQuizId && (
-        <QuizEdit
+        <QuizGroupEdit
           quizId={editingQuizId}
           onClose={() => setEditingQuizId(null)}
           onUpdated={fetchCourses}
