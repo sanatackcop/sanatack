@@ -1,4 +1,15 @@
-import { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
+import { useForm, FormProvider } from "react-hook-form";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Trash2,
   Plus,
@@ -13,10 +24,9 @@ import {
 } from "lucide-react";
 import { Dialog } from "@/components/ui/dialog";
 import { createNewArticleApi } from "@/utils/_apis/admin-api";
-import { Input } from "@/components/ui/input";
 
 export interface ArticleCardDto {
-  id?: any;
+  article_id?: number;
   type: "hero" | "section" | "conclusion";
   title?: string;
   image?: string;
@@ -25,7 +35,6 @@ export interface ArticleCardDto {
   code?: { code: string; language: string };
   quote?: { text: string; author?: string };
   order?: number;
-  duration?: number;
 }
 
 export default function ArticleEditor({
@@ -42,28 +51,27 @@ export default function ArticleEditor({
   const [isSending, setIsSending] = useState(false);
   const [duration, setDuration] = useState<number>(0);
 
+  const form = useForm<{ title: string }>({
+    defaultValues: { title: "" },
+  });
+
   const addCard = useCallback((type: ArticleCardDto["type"]) => {
     const newCard: ArticleCardDto = {
-      id: Date.now(),
+      article_id: Date.now(),
       type,
-      title:
-        type === "hero"
-          ? "Hero Title"
-          : type === "section"
-          ? "Section Title"
-          : "Conclusion Title",
+      title: type.charAt(0).toUpperCase() + type.slice(1) + " Title",
       description: "Add your description here...",
       body: "Add your content here...",
     };
     setArticles((prev) => [...prev, newCard]);
-    setEditingId(newCard.id);
+    setEditingId(newCard.article_id!);
   }, []);
 
   const updateCardField = useCallback(
     (id: number, field: keyof ArticleCardDto, value: any) => {
       setArticles((prev) =>
         prev.map((card) =>
-          card.id === id ? { ...card, [field]: value } : card
+          card.article_id === id ? { ...card, [field]: value } : card
         )
       );
     },
@@ -72,7 +80,7 @@ export default function ArticleEditor({
 
   const deleteCard = useCallback(
     (id: number) => {
-      setArticles((prev) => prev.filter((card) => card.id !== id));
+      setArticles((prev) => prev.filter((card) => card.article_id !== id));
       if (editingId === id) setEditingId(null);
     },
     [editingId]
@@ -80,13 +88,12 @@ export default function ArticleEditor({
 
   const moveCard = useCallback((id: number, direction: "up" | "down") => {
     setArticles((prev) => {
-      const index = prev.findIndex((card) => card.id === id);
+      const index = prev.findIndex((card) => card.article_id === id);
       if (
         (direction === "up" && index === 0) ||
         (direction === "down" && index === prev.length - 1)
       )
         return prev;
-
       const newArticles = [...prev];
       const targetIndex = direction === "up" ? index - 1 : index + 1;
       [newArticles[index], newArticles[targetIndex]] = [
@@ -100,8 +107,13 @@ export default function ArticleEditor({
   const createNewArticle = async () => {
     setIsSending(true);
     try {
-      const ar = { ...articles, duration: duration };
-      await createNewArticleApi(ar);
+      const payload = {
+        title: form.getValues("title"),
+        data: articles.map((segment, index) => ({ ...segment, order: index })),
+        duration,
+      };
+      await createNewArticleApi(payload);
+      form.reset();
       setArticles([]);
       setEditingId(null);
       onOpenChange(false);
@@ -115,182 +127,147 @@ export default function ArticleEditor({
   };
 
   const CardEditor = ({ card }: { card: ArticleCardDto }) => {
-    const isEditing = editingId === card.id;
+    const isEditing = editingId === card.article_id;
 
     return (
       <div
-        className={`border rounded-lg p-4 mb-4 transition-all ${
+        className={`border rounded-lg p-4 mb-4 ${
           isEditing ? "border-blue-500 bg-blue-50" : "border-gray-200"
         }`}
       >
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <GripVertical className="w-4 h-4 text-gray-400 cursor-move" />
-            <span
-              className={`text-sm font-medium px-2 py-1 rounded ${
-                card.type === "hero"
-                  ? "bg-purple-100 text-purple-700"
-                  : card.type === "section"
-                  ? "bg-blue-100 text-blue-700"
-                  : "bg-green-100 text-green-700"
-              }`}
-            >
+            <GripVertical className="w-4 h-4 text-gray-400" />
+            <span className="text-sm font-semibold">
               {card.type.toUpperCase()}
             </span>
           </div>
           <div className="flex gap-2">
-            <button
-              onClick={() => moveCard(card.id, "up")}
-              className="p-1 hover:bg-gray-100 rounded"
-              title="Move up"
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => moveCard(card.article_id!, "up")}
             >
               ↑
-            </button>
-            <button
-              onClick={() => moveCard(card.id, "down")}
-              className="p-1 hover:bg-gray-100 rounded"
-              title="Move down"
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => moveCard(card.article_id!, "down")}
             >
               ↓
-            </button>
-            <button
-              onClick={() => setEditingId(isEditing ? null : card.id)}
-              className={`p-1 rounded ${
-                isEditing ? "bg-blue-100" : "hover:bg-gray-100"
-              }`}
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setEditingId(isEditing ? null : card.article_id!)}
             >
               {isEditing ? (
                 <X className="w-4 h-4" />
               ) : (
                 <Type className="w-4 h-4" />
               )}
-            </button>
-            <button
-              onClick={() => deleteCard(card.id)}
-              className="p-1 hover:bg-red-100 rounded text-red-600"
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => deleteCard(card.article_id!)}
             >
-              <Trash2 className="w-4 h-4" />
-            </button>
+              <Trash2 className="w-4 h-4 text-red-600" />
+            </Button>
           </div>
         </div>
 
         {isEditing && (
           <div className="space-y-3 mt-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Title</label>
-              <input
-                type="text"
-                value={card.title || ""}
-                onChange={(e) =>
-                  updateCardField(card.id, "title", e.target.value)
-                }
-                className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter title..."
-              />
-            </div>
+            {/* Title */}
+            <Input
+              value={card.title || ""}
+              onChange={(e) =>
+                updateCardField(card.article_id!, "title", e.target.value)
+              }
+              placeholder="Title"
+            />
 
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Description
-              </label>
-              <textarea
-                value={card.description || ""}
-                onChange={(e) =>
-                  updateCardField(card.id, "description", e.target.value)
-                }
-                className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                rows={2}
-                placeholder="Enter description..."
-              />
-            </div>
+            {/* Description */}
+            <Input
+              value={card.description || ""}
+              onChange={(e) =>
+                updateCardField(card.article_id!, "description", e.target.value)
+              }
+              placeholder="Description"
+            />
 
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Body Content
-              </label>
-              <textarea
-                value={card.body || ""}
-                onChange={(e) =>
-                  updateCardField(card.id, "body", e.target.value)
-                }
-                className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                rows={4}
-                placeholder="Enter body content..."
-              />
-            </div>
+            {/* Body */}
+            <Input
+              value={card.body || ""}
+              onChange={(e) =>
+                updateCardField(card.article_id!, "body", e.target.value)
+              }
+              placeholder="Body"
+            />
 
+            {/* Buttons to Add Optional Fields */}
             <div className="grid grid-cols-3 gap-2">
-              <button
+              <Button
+                variant="outline"
                 onClick={() =>
                   updateCardField(
-                    card.id,
+                    card.article_id!,
                     "image",
                     card.image || "https://via.placeholder.com/800x400"
                   )
                 }
-                className="flex items-center justify-center gap-2 p-2 border rounded hover:bg-gray-50"
               >
-                <Image className="w-4 h-4" />
-                Add Image
-              </button>
-              <button
+                <Image className="w-4 h-4 mr-1" /> Add Image
+              </Button>
+              <Button
+                variant="outline"
                 onClick={() =>
-                  updateCardField(
-                    card.id,
-                    "code",
-                    card.code || {
-                      code: "// Your code here",
-                      language: "javascript",
-                    }
-                  )
+                  updateCardField(card.article_id!, "code", {
+                    code: card.code?.code || "// Your code here",
+                    language: card.code?.language || "javascript",
+                  })
                 }
-                className="flex items-center justify-center gap-2 p-2 border rounded hover:bg-gray-50"
               >
-                <Code className="w-4 h-4" />
-                Add Code
-              </button>
-              <button
+                <Code className="w-4 h-4 mr-1" /> Add Code
+              </Button>
+              <Button
+                variant="outline"
                 onClick={() =>
-                  updateCardField(
-                    card.id,
-                    "quote",
-                    card.quote || { text: "Your quote here", author: "Author" }
-                  )
+                  updateCardField(card.article_id!, "quote", {
+                    text: card.quote?.text || "Your quote here",
+                    author: card.quote?.author || "Author",
+                  })
                 }
-                className="flex items-center justify-center gap-2 p-2 border rounded hover:bg-gray-50"
               >
-                <Quote className="w-4 h-4" />
-                Add Quote
-              </button>
+                <Quote className="w-4 h-4 mr-1" /> Add Quote
+              </Button>
             </div>
 
+            {/* Image Field */}
             {card.image && (
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Image URL
-                </label>
-                <input
-                  type="text"
-                  value={card.image}
-                  onChange={(e) =>
-                    updateCardField(card.id, "image", e.target.value)
-                  }
-                  className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Enter image URL..."
-                />
-              </div>
+              <Input
+                value={card.image}
+                onChange={(e) =>
+                  updateCardField(card.article_id!, "image", e.target.value)
+                }
+                placeholder="Image URL"
+              />
             )}
 
+            {/* Code Field */}
             {card.code && (
               <div className="space-y-2">
-                <label className="block text-sm font-medium">Code Block</label>
                 <select
                   value={card.code.language}
-                  onChange={(e) => {
-                    const newCode = { ...card.code, language: e.target.value };
-                    updateCardField(card.id, "code", newCode);
-                  }}
-                  className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  onChange={(e) =>
+                    updateCardField(card.article_id!, "code", {
+                      ...card.code!,
+                      language: e.target.value,
+                    })
+                  }
+                  className="w-full border rounded px-2 py-1"
                 >
                   <option value="javascript">JavaScript</option>
                   <option value="typescript">TypeScript</option>
@@ -301,50 +278,45 @@ export default function ArticleEditor({
                 </select>
                 <textarea
                   value={card.code.code}
-                  onChange={(e) => {
-                    const newCode = { ...card.code, code: e.target.value };
-                    updateCardField(card.id, "code", newCode);
-                  }}
-                  className="w-full px-3 py-2 border rounded-md font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  onChange={(e) =>
+                    updateCardField(card.article_id!, "code", {
+                      ...card.code!,
+                      code: e.target.value,
+                    })
+                  }
                   rows={4}
+                  className="w-full border rounded px-2 py-1 font-mono text-sm"
                 />
               </div>
             )}
 
+            {/* Quote Field */}
             {card.quote && (
               <div className="space-y-2">
-                <label className="block text-sm font-medium">Quote</label>
                 <textarea
                   value={card.quote.text}
-                  onChange={(e) => {
-                    const newQuote = { ...card.quote, text: e.target.value };
-                    updateCardField(card.id, "quote", newQuote);
-                  }}
-                  className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  onChange={(e) =>
+                    updateCardField(card.article_id!, "quote", {
+                      ...card.quote!,
+                      text: e.target.value,
+                    })
+                  }
                   rows={2}
-                  placeholder="Enter quote text..."
+                  placeholder="Quote text"
+                  className="w-full border rounded px-2 py-1"
                 />
-                <input
-                  type="text"
+                <Input
                   value={card.quote.author || ""}
-                  onChange={(e) => {
-                    const newQuote = { ...card.quote, author: e.target.value };
-                    updateCardField(card.id, "quote", newQuote);
-                  }}
-                  className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Quote author..."
+                  onChange={(e) =>
+                    updateCardField(card.article_id!, "quote", {
+                      ...card.quote!,
+                      author: e.target.value,
+                    })
+                  }
+                  placeholder="Quote author"
                 />
               </div>
             )}
-          </div>
-        )}
-
-        {!isEditing && (
-          <div className="text-sm text-gray-600">
-            <p className="font-medium">{card.title}</p>
-            <p className="text-xs mt-1">
-              {card.description?.substring(0, 100)}...
-            </p>
           </div>
         )}
       </div>
@@ -355,74 +327,76 @@ export default function ArticleEditor({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <div className="fixed inset-0 z-50 overflow-hidden">
         <div className="relative flex items-center justify-center min-h-screen p-4">
-          <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col">
+          <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col">
             <div className="flex items-center justify-between p-6 border-b">
               <h1 className="text-2xl font-bold">Article Editor</h1>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={createNewArticle}
-                  disabled={articles.length === 0 || isSending}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                    articles.length === 0 || isSending
-                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                      : "bg-blue-600 text-white hover:bg-blue-700"
-                  }`}
-                >
-                  <Send className="w-4 h-4" />
-                  {isSending ? "Sending..." : "Create"}
-                </button>
-              </div>
+              <Button
+                onClick={createNewArticle}
+                disabled={
+                  articles.length === 0 || isSending || !form.watch("title")
+                }
+              >
+                <Send className="w-4 h-4 mr-2" />{" "}
+                {isSending ? "Sending..." : "Create"}
+              </Button>
             </div>
-
-            <div className="flex-1 flex flex-col overflow-hidden">
-              <div className="p-4 border-b bg-gray-50">
-                <div className="flex flex-wrap gap-2 justify-center">
-                  <button
-                    onClick={() => addCard("hero")}
-                    className="flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Add Hero
-                  </button>
-                  <button
-                    onClick={() => addCard("section")}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Add Section
-                  </button>
-                  <button
-                    onClick={() => addCard("conclusion")}
-                    className="flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Add Conclusion
-                  </button>
-
+            <div className="p-4 border-b bg-gray-50">
+              <div className="max-w-4xl mx-auto space-y-4">
+                <FormProvider {...form}>
+                  <Form {...form}>
+                    <form className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="title"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Article Title</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                placeholder="Enter article title"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </form>
+                  </Form>
+                </FormProvider>
+                <div className="flex flex-wrap gap-2 items-center">
+                  {["hero", "section", "conclusion"].map((type) => (
+                    <Button
+                      key={type}
+                      variant="outline"
+                      onClick={() => addCard(type as any)}
+                    >
+                      <Plus className="w-4 h-4 mr-1" /> Add {type}
+                    </Button>
+                  ))}
                   <Input
                     type="number"
-                    required={true}
-                    placeholder="duration: like 102 in seconds"
+                    required
+                    placeholder="duration (in seconds)"
                     value={duration}
-                    onChange={(e) => {
-                      setDuration(() => Number(e.target.value));
-                    }}
+                    onChange={(e) => setDuration(Number(e.target.value))}
+                    className="w-40"
                   />
                 </div>
               </div>
-
-              <div className="flex-1 overflow-y-auto p-6">
-                <div className="max-w-4xl mx-auto">
-                  {articles.length === 0 ? (
-                    <div className="text-center py-12 text-gray-500">
-                      <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                    </div>
-                  ) : (
-                    articles.map((card) => (
-                      <CardEditor key={card.id} card={card} />
-                    ))
-                  )}
-                </div>
+            </div>
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="max-w-4xl mx-auto">
+                {articles.length === 0 ? (
+                  <div className="text-center py-12 text-gray-500">
+                    <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                    No segments added yet
+                  </div>
+                ) : (
+                  articles.map((card) => (
+                    <CardEditor key={card.article_id} card={card} />
+                  ))
+                )}
               </div>
             </div>
           </div>

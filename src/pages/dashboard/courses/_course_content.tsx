@@ -1,6 +1,7 @@
 import TimeLine from "@/components/timeLine";
 import { CourseDetails, LessonDetails } from "@/types/courses";
 import { getLessonResourceIcon } from "@/utils/getIcon";
+import { MaterialType } from "@/utils/types/adminTypes";
 
 export default function CourseDetailsContent({
   course,
@@ -19,13 +20,13 @@ export default function CourseDetailsContent({
           let title = "";
           let url = "";
 
-          if (material.type === "video") {
+          if (material.type === MaterialType.VIDEO) {
             url = material.youtubeId || "";
             title = material.title || title;
-          } else if (material.type === "resource") {
+          } else if (material.type === MaterialType.ARTICLE) {
             url = "";
             title = material.title || title;
-          } else if (material.type === "quiz") {
+          } else if (material.type === MaterialType.QUIZ_GROUP) {
             title = "Quiz";
           }
 

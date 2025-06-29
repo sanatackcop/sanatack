@@ -24,6 +24,10 @@ const publicRoutes = [
 const privateRoutes = [{ path: "/dashboard/*", element: <MainDashboard /> }];
 const adminRoutes = [
   {
+    path: "/",
+    element: <h1 className="text-center text-3xl">Welcome to Admin</h1>,
+  },
+  {
     path: "/admin",
     element: <AdminDashboard />,
     children: [

@@ -8,7 +8,6 @@ import {
   BookOpen,
   ClipboardList,
   FolderOpen,
-  Code,
   Map,
   ChartScatter,
   Bot,
@@ -19,12 +18,14 @@ import { Link, useLocation } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -74,14 +75,13 @@ const items = [
     requiresPaid: true,
     comingSoon: true,
   },
-  {
-    title: "ليت كود",
-    url: "/dashboard/assessments",
-    icon: Code,
-    requiresPaid: true,
-    comingSoon: true,
-  },
-
+  // {
+  //   title: "ليت كود",
+  //   url: "/dashboard/assessments",
+  //   icon: Code,
+  //   requiresPaid: true,
+  //   comingSoon: true,
+  // },
   {
     title: "مدرب  AI",
     url: "/dashboard/assessments",
@@ -98,8 +98,27 @@ const items = [
     comingSoon: true,
   },
 ];
+function SubscriptionBanner({
+  onUpgrade,
+  isCollapsed,
+}: {
+  onUpgrade: () => void;
+  isCollapsed: boolean;
+}) {
+  if (isCollapsed) {
+    return (
+      <div className="flex justify-center p-2">
+        <button
+          onClick={onUpgrade}
+          className="p-2 bg-blue-500 text-white hover:bg-blue-600 transition-colors duration-200 rounded-md"
+          title="ترقية إلى النسخة المدفوعة"
+        >
+          <Crown size={18} className="text-white" />
+        </button>
+      </div>
+    );
+  }
 
-function SubscriptionBanner({ onUpgrade }: any) {
   return (
     <div
       className="mx-3 mb-3 p-4  border-2
@@ -130,8 +149,8 @@ export function AppSidebar() {
   const location = useLocation();
   const activePath = location.pathname;
   const { darkMode } = useSettings();
-  // const { state } = useSidebar();
-  // const isCollapsed = state === "collapsed";
+  const { state } = useSidebar();
+  const isCollapsed = state === "collapsed";
   const isUserPaid = false;
   const handleUpgrade = () => {
     console.log("Upgrade");
@@ -140,7 +159,7 @@ export function AppSidebar() {
   return (
     <Sidebar
       side="right"
-      collapsible="offcanvas"
+      collapsible="icon"
       className="bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 w-full sm:w-64"
     >
       <SidebarContent className="bg-white dark:bg-gray-900">
@@ -175,16 +194,16 @@ export function AppSidebar() {
                       }
                     >
                       {isDisabled ? (
-                        <div className="flex items-center gap-3 opacity-50 relative">
-                          <item.icon size={20} />
-                          <span className="text-nowrap">{item.title}</span>
-                          <div className="ml-auto flex items-center gap-1">
+                        <div className="flex items-center justify-between gap-3 opacity-50 relative w-full">
+                          <div className="flex items-center gap-3">
+                            <item.icon size={20} />
+                            <span className="text-nowrap">{item.title}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
                             {isComingSoon && (
-                              <>
-                                <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full font-medium">
-                                  قريباً
-                                </span>
-                              </>
+                              <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full font-medium">
+                                قريباً
+                              </span>
                             )}
                             {isLocked && (
                               <Crown size={14} className="text-yellow-500" />
@@ -207,16 +226,21 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-
-        <div className="mt-auto">
-          {!isUserPaid && <SubscriptionBanner onUpgrade={handleUpgrade} />}
-        </div>
       </SidebarContent>
+      <SidebarFooter>
+        <div className="mt-auto">
+          {!isUserPaid && (
+            <SubscriptionBanner
+              onUpgrade={handleUpgrade}
+              isCollapsed={isCollapsed}
+            />
+          )}
+        </div>
+      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );
 }
-
 export function DashboardNavbar() {
   const { darkMode, toggleDarkMode } = useSettings();
 

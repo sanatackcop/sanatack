@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, X, RotateCcw } from "lucide-react";
+import { QuizGroup } from "@/utils/types/adminTypes";
 
 interface QuizQuestion {
   question: string;
@@ -11,44 +12,39 @@ interface Answers {
   [key: number]: number;
 }
 
-export default function QuizView(): JSX.Element {
+export default function QuizView({
+  quizGroup,
+}: {
+  quizGroup: QuizGroup;
+}): JSX.Element {
+  const [quizData, setQuizData] = useState<QuizQuestion[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState<number>(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [answers, setAnswers] = useState<Answers>({});
   const [showResults, setShowResults] = useState<boolean>(false);
 
-  const quizData: QuizQuestion[] = [
-    {
-      question: "ما هي عاصمة المملكة العربية السعودية؟",
-      options: ["الرياض", "جدة", "الدمام", "مكة المكرمة"],
-      correct: 0,
-    },
-    {
-      question: "كم عدد أركان الإسلام؟",
-      options: ["أربعة", "خمسة", "ستة", "سبعة"],
-      correct: 1,
-    },
-    {
-      question: "ما هو أكبر محيط في العالم؟",
-      options: [
-        "المحيط الأطلسي",
-        "المحيط الهندي",
-        "المحيط الهادئ",
-        "المحيط المتجمد الشمالي",
-      ],
-      correct: 2,
-    },
-    {
-      question: "من هو مؤلف رواية 'مئة عام من العزلة'؟",
-      options: ["نجيب محفوظ", "غابرييل غارسيا ماركيز", "أحمد شوقي", "طه حسين"],
-      correct: 1,
-    },
-    {
-      question: "كم عدد قارات العالم؟",
-      options: ["خمس قارات", "ست قارات", "سبع قارات", "ثمان قارات"],
-      correct: 2,
-    },
-  ];
+  useEffect(() => {
+    const fetchQuiz = async () => {
+      try {
+        const quizzes: QuizQuestion[] = [];
+
+        quizGroup.quizzes?.forEach((quiz: any) => {
+          const correct = quiz.options.indexOf(quiz.correctAnswer);
+          quizzes.push({
+            question: quiz.question,
+            options: quiz.options,
+            correct,
+          });
+        });
+
+        setQuizData(quizzes);
+      } catch (error) {
+        console.error("Error loading quiz data:", error);
+      }
+    };
+
+    fetchQuiz();
+  }, []);
 
   const handleAnswerSelect = (answerIndex: number): void => {
     setSelectedAnswer(answerIndex);
@@ -94,6 +90,14 @@ export default function QuizView(): JSX.Element {
     setShowResults(false);
   };
 
+  if (quizData.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-600 dark:text-white">
+        جاري تحميل الأسئلة...
+      </div>
+    );
+  }
+
   const score: number = calculateScore();
   const percentage: number = Math.round((score / quizData.length) * 100);
 
@@ -108,6 +112,7 @@ export default function QuizView(): JSX.Element {
 
         {!showResults ? (
           <>
+            {/* Progress */}
             <div className="p-6 rounded-xl shadow-lg bg-white dark:bg-gray-800 mb-5">
               <div className="flex justify-between items-center mb-4">
                 <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
@@ -129,6 +134,7 @@ export default function QuizView(): JSX.Element {
               </div>
             </div>
 
+            {/* Question */}
             <div className="mb-8 p-8 rounded-xl shadow-lg bg-white dark:bg-gray-800">
               <h2 className="text-xl font-bold mb-6 leading-relaxed text-gray-800 dark:text-white">
                 {quizData[currentQuestion].question}
@@ -164,6 +170,7 @@ export default function QuizView(): JSX.Element {
               </div>
             </div>
 
+            {/* Navigation */}
             <div className="flex justify-between">
               <button
                 onClick={handlePrevQuestion}

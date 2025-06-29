@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import Storage from "@/lib/Storage";
 
@@ -17,7 +16,6 @@ const baseApi = axios.create({
   headers: {
     "Content-Type": "application/json",
     "X-Requested-With": "XMLHttpRequest",
-    Connection: "keep-alive",
   },
   timeout: 30000,
 });

@@ -10,9 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CourseDetails } from "@/types/courses";
+import { CourseDetails, LevelEnum } from "@/types/courses";
 import { getSingleCoursesApi } from "@/utils/_apis/courses-apis";
-import { Level } from "@/utils/types/adminTypes";
 import { updateCourse } from "@/utils/_apis/admin-api";
 
 export default function CourseEdit({
@@ -29,7 +28,7 @@ export default function CourseEdit({
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [level, setLevel] = useState<Level>("BEGINNER");
+  const [level, setLevel] = useState<LevelEnum>(LevelEnum.BEGINNER);
   const [isPublished, setIsPublished] = useState(false);
   const [tags, setTags] = useState<string[]>([]);
   const [skills, setSkills] = useState<string[]>([]);

@@ -1,10 +1,17 @@
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Article } from "@/types/articles/articles";
-import { Course, Lesson, Module, Roadmap } from "@/utils/types";
-import { Quiz, Video } from "@/utils/types/adminTypes";
 import { ColumnDef } from "@tanstack/react-table";
+import { Course, Lesson, Module, Roadmap } from "@/utils/types";
+import { QuizGroup, Article, Video } from "@/utils/types/adminTypes";
 import { Link } from "react-router-dom";
 import DeleteDialog from "./components/deleteModal";
+import { CodeItem } from "./components/mapped.materials.create";
 
 export const RoadmapColumns: ColumnDef<Roadmap>[] = [
   {
@@ -73,18 +80,69 @@ export const CourseColumns = (
   },
 ];
 
-export const QuizColumns = (
+export const QuizGroupColumns = (
   onDelete?: (id: string) => void,
   onEdit?: (id: string) => void
-): ColumnDef<Quiz>[] => {
-  const columns: ColumnDef<Quiz>[] = [
+): ColumnDef<QuizGroup>[] => {
+  const columns: ColumnDef<QuizGroup>[] = [
     {
-      accessorKey: "question",
-      header: "Question",
+      accessorKey: "title",
+      header: "Title",
     },
     {
-      accessorKey: "correctAnswer",
-      header: "Answer",
+      header: "Show Quizzes",
+      cell: ({ row }) => {
+        const data = row.original;
+        console.log({ data });
+        return (
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm">
+                عرض الأسئلة
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-h-[80vh] overflow-y-auto sm:max-w-[800px]">
+              <DialogHeader>
+                <DialogTitle>الأسئلة: {data.title}</DialogTitle>
+              </DialogHeader>
+
+              <div className="space-y-6 pt-4">
+                {data.quizzes.map((quiz, index) => (
+                  <div
+                    key={quiz.id}
+                    className="border rounded-md p-4 space-y-2 bg-muted/20"
+                  >
+                    <p className="font-semibold">
+                      {index + 1}. {quiz.question}
+                    </p>
+
+                    <ul className="list-disc list-inside pl-2 space-y-1">
+                      {quiz.options.map((opt, i) => (
+                        <li
+                          key={i}
+                          className={
+                            opt === quiz.correctAnswer
+                              ? "font-bold text-green-600"
+                              : ""
+                          }
+                        >
+                          {opt}
+                        </li>
+                      ))}
+                    </ul>
+
+                    {quiz.explanation && (
+                      <p className="text-muted-foreground text-sm">
+                        الشرح: {quiz.explanation}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </DialogContent>
+          </Dialog>
+        );
+      },
     },
   ];
 
@@ -105,7 +163,7 @@ export const QuizColumns = (
           {onDelete && (
             <DeleteDialog
               onDelete={() => onDelete(row.original.id)}
-              label={`the quiz "${row.original.question}"`}
+              label={`the quiz "${row.original.title}"`}
             />
           )}
         </div>
@@ -173,16 +231,8 @@ export const ArticlesColumns = (
 ): ColumnDef<Article>[] => {
   const columns: ColumnDef<Article>[] = [
     {
-      accessorKey: "id",
-      id: "id",
-    },
-    {
-      accessorKey: "data[0].title",
+      accessorKey: "title",
       header: "Title",
-    },
-    {
-      accessorKey: "data[0].type",
-      header: "Type",
     },
   ];
 
@@ -217,8 +267,8 @@ export const ArticlesColumns = (
 export const CodeColumns = (
   onDelete?: (id: string) => void,
   onEdit?: (id: string) => void
-): ColumnDef<Article>[] => {
-  const columns: ColumnDef<Article>[] = [
+): ColumnDef<CodeItem>[] => {
+  const columns: ColumnDef<CodeItem>[] = [
     {
       accessorKey: "id",
       id: "id",

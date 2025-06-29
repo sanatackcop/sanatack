@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Lesson, Material, SideNavbar } from "./_Sidebar";
+import { Lesson, SideNavbar } from "./_Sidebar";
 import UserContext from "@/context/UserContext";
 import { useContext } from "react";
-import { MaterialViewer } from "./_MaterialViewer";
+import MaterialViewer from "./_MaterialViewer";
 import NavigationPlayground from "./_TopNav";
 import { useSettings } from "@/context/SettingsContexts";
 import {
@@ -10,6 +10,7 @@ import {
   patchCourseProgressApi,
 } from "@/utils/_apis/courses-apis";
 import { useParams } from "react-router-dom";
+import { CourseDetails, Material } from "@/types/courses";
 
 export const CoursePlayground: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -18,7 +19,7 @@ export const CoursePlayground: React.FC = () => {
   const { darkMode } = useSettings();
   const { id } = useParams();
 
-  const [courseData, setCourseData] = useState<any>({});
+  const [courseData, setCourseData] = useState<CourseDetails | null>(null);
 
   const fetchCourseData = async () => {
     const data = await getSingleCoursesApi({ course_id: id as string });
@@ -35,23 +36,6 @@ export const CoursePlayground: React.FC = () => {
         m?.lessons.flatMap((l: Lesson) => l?.materials)
       ) ?? [],
     [courseData?.modules]
-  );
-  const allMaterials = flatMaterials ?? [];
-
-  const totalMaterials = allMaterials.length;
-
-  const completedMaterials = allMaterials.filter(
-    (m: any) => m.completed
-  ).length;
-
-  const progress =
-    totalMaterials > 0
-      ? Math.round((completedMaterials / totalMaterials) * 100)
-      : 0;
-
-  const totalDuration = allMaterials.reduce(
-    (sum: any, material: any) => sum + Number(material.duration || 0),
-    0
   );
 
   useEffect(() => {
@@ -84,14 +68,18 @@ export const CoursePlayground: React.FC = () => {
         : [...prev, moduleId]
     );
   };
+
+  if (!currentMaterial) return <p>There is no current Material</p>;
+
   const userContext = useContext(UserContext);
-  if (!userContext || !userContext.auth?.user) {
-    return null;
-  }
+  if (!userContext || !userContext.auth?.user) return null;
+
+  if (!courseData) return;
+
   const user = userContext.auth.user;
 
   const handleComplete = async () => {
-    if (!currentMaterial || !user?.id) return;
+    if (!user?.id) return;
 
     const updatedCourseData = {
       ...courseData,
@@ -108,7 +96,7 @@ export const CoursePlayground: React.FC = () => {
       })),
     };
     setCourseData(updatedCourseData);
-    setCurrentMaterial({ ...currentMaterial, completed: true });
+    setCurrentMaterial({ ...currentMaterial });
 
     try {
       await patchCourseProgressApi({
@@ -124,7 +112,7 @@ export const CoursePlayground: React.FC = () => {
   };
 
   const handleRestart = async () => {
-    if (!currentMaterial || !user?.id) return;
+    if (!user?.id) return;
 
     const updatedCourseData = {
       ...courseData,
@@ -141,7 +129,7 @@ export const CoursePlayground: React.FC = () => {
       })),
     };
     setCourseData(updatedCourseData);
-    setCurrentMaterial({ ...currentMaterial, completed: false });
+    setCurrentMaterial({ ...currentMaterial });
 
     try {
       await patchCourseProgressApi({
@@ -159,14 +147,7 @@ export const CoursePlayground: React.FC = () => {
   return (
     <div className={`h-screen flex flex-col ${darkMode ? "dark" : ""}`}>
       <NavigationPlayground
-        courseData={{
-          ...courseData,
-          completedLessons: completedMaterials,
-          totalLessons: totalMaterials,
-          progress: progress,
-        }}
-        totalMaterials={totalMaterials}
-        totalDuration={totalDuration}
+        courseData={courseData}
         sidebarOpen={sidebarOpen}
         prevMaterial={prevMaterial}
         nextMaterial={nextMaterial}
@@ -179,7 +160,7 @@ export const CoursePlayground: React.FC = () => {
         handleRestart={handleRestart}
       />
 
-      <div className="flex flex-1 overflow-hidden pt-16 pb-16">
+      <div className="flex flex-1 overflow-hidden">
         <SideNavbar
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
