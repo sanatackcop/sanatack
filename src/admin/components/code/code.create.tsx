@@ -19,6 +19,9 @@ import {
   ChevronLeft,
   FolderPlus,
   Folder,
+  Bold,
+  List,
+  Hash,
 } from "lucide-react";
 import { creaetNewCodeLesson } from "@/utils/_apis/admin-api";
 
@@ -33,9 +36,17 @@ interface TestCase {
   description: string;
 }
 
+interface ListItem {
+  id: number;
+  text: string;
+  bold: boolean;
+}
+
 interface TextData {
   title?: string;
   content?: string;
+  textType?: "paragraph" | "heading" | "bullet-list" | "numbered-list";
+  listItems?: ListItem[];
 }
 
 interface CodeData {
@@ -187,7 +198,10 @@ export default function CodeMaterialCreate({
     const newComponent: Component = {
       id: Date.now(),
       type,
-      data: {},
+      data:
+        type === COMPONENT_TYPES.TEXT
+          ? { textType: "paragraph", listItems: [] }
+          : {},
     };
     setContainers((prev) =>
       prev.map((container, i) =>
@@ -361,7 +375,6 @@ export default function CodeMaterialCreate({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl w-full max-w-6xl h-[90vh] flex flex-col">
-        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 shrink-0">
           <div className="flex items-center space-x-4">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
@@ -397,11 +410,9 @@ export default function CodeMaterialCreate({
           </button>
         </div>
 
-        {/* Content Area */}
         <div className="flex-1 overflow-y-auto p-6">
           {currentStep === 1 && (
             <div className="space-y-6">
-              {/* Basic Information */}
               <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
                   <BookOpen className="mr-2" size={20} />
@@ -448,7 +459,6 @@ export default function CodeMaterialCreate({
                 </div>
               </div>
 
-              {/* Add Container Button */}
               <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
@@ -477,14 +487,12 @@ export default function CodeMaterialCreate({
                 )}
               </div>
 
-              {/* Containers List */}
               <div className="space-y-4">
                 {containers.map((container, containerIndex) => (
                   <div
                     key={container.id}
                     className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm"
                   >
-                    {/* Container Header */}
                     <div className="p-4 border-b border-gray-200 dark:border-gray-700">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3 flex-1">
@@ -545,7 +553,6 @@ export default function CodeMaterialCreate({
                       </div>
                     </div>
 
-                    {/* Add Component Buttons */}
                     <div className="p-4">
                       <div className="mb-4">
                         <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
@@ -662,7 +669,6 @@ export default function CodeMaterialCreate({
                         </div>
                       </div>
 
-                      {/* Components in Container */}
                       {container.components.length > 0 && (
                         <div className="space-y-3">
                           <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -754,7 +760,6 @@ export default function CodeMaterialCreate({
 
           {currentStep === 2 && (
             <div className="space-y-6">
-              {/* Test Cases */}
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center">
@@ -787,7 +792,6 @@ export default function CodeMaterialCreate({
           )}
         </div>
 
-        {/* Footer */}
         <div className="border-t border-gray-200 dark:border-gray-700 p-6 bg-gray-50 dark:bg-gray-800 shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -863,14 +867,115 @@ function TextComponent({
   onRemove,
   index,
 }: ComponentProps<TextData>) {
+  const addListItem = (): void => {
+    const newItem: ListItem = {
+      id: Date.now(),
+      text: "",
+      bold: false,
+    };
+    const updatedData = {
+      ...data,
+      listItems: [...(data.listItems || []), newItem],
+    };
+    onChange(index, updatedData);
+  };
+
+  const updateListItem = (itemIndex: number, updatedItem: ListItem): void => {
+    const updatedListItems = (data.listItems || []).map((item, i) =>
+      i === itemIndex ? updatedItem : item
+    );
+    onChange(index, { ...data, listItems: updatedListItems });
+  };
+
+  const removeListItem = (itemIndex: number): void => {
+    const updatedListItems = (data.listItems || []).filter(
+      (_, i) => i !== itemIndex
+    );
+    onChange(index, { ...data, listItems: updatedListItems });
+  };
+
+  const getTextTypeIcon = () => {
+    switch (data.textType) {
+      case "heading":
+        return <Hash size={16} className="text-blue-600" />;
+      case "bullet-list":
+        return <List size={16} className="text-blue-600" />;
+      case "numbered-list":
+        return <Hash size={16} className="text-blue-600" />;
+      default:
+        return <Type size={16} className="text-blue-600" />;
+    }
+  };
+
+  const renderPreview = () => {
+    if (!data.textType) return null;
+
+    switch (data.textType) {
+      case "heading":
+        return (
+          <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded border">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+              {data.content || "Heading preview"}
+            </h3>
+          </div>
+        );
+      case "paragraph":
+        return (
+          <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded border">
+            <p className="text-gray-900 dark:text-gray-100">
+              {data.content || "Paragraph preview"}
+            </p>
+          </div>
+        );
+      case "bullet-list":
+      case "numbered-list":
+        return (
+          <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded border">
+            <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2">
+              {data.title || "List title"}
+            </h4>
+            {data.textType === "bullet-list" ? (
+              <ul className="list-disc pl-5 space-y-1">
+                {(data.listItems || []).map((item, i) => (
+                  <li
+                    key={i}
+                    className={`text-gray-900 dark:text-gray-100 ${
+                      item.bold ? "font-bold" : ""
+                    }`}
+                  >
+                    {item.text || `List item ${i + 1}`}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <ol className="list-decimal pl-5 space-y-1">
+                {(data.listItems || []).map((item, i) => (
+                  <li
+                    key={i}
+                    className={`text-gray-900 dark:text-gray-100 ${
+                      item.bold ? "font-bold" : ""
+                    }`}
+                  >
+                    {item.text || `List item ${i + 1}`}
+                  </li>
+                ))}
+              </ol>
+            )}
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center">
           <GripVertical size={16} className="text-gray-400 mr-2 cursor-move" />
-          <Type size={16} className="text-blue-600 mr-2" />
-          <h4 className="font-medium text-gray-900 dark:text-gray-100">
-            Text Content
+          {getTextTypeIcon()}
+          <h4 className="font-medium text-gray-900 dark:text-gray-100 ml-2">
+            Text Content ({data.textType || "paragraph"})
           </h4>
         </div>
         <button
@@ -881,7 +986,31 @@ function TextComponent({
         </button>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Text Type
+          </label>
+          <select
+            value={data.textType || "paragraph"}
+            onChange={(e) =>
+              onChange(index, {
+                ...data,
+                textType: e.target.value as TextData["textType"],
+                listItems: e.target.value.includes("list")
+                  ? data.listItems || []
+                  : undefined,
+              })
+            }
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+          >
+            <option value="paragraph">Paragraph</option>
+            <option value="heading">Heading</option>
+            <option value="bullet-list">Bullet List</option>
+            <option value="numbered-list">Numbered List</option>
+          </select>
+        </div>
+
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Title
@@ -896,20 +1025,102 @@ function TextComponent({
             placeholder="Section title"
           />
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Content
-          </label>
-          <textarea
-            value={data.content || ""}
-            onChange={(e) =>
-              onChange(index, { ...data, content: e.target.value })
-            }
-            rows={6}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-            placeholder="Write your content here..."
-          />
-        </div>
+
+        {(data.textType === "paragraph" || data.textType === "heading") && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Content
+            </label>
+            <textarea
+              value={data.content || ""}
+              onChange={(e) =>
+                onChange(index, { ...data, content: e.target.value })
+              }
+              rows={data.textType === "heading" ? 2 : 6}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              placeholder={`Write your ${data.textType} here...`}
+            />
+          </div>
+        )}
+
+        {(data.textType === "bullet-list" ||
+          data.textType === "numbered-list") && (
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                List Items
+              </label>
+              <button
+                onClick={addListItem}
+                className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors flex items-center"
+              >
+                <Plus size={14} className="mr-1" />
+                Add Item
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              {(data.listItems || []).map((item, itemIndex) => (
+                <div
+                  key={item.id}
+                  className="flex items-center space-x-2 p-2 border border-gray-200 dark:border-gray-600 rounded"
+                >
+                  <span className="text-sm text-gray-500 dark:text-gray-400 w-6">
+                    {data.textType === "bullet-list"
+                      ? "•"
+                      : `${itemIndex + 1}.`}
+                  </span>
+                  <input
+                    type="text"
+                    value={item.text}
+                    onChange={(e) =>
+                      updateListItem(itemIndex, {
+                        ...item,
+                        text: e.target.value,
+                      })
+                    }
+                    className="flex-1 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    placeholder="List item text"
+                  />
+                  <button
+                    onClick={() =>
+                      updateListItem(itemIndex, { ...item, bold: !item.bold })
+                    }
+                    className={`p-1 rounded transition-colors ${
+                      item.bold
+                        ? "bg-gray-700 text-white"
+                        : "bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500"
+                    }`}
+                    title="Toggle bold"
+                  >
+                    <Bold size={14} />
+                  </button>
+                  <button
+                    onClick={() => removeListItem(itemIndex)}
+                    className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            {(!data.listItems || data.listItems.length === 0) && (
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded">
+                No list items yet. Click "Add Item" to start building your list.
+              </div>
+            )}
+          </div>
+        )}
+
+        {data.textType && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Preview
+            </label>
+            {renderPreview()}
+          </div>
+        )}
       </div>
     </div>
   );

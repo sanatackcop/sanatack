@@ -134,7 +134,7 @@ export default function MaterialsPage() {
     code: (
       <CodeMatrialCreate
         open
-        onOpenChange={(open: any) => !open && setOpenDialog(null)}
+        onOpenChange={(open) => !open && setOpenDialog(null)}
         updateTable={() => fetchCourses()}
       />
     ),

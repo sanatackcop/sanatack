@@ -103,8 +103,8 @@ export default function CodePlayground({ material }: { material: any }) {
     <div className={`flex h-screen w-full font-sans ${darkMode ? "dark" : ""}`}>
       <InstructionsPanel
         material={material}
-        currentSectionIndex={currentSectionIndex}
-        setCurrentSectionIndex={setCurrentSectionIndex}
+        currentContainerIndex={currentSectionIndex}
+        setCurrentContainerIndex={setCurrentSectionIndex}
       />
 
       <CodeEditor
