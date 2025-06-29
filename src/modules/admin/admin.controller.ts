@@ -76,6 +76,11 @@ export class AdminController {
     return await this.coursesService.create(course);
   }
 
+  @Post('/lessons')
+  async createNewLesson(@Body() lessonDto: any){
+    return await this.lessonService.create(lessonDto)
+  }
+
   @Get('/mapper/:course_id/modules')
   async getAllMappedModules(@Param('course_id') course_id: string) {
     try {
