@@ -17,7 +17,6 @@ import {
   CreateCareerPathDto,
   CreateNewCourseDto,
   CreateRoadmapDto,
-  LessonDto,
   MaterialLessonMapDto,
   ModuleDto,
   ModuleLessonDto,
@@ -46,6 +45,8 @@ import QuizGroupService from '../courses/services/quiz.group.service';
 import QuizGroup from '../courses/entities/quiz.group.entity';
 import ArticleService from '../courses/services/article.service';
 import Article from '../courses/entities/article.entity';
+import { CodeLessonService } from '../courses/services/code/code.service';
+import { CodeLesson } from '../courses/entities/code/code-lesson.entity';
 
 @Controller('admin')
 export class AdminController {
@@ -61,7 +62,8 @@ export class AdminController {
     private readonly materialMapper: MaterialMapperService,
     private readonly moduleService: ModuleService,
     private readonly lessonMapper: LessonMapperService,
-    private readonly courseMapper: CourseMapperService
+    private readonly courseMapper: CourseMapperService,
+    private readonly codeLessonService: CodeLessonService
   ) {}
 
   @Get('/courses')
@@ -149,16 +151,6 @@ export class AdminController {
     return await this.resourceService.create(data);
   }
 
-  @Get('/resources')
-  async getAllResource() {
-    return await this.resourceService.getAll();
-  }
-
-  @Post('/lessons')
-  async createLesson(@Body() lesson: LessonDto) {
-    return await this.lessonService.create(lesson);
-  }
-
   @Get('/lessons')
   async getLessons() {
     return await this.lessonService.find();
@@ -166,7 +158,7 @@ export class AdminController {
 
   @Post('/mapper/material')
   async linkMaterial(@Body() link_material: MaterialLessonMapDto) {
-    let material: QuizGroup | Video | Article;
+    let material: QuizGroup | Video | Article | CodeLesson;
 
     if (link_material.type == MaterialType.QUIZ_GROUP)
       material = await this.quizGroupService.findOne(link_material.material_id);
@@ -174,8 +166,11 @@ export class AdminController {
       material = await this.videoService.findOne(link_material.material_id);
     else if (link_material.type == MaterialType.ARTICLE)
       material = await this.articleService.findOne(link_material.material_id);
+    else if (link_material.type == MaterialType.CODE)
+      material = await this.codeLessonService.findOne(
+        link_material.material_id
+      );
 
-    console.log({ material, link_material });
     if (!material)
       throw new HttpException(
         `Material with ID ${link_material.material_id} not found`,
@@ -194,7 +189,7 @@ export class AdminController {
   async getAllMappedQuizzes(@Param('lesson_id') lesson_id: string) {
     try {
       const h = await this.materialMapper.findAllMaterialsByLesson(lesson_id);
-      console.dir({ h }, { depth: null });
+
       return h;
     } catch (error: unknown) {
       console.log({ error });
@@ -445,5 +440,20 @@ export class AdminController {
     } catch (err) {
       console.log(err);
     }
+  }
+
+  @Post('/code')
+  async createCodeLesson(@Body() createDto: any): Promise<void> {
+    try {
+      const lesson = await this.codeLessonService.createLesson(createDto);
+      return;
+    } catch (error) {
+      console.error('Error creating code lesson:', error);
+    }
+  }
+
+  @Get('/code')
+  async getAllCode() {
+    return await this.codeLessonService.getAll();
   }
 }

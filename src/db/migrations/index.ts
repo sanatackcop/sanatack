@@ -6,6 +6,7 @@ import { AddedArticleTable1750524459147 } from './1750524459147-AddedArticleTabl
 import { UserAttributesTable1750264341355 } from './1750264341355-UserAttributesTable';
 import { EnrollmentCourseDelete1750673629147 } from './1750673629147-EnrollmentCourseDelete';
 import { LessonDelete1750674908389 } from './1750674908389-LessonDelete';
+import { AddCodeLessonsTableAndTestCases1751101853859 } from './1751101853859-AddCodeLessonsTableAndTestCases';
 
 export const migrationFiles = [
   FullMig1749751469450,
@@ -15,5 +16,6 @@ export const migrationFiles = [
   QuizGroup1750516388464,
   AddedArticleTable1750524459147,
   EnrollmentCourseDelete1750673629147,
-  LessonDelete1750674908389
+  LessonDelete1750674908389,
+  AddCodeLessonsTableAndTestCases1751101853859,
 ];

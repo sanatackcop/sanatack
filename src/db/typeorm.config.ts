@@ -24,6 +24,8 @@ import { Otps } from 'src/modules/auth/entities/otp.entity';
 import { Attempts } from 'src/modules/auth/entities/attempts.entity';
 import Article from 'src/modules/courses/entities/article.entity';
 import QuizGroup from 'src/modules/courses/entities/quiz.group.entity';
+import { CodeLesson } from 'src/modules/courses/entities/code/code-lesson.entity';
+import { TestCase } from 'src/modules/courses/entities/code/test-case.entity';
 
 config();
 
@@ -52,6 +54,8 @@ export const entities = [
   CareerEnrollment,
   RoadmapEnrollment,
   Article,
+  CodeLesson,
+  TestCase,
 ];
 
 const mainDataSource = new DataSource({

@@ -37,6 +37,9 @@ import QuizGroup from './entities/quiz.group.entity';
 import QuizGroupService from './services/quiz.group.service';
 import ArticleService from './services/article.service';
 import Article from './entities/article.entity';
+import { CodeLessonService } from './services/code/code.service';
+import { CodeLesson } from './entities/code/code-lesson.entity';
+import { TestCase } from './entities/code/test-case.entity';
 
 @Module({
   imports: [
@@ -61,6 +64,8 @@ import Article from './entities/article.entity';
       User,
       QuizGroup,
       Article,
+      CodeLesson,
+      TestCase,
     ]),
   ],
   controllers: [CoursesController],
@@ -81,6 +86,7 @@ import Article from './entities/article.entity';
     CourseMapperService,
     QuizGroupService,
     ArticleService,
+    CodeLessonService,
   ],
   exports: [
     CareerPathService,
@@ -96,6 +102,7 @@ import Article from './entities/article.entity';
     ModuleService,
     CourseMapperService,
     QuizGroupService,
+    CodeLessonService,
   ],
 })
 export class CoursesModule {}

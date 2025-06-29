@@ -8,6 +8,7 @@ export enum MaterialType {
   QUIZ = 'quiz',
   LINK = 'link',
   ARTICLE = 'article',
+  CODE = 'code',
 }
 
 @Entity({ name: 'material_mapper' })
