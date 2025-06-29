@@ -565,3 +565,24 @@ export const updateVideo = async (video_id: string, data: UpdateVideoDto) => {
     throw e;
   }
 };
+
+export const creaetNewCodeLesson = async (codeLesson: any) => {
+  const response = await trackPromise(
+    Api({
+      method: "post",
+      url: "admin/code",
+      data: codeLesson,
+    })
+  );
+  return response.data;
+};
+
+export const getCodeList = async <T>() => {
+  const response = await trackPromise(
+    Api({
+      method: "get",
+      url: "admin/code",
+    })
+  );
+  return response.data as T;
+};

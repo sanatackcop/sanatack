@@ -247,7 +247,7 @@ export const NavigationPlayground = ({
                 size="lg"
                 disabled={!prevMaterial}
                 onClick={handlePrev}
-                className="gap-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-40"
+                className="gap-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-40 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ChevronRight className="h-5 w-5" />
                 <div className="hidden sm:block text-right">
@@ -265,7 +265,7 @@ export const NavigationPlayground = ({
                 size="lg"
                 disabled={!nextMaterial}
                 onClick={handleNext}
-                className="gap-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-40"
+                className="gap-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-40 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <div className="hidden sm:block text-left">
                   <div className="text-sm font-medium">التالي</div>

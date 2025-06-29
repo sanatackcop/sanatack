@@ -8,7 +8,7 @@ import {
   RoadMapInterface,
   PatchCourseProgressParams,
 } from "@/types/courses"; /*  */
-import { Course, CoursesContext } from "../types";
+import { CoursesContext } from "../types";
 
 export const getCareerPathApi = async (): Promise<CareerPathInterface[]> => {
   try {

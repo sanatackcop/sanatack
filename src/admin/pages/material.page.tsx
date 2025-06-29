@@ -6,9 +6,15 @@ import {
   deleteQuiz,
   deleteArticle,
   deleteVideo,
+  getCodeList,
 } from "@/utils/_apis/admin-api";
 import { DataTable } from "@/components/ui/data-table";
-import { QuizGroupColumns, ArticlesColumns, VideoColumns } from "../columns";
+import {
+  QuizGroupColumns,
+  ArticlesColumns,
+  CodeColumns,
+  VideoColumns,
+} from "../columns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   DropdownMenu,
@@ -31,11 +37,13 @@ import ArticleDialogCreate from "../components/article.create";
 import QuizGroupEdit from "../components/quiz.group.edit";
 import VideoEdit from "../components/video.edit";
 import ArticleEdit from "../components/article.edit";
+import CodeMatrialCreate from "../components/code/code.create";
 
 export default function MaterialsPage() {
   const [quiz, setQuiz] = useState<QuizGroup[]>([]);
   const [video, setVideo] = useState<Video[]>([]);
   const [article, setArticles] = useState<Article[]>([]);
+  const [code, setCode] = useState<any[]>([]);
 
   const [editingQuizId, setEditingQuizId] = useState<string | null>(null);
   const [editingVideoId, setEditingVideoId] = useState<string | null>(null);
@@ -48,15 +56,17 @@ export default function MaterialsPage() {
 
   async function fetchCourses() {
     try {
-      const [quizList, videoList, articleList] = await Promise.all([
+      const [quizList, videoList, articleList, codeList] = await Promise.all([
         getQuizList<QuizGroup[]>(),
         getVideosList<Video[]>(),
         getArticlesList<Article[]>(),
+        getCodeList<any[]>(),
       ]);
 
       if (quizList?.length) setQuiz(quizList);
       if (videoList?.length) setVideo(videoList);
       if (articleList?.length) setArticles(articleList);
+      if (codeList?.length) setCode(codeList);
     } catch (err: unknown) {
       if ((err as CustomError).error.type == "network")
         setError("Error when trying to fetch data.");
@@ -115,6 +125,13 @@ export default function MaterialsPage() {
         updateTable={() => fetchCourses()}
       />
     ),
+    code: (
+      <CodeMatrialCreate
+        open
+        onOpenChange={(open) => !open && setOpenDialog(null)}
+        updateTable={() => fetchCourses()}
+      />
+    ),
     [MaterialType._QUIZ]: undefined,
   };
 
@@ -130,7 +147,7 @@ export default function MaterialsPage() {
       <div className="w-full flex justify-start">
         <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
           <DropdownMenuTrigger className="bg-slate-200 p-2 rounded-lg">
-            إنشاء مورد
+            Create Material
           </DropdownMenuTrigger>
           <DropdownMenuContent className="relative left-5">
             <DropdownMenuLabel>Matrials</DropdownMenuLabel>
@@ -150,6 +167,11 @@ export default function MaterialsPage() {
             >
               article{" "}
             </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => handleDialogOpen(MaterialType.CODE)}
+            >
+              code
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -161,6 +183,7 @@ export default function MaterialsPage() {
           <TabsTrigger value="quiz_group">Quiz Group</TabsTrigger>
           <TabsTrigger value="video">video</TabsTrigger>
           <TabsTrigger value="article">article</TabsTrigger>
+          <TabsTrigger value="code">code</TabsTrigger>
         </TabsList>
         <TabsContent value="quiz_group">
           <DataTable
@@ -185,6 +208,10 @@ export default function MaterialsPage() {
             )}
             data={article}
           />
+        </TabsContent>
+
+        <TabsContent value="code">
+          <DataTable columns={CodeColumns()} data={code} />
         </TabsContent>
       </Tabs>
       {editingQuizId && (

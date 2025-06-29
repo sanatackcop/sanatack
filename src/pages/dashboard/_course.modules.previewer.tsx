@@ -189,6 +189,7 @@ export default function ModulesPreviewer({
                               icon: <FileText className="w-4 h-4" />,
                             },
                             [MaterialType._QUIZ]: undefined,
+                            [MaterialType.CODE]: undefined,
                           };
 
                           const config =

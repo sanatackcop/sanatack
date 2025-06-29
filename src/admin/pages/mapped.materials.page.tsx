@@ -4,7 +4,12 @@ import { Link, useLocation } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LinkedVideo } from "@/utils/types/adminTypes";
 import { DataTable } from "@/components/ui/data-table";
-import { ArticlesColumns, QuizGroupColumns, VideoColumns } from "../columns";
+import {
+  ArticlesColumns,
+  CodeColumns,
+  QuizGroupColumns,
+  VideoColumns,
+} from "../columns";
 import { getLinkedLessonMaterials } from "@/utils/_apis/admin-api";
 import { lazy } from "react";
 import { QuizGroup } from "@/types/courses";
@@ -15,6 +20,8 @@ const MappedMaterialsCreate = lazy(
 export declare type MappedMaterials = {
   quiz_groups: QuizGroup[];
   videos: LinkedVideo[];
+
+  code: any[];
   article: any[];
 };
 
@@ -22,6 +29,7 @@ export default function MappedMaterials() {
   const [quizGroup, setQuizGroup] = useState<QuizGroup[]>([]);
   const [video, setVideo] = useState<LinkedVideo[]>([]);
   const [article, setArticle] = useState<any[]>([]);
+  const [code, setCode] = useState<any[]>([]);
   const location = useLocation();
   const { pathname } = location;
   const id = pathname.split("/").at(-1) ?? "";
@@ -39,6 +47,7 @@ export default function MappedMaterials() {
           setQuizGroup(linkedMaterials.quiz_groups);
         if (linkedMaterials.videos) setVideo(linkedMaterials.videos);
         if (linkedMaterials.article) setArticle(linkedMaterials.article);
+        if (linkedMaterials.code) setCode(linkedMaterials.code);
       }
     } catch (err) {
       console.error(err);
@@ -69,6 +78,7 @@ export default function MappedMaterials() {
           <TabsTrigger value="quiz">اختبار</TabsTrigger>
           <TabsTrigger value="video">فيديو</TabsTrigger>
           <TabsTrigger value="article">article</TabsTrigger>
+          <TabsTrigger value="code">code</TabsTrigger>
         </TabsList>
         <TabsContent value="all">
           <DataTable
@@ -106,6 +116,9 @@ export default function MappedMaterials() {
             ]}
             data={article}
           />
+        </TabsContent>
+        <TabsContent value="code">
+          <DataTable columns={[...CodeColumns()]} data={code} />
         </TabsContent>
       </Tabs>
     </div>

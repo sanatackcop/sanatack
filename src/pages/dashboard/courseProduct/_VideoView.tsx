@@ -11,7 +11,7 @@ export function VideoView({ video }: { video: Video }) {
       .replace("youtu.be/", "www.youtube.com/embed/");
   }
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 overflow-y-auto">
+    <div className="w-full bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 overflow-y-auto">
       <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 top-0 z-10">
         <div className="w-full px-6 py-6">
           <div className="flex items-center justify-between" dir="rtl">

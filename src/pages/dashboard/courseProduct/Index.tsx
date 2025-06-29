@@ -145,10 +145,7 @@ export const CoursePlayground: React.FC = () => {
   };
 
   return (
-    <div
-      className={`h-screen flex flex-col ${darkMode ? "dark" : ""}`}
-      dir="rtl"
-    >
+    <div className={`h-screen flex flex-col ${darkMode ? "dark" : ""}`}>
       <NavigationPlayground
         courseData={courseData}
         sidebarOpen={sidebarOpen}
@@ -175,7 +172,7 @@ export const CoursePlayground: React.FC = () => {
           darkMode={darkMode}
         />
 
-        <main className="flex-1 flex flex-col">
+        <main className="flex-1 flex flex-col overflow-hidden">
           <MaterialViewer material={currentMaterial} />
         </main>
       </div>
