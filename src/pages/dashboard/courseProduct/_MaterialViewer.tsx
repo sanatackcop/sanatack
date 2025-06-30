@@ -30,7 +30,7 @@ export const MaterialViewer: React.FC<MaterialViewerProps> = ({ material }) => {
   }
 
   if (material.type === "code") {
-    return <CodeEditorView />;
+    return <CodeEditorView material={material as any} />;
   }
 
   if (material.type === "article") {

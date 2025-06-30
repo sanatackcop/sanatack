@@ -669,14 +669,14 @@ export default function CourseView() {
                                               config.icon
                                             )}
                                           </div>
-                                          <div className="flex justify-between items-center gap-4 w-full">
-                                            <div className="flex items-center gap-2 text-right">
-                                              <p className="font-medium text-slate-900 dark:text-slate-100 truncate">
-                                                {material.type}
-                                              </p>
-                                            </div>
 
-                                            <div className="flex flex-wrap items-center justify-end gap-2 text-left">
+                                          <div className="flex-1 text-right min-w-0">
+                                            <p className="font-medium text-slate-900 dark:text-slate-100 truncate">
+                                              {material.title ||
+                                                material?.main_title}
+                                            </p>
+                                            <p>{material?.description}</p>
+                                            <div className="flex items-center justify-end gap-3 mt-2">
                                               <span
                                                 className={`text-xs px-2 py-1 rounded-full font-medium ${config.color}`}
                                               >

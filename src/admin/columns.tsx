@@ -214,6 +214,49 @@ export const ArticlesColumns = (
   return columns;
 };
 
+export const CodeColumns = (
+  onDelete?: (id: string) => void,
+  onEdit?: (id: string) => void
+): ColumnDef<Article>[] => {
+  const columns: ColumnDef<Article>[] = [
+    {
+      accessorKey: "id",
+      id: "id",
+    },
+    {
+      accessorKey: "main_title",
+      header: "Title",
+    },
+  ];
+
+  if (onDelete || onEdit) {
+    columns.push({
+      header: "Actions",
+      cell: ({ row }) => (
+        <div className="flex gap-2">
+          {onEdit && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onEdit(row.original.id)}
+            >
+              Edit
+            </Button>
+          )}
+          {onDelete && (
+            <DeleteDialog
+              onDelete={() => onDelete(row.original.id)}
+              label={`the article ID ${row.original.id}`}
+            />
+          )}
+        </div>
+      ),
+    });
+  }
+
+  return columns;
+};
+
 export const LessonColumns = (
   onDelete?: (id: string) => void,
   onEdit?: (id: string) => void

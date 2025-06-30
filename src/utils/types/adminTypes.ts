@@ -37,6 +37,7 @@ export enum MaterialType {
   Video = "video",
   ARTICLE = "article",
   Quiz = "quiz",
+  CODE = "code",
 }
 export declare type Material = Resource | Video | Quiz;
 
