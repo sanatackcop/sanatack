@@ -3,7 +3,7 @@ import { SideNavbar } from "./_Sidebar";
 import { Material, LessonDetails } from "@/types/courses";
 import UserContext from "@/context/UserContext";
 import { useContext } from "react";
-import { MaterialViewer } from "./_MaterialViewer";
+import MaterialViewer from "./_MaterialViewer";
 import NavigationPlayground from "./_TopNav";
 import { useSettings } from "@/context/SettingsContexts";
 import { patchCourseProgressApi } from "@/utils/_apis/courses-apis";
@@ -45,14 +45,18 @@ export const CoursePlayground: React.FC = () => {
         : [...prev, moduleId]
     );
   };
+
+  if (!currentMaterial) return <p>There is no current Material</p>;
+
   const userContext = useContext(UserContext);
-  if (!userContext || !userContext.auth?.user) {
-    return null;
-  }
+  if (!userContext || !userContext.auth?.user) return null;
+
+  if (!courseData) return;
+
   const user = userContext.auth.user;
 
   const handleComplete = async () => {
-    if (!currentMaterial || !user?.id) return;
+    if (!user?.id) return;
 
     const updatedCourseData = {
       ...course,
@@ -69,7 +73,7 @@ export const CoursePlayground: React.FC = () => {
       })),
     };
     setCourseData(updatedCourseData);
-    setCurrentMaterial({ ...currentMaterial, completed: true });
+    setCurrentMaterial({ ...currentMaterial });
 
     try {
       await patchCourseProgressApi({
@@ -85,7 +89,7 @@ export const CoursePlayground: React.FC = () => {
   };
 
   const handleRestart = async () => {
-    if (!currentMaterial || !user?.id) return;
+    if (!user?.id) return;
 
     const updatedCourseData = {
       ...course,
@@ -102,7 +106,7 @@ export const CoursePlayground: React.FC = () => {
       })),
     };
     setCourseData(updatedCourseData);
-    setCurrentMaterial({ ...currentMaterial, completed: false });
+    setCurrentMaterial({ ...currentMaterial });
 
     try {
       await patchCourseProgressApi({

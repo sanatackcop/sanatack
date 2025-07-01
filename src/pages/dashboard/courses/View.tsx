@@ -12,25 +12,15 @@ import {
   Globe,
   BarChart3,
   CheckCircle2,
-  CheckCircle,
   Tag,
   Calendar,
   Download,
   Languages,
-  Monitor,
   Code,
   Rocket,
   BookOpen,
   Trophy,
   Users,
-  ChevronUp,
-  ChevronDown,
-  Video,
-  PenTool,
-  FileText,
-  Headphones,
-  Timer,
-  Lock,
   Plus,
   Minus,
 } from "lucide-react";
@@ -74,7 +64,7 @@ export default function CourseView() {
   };
 
   if (!course) {
-    return <h1 className="text-center">There is no course</h1>;
+    return <h1 className="text-center">Loading Course</h1>;
   }
 
   const handleStartCourse = async () => {
@@ -145,7 +135,6 @@ export default function CourseView() {
       trend: "+2%",
     },
   ];
-
   return (
     <AppLayout>
       <div className="">
@@ -265,7 +254,7 @@ export default function CourseView() {
             <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-8">
               <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6 flex items-center gap-3">
                 <Target className="w-6 h-6 text-blue-500" />
-                أهداف التعلم
+                مخرجات الدورة
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {course.course_info?.new_skills_result.map(
@@ -447,7 +436,7 @@ export default function CourseView() {
                       آخر تحديث
                     </span>
                     <span className="font-medium text-slate-900 dark:text-slate-100">
-                      ديسمبر 2024
+                      {DateDisplay(course.updated_at)}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -459,7 +448,7 @@ export default function CourseView() {
                       العربية
                     </span>
                   </div>
-                  <div className="flex items-center justify-between">
+                  {/* <div className="flex items-center justify-between">
                     <span className="text-slate-600 dark:text-slate-400 flex items-center gap-2">
                       <Monitor className="w-4 h-4" />
                       الترجمة
@@ -467,7 +456,7 @@ export default function CourseView() {
                     <span className="font-medium text-slate-900 dark:text-slate-100">
                       متوفرة
                     </span>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>

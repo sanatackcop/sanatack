@@ -2,22 +2,23 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LinkedQuiz, LinkedVideo } from "@/utils/types/adminTypes";
+import { LinkedVideo } from "@/utils/types/adminTypes";
 import { DataTable } from "@/components/ui/data-table";
 import {
   ArticlesColumns,
   CodeColumns,
-  QuizColumns,
+  QuizGroupColumns,
   VideoColumns,
 } from "../columns";
 import { getLinkedLessonMaterials } from "@/utils/_apis/admin-api";
 import { lazy } from "react";
+import { QuizGroup } from "@/types/courses";
 const MappedMaterialsCreate = lazy(
   () => import("../components/mapped.materials.create")
 );
 
 export declare type MappedMaterials = {
-  quizzes: LinkedQuiz[];
+  quiz_groups: QuizGroup[];
   videos: LinkedVideo[];
 
   code: any[];
@@ -25,9 +26,9 @@ export declare type MappedMaterials = {
 };
 
 export default function MappedMaterials() {
-  const [quiz, setQuiz] = useState<LinkedQuiz[]>([]);
+  const [quizGroup, setQuizGroup] = useState<QuizGroup[]>([]);
   const [video, setVideo] = useState<LinkedVideo[]>([]);
-  const [article, setarticle] = useState<any[]>([]);
+  const [article, setArticle] = useState<any[]>([]);
   const [code, setCode] = useState<any[]>([]);
   const location = useLocation();
   const { pathname } = location;
@@ -39,10 +40,13 @@ export default function MappedMaterials() {
         id
       );
 
+      console.log(linkedMaterials);
+
       if (linkedMaterials) {
-        if (linkedMaterials.quizzes) setQuiz(linkedMaterials.quizzes);
+        if (linkedMaterials.quiz_groups)
+          setQuizGroup(linkedMaterials.quiz_groups);
         if (linkedMaterials.videos) setVideo(linkedMaterials.videos);
-        if (linkedMaterials.article) setarticle(linkedMaterials.article);
+        if (linkedMaterials.article) setArticle(linkedMaterials.article);
         if (linkedMaterials.code) setCode(linkedMaterials.code);
       }
     } catch (err) {
@@ -54,7 +58,7 @@ export default function MappedMaterials() {
     fetchCourses();
   }, []);
 
-  const combinedMaterial = [...quiz, ...video, ...article].sort(
+  const combinedMaterial = [...quizGroup, ...video, ...article].sort(
     (a, b) => a.order - b.order
   );
 
@@ -79,6 +83,7 @@ export default function MappedMaterials() {
         <TabsContent value="all">
           <DataTable
             columns={[
+              { accessorKey: "title", header: "Title" },
               { accessorKey: "type", header: "Type" },
               { accessorKey: "order", header: "Order" },
             ]}
@@ -88,10 +93,10 @@ export default function MappedMaterials() {
         <TabsContent value="quiz">
           <DataTable
             columns={[
-              ...QuizColumns(),
+              ...QuizGroupColumns(),
               { accessorKey: "order", header: "Order" },
             ]}
-            data={quiz}
+            data={quizGroup}
           />
         </TabsContent>
         <TabsContent value="video">

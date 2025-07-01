@@ -1,6 +1,7 @@
 import TimeLine from "@/components/timeLine";
 import { CourseDetails, LessonDetails } from "@/types/courses";
 import { getLessonResourceIcon } from "@/utils/getIcon";
+import { MaterialType } from "@/utils/types/adminTypes";
 
 export default function CourseDetailsContent({
   course,

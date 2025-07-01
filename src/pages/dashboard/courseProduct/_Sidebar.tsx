@@ -1,7 +1,5 @@
 import React, { useEffect, useRef } from "react";
 import {
-  CheckCircle,
-  Lock,
   Video,
   PenTool,
   FileText,
@@ -136,14 +134,14 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
             </p>
             <div className="flex items-center justify-start gap-2 mt-1">
               <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-900/20 text-gray-600 dark:text-gray-400">
-                {material.completed ? (
+                {/* {material.completed ? (
                   "مكتمل"
                 ) : (
-                  <>
-                    <Clock className="w-3 h-3 inline-block ml-1" />
-                    {material.duration} دقيقة
-                  </>
-                )}
+                  <> */}
+                <Clock className="w-3 h-3 inline-block ml-1" />
+                {material.duration} دقيقة
+                {/* </>
+                )} */}
               </span>
 
               <span
@@ -158,7 +156,7 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
                     : "bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400")
                 }
               >
-                {material.type === "video"
+                {material.type === MaterialType.VIDEO
                   ? "فيديو"
                   : material.type === "article"
                   ? "مقال"
@@ -179,11 +177,13 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
                 : "bg-gray-100 dark:bg-gray-800")
             }
           >
-            {material.completed ? (
-              <CheckCircle className="w-4 h-4 text-green-600" />
-            ) : material.locked ? (
-              <Lock className="w-4 h-4 text-gray-400" />
-            ) : (
+            {
+              // material.completed ? (
+              //   <CheckCircle className="w-4 h-4 text-green-600" />
+              // ) :
+              // material.locked ? (
+              //   <Lock className="w-4 h-4 text-gray-400" />
+              // ) :
               <Icon
                 className={
                   "w-4 h-4 " +
@@ -192,7 +192,7 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
                     : "text-gray-600 dark:text-gray-400")
                 }
               />
-            )}
+            }
           </div>
         </div>
       </button>

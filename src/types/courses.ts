@@ -1,4 +1,7 @@
-import { ArticleDto, Level } from "@/utils/types/adminTypes";
+import { CoursesContext } from "@/utils/types";
+import { ArticleDto } from "@/utils/types/adminTypes";
+
+import { MaterialType } from "@/utils/types/adminTypes";
 
 export type TabType = "all" | "started" | "done";
 export interface CareerPathInterface {
@@ -15,26 +18,6 @@ export interface RoadMapInterface {
   order?: number;
   isEnrolled?: boolean;
   courses: CourseDetails[];
-}
-export interface CoursesContext {
-  id: string;
-  title: string;
-  description: string;
-  level: LevelEnum;
-  course_info: {
-    durationHours: number;
-    tags: string[];
-    new_skills_result: string[];
-    learning_outcome: { [key: string]: number };
-    prerequisites: string[];
-  };
-  projectsCount: number;
-  isPublished: boolean;
-  isEnrolled: boolean;
-  enrolledCount: number;
-  completionRate: number;
-  progress?: number;
-  current_material?: string;
 }
 export interface CourseDetails extends CoursesContext {
   modules: ModuleDetails[];
@@ -139,9 +122,9 @@ export interface LinkMaterial extends BaseMaterial {
 }
 
 export enum LevelEnum {
-  "BEGINNER" = "BEGINNER",
-  "INTERMEDIATE" = "INTERMEDIATE",
-  "ADVANCED" = "ADVANCED",
+  BEGINNER = "مبتدئ",
+  INTERMEDIATE = "متوسط",
+  ADVANCED = "متقدم",
 }
 
 export interface CoursesReport {
@@ -154,7 +137,7 @@ export interface CoursesReport {
 export interface UpdateCourseDto {
   title?: string;
   description?: string;
-  level?: Level;
+  level?: LevelEnum;
   course_info?: {
     durationHours: number;
     tags: string[];
