@@ -156,7 +156,7 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
                     : "bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400")
                 }
               >
-                {material.type === MaterialType.VIDEO
+                {material.type === "video"
                   ? "فيديو"
                   : material.type === "article"
                   ? "مقال"

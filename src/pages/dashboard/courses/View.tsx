@@ -12,6 +12,7 @@ import {
   Globe,
   BarChart3,
   CheckCircle2,
+  Lock,
   Tag,
   Calendar,
   Download,
@@ -23,11 +24,20 @@ import {
   Users,
   Plus,
   Minus,
+  CheckCircle,
+  ChevronDown,
+  ChevronUp,
+  FileText,
+  Headphones,
+  PenTool,
+  Timer,
+  Video,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { enrollCoursesApi } from "@/utils/_apis/courses-apis";
 import AppLayout from "@/components/layout/Applayout";
 import { useCourseData } from "@/hooks/useCourseData";
+import { DateDisplay } from "@/lib/utils";
 
 export default function CourseView() {
   const { id } = useParams<{ id: string }>();

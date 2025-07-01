@@ -12,6 +12,7 @@ import {
   XCircle,
   Loader2,
 } from "lucide-react";
+import { Material, InfoCardProps, ArticleMaterial } from "@/types/courses";
 
 interface CodeBlockProps {
   code: string;
@@ -21,46 +22,6 @@ interface CodeBlockProps {
 interface QuoteProps {
   text: string;
   author?: string;
-}
-
-interface InfoCardProps {
-  type: "info" | "tip" | "warning" | "success" | "error";
-  title: string;
-  content: string;
-}
-
-interface ArticleSlide {
-  id: number;
-  type: "hero" | "section" | "conclusion";
-  title?: string;
-  description?: string;
-  body?: string;
-  code?: { code: string; language: string };
-  quote?: { text: string; author?: string };
-  info?: InfoCardProps;
-  image?: string;
-}
-
-interface MaterialData {
-  id: number;
-  type: string;
-  title: string;
-  description: string;
-  body: string;
-  code?: { code: string; language: string };
-  quote?: { text: string; author?: string };
-  info?: InfoCardProps;
-  image?: string;
-}
-
-interface Material {
-  id: string;
-  type: "article" | "quiz";
-  data?: {
-    [key: string]: MaterialData;
-  };
-  duration: number;
-  order: number;
 }
 
 interface ArticleViewProps {
@@ -74,31 +35,25 @@ export default function ArticleView({
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [touchStart, setTouchStart] = useState<number>(0);
   const [touchEnd, setTouchEnd] = useState<number>(0);
-  const [slides, setSlides] = useState<ArticleSlide[]>([]);
+  const [slides, setSlides] = useState<ArticleMaterial[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    if (material && material.data) {
-      const convertedSlides: ArticleSlide[] = Object.values(material.data)
-        .filter(
-          (item): item is any =>
-            typeof item === "object" && item !== null && "type" in item
-        )
-        .sort((a, b) => a.id - b.id)
-        .map((item) => ({
-          id: item.id,
-          type: item.type as ArticleSlide["type"],
-          title: item.title,
-          description: item.description,
-          body: item.body,
-          code: item.code,
-          quote: item.quote,
-          info: item.info,
-          image: item.image,
-        }));
+    if (!material?.data) return;
 
-      setSlides(convertedSlides);
-    }
+    const convertedMaterials: ArticleMaterial[] = Object.values(material.data)
+      .filter(
+        (item): item is ArticleMaterial["data"] =>
+          typeof item === "object" && item !== null && "type" in item
+      )
+      .sort((a, b) => a.id - b.id)
+      .map((item) => ({
+        id: `${item.id}`,
+        type: "article",
+        data: item,
+      }));
+
+    setSlides(convertedMaterials);
     setLoading(false);
   }, [material]);
 
@@ -234,8 +189,8 @@ export default function ArticleView({
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, []);
 
-  const renderSlide = (slide: ArticleSlide) => {
-    switch (slide.type) {
+  const renderSlide = (slide: ArticleMaterial) => {
+    switch (slide.data.type) {
       case "hero":
         return (
           <div className="space-y-8 text-justify">
@@ -243,16 +198,16 @@ export default function ArticleView({
               <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
                 {slide.title}
               </h2>
-              {slide.description && (
+              {slide.data.description && (
                 <p className="text-xl text-gray-600 dark:text-blue-400 mb-6 ">
-                  {slide.description}
+                  {slide.data.description}
                 </p>
               )}
             </div>
             <div className="flex flex-col justify-between flex-grow">
-              {slide.body && (
+              {slide.data.body && (
                 <p className="text-base sm:text-lg mt-2 text-gray-900 dark:text-gray-300 whitespace-pre-line">
-                  {slide.body}
+                  {slide.data.body}
                 </p>
               )}
             </div>
@@ -266,50 +221,55 @@ export default function ArticleView({
               <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
                 {slide.title}
               </h2>
-              {slide.description && (
+              {slide.data.description && (
                 <p className="text-xl text-gray-600 dark:text-blue-400 mb-6">
-                  {slide.description}
+                  {slide.data.description}
                 </p>
               )}
             </div>
-            {slide.image && (
+            {slide.data.image && (
               <div className="flex justify-start">
                 <img
-                  src={slide.image}
+                  src={slide.data.image}
                   alt={slide.title || "صورة المقال"}
                   className="w-full h-auto rounded-xl shadow-lg max-h-80 object-cover"
                 />
               </div>
             )}
             <div className="space-y-4">
-              {slide.body && (
+              {slide.data.body && (
                 <div className="text-start">
                   <div className="text-lg text-justify leading-relaxed text-gray-900 dark:text-gray-300 max-w-full">
-                    {slide.body.split("\n").map((line, index) => (
-                      <p key={index} className="mb-3">
-                        {line}
-                      </p>
-                    ))}
+                    {slide.data.body
+                      .split("\n")
+                      .map((line: any, index: any) => (
+                        <p key={index} className="mb-3">
+                          {line}
+                        </p>
+                      ))}
                   </div>
                 </div>
               )}
 
-              {slide.code && (
+              {slide.data.code && (
                 <div className="max-w-full mx-auto">
                   <CodeBlock
-                    code={slide.code.code}
-                    language={slide.code.language}
+                    code={slide.data.code.code}
+                    language={slide.data.code.language}
                   />
                 </div>
               )}
 
-              {slide.quote && (
-                <Quote text={slide.quote.text} author={slide.quote.author} />
+              {slide.data.quote && (
+                <Quote
+                  text={slide.data.quote.text}
+                  author={slide.data.quote.author}
+                />
               )}
 
-              {slide.info && (
+              {slide.data.info && (
                 <div className="max-w-2xl mx-auto">
-                  <InfoCard {...slide.info} />
+                  <InfoCard {...slide.data.info} />
                 </div>
               )}
             </div>
@@ -323,26 +283,26 @@ export default function ArticleView({
               <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
                 {slide.title}
               </h2>
-              {slide.description && (
+              {slide.data.description && (
                 <p className="text-xl text-gray-600 dark:text-blue-400 mb-6">
-                  {slide.description}
+                  {slide.data.description}
                 </p>
               )}
             </div>
-            {slide.image && (
+            {slide.data.image && (
               <div className="flex justify-start">
                 <img
-                  src={slide.image}
+                  src={slide.data.image}
                   alt={slide.title || "صورة المقال"}
                   className="max-w-full h-auto rounded-xl shadow-lg max-h-80 object-cover"
                 />
               </div>
             )}
             <div className="space-y-4">
-              {slide.body && (
+              {slide.data.body && (
                 <div className="text-start">
                   <div className="text-lg text-justify leading-relaxed text-gray-900 dark:text-gray-300 max-w-full">
-                    {slide.body.split("\n").map((line, index) => (
+                    {slide.data.body.split("\n").map((line, index) => (
                       <p key={index} className="mb-3">
                         {line}
                       </p>
@@ -351,22 +311,25 @@ export default function ArticleView({
                 </div>
               )}
 
-              {slide.code && (
+              {slide.data.code && (
                 <div className="max-w-full mx-auto">
                   <CodeBlock
-                    code={slide.code.code}
-                    language={slide.code.language}
+                    code={slide.data.code.code}
+                    language={slide.data.code.language}
                   />
                 </div>
               )}
 
-              {slide.quote && (
-                <Quote text={slide.quote.text} author={slide.quote.author} />
+              {slide.data.quote && (
+                <Quote
+                  text={slide.data.quote.text}
+                  author={slide.data.quote.author}
+                />
               )}
 
-              {slide.info && (
+              {slide.data.info && (
                 <div className="max-w-2xl mx-auto">
-                  <InfoCard {...slide.info} />
+                  <InfoCard {...slide.data.info} />
                 </div>
               )}
             </div>

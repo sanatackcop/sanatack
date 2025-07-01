@@ -1,8 +1,5 @@
 import { CoursesContext } from "@/utils/types";
 import { ArticleDto } from "@/utils/types/adminTypes";
-
-import { MaterialType } from "@/utils/types/adminTypes";
-
 export type TabType = "all" | "started" | "done";
 export interface CareerPathInterface {
   id: string;
@@ -46,6 +43,7 @@ export type MaterialType =
 
 interface BaseMaterial {
   id: string;
+  title?: string;
   created_at?: string;
   updated_at?: string;
   order?: number;
@@ -60,10 +58,11 @@ export type Material =
   | ArticleMaterial
   | VideoMaterial
   | QuizMaterial
+  | CodeMaterial
   | ResourceMaterial
   | LinkMaterial;
 
-interface InfoCardProps {
+export interface InfoCardProps {
   type: "info" | "tip" | "warning" | "success" | "error";
   title?: string;
   content: string;
@@ -72,7 +71,7 @@ export interface ArticleMaterial extends BaseMaterial {
   type: "article";
   data: {
     id: number;
-    type: string;
+    type: "hero" | "section" | "conclusion";
     title: string;
     description: string;
     body: string;
@@ -93,17 +92,31 @@ export interface VideoMaterial extends BaseMaterial {
     description?: string;
   };
 }
+export interface CodeMaterial extends BaseMaterial {
+  type: "code";
+  data: {
+    id: number | string;
+  };
+}
 
 export interface QuizMaterial extends BaseMaterial {
   type: "quiz";
-  data: {
+  quizzes: Quiz[];
+  data?: {
     question: string;
     options: string[];
     correctAnswer: string;
     explanation?: string;
   };
 }
-
+export interface Quiz {
+  id: string;
+  question: string;
+  options: string[];
+  correctAnswer: string;
+  explanation?: string;
+  duration: number;
+}
 export interface ResourceMaterial extends BaseMaterial {
   type: "resource";
   data: {

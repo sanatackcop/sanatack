@@ -4,6 +4,7 @@ import { VideoView } from "./_VideoView";
 import { Material } from "@/types/courses";
 import ArticleView from "./_ArticleView";
 import QuizView from "./_QuizView";
+import CodePlayground from "./_CodeEditorView";
 
 interface MaterialViewerProps {
   material: Material | null;
@@ -25,15 +26,18 @@ export const MaterialViewer: React.FC<MaterialViewerProps> = ({ material }) => {
   }
 
   if (material.type === "video") {
-    return <VideoView material={material} />;
+    return <VideoView video={material} />;
   }
 
   if (material.type === "article") {
-    return <ArticleView material={material as any} />;
+    return <ArticleView material={material} />;
   }
-
-  if (material.type === MaterialType.QUIZ_GROUP)
+  if (material.type === "quiz") {
     return <QuizView quizGroup={material} />;
+  }
+  if (material.type === "code") {
+    return <CodePlayground material={material} />;
+  }
 
   return (
     <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-900">

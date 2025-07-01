@@ -72,12 +72,12 @@ export interface Course {
 
 export interface CoursesContext {
   id: string;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
   title: string;
   description: string;
   level: LevelEnum;
-  topic: CourseTopic;
+  topic?: CourseTopic;
   course_info: {
     durationHours: number;
     tags: string[];
@@ -85,7 +85,7 @@ export interface CoursesContext {
     learning_outcome: { [key: string]: number };
     prerequisites: string[];
   };
-  material_count: number;
+  material_count?: number;
   projectsCount: number;
   isPublished: boolean;
   isEnrolled: boolean;

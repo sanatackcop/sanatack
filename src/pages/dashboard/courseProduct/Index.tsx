@@ -3,7 +3,7 @@ import { SideNavbar } from "./_Sidebar";
 import { Material, LessonDetails } from "@/types/courses";
 import UserContext from "@/context/UserContext";
 import { useContext } from "react";
-import MaterialViewer from "./_MaterialViewer";
+import { MaterialViewer } from "./_MaterialViewer";
 import NavigationPlayground from "./_TopNav";
 import { useSettings } from "@/context/SettingsContexts";
 import { patchCourseProgressApi } from "@/utils/_apis/courses-apis";
@@ -46,12 +46,12 @@ export const CoursePlayground: React.FC = () => {
     );
   };
 
-  if (!currentMaterial) return <p>There is no current Material</p>;
+  if (!materials) return <p>There is no current Material</p>;
 
   const userContext = useContext(UserContext);
   if (!userContext || !userContext.auth?.user) return null;
 
-  if (!courseData) return;
+  if (!course) return;
 
   const user = userContext.auth.user;
 
@@ -130,8 +130,6 @@ export const CoursePlayground: React.FC = () => {
           totalLessons: materialsCount,
           progress: progress,
         }}
-        totalMaterials={materialsCount}
-        totalDuration={materialsDuration}
         sidebarOpen={sidebarOpen}
         prevMaterial={prevMaterial}
         nextMaterial={nextMaterial}
