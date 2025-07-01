@@ -62,7 +62,6 @@ interface Component {
 export default function InstructionsPanel({
   material,
   currentContainerIndex,
-  setCurrentContainerIndex,
   isArabic = true,
 }: {
   material: any;
@@ -116,19 +115,19 @@ export default function InstructionsPanel({
         {index > 0 && <hr className="border-gray-700/40 my-6" />}
 
         {textData.title && (
-          <header className="flex items-center gap-2 text-primary-300 uppercase tracking-wide text-sm">
+          <header className="flex items-center gap-2 text-gray-900 dark:text-white uppercase tracking-wide text-lg">
             <span className="font-semibold text-right">{textData.title}</span>
           </header>
         )}
 
         {textData.textType === "heading" && textData.content && (
-          <h2 className="text-2xl font-bold text-gray-100 text-right leading-relaxed">
+          <h2 className="text-sm font-bold text-gray-800 dark:text-white text-right leading-relaxed">
             {textData.content}
           </h2>
         )}
 
         {textData.textType === "paragraph" && textData.content && (
-          <p className="leading-relaxed text-base text-gray-200 text-right">
+          <p className="leading-relaxed text-sm text-gray-800 dark:text-white text-right">
             {textData.content}
           </p>
         )}
@@ -139,7 +138,7 @@ export default function InstructionsPanel({
               {textData.listItems.map((item, itemIndex) => (
                 <li
                   key={item.id || itemIndex}
-                  className={`flex items-start gap-3 text-gray-200 ${
+                  className={`flex items-start gap-3 text-gray-800 dark:text-white  ${
                     item.bold ? "font-bold" : ""
                   }`}
                   dir="rtl"
@@ -158,12 +157,12 @@ export default function InstructionsPanel({
               {textData.listItems.map((item, itemIndex) => (
                 <li
                   key={item.id || itemIndex}
-                  className={`flex items-start gap-3 text-gray-200 ${
+                  className={`flex items-start gap-3 text-gray-800 dark:text-white  ${
                     item.bold ? "font-bold" : ""
                   }`}
                   dir="rtl"
                 >
-                  <span className="text-primary-400 mt-0.5 text-sm font-mono min-w-[1.5rem] text-center">
+                  <span className="text-gray-800 dark:text-white  mt-0.5 text-sm font-mono min-w-[1.5rem] text-center">
                     {itemIndex + 1}.
                   </span>
                   <span className="flex-1">{item.text}</span>
@@ -175,7 +174,7 @@ export default function InstructionsPanel({
 
         {/* Fallback for old text format */}
         {!textData.textType && textData.content && (
-          <p className="leading-relaxed text-base text-gray-200 text-right">
+          <p className="leading-relaxed text-base text-gray-800 dark:text-white text-right">
             {textData.content}
           </p>
         )}
@@ -198,7 +197,7 @@ export default function InstructionsPanel({
         {index > 0 && <hr className="border-gray-700/40 my-6" />}
 
         {codeData.title && (
-          <header className="flex items-center gap-2 text-primary-300 uppercase tracking-wide text-sm">
+          <header className="flex items-center gap-2 text-gray-800 dark:text-white uppercase tracking-wide text-sm">
             <span className="font-semibold text-right">{codeData.title}</span>
           </header>
         )}
@@ -208,7 +207,7 @@ export default function InstructionsPanel({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 {codeData.language && (
-                  <span className="text-[10px] px-2 py-0.5 bg-gray-800 text-gray-300 rounded-full font-mono">
+                  <span className="text-[10px] px-2 py-0.5 bg-white  dark:bg-gray-800  text-gray-900 dark:text-white  rounded-full font-mono">
                     {codeData.language}
                   </span>
                 )}
@@ -224,19 +223,19 @@ export default function InstructionsPanel({
                   )}
                 </button>
               </div>
-              <span className="text-xs font-medium text-gray-400 text-right">
+              <span className="text-xs font-medium text-gray-900 dark:text-white text-right">
                 {isArabic ? "مثال الكود" : "Code Example"}
               </span>
             </div>
 
-            <div className="relative bg-[#0d1117] rounded-lg border border-gray-800 overflow-hidden">
+            <div className="relative bg-white dark:bg-[#0d1117] rounded-lg border border-gray-800 overflow-hidden">
               <SyntaxHighlighter
                 language={codeData.language || "javascript"}
                 style={atomOneDark}
                 customStyle={{
                   margin: 0,
                   padding: "1rem",
-                  backgroundColor: "#0d1117",
+                  backgroundColor: "bg-white dark:bg-[#0d1117]",
                   fontSize: "0.875rem",
                   lineHeight: "1.5",
                 }}
@@ -247,10 +246,10 @@ export default function InstructionsPanel({
               </SyntaxHighlighter>
 
               {shouldTruncate && (
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#0d1117] to-transparent h-8 flex items-end justify-center pb-2">
+                <div className="absolute bottom-0 left-0 right-0 bg-white dark:bg-[#0d1117] h-8 flex items-end justify-center pb-2">
                   <button
                     onClick={() => toggleCodeExpansion(component.id)}
-                    className="text-xs text-primary-400 hover:text-primary-300 bg-[#0d1117] px-3 py-1 rounded border border-gray-700 hover:border-primary-500 transition-colors"
+                    className="text-xs text-primary-400 hover:text-primary-300 bg-white dark:bg-[#0d1117] px-3 py-1 rounded border border-gray-700 hover:border-primary-500 transition-colors"
                   >
                     {isExpanded
                       ? isArabic
@@ -277,7 +276,7 @@ export default function InstructionsPanel({
         {index > 0 && <hr className="border-gray-700/40 my-6" />}
 
         {imageData.title && (
-          <header className="flex items-center gap-2 text-primary-300 uppercase tracking-wide text-sm">
+          <header className="flex items-center gap-2 text-gray-900 dark:text-white uppercase tracking-wide text-sm">
             <span className="font-semibold text-right">{imageData.title}</span>
           </header>
         )}
@@ -291,7 +290,7 @@ export default function InstructionsPanel({
               loading="lazy"
             />
             {imageData.caption && (
-              <figcaption className="text-center text-sm text-gray-400 italic">
+              <figcaption className="text-center text-sm text-gray-900 dark:text-white italic">
                 {imageData.caption}
               </figcaption>
             )}
@@ -314,7 +313,7 @@ export default function InstructionsPanel({
           </header>
         )}
 
-        <div className="aspect-video bg-gray-900 rounded-lg flex items-center justify-center border border-gray-800">
+        <div className="aspect-video bg-white  dark:bg-gray-900  rounded-lg flex items-center justify-center border border-gray-800">
           <div className="text-center space-y-3">
             <PlayCircleIcon className="w-16 h-16 text-primary-500 mx-auto" />
             <div className="space-y-1">
@@ -368,14 +367,14 @@ export default function InstructionsPanel({
               )}
             </div>
             {exerciseData.title && (
-              <h3 className="text-lg font-semibold text-gray-100 text-right">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white text-right">
                 {exerciseData.title}
               </h3>
             )}
           </header>
 
           {exerciseData.description && (
-            <p className="text-gray-200 leading-relaxed text-right">
+            <p className="text-gray-900 dark:text-white leading-relaxed text-right">
               {exerciseData.description}
             </p>
           )}
@@ -394,7 +393,7 @@ export default function InstructionsPanel({
                 customStyle={{
                   margin: 0,
                   padding: "1rem",
-                  backgroundColor: "#0d1117",
+                  backgroundColor: "bg-white dark:bg-[#0d1117]",
                   fontSize: "0.875rem",
                   border: "1px solid #374151",
                   borderRadius: "0.5rem",
@@ -453,17 +452,17 @@ export default function InstructionsPanel({
 
   return (
     <aside
-      className="w-[40%] flex flex-col border-l border-gray-800 bg-[#0b0e14] overflow-hidden"
+      className="w-[40%] flex flex-col border-l bg-white dark:bg-gray-900 rounded-xl p-4 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white overflow-hidden"
       dir="rtl"
     >
-      <header className="sticky top-0 z-10 bg-[#1a1f2b] border-b border-gray-800 px-6 py-4 shadow-inner">
+      <header className="sticky top-0 z-10 border-b px-6 py-4 shadow-inner bg-white  dark:bg-gray-900 rounded-xl p-4 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white">
         {currentContainer && (
           <div className="flex items-center gap-3 justify-between">
             <div className="flex items-center gap-3">
-              <span className="text-sm font-mono text-primary-400">
+              <span className="text-sm font-mono text-gray-900 dark:text-white">
                 {currentContainerIndex + 1}
               </span>
-              <h3 className="font-semibold text-base text-gray-200">
+              <h3 className="font-semibold text-gray-900 dark:text-white">
                 {currentContainer.title}
               </h3>
             </div>
@@ -471,62 +470,10 @@ export default function InstructionsPanel({
         )}
       </header>
 
-      <main className="flex-1 overflow-y-auto px-6 py-8 space-y-8 text-gray-200">
+      <main className="flex-1 overflow-y-auto scrollbar-hidden px-6 py-8 space-y-8 bg-white dark:bg-gray-900 rounded-xl p-4   text-gray-900 dark:text-white">
         {currentContainer?.components?.map(renderComponent)}
-
         {material.data?.length > 1 && (
-          <nav className="pt-8 border-t border-gray-800 space-y-6">
-            <div className="flex items-center justify-between">
-              <button
-                onClick={() =>
-                  setCurrentContainerIndex(
-                    Math.max(0, currentContainerIndex - 1)
-                  )
-                }
-                disabled={currentContainerIndex === 0}
-                className="text-xs uppercase tracking-wide text-gray-300 hover:text-gray-100 disabled:opacity-40 transition-colors"
-              >
-                {isArabic ? "→ السابق" : "← Previous"}
-              </button>
-
-              <div className="flex items-center gap-2">
-                {material.data.map((_: any, idx: number) => (
-                  <button
-                    key={idx}
-                    onClick={() => setCurrentContainerIndex(idx)}
-                    className={`h-2 rounded-full transition-all duration-300 ${
-                      idx === currentContainerIndex
-                        ? "w-6 bg-primary-500"
-                        : "w-2 bg-gray-600 hover:bg-gray-500"
-                    }`}
-                    title={`${isArabic ? "الحاوية" : "Container"} ${idx + 1}`}
-                  />
-                ))}
-              </div>
-
-              <button
-                onClick={() =>
-                  setCurrentContainerIndex(
-                    Math.min(
-                      material.data.length - 1,
-                      currentContainerIndex + 1
-                    )
-                  )
-                }
-                disabled={currentContainerIndex === material.data.length - 1}
-                className="text-xs uppercase tracking-wide text-gray-300 hover:text-gray-100 disabled:opacity-40 transition-colors"
-              >
-                {isArabic ? "← التالي" : "Next →"}
-              </button>
-            </div>
-
-            {/* Progress indicator */}
-            <div className="text-center text-xs text-gray-500">
-              {isArabic
-                ? `${currentContainerIndex + 1} من ${material.data.length}`
-                : `${currentContainerIndex + 1} of ${material.data.length}`}
-            </div>
-          </nav>
+          <div className="flex items-center justify-between"></div>
         )}
       </main>
     </aside>

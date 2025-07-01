@@ -22,44 +22,59 @@ export const useCourseData = (courseId: string) => {
     if (courseId) fetchData();
   }, [courseId]);
 
-  const materials = useMemo(
-    () =>
+  const sortedMaterials = useMemo(() => {
+    return (
       course?.modules?.flatMap((m: any) =>
         m?.lessons?.flatMap((l: any) => l?.materials)
-      ) ?? [],
-    [course]
-  );
+      ) ?? []
+    ).sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0));
+  }, [course]);
 
-  const materialsCount = materials.length;
-  const completedMaterials = materials.filter((m: any) => m.completed).length;
+  const currentId = course?.current_material;
+  const curIndex = useMemo(
+    () => sortedMaterials.findIndex((m: any) => m.id === currentId),
+    [sortedMaterials, currentId]
+  );
+  const materials = useMemo(() => {
+    const map = new Map();
+    sortedMaterials.forEach((m: any, i: number) => {
+      map.set(m.id, {
+        isCurrent: i === curIndex,
+        completed: i < curIndex,
+        locked: i > curIndex,
+      });
+    });
+    return map;
+  }, [sortedMaterials, curIndex]);
+  const materialsCount = sortedMaterials.length;
+  const completedMaterials = sortedMaterials.filter(
+    (i: number) => i < curIndex
+  ).length;
   const progress =
     materialsCount > 0
       ? Math.round((completedMaterials / materialsCount) * 100)
       : 0;
-  const materialsDuration = materials.reduce(
+
+  const materialsDuration = sortedMaterials.reduce(
     (sum: any, material: any) => sum + Number(material.duration || 0),
     0
   );
 
-  useEffect(() => {
-    if (materials.length > 0) {
-      const first = materials.find((m: any) => m.current) || materials[0];
-      setCurrentMaterial(first);
-    }
-  }, [materials]);
-
   const currentIndex = currentMaterial
-    ? materials.findIndex((m: any) => m.id === currentMaterial.id)
+    ? sortedMaterials.findIndex((m: any) => m.id === currentMaterial.id)
     : -1;
-  const nextMaterial = currentIndex > -1 ? materials[currentIndex + 1] : null;
-  const prevMaterial = currentIndex > 0 ? materials[currentIndex - 1] : null;
+
+  const nextMaterial =
+    currentIndex > -1 ? sortedMaterials[currentIndex + 1] : null;
+  const prevMaterial =
+    currentIndex > 0 ? sortedMaterials[currentIndex - 1] : null;
+
   const getTotalLessons = () => {
     return course?.modules?.reduce(
       (total: number, module: any) => total + (module?.lessons?.length || 0),
       0
     );
   };
-
   const getCompletedLessonsCount = () => {
     let completedCount = 0;
     course?.modules?.forEach((module: any) => {

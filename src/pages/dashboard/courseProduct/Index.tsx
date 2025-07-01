@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Lesson, Material, SideNavbar } from "./_Sidebar";
+import { SideNavbar } from "./_Sidebar";
+import { Material, LessonDetails } from "@/types/courses";
 import UserContext from "@/context/UserContext";
 import { useContext } from "react";
 import { MaterialViewer } from "./_MaterialViewer";
@@ -20,6 +21,7 @@ export const CoursePlayground: React.FC = () => {
     setCourseData,
     currentMaterial,
     setCurrentMaterial,
+    materials,
     materialsCount,
     completedMaterials,
     progress,
@@ -56,7 +58,7 @@ export const CoursePlayground: React.FC = () => {
       ...course,
       modules: course.modules.map((module: any) => ({
         ...module,
-        lessons: module.lessons.map((lesson: Lesson) => ({
+        lessons: module.lessons.map((lesson: LessonDetails) => ({
           ...lesson,
           materials: lesson.materials.map((material: Material) =>
             material.id === currentMaterial.id
@@ -89,7 +91,7 @@ export const CoursePlayground: React.FC = () => {
       ...course,
       modules: course.modules.map((module: any) => ({
         ...module,
-        lessons: module.lessons.map((lesson: Lesson) => ({
+        lessons: module.lessons.map((lesson: LessonDetails) => ({
           ...lesson,
           materials: lesson.materials.map((material: Material) =>
             material.id === currentMaterial.id
@@ -138,17 +140,24 @@ export const CoursePlayground: React.FC = () => {
         handleRestart={handleRestart}
       />
 
-      <div className="flex flex-1 overflow-hidden pt-16 pb-16">
-        <SideNavbar
-          sidebarOpen={sidebarOpen}
-          setSidebarOpen={setSidebarOpen}
-          courseData={course}
-          expandedModules={expandedModules}
-          toggleModule={toggleModule}
-          currentMaterial={currentMaterial}
-          setCurrentMaterial={setCurrentMaterial}
-          darkMode={darkMode}
-        />
+      <div className="flex flex-1 overflow-hidden">
+        {
+          <SideNavbar
+            sidebarOpen={sidebarOpen}
+            setSidebarOpen={setSidebarOpen}
+            courseData={course}
+            materials={Array.from(materials.values())}
+            expandedModules={expandedModules}
+            toggleModule={toggleModule}
+            currentMaterial={currentIndex}
+            totalMaterials={materialsCount}
+            completedMaterials={completedMaterials}
+            progress={progress}
+            totalDuration={materialsDuration}
+            setCurrentMaterial={setCurrentMaterial}
+            darkMode={darkMode}
+          />
+        }
 
         <main className="flex-1 flex flex-col overflow-hidden">
           <MaterialViewer material={currentMaterial} />

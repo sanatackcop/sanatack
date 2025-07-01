@@ -1,8 +1,7 @@
 import React from "react";
 import { BookOpen, FileText } from "lucide-react";
-import CodeEditorView from "./_CodeEditorView";
 import { VideoView } from "./_VideoView";
-import { Material } from "./_Sidebar";
+import { Material } from "@/types/courses";
 import ArticleView from "./_ArticleView";
 import QuizView from "./_QuizView";
 
@@ -27,10 +26,6 @@ export const MaterialViewer: React.FC<MaterialViewerProps> = ({ material }) => {
 
   if (material.type === "video") {
     return <VideoView material={material} />;
-  }
-
-  if (material.type === "code") {
-    return <CodeEditorView material={material as any} />;
   }
 
   if (material.type === "article") {

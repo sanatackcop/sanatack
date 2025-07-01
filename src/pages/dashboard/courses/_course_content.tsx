@@ -20,11 +20,11 @@ export default function CourseDetailsContent({
           let url = "";
 
           if (material.type === "video") {
-            url = material.youtubeId || "";
-            title = material.title || title;
+            url = material.data.youtubeId || "";
+            title = material.data.title || title;
           } else if (material.type === "resource") {
             url = "";
-            title = material.title || title;
+            title = material.data.title || title;
           } else if (material.type === "quiz") {
             title = "Quiz";
           }

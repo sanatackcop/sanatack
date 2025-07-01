@@ -19,9 +19,9 @@ export default function RoadMapContent({
           let title = "";
 
           if (material.type === "video") {
-            title = material.title || "video";
+            title = material.data.title || "video";
           } else if (material.type === "resource") {
-            title = material.title || "resource";
+            title = material.data.title || "resource";
           } else if (material.type === "quiz") {
             title = "quiz";
           }
