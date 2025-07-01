@@ -1,7 +1,6 @@
 import TimeLine from "@/components/timeLine";
 import { RoadMapInterface, LessonDetails } from "@/types/courses";
 import { getLessonResourceIcon } from "@/utils/getIcon";
-import { MaterialType } from "@/utils/types/adminTypes";
 
 export default function RoadMapContent({
   RoadMap,

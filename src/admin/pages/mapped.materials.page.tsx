@@ -12,7 +12,7 @@ import {
 } from "../columns";
 import { getLinkedLessonMaterials } from "@/utils/_apis/admin-api";
 import { lazy } from "react";
-import { QuizGroup } from "@/types/courses";
+import { QuizGroup } from "@/utils/types/adminTypes";
 const MappedMaterialsCreate = lazy(
   () => import("../components/mapped.materials.create")
 );
