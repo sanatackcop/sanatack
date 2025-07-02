@@ -2,9 +2,9 @@ import { TerminalIcon } from "lucide-react";
 import { COLOR_MAP, ConsoleEntry, ICON_MAP } from "./type";
 
 export default function TerminalView({ entries }: { entries: ConsoleEntry[] }) {
-  const bgCanvas = "bg-[#0b0e14]";
-  const bgHeader = "bg-[#1a1f2b]";
-  const bgBody = "bg-[#0d1117]";
+  const bgCanvas = "bg-white dark:bg-[#0b0e14]";
+  const bgHeader = "bg-white dark:bg-[#1a1f2b]";
+  const bgBody = "bg-white dark:bg-[#0d1117]";
   const borderClr = "border-gray-800";
 
   return (
@@ -12,7 +12,7 @@ export default function TerminalView({ entries }: { entries: ConsoleEntry[] }) {
       <div
         className={`flex h-10 items-center justify-end px-4 ${bgHeader} border-b ${borderClr}`}
       >
-        <TerminalIcon className="w-4 h-4 text-gray-200" />
+        <TerminalIcon className="w-4 h-4 text-gray-900 dark:text-gray-200" />
       </div>
 
       <div
@@ -21,7 +21,7 @@ export default function TerminalView({ entries }: { entries: ConsoleEntry[] }) {
         {entries.length > 0 ? (
           entries.map((entry, i) => (
             <div key={i} className="mb-2 flex items-start gap-3">
-              <span className="flex-shrink-0 text-gray-300">
+              <span className="flex-shrink-0 text-gray-900 dark:text-gray-300">
                 {ICON_MAP[entry.type]}
               </span>
               <pre

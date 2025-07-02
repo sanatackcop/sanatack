@@ -303,9 +303,18 @@ const getTopicColors = (topic: string) => {
       tagText: "text-violet-700 dark:text-violet-300",
       tagBorder: "border-violet-200 dark:border-violet-700",
     },
+    default: {
+      bg: "from-blue-600 to-indigo-600",
+      iconBg:
+        "from-blue-100 to-indigo-100 dark:from-blue-800/50 dark:to-indigo-700/50",
+      iconColor: "text-blue-600 dark:text-blue-400",
+      tagBg: "bg-blue-100 dark:bg-blue-900/30",
+      tagText: "text-blue-700 dark:text-blue-300",
+      tagBorder: "border-blue-200 dark:border-blue-700",
+    },
   };
 
-  return colorMap[topic] || colorMap["برمجة"];
+  return colorMap[topic] || colorMap["default"];
 };
 
 const LevelBadge = ({ level }: any) => {
@@ -344,8 +353,8 @@ export const ProfessionalCourseCard = ({
   course: CoursesContext;
 }) => {
   const nav = useNavigate();
-  const TopicIcon = getTopicIcon(course.topic);
-  const topicColors = getTopicColors(course.topic);
+  const TopicIcon = getTopicIcon(course.topic ?? "default");
+  const topicColors = getTopicColors(course.topic ?? "default");
 
   return (
     <div
@@ -413,7 +422,7 @@ export const ProfessionalCourseCard = ({
                   التقدم
                 </span>
                 <span className="font-bold text-green-800 dark:text-green-200">
-                  {course.progress ?? 0}%
+                  {Math.round(course.progress) ?? 0}%
                 </span>
               </div>
               <div className="w-full bg-green-200 dark:bg-green-800 rounded-full h-2">
@@ -488,7 +497,7 @@ export const ProfessionalCourseCard = ({
         <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-800">
           <div className="flex items-center gap-2 text-xs.text-gray-500 dark:text-gray-400">
             <Calendar size={12} />
-            <span>{DateDisplay(course.updated_at)}</span>
+            <span>{DateDisplay(course.updated_at ?? "")}</span>
           </div>
           <button
             onClick={() =>
@@ -544,8 +553,6 @@ export default function DashboardHome() {
 
     fetchData();
   }, []);
-
-  console.log({ stats });
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900/20 transition-colors duration-500">
       <AnimatedBackground />

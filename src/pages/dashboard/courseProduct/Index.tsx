@@ -1,58 +1,35 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { Lesson, SideNavbar } from "./_Sidebar";
+import React, { useState } from "react";
+import { SideNavbar } from "./_Sidebar";
+import { Material, LessonDetails } from "@/types/courses";
 import UserContext from "@/context/UserContext";
 import { useContext } from "react";
-import MaterialViewer from "./_MaterialViewer";
+import { MaterialViewer } from "./_MaterialViewer";
 import NavigationPlayground from "./_TopNav";
 import { useSettings } from "@/context/SettingsContexts";
-import {
-  getSingleCoursesApi,
-  patchCourseProgressApi,
-} from "@/utils/_apis/courses-apis";
+import { patchCourseProgressApi } from "@/utils/_apis/courses-apis";
 import { useParams } from "react-router-dom";
-import { CourseDetails, Material } from "@/types/courses";
+import { useCourseData } from "@/hooks/useCourseData";
 
 export const CoursePlayground: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [currentMaterial, setCurrentMaterial] = useState<Material | null>(null);
   const [expandedModules, setExpandedModules] = useState<string[]>(["basics"]);
   const { darkMode } = useSettings();
   const { id } = useParams();
 
-  const [courseData, setCourseData] = useState<CourseDetails | null>(null);
-
-  const fetchCourseData = async () => {
-    const data = await getSingleCoursesApi({ course_id: id as string });
-    setCourseData(data);
-  };
-
-  useEffect(() => {
-    fetchCourseData();
-  }, []);
-
-  const flatMaterials = useMemo(
-    () =>
-      courseData?.modules?.flatMap((m: any) =>
-        m?.lessons.flatMap((l: Lesson) => l?.materials)
-      ) ?? [],
-    [courseData?.modules]
-  );
-
-  useEffect(() => {
-    if (!currentMaterial && flatMaterials?.length > 0) {
-      const firstMaterial =
-        flatMaterials?.find((m: any) => m.current) || flatMaterials[0];
-      setCurrentMaterial(firstMaterial);
-    }
-  }, [flatMaterials, currentMaterial]);
-
-  const currentIndex = currentMaterial
-    ? flatMaterials.findIndex((m: any) => m.id === currentMaterial.id)
-    : -1;
-  const nextMaterial =
-    currentIndex > -1 ? flatMaterials[currentIndex + 1] : null;
-  const prevMaterial =
-    currentIndex > 0 ? flatMaterials[currentIndex - 1] : null;
+  const {
+    course,
+    setCourseData,
+    currentMaterial,
+    setCurrentMaterial,
+    materials,
+    materialsCount,
+    completedMaterials,
+    progress,
+    materialsDuration,
+    nextMaterial,
+    prevMaterial,
+    currentIndex,
+  } = useCourseData(id as string);
 
   const handleNext = () => {
     if (nextMaterial && !nextMaterial.locked) setCurrentMaterial(nextMaterial);
@@ -69,12 +46,12 @@ export const CoursePlayground: React.FC = () => {
     );
   };
 
-  if (!currentMaterial) return <p>There is no current Material</p>;
+  if (!materials) return <p>There is no current Material</p>;
 
   const userContext = useContext(UserContext);
   if (!userContext || !userContext.auth?.user) return null;
 
-  if (!courseData) return;
+  if (!course) return;
 
   const user = userContext.auth.user;
 
@@ -82,10 +59,10 @@ export const CoursePlayground: React.FC = () => {
     if (!user?.id) return;
 
     const updatedCourseData = {
-      ...courseData,
-      modules: courseData.modules.map((module: any) => ({
+      ...course,
+      modules: course.modules.map((module: any) => ({
         ...module,
-        lessons: module.lessons.map((lesson: Lesson) => ({
+        lessons: module.lessons.map((lesson: LessonDetails) => ({
           ...lesson,
           materials: lesson.materials.map((material: Material) =>
             material.id === currentMaterial.id
@@ -101,12 +78,12 @@ export const CoursePlayground: React.FC = () => {
     try {
       await patchCourseProgressApi({
         userId: user.id,
-        courseId: courseData.id,
+        courseId: course.id,
         materialId: currentMaterial.id,
       });
     } catch (err) {
       console.error("خطأ في PATCH complete:", err);
-      setCourseData(courseData);
+      setCourseData(course);
       setCurrentMaterial(currentMaterial);
     }
   };
@@ -115,10 +92,10 @@ export const CoursePlayground: React.FC = () => {
     if (!user?.id) return;
 
     const updatedCourseData = {
-      ...courseData,
-      modules: courseData.modules.map((module: any) => ({
+      ...course,
+      modules: course.modules.map((module: any) => ({
         ...module,
-        lessons: module.lessons.map((lesson: Lesson) => ({
+        lessons: module.lessons.map((lesson: LessonDetails) => ({
           ...lesson,
           materials: lesson.materials.map((material: Material) =>
             material.id === currentMaterial.id
@@ -134,12 +111,12 @@ export const CoursePlayground: React.FC = () => {
     try {
       await patchCourseProgressApi({
         userId: user.id,
-        courseId: courseData.id,
+        courseId: course.id,
         materialId: currentMaterial.id,
       });
     } catch (err) {
       console.error("خطأ في PATCH restart:", err);
-      setCourseData(courseData);
+      setCourseData(course);
       setCurrentMaterial(currentMaterial);
     }
   };
@@ -147,7 +124,12 @@ export const CoursePlayground: React.FC = () => {
   return (
     <div className={`h-screen flex flex-col ${darkMode ? "dark" : ""}`}>
       <NavigationPlayground
-        courseData={courseData}
+        courseData={{
+          ...course,
+          completedLessons: completedMaterials,
+          totalLessons: materialsCount,
+          progress: progress,
+        }}
         sidebarOpen={sidebarOpen}
         prevMaterial={prevMaterial}
         nextMaterial={nextMaterial}
@@ -161,16 +143,23 @@ export const CoursePlayground: React.FC = () => {
       />
 
       <div className="flex flex-1 overflow-hidden">
-        <SideNavbar
-          sidebarOpen={sidebarOpen}
-          setSidebarOpen={setSidebarOpen}
-          courseData={courseData}
-          expandedModules={expandedModules}
-          toggleModule={toggleModule}
-          currentMaterial={currentMaterial}
-          setCurrentMaterial={setCurrentMaterial}
-          darkMode={darkMode}
-        />
+        {
+          <SideNavbar
+            sidebarOpen={sidebarOpen}
+            setSidebarOpen={setSidebarOpen}
+            courseData={course}
+            materials={Array.from(materials.values())}
+            expandedModules={expandedModules}
+            toggleModule={toggleModule}
+            currentMaterial={currentIndex}
+            totalMaterials={materialsCount}
+            completedMaterials={completedMaterials}
+            progress={progress}
+            totalDuration={materialsDuration}
+            setCurrentMaterial={setCurrentMaterial}
+            darkMode={darkMode}
+          />
+        }
 
         <main className="flex-1 flex flex-col overflow-hidden">
           <MaterialViewer material={currentMaterial} />

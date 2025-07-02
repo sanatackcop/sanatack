@@ -85,7 +85,7 @@ export const getAllCoursesApi = async (): Promise<CoursesContext[]> => {
     const response = await trackPromise(
       Api({
         method: "get",
-        url: "/courses/",
+        url: "/courses/list/",
         withCredentials: false,
       }) as Promise<{ data: CoursesContext[] }>
     );

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Check, X, RotateCcw } from "lucide-react";
-import { QuizGroup } from "@/utils/types/adminTypes";
+import { QuizMaterial } from "@/types/courses";
 
 interface QuizQuestion {
   question: string;
@@ -15,7 +15,7 @@ interface Answers {
 export default function QuizView({
   quizGroup,
 }: {
-  quizGroup: QuizGroup;
+  quizGroup: QuizMaterial;
 }): JSX.Element {
   const [quizData, setQuizData] = useState<QuizQuestion[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState<number>(0);

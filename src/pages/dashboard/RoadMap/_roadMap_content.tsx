@@ -1,7 +1,6 @@
 import TimeLine from "@/components/timeLine";
 import { RoadMapInterface, LessonDetails } from "@/types/courses";
 import { getLessonResourceIcon } from "@/utils/getIcon";
-import { MaterialType } from "@/utils/types/adminTypes";
 
 export default function RoadMapContent({
   RoadMap,
@@ -19,11 +18,11 @@ export default function RoadMapContent({
           const isLast = index === lesson.materials.length - 1;
           let title = "";
 
-          if (material.type === MaterialType.VIDEO) {
-            title = material.title || "video";
-          } else if (material.type === MaterialType.ARTICLE) {
-            title = material.title || "resource";
-          } else if (material.type === MaterialType.QUIZ_GROUP) {
+          if (material.type === "video") {
+            title = material.data.title || "video";
+          } else if (material.type === "resource") {
+            title = material.data.title || "resource";
+          } else if (material.type === "quiz") {
             title = "quiz";
           }
 

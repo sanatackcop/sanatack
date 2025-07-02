@@ -1,12 +1,12 @@
-import { Video } from "@/types/courses";
+import { VideoMaterial } from "@/types/courses";
 import { Video as VideoIcon, Clock, PlayCircle } from "lucide-react";
 
-export function VideoView({ video }: { video: Video }) {
+export function VideoView({ video }: { video: VideoMaterial }) {
   console.log({ video });
-  const isYouTube = video.youtubeId?.match(/youtu\.?(be|be\.com)/);
-  let embedUrl = video.youtubeId;
-  if (isYouTube && video.youtubeId) {
-    embedUrl = video.youtubeId
+  const isYouTube = video.data.youtubeId?.match(/youtu\.?(be|be\.com)/);
+  let embedUrl = video.data.youtubeId;
+  if (isYouTube && video.data.youtubeId) {
+    embedUrl = video.data.youtubeId
       .replace("watch?v=", "embed/")
       .replace("youtu.be/", "www.youtube.com/embed/");
   }
@@ -34,7 +34,7 @@ export function VideoView({ video }: { video: Video }) {
                   {video.title}
                 </h1>
                 <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-lg max-w-4xl">
-                  {video.description}
+                  {video.data.description}
                 </p>
               </div>
             </div>
