@@ -162,6 +162,8 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
                   ? "مقال"
                   : material.type === "quiz"
                   ? "اختبار"
+                  : material.type === "code"
+                  ? "كود"
                   : "نص"}
               </span>
             </div>

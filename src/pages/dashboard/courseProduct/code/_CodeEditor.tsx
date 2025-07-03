@@ -33,14 +33,14 @@ export default function CodeEditor({
   };
 
   const bgCanvas = " bg-white dark:bg-[#0b0e14]";
-  const bgPanel = " bg-white dark:bg-[#1a1f2b]";
-  const bgSubtle = " bg-white dark:bg-[#0d1117]";
-  const borderClr = "border-gray-800";
+  const bgPanel = " bg-[#f3f4f6] dark:bg-[#1a1f2b]";
+  const bgSubtle = " bg-[#f3f4f6] dark:bg-[#0d1117]";
+  const borderClr = "border-gray-300 dark:border-gray-700";
   const textMuted = "text-gray-900 dark:text-gray-400";
 
   return (
     <main
-      className={`flex-1 flex flex-col overflow-hidden ${bgCanvas} text-gray-900 dark:text-gray-200`}
+      className={`h-1/2 md:h-full w-full md:w-[60%] overflow-auto scrollbar-hidden ${bgCanvas} text-gray-900 dark:text-gray-200`}
     >
       <header
         className={`flex items-center justify-end px-4 py-2 ${bgPanel} border-b ${borderClr}`}
@@ -55,15 +55,15 @@ export default function CodeEditor({
         </div>
       </header>
 
-      <div className="flex-1 flex flex-col overflow-hidden relative">
-        <div className="flex-1 overflow-hidden relative">
+      <div className="flex-1 flex flex-col overflow-hidden scrollbar-hidden relative">
+        <div className="flex-1 overflow-hidden relative p-4 ">
           <EditorFrame
             ref={iframeRef}
             initialCode={initialCode}
             theme={darkMode ? "vs-dark" : "vs"}
           />
 
-          <div className="absolute bottom-6 right-6 flex gap-3">
+          <div className="absolute bottom-6 right-10 flex gap-3">
             <button
               onClick={resetCode}
               className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium ${textMuted} ${bgSubtle} border ${borderClr} rounded-lg hover:bg-gray-800 transition-colors shadow-md hover:shadow-lg`}
