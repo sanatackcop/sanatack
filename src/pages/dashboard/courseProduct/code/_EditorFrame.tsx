@@ -7,61 +7,77 @@ interface EditorFrameProps {
 
 const EditorFrame = forwardRef<HTMLIFrameElement, EditorFrameProps>(
   ({ initialCode, theme }, ref) => {
-    const bg = theme === "vs-dark" ? "#111827" : "#f9fafb";
-
-    const escapedCode = JSON.stringify(initialCode); // safely stringify user code
+    const escapedCode = JSON.stringify(initialCode);
 
     const srcDoc = `
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <style>
     html, body, #container {
       height: 100%;
       margin: 0;
-      background: ${bg};
+      background: transparent; 
     }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.js"></script>
 </head>
 <body>
   <div id="container"></div>
+
   <script>
+
     require.config({
-      paths: {
-        vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs"
-      }
+      paths: { vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs" }
     });
 
     require(["vs/editor/editor.main"], function () {
-      const initialValue = ${escapedCode};
+
+      const createTransparentTheme = (baseTheme) => {
+        const transparentName = baseTheme + "-transparent";
+        monaco.editor.defineTheme(transparentName, {
+          base: baseTheme,
+          inherit: true,
+          rules: [],
+          colors: { "editor.background": "#00000000" } // شفافية كاملة
+        });
+        return transparentName;
+      };
+
+
+      const initialTheme = "${theme}";
+      const currentTransparentTheme = createTransparentTheme(initialTheme);
+      monaco.editor.setTheme(currentTransparentTheme);
+
 
       const editor = monaco.editor.create(document.getElementById("container"), {
-        value: initialValue,
+        value: ${escapedCode},
         language: "javascript",
-        theme: "${theme}",
         fontSize: 14,
         fontFamily: "Fira Code, Consolas, monospace",
         automaticLayout: true,
         minimap: { enabled: false },
         padding: { bottom: 80 }
+        
       });
 
+
       editor.onDidChangeModelContent(() => {
-        parent.postMessage({
-          type: "codeChange",
-          value: editor.getValue()
-        }, "*");
+        parent.postMessage(
+          { type: "codeChange", value: editor.getValue() },
+          "*"
+        );
       });
 
       window.addEventListener("message", (e) => {
-        if (e.data?.type === "updateCode" && typeof e.data.value === "string" && e.data.value !== editor.getValue()) {
-          editor.setValue(e.data.value);
+        const { type, value } = e.data || {};
+        if (type === "updateCode" && typeof value === "string" && value !== editor.getValue()) {
+          editor.setValue(value);
         }
-        if (e.data?.type === "theme" && typeof e.data.value === "string") {
-          monaco.editor.setTheme(e.data.value);
-          document.body.style.background = e.data.value === "vs-dark" ? "#111827" : "#f9fafb";
+        if (type === "theme" && (value === "vs" || value === "vs-dark")) {
+          const newTransparent = createTransparentTheme(value);
+          monaco.editor.setTheme(newTransparent);
         }
       });
     });

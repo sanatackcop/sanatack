@@ -742,7 +742,7 @@ export default function CourseView() {
                                     )}
                                   </div>
                                 );
-                              } ///
+                              }
                             )}
                           </div>
                         </div>
@@ -753,8 +753,7 @@ export default function CourseView() {
               </div>
             </div>
           </div>
-        )}{" "}
-        //
+        )}
       </div>
 
       {!course.isEnrolled && (

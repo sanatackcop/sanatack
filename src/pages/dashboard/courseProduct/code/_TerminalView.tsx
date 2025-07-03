@@ -3,16 +3,16 @@ import { COLOR_MAP, ConsoleEntry, ICON_MAP } from "./type";
 
 export default function TerminalView({ entries }: { entries: ConsoleEntry[] }) {
   const bgCanvas = "bg-white dark:bg-[#0b0e14]";
-  const bgHeader = "bg-white dark:bg-[#1a1f2b]";
-  const bgBody = "bg-white dark:bg-[#0d1117]";
-  const borderClr = "border-gray-800";
+  const bgHeader = "bg-[#f3f4f6] dark:bg-[#1a1f2b]";
+  const bgBody = "bg-[#f3f4f6] dark:bg-[#0d1117]";
+  const borderClr = "border-gray-400 dark:border-gray-700";
 
   return (
     <div className={`h-64 border-t ${borderClr} ${bgCanvas}`}>
       <div
         className={`flex h-10 items-center justify-end px-4 ${bgHeader} border-b ${borderClr}`}
       >
-        <TerminalIcon className="w-4 h-4 text-gray-900 dark:text-gray-200" />
+        <TerminalIcon className="w-4 h-4 text-gray-600 dark:text-gray-200" />
       </div>
 
       <div
