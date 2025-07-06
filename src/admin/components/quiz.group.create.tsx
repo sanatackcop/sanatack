@@ -44,7 +44,7 @@ const multiQuizSchema = z.object({
 
 type MultiQuizFormValues = z.infer<typeof multiQuizSchema>;
 
-export default function QuizDialogCreate({
+export default function QuizGroupDialogCreate({
   open,
   onOpenChange,
   updateTable,

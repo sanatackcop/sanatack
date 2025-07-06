@@ -1,7 +1,5 @@
-import { ArticleDto, Level } from "@/utils/types/adminTypes";
-
-import { MaterialType } from "@/utils/types/adminTypes";
-
+import { CoursesContext } from "@/utils/types";
+import { ArticleDto } from "@/utils/types/adminTypes";
 export type TabType = "all" | "started" | "done";
 export interface CareerPathInterface {
   id: string;
@@ -18,26 +16,6 @@ export interface RoadMapInterface {
   isEnrolled?: boolean;
   courses: CourseDetails[];
 }
-export interface CoursesContext {
-  id: string;
-  title: string;
-  description: string;
-  level: LevelEnum;
-  course_info: {
-    durationHours: number;
-    tags: string[];
-    new_skills_result: string[];
-    learning_outcome: { [key: string]: number };
-    prerequisites: string[];
-  };
-  projectsCount: number;
-  isPublished: boolean;
-  isEnrolled: boolean;
-  enrolledCount: number;
-  completionRate: number;
-  progress?: number;
-  current_material?: string;
-}
 export interface CourseDetails extends CoursesContext {
   modules: ModuleDetails[];
 }
@@ -48,8 +26,6 @@ export interface ModuleDetails {
   lessons: LessonDetails[];
 }
 
-export declare type Material = Article | Video | QuizGroup;
-
 export interface LessonDetails {
   id: string;
   name: string;
@@ -57,24 +33,82 @@ export interface LessonDetails {
   order: number;
   materials: Material[];
 }
+export type MaterialType =
+  | "article"
+  | "code"
+  | "video"
+  | "quiz"
+  | "resource"
+  | "link";
 
-export interface Article {
+interface BaseMaterial {
   id: string;
-  title: string;
-  description?: string;
-  duration: number;
-  type: MaterialType.ARTICLE;
+  title?: string;
+  created_at?: string;
+  updated_at?: string;
+  order?: number;
+  duration?: number;
+  completed?: boolean;
+  type: MaterialType;
+  isCurrent?: boolean;
+  locked?: boolean;
 }
 
-export interface Video {
-  id: string;
-  title: string;
-  youtubeId: string;
-  duration: number;
-  description: string;
-  type: MaterialType.VIDEO;
+export type Material =
+  | ArticleMaterial
+  | VideoMaterial
+  | QuizMaterial
+  | CodeMaterial
+  | ResourceMaterial
+  | LinkMaterial;
+
+export interface InfoCardProps {
+  type: "info" | "tip" | "warning" | "success" | "error";
+  title?: string;
+  content: string;
+}
+export interface ArticleMaterial extends BaseMaterial {
+  type: "article";
+  data: {
+    id: number;
+    type: "hero" | "section" | "conclusion";
+    title: string;
+    description: string;
+    body: string;
+    code?: { code: string; language: string };
+    quote?: { text: string; author?: string };
+    info?: InfoCardProps;
+    image?: string;
+  };
 }
 
+export interface VideoMaterial extends BaseMaterial {
+  type: "video";
+  data: {
+    id: number | string;
+    title?: string;
+    youtubeId?: string;
+    duration?: number;
+    description?: string;
+  };
+}
+export interface CodeMaterial extends BaseMaterial {
+  type: "code";
+  data: {
+    id: number | string;
+  };
+}
+
+export interface QuizMaterial extends BaseMaterial {
+  type: "quiz";
+  quizzes: Quiz[];
+  data?: {
+    question: string;
+    options: string[];
+    correctAnswer: string;
+    explanation?: string;
+  };
+}
 export interface Quiz {
   id: string;
   question: string;
@@ -82,24 +116,28 @@ export interface Quiz {
   correctAnswer: string;
   explanation?: string;
   duration: number;
-  type: MaterialType.QUIZ;
+}
+export interface ResourceMaterial extends BaseMaterial {
+  type: "resource";
+  data: {
+    title: string;
+    description?: string;
+  };
 }
 
-export interface QuizGroup {
-  id: string;
-  created_at: string;
-  updated_at: string;
-  title: string;
-  order: number;
-  quizzes: Quiz[];
-  duration: number;
-  type: MaterialType.QUIZ_GROUP;
+export interface LinkMaterial extends BaseMaterial {
+  type: "link";
+  data: {
+    url: string;
+    title?: string;
+    description?: string;
+  };
 }
 
 export enum LevelEnum {
-  "BEGINNER" = "BEGINNER",
-  "INTERMEDIATE" = "INTERMEDIATE",
-  "ADVANCED" = "ADVANCED",
+  BEGINNER = "مبتدئ",
+  INTERMEDIATE = "متوسط",
+  ADVANCED = "متقدم",
 }
 
 export interface CoursesReport {
@@ -112,7 +150,7 @@ export interface CoursesReport {
 export interface UpdateCourseDto {
   title?: string;
   description?: string;
-  level?: Level;
+  level?: LevelEnum;
   course_info?: {
     durationHours: number;
     tags: string[];

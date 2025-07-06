@@ -12,86 +12,69 @@ import {
   Globe,
   BarChart3,
   CheckCircle2,
-  CheckCircle,
+  Lock,
   Tag,
   Calendar,
   Download,
   Languages,
-  Monitor,
   Code,
   Rocket,
   BookOpen,
   Trophy,
   Users,
-  ChevronUp,
-  ChevronDown,
-  Video,
-  PenTool,
-  FileText,
-  Headphones,
-  Timer,
-  Lock,
   Plus,
   Minus,
+  CheckCircle,
+  ChevronDown,
+  ChevronUp,
+  FileText,
+  Headphones,
+  PenTool,
+  Timer,
+  Video,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  enrollCoursesApi,
-  getSingleCoursesApi,
-} from "@/utils/_apis/courses-apis";
+import { enrollCoursesApi } from "@/utils/_apis/courses-apis";
 import AppLayout from "@/components/layout/Applayout";
-import { CourseDetails, ModuleDetails } from "@/types/courses";
+import { useCourseData } from "@/hooks/useCourseData";
+import { DateDisplay } from "@/lib/utils";
 
 export default function CourseView() {
   const { id } = useParams<{ id: string }>();
-  const [course, setCourse] = useState<CourseDetails>();
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
   const [enrolling, setEnrolling] = useState<boolean>(false);
-  const [timeLeft] = useState<number>(48 * 60 * 60);
   const navigate = useNavigate();
   const location = useLocation();
+  const {
+    course,
+    getTotalLessons,
+    getCompletedLessonsCount,
+    materialsDuration,
+  } = useCourseData(id as string);
+
   const [expandedModules, setExpandedModules] = useState<Set<string>>(
     new Set()
   );
-
+  const [expandedLessons, setExpandedLessons] = useState<Set<string>>(
+    new Set()
+  );
   useEffect(() => {
     if (!course) return;
 
-    if (course.modules.length > 0)
+    if (course.modules?.length > 0)
       setExpandedModules(new Set([course.modules[0].id]));
   }, [course]);
-
-  const fetchCourse = async () => {
-    if (!id) return;
-    try {
-      setLoading(true);
-      const response = await getSingleCoursesApi({ course_id: id });
-      setCourse(response);
-      setLoading(false);
-      console.log(loading, error, timeLeft);
-    } catch (err: any) {
-      setError(err?.message || "حدث خطأ أثناء جلب بيانات الدورة، حاول مجددًا.");
-      setLoading(false);
-    }
-  };
 
   const expandAllModules = () => {
     if (course?.modules) {
       setExpandedModules(new Set(course.modules.map((m: any) => m.id)));
     }
   };
-
   const collapseAllModules = () => {
     setExpandedModules(new Set());
   };
 
-  useEffect(() => {
-    fetchCourse();
-  }, []);
-
   if (!course) {
-    return <h1 className="text-center">There is no course</h1>;
+    return <h1 className="text-center">Loading Course</h1>;
   }
 
   const handleStartCourse = async () => {
@@ -111,30 +94,6 @@ export default function CourseView() {
       setEnrolling(false);
     }
   };
-
-  const getCompletedLessonsCount = (): number => {
-    if (course.isEnrolled)
-      return (
-        course.modules.forEach((module, module_index) =>
-          module.lessons.map((lesson, lesson_index) => {
-            const material = lesson.materials.find(
-              (material) => material.id == course.current_material
-            );
-            if (material) return module_index++ * lesson_index++;
-          })
-        ) ?? 0
-      );
-    return 0;
-  };
-
-  const getTotalLessons = () => {
-    return course.modules.reduce(
-      (total: number, module: ModuleDetails) =>
-        total + (module.lessons?.length || 0),
-      0
-    );
-  };
-
   const toggleModule = (moduleId: string) => {
     const newExpanded = new Set(expandedModules);
     if (newExpanded.has(moduleId)) {
@@ -144,31 +103,22 @@ export default function CourseView() {
     }
     setExpandedModules(newExpanded);
   };
-
-  const getTotalDuration = () => {
-    if (!course?.modules) return 0;
-    return course.modules.reduce((total: number, module: any) => {
-      return (
-        total +
-        module?.lessons?.reduce((lessonTotal: number, lesson: any) => {
-          return (
-            lessonTotal +
-            lesson.materials.reduce((materialTotal: number, material: any) => {
-              const duration = material.duration
-                ? parseInt(material.duration)
-                : 0;
-              return materialTotal + duration;
-            }, 0)
-          );
-        }, 0)
-      );
-    }, 0);
+  const toggleLesson = (lessonId: string) => {
+    setExpandedLessons((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(lessonId)) {
+        newSet.delete(lessonId);
+      } else {
+        newSet.add(lessonId);
+      }
+      return newSet;
+    });
   };
 
   const courseStats = [
     {
       title: "إجمالي الساعات",
-      value: `${course.course_info.durationHours} ساعة`,
+      value: `${Math.round((materialsDuration / 60) * 100) / 100} ساعة`,
       icon: <Clock className="w-5 h-5" />,
       color: "bg-blue-500",
       trend: "+12%",
@@ -195,7 +145,6 @@ export default function CourseView() {
       trend: "+2%",
     },
   ];
-
   return (
     <AppLayout>
       <div className="">
@@ -227,7 +176,7 @@ export default function CourseView() {
                     المهارات والتقنيات
                   </h3>
                   <div className="flex flex-wrap gap-2">
-                    {course.course_info.tags.map((tag: any, index: any) => (
+                    {course.course_info?.tags.map((tag: any, index: any) => (
                       <span
                         key={index}
                         className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -265,7 +214,7 @@ export default function CourseView() {
                         وقت الإكمال
                       </div>
                       <div className="text-xs text-slate-600 dark:text-slate-400">
-                        {course.course_info.durationHours} ساعة
+                        {Math.round((materialsDuration / 60) * 100) / 100} ساعة
                       </div>
                     </div>
                   </div>
@@ -315,20 +264,22 @@ export default function CourseView() {
             <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-8">
               <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6 flex items-center gap-3">
                 <Target className="w-6 h-6 text-blue-500" />
-                أهداف التعلم
+                مخرجات الدورة
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {course.course_info.new_skills_result.map((outcome, index) => (
-                  <div
-                    key={index}
-                    className="flex items-start gap-3 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-200"
-                  >
-                    <CheckCircle2 className="w-5 h-5 text-emerald-500 mt-0.5 flex-shrink-0" />
-                    <span className="text-slate-700 dark:text-slate-300">
-                      {outcome}
-                    </span>
-                  </div>
-                ))}
+                {course.course_info?.new_skills_result.map(
+                  (outcome: string, index: number) => (
+                    <div
+                      key={index}
+                      className="flex items-start gap-3 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-200"
+                    >
+                      <CheckCircle2 className="w-5 h-5 text-emerald-500 mt-0.5 flex-shrink-0" />
+                      <span className="text-slate-700 dark:text-slate-300">
+                        {outcome}
+                      </span>
+                    </div>
+                  )
+                )}
               </div>
             </div>
 
@@ -338,30 +289,26 @@ export default function CourseView() {
                 المهارات المكتسبة
               </h2>
               <div className="space-y-6">
-                {Object.entries(course.course_info.learning_outcome).map(
-                  ([skill, level], index) => (
-                    <div key={index} className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium text-slate-900 dark:text-slate-100">
-                          {skill}
-                        </span>
-                        <span className="text-sm text-slate-600 dark:text-slate-400">
-                          {level}%
-                        </span>
-                      </div>
-                      <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3">
-                        <div
-                          className={`bg-[#4F46E5] h-3 rounded-full transition-all duration-1000 ease-out`}
-                          style={
-                            {
-                              width: `${level}%`,
-                            } /* Replace with dynamic color if needed */
-                          }
-                        ></div>
-                      </div>
+                {Object.entries(
+                  course?.course_info?.learning_outcome ?? {}
+                ).map(([skill, level], index) => (
+                  <div key={index} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-slate-900 dark:text-slate-100">
+                        {skill}
+                      </span>
+                      <span className="text-sm text-slate-600 dark:text-slate-400">
+                        {course.level}%
+                      </span>
                     </div>
-                  )
-                )}
+                    <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3">
+                      <div
+                        className="bg-[#4F46E5] h-3 rounded-full transition-all duration-1000 ease-out"
+                        style={{ width: `${level}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -386,7 +333,7 @@ export default function CourseView() {
                   <div className="mb-6 p-6 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-200 dark:border-emerald-800">
                     <div className="text-center">
                       <div className="text-3xl font-bold text-emerald-700 dark:text-emerald-300 mb-2">
-                        {course.progress}%
+                        {course.completionRate}%
                       </div>
                       <div className="text-sm text-emerald-600 dark:text-emerald-400 mb-4">
                         تقدمك في الدورة
@@ -394,7 +341,7 @@ export default function CourseView() {
                       <div className="w-full bg-emerald-200 dark:bg-emerald-800 rounded-full h-3 mb-4">
                         <div
                           className="bg-emerald-500 h-3 rounded-full transition-all duration-500"
-                          style={{ width: `${course.progress}%` }}
+                          style={{ width: `${course.completionRate}%` }}
                         ></div>
                       </div>
                       <div className="text-xs text-emerald-500 dark:text-emerald-400">
@@ -481,7 +428,7 @@ export default function CourseView() {
                       وقت الإكمال
                     </span>
                     <span className="font-medium text-slate-900 dark:text-slate-100">
-                      {course.course_info.durationHours} ساعة
+                      {Math.round((materialsDuration / 60) * 100) / 100} ساعة
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -499,7 +446,7 @@ export default function CourseView() {
                       آخر تحديث
                     </span>
                     <span className="font-medium text-slate-900 dark:text-slate-100">
-                      ديسمبر 2024
+                      {DateDisplay(course.updated_at)}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -511,7 +458,7 @@ export default function CourseView() {
                       العربية
                     </span>
                   </div>
-                  <div className="flex items-center justify-between">
+                  {/* <div className="flex items-center justify-between">
                     <span className="text-slate-600 dark:text-slate-400 flex items-center gap-2">
                       <Monitor className="w-4 h-4" />
                       الترجمة
@@ -519,14 +466,13 @@ export default function CourseView() {
                     <span className="font-medium text-slate-900 dark:text-slate-100">
                       متوفرة
                     </span>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>
           </div>
         </div>
-
-        {course.modules.length > 0 && (
+        {course.modules?.length > 0 && (
           <div className="space-y-6">
             <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 mt-5">
               <div className="flex items-center justify-between mb-5">
@@ -536,7 +482,8 @@ export default function CourseView() {
                   </h3>
                   <p className="text-sm text-slate-600 dark:text-slate-400">
                     {course?.modules?.length || 0} وحدات • {getTotalLessons()}{" "}
-                    درس • {Math.floor(getTotalDuration() / 60) || 0} ساعة
+                    درس •{" "}
+                    {Math.round((materialsDuration / 60) * 100) / 100 || 0} ساعة
                     إجمالية
                   </p>
                 </div>
@@ -634,143 +581,168 @@ export default function CourseView() {
                         <div className="border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
                           <div className="p-6 space-y-4">
                             {module.lessons?.map(
-                              (lesson: any, lessonIndex: number) => (
-                                <div
-                                  key={lesson.id}
-                                  className="bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-200 dark:border-slate-700"
-                                >
-                                  <div className="flex items-center gap-3 mb-4">
-                                    <div className="flex items-center justify-center w-8 h-8 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg font-medium text-sm">
-                                      {lessonIndex + 1}
-                                    </div>
-                                    <div className="flex-1">
-                                      <h4 className="font-medium text-slate-900 dark:text-slate-100">
-                                        {lesson.name}
-                                      </h4>
-                                      {lesson.description && (
-                                        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                                          {lesson.description}
-                                        </p>
+                              (lesson: any, lessonIndex: number) => {
+                                const isLessonExpanded = expandedLessons.has(
+                                  lesson.id
+                                );
+
+                                return (
+                                  <div
+                                    key={lesson.id}
+                                    className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700"
+                                  >
+                                    <button
+                                      onClick={() => toggleLesson(lesson.id)}
+                                      className="w-full p-5 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+                                    >
+                                      <div className="flex items-center gap-3">
+                                        <div className="flex items-center justify-center w-8 h-8 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-sm font-medium">
+                                          {lessonIndex + 1}
+                                        </div>
+                                        <h4 className="font-medium text-slate-900 dark:text-slate-100">
+                                          {lesson.name}
+                                        </h4>
+                                      </div>
+
+                                      {isLessonExpanded ? (
+                                        <ChevronUp className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                                      ) : (
+                                        <ChevronDown className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                                       )}
-                                    </div>
-                                  </div>
+                                    </button>
 
-                                  <div className="space-y-3">
-                                    {lesson.materials?.map((material: any) => {
-                                      const typeConfig = {
-                                        video: {
-                                          label: "فيديو",
-                                          color:
-                                            "bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400",
-                                          icon: <Video className="w-4 h-4" />,
-                                        },
-                                        code: {
-                                          label: "كود",
-                                          color:
-                                            "bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400",
-                                          icon: <Code className="w-4 h-4" />,
-                                        },
-                                        quiz: {
-                                          label: "اختبار",
-                                          color:
-                                            "bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400",
-                                          icon: <PenTool className="w-4 h-4" />,
-                                        },
-                                        text: {
-                                          label: "نص",
-                                          color:
-                                            "bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400",
-                                          icon: (
-                                            <FileText className="w-4 h-4" />
-                                          ),
-                                        },
-                                        audio: {
-                                          label: "صوت",
-                                          color:
-                                            "bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400",
-                                          icon: (
-                                            <Headphones className="w-4 h-4" />
-                                          ),
-                                        },
-                                      };
+                                    {isLessonExpanded && (
+                                      <div className="p-5 space-y-3 border-t border-slate-200 dark:border-slate-700">
+                                        {lesson.materials?.map(
+                                          (material: any) => {
+                                            const typeConfig = {
+                                              video: {
+                                                label: "فيديو",
+                                                color:
+                                                  "bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400",
+                                                icon: (
+                                                  <Video className="w-4 h-4" />
+                                                ),
+                                              },
+                                              code: {
+                                                label: "كود",
+                                                color:
+                                                  "bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400",
+                                                icon: (
+                                                  <Code className="w-4 h-4" />
+                                                ),
+                                              },
+                                              quiz: {
+                                                label: "اختبار",
+                                                color:
+                                                  "bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400",
+                                                icon: (
+                                                  <PenTool className="w-4 h-4" />
+                                                ),
+                                              },
+                                              text: {
+                                                label: "نص",
+                                                color:
+                                                  "bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400",
+                                                icon: (
+                                                  <FileText className="w-4 h-4" />
+                                                ),
+                                              },
+                                              audio: {
+                                                label: "صوت",
+                                                color:
+                                                  "bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400",
+                                                icon: (
+                                                  <Headphones className="w-4 h-4" />
+                                                ),
+                                              },
+                                            };
 
-                                      const config =
-                                        typeConfig[
-                                          material.type as keyof typeof typeConfig
-                                        ] || typeConfig.text;
+                                            const config =
+                                              typeConfig[
+                                                material.type as keyof typeof typeConfig
+                                              ] || typeConfig.text;
 
-                                      return (
-                                        <button
-                                          key={material.id}
-                                          disabled={
-                                            material.locked &&
-                                            !course.isEnrolled
-                                          }
-                                          className={`w-full p-4 rounded-xl transition-all duration-200 flex items-center gap-4 group ${
-                                            material.completed
-                                              ? "bg-green-50 dark:bg-green-900/20 border-2 border-green-200 dark:border-green-800"
-                                              : material.locked &&
-                                                !course.isEnrolled
-                                              ? "opacity-50 cursor-not-allowed  dark:bg-slate-800/50"
-                                              : "bg-blue-50 dark:bg-blue-900/20 border-2 border-transparent border-blue-200 dark:border-blue-800 hover:border-blue-400"
-                                          }`}
-                                        >
-                                          <div
-                                            className={`p-3 rounded-xl flex-shrink-0 transition-colors ${
-                                              material.completed
-                                                ? "bg-green-100 dark:bg-green-900/30"
-                                                : material.locked &&
+                                            return (
+                                              <button
+                                                key={material.id}
+                                                disabled={
+                                                  material.locked &&
                                                   !course.isEnrolled
-                                                ? "bg-slate-100 dark:bg-slate-700"
-                                                : "bg-white dark:bg-slate-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30"
-                                            }`}
-                                          >
-                                            {material.completed ? (
-                                              <CheckCircle className="w-5 h-5 text-green-600" />
-                                            ) : material.locked &&
-                                              !course.isEnrolled ? (
-                                              <Lock className="w-5 h-5 text-slate-400" />
-                                            ) : (
-                                              config.icon
-                                            )}
-                                          </div>
-
-                                          <div className="flex-1 text-right min-w-0">
-                                            <p className="font-medium text-slate-900 dark:text-slate-100 truncate">
-                                              {material.title}
-                                            </p>
-                                            <div className="flex items-center justify-end gap-3 mt-2">
-                                              <span
-                                                className={`text-xs px-2 py-1 rounded-full font-medium ${config.color}`}
+                                                }
+                                                className={`w-full p-4 rounded-xl transition-all duration-200 flex items-center gap-4 group ${
+                                                  material.completed
+                                                    ? "bg-green-50 dark:bg-green-900/20 border-2 border-green-200 dark:border-green-800"
+                                                    : material.locked &&
+                                                      !course.isEnrolled
+                                                    ? "opacity-50 cursor-not-allowed  dark:bg-slate-800/50"
+                                                    : "bg-blue-50 dark:bg-blue-900/20 border-2 border-transparent border-blue-200 dark:border-blue-800 hover:border-blue-400"
+                                                }`}
                                               >
-                                                {config.label}
-                                              </span>
-                                              <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-                                                <Timer className="w-3 h-3" />
-                                                {material.duration || "5 دقائق"}
-                                              </div>
-                                              {material.completed && (
-                                                <span className="text-xs text-green-600 dark:text-green-400 font-medium">
-                                                  مكتمل
-                                                </span>
-                                              )}
-                                            </div>
-                                          </div>
-
-                                          {material.type === "video" &&
-                                            !material.locked && (
-                                              <div className="flex-shrink-0">
-                                                <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
-                                                  <Play className="w-4 h-4 text-white fill-white" />
+                                                <div
+                                                  className={`p-3 rounded-xl flex-shrink-0 transition-colors ${
+                                                    material.completed
+                                                      ? "bg-green-100 dark:bg-green-900/30"
+                                                      : material.locked &&
+                                                        !course.isEnrolled
+                                                      ? "bg-slate-100 dark:bg-slate-700"
+                                                      : "bg-white dark:bg-slate-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30"
+                                                  }`}
+                                                >
+                                                  {material.completed ? (
+                                                    <CheckCircle className="w-5 h-5 text-green-600" />
+                                                  ) : material.locked &&
+                                                    !course.isEnrolled ? (
+                                                    <Lock className="w-5 h-5 text-slate-400" />
+                                                  ) : (
+                                                    config.icon
+                                                  )}
                                                 </div>
-                                              </div>
-                                            )}
-                                        </button>
-                                      );
-                                    })}
+
+                                                <div className="flex justify-between items-center gap-4 w-full">
+                                                  <div className="flex items-center gap-2 text-right">
+                                                    <p className="font-medium text-slate-900 dark:text-slate-100 truncate">
+                                                      {material.title ||
+                                                        material?.main_title}
+                                                    </p>
+                                                  </div>
+                                                  <div className="flex flex-wrap items-center justify-end gap-2 text-left">
+                                                    <span
+                                                      className={`text-xs px-2 py-1 rounded-full font-medium ${config.color}`}
+                                                    >
+                                                      {config.label}
+                                                    </span>
+
+                                                    <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                                                      <Timer className="w-3 h-3" />
+                                                      {material.duration} دقيقة
+                                                    </div>
+
+                                                    {material.completed && (
+                                                      <span className="text-xs text-green-600 dark:text-green-400 font-medium">
+                                                        مكتمل
+                                                      </span>
+                                                    )}
+                                                  </div>
+                                                </div>
+
+                                                {material.type === "video" &&
+                                                  !material.locked && (
+                                                    <div className="flex-shrink-0">
+                                                      <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
+                                                        <Play className="w-4 h-4 text-white fill-white" />
+                                                      </div>
+                                                    </div>
+                                                  )}
+                                              </button>
+                                            );
+                                          }
+                                        )}
+                                      </div>
+                                    )}
                                   </div>
-                                </div>
-                              )
+                                );
+                              } ///
                             )}
                           </div>
                         </div>
@@ -781,7 +753,8 @@ export default function CourseView() {
               </div>
             </div>
           </div>
-        )}
+        )}{" "}
+        //
       </div>
 
       {!course.isEnrolled && (
@@ -789,7 +762,7 @@ export default function CourseView() {
           <div className="flex items-center justify-between">
             <div className="flex flex-col">
               <div className="text-sm text-slate-600 dark:text-slate-400">
-                {course.course_info.durationHours} ساعة • {course.level}
+                {course.course_info?.durationHours} ساعة • {course.level}
               </div>
               <div className="text-xs text-slate-500 dark:text-slate-500">
                 {course.projectsCount} مشروع عملي

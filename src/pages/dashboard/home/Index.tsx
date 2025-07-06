@@ -4,11 +4,9 @@ import {
   Clock,
   ArrowRight,
   Award,
-  Star,
   Users,
   TrendingUp,
   Calendar,
-  Target,
   Bookmark,
   Code,
   Brain,
@@ -24,10 +22,11 @@ import {
 import {
   getAllCoursesApi,
   getCourseReportApi,
-  getCurrentCoursesApi,
 } from "@/utils/_apis/courses-apis";
 import { useNavigate } from "react-router-dom";
 import { CoursesReport } from "@/types/courses";
+import { CoursesContext } from "@/utils/types";
+import { DateDisplay } from "@/lib/utils";
 
 const AnimatedBackground = () => (
   <div className="fixed inset-0 overflow-hidden pointer-events-none">
@@ -85,7 +84,9 @@ const StatsCards = ({ stats }: { stats: CoursesReport }) => (
           <BookOpen size={24} className="text-white" />
         </div>
         <div>
-          <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.completedCourses}</p>
+          <p className="text-3xl font-bold text-gray-900 dark:text-white">
+            {stats.completedCourses}
+          </p>
           <p className="text-gray-600 dark:text-gray-400 font-medium">
             دورة مكتملة
           </p>
@@ -101,7 +102,9 @@ const StatsCards = ({ stats }: { stats: CoursesReport }) => (
           <Clock size={24} className="text-white" />
         </div>
         <div>
-          <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.totalHours}</p>
+          <p className="text-3xl font-bold text-gray-900 dark:text-white">
+            {stats.totalHours}
+          </p>
           <p className="text-gray-600 dark:text-gray-400 font-medium">
             ساعة تعلم
           </p>
@@ -117,7 +120,9 @@ const StatsCards = ({ stats }: { stats: CoursesReport }) => (
           <Award size={24} className="text-white" />
         </div>
         <div>
-          <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.certifications}</p>
+          <p className="text-3xl font-bold text-gray-900 dark:text-white">
+            {stats.certifications}
+          </p>
           <p className="text-gray-600 dark:text-gray-400 font-medium">
             شهادة حاصل عليها
           </p>
@@ -133,7 +138,9 @@ const StatsCards = ({ stats }: { stats: CoursesReport }) => (
           <TrendingUp size={24} className="text-white" />
         </div>
         <div>
-          <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.streakDays}</p>
+          <p className="text-3xl font-bold text-gray-900 dark:text-white">
+            {stats.streakDays}
+          </p>
           <p className="text-gray-600 dark:text-gray-400 font-medium">
             يوم متتالي
           </p>
@@ -197,7 +204,7 @@ const EmptyState = ({ title, description, actionText }: any) => (
 const getTopicIcon = (topic: string) => {
   const iconMap: any = {
     "ذكاء اصطناعي": Brain,
-    برمجة: Code,
+    الخلفية: Code,
     "تطوير ويب": Globe,
     "تطوير جوال": Smartphone,
     "قواعد بيانات": Database,
@@ -224,7 +231,7 @@ const getTopicColors = (topic: string) => {
       tagText: "text-blue-700 dark:text-blue-300",
       tagBorder: "border-blue-200 dark:border-blue-700",
     },
-    برمجة: {
+    الخلفية: {
       bg: "from-cyan-600 to-blue-600",
       iconBg:
         "from-cyan-100 to-blue-100 dark:from-cyan-800/50 dark:to-blue-700/50",
@@ -296,9 +303,18 @@ const getTopicColors = (topic: string) => {
       tagText: "text-violet-700 dark:text-violet-300",
       tagBorder: "border-violet-200 dark:border-violet-700",
     },
+    default: {
+      bg: "from-blue-600 to-indigo-600",
+      iconBg:
+        "from-blue-100 to-indigo-100 dark:from-blue-800/50 dark:to-indigo-700/50",
+      iconColor: "text-blue-600 dark:text-blue-400",
+      tagBg: "bg-blue-100 dark:bg-blue-900/30",
+      tagText: "text-blue-700 dark:text-blue-300",
+      tagBorder: "border-blue-200 dark:border-blue-700",
+    },
   };
 
-  return colorMap[topic] || colorMap["برمجة"];
+  return colorMap[topic] || colorMap["default"];
 };
 
 const LevelBadge = ({ level }: any) => {
@@ -333,13 +349,12 @@ const LevelBadge = ({ level }: any) => {
 
 export const ProfessionalCourseCard = ({
   course,
-  isCurrentCourse = false,
-}: any) => {
+}: {
+  course: CoursesContext;
+}) => {
   const nav = useNavigate();
-  const TopicIcon = getTopicIcon(course.tags?.courseType || course.category);
-  const topicColors = getTopicColors(
-    course.tags?.courseType || course.category
-  );
+  const TopicIcon = getTopicIcon(course.topic ?? "default");
+  const topicColors = getTopicColors(course.topic ?? "default");
 
   return (
     <div
@@ -357,22 +372,30 @@ export const ProfessionalCourseCard = ({
       >
         <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent" />
         <div className="absolute top-4 right-4 flex gap-2">
-          {course.featured && (
+          {/* {course.featured && (
             <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded-full text-xs font-medium border border-amber-200 dark:border-amber-700">
               <Star size={12} fill="currentColor" /> مميز
             </span>
-          )}
-          {course.isNew && (
-            <span className="inline-flex items-center px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-medium border border-blue-200 dark:border-blue-700">
-              جديد
-            </span>
-          )}
+          )} */}
+          {course.created_at &&
+            (() => {
+              const createdDate = new Date(course.created_at);
+              const now = new Date();
+              return (
+                createdDate.getFullYear() === now.getFullYear() &&
+                createdDate.getMonth() === now.getMonth()
+              );
+            })() && (
+              <span className="inline-flex items-center px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-medium border border-blue-200 dark:border-blue-700">
+                جديد
+              </span>
+            )}
         </div>
         <div className="absolute bottom-3 right-4 flex items-center gap-3">
           <div className="w-10 h-10 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-sm">
             <TopicIcon size={20} className={topicColors.iconColor} />
           </div>
-          <LevelBadge level={course.tags?.level || course.level} />
+          <LevelBadge level={course.level} />
         </div>
       </div>
 
@@ -392,20 +415,20 @@ export const ProfessionalCourseCard = ({
             </p>
           </div>
 
-          {isCurrentCourse && course.progress !== undefined && (
+          {course.progress !== undefined && (
             <div className="space-y-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-100 dark:border-green-800">
               <div className="flex justify-between items-center text-sm">
                 <span className="text-green-700 dark:text-green-300 font-medium">
                   التقدم
                 </span>
                 <span className="font-bold text-green-800 dark:text-green-200">
-                  {course.progress}%
+                  {Math.round(course.progress) ?? 0}%
                 </span>
               </div>
               <div className="w-full bg-green-200 dark:bg-green-800 rounded-full h-2">
                 <div
                   className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full transition-all duration-300"
-                  style={{ width: `${course.progress}%` }}
+                  style={{ width: `${course.progress ?? 0}%` }}
                 />
               </div>
             </div>
@@ -415,22 +438,22 @@ export const ProfessionalCourseCard = ({
             <div className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
               <Clock size={14} className="text-blue-600 dark:text-blue-400" />
               <span className="text-gray-700 dark:text-gray-300">
-                {course.tags?.durtionsHours || course.duration} ساعة
+                {course.course_info.durationHours} ساعة
               </span>
             </div>
-            <div className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+            {/* <div className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
               <Target size={14} className="text-blue-600 dark:text-blue-400" />
               <span className="text-gray-700 dark:text-gray-300">
-                {course.tags?.unitesNum || course.lessonsCount} درس
+                {course.material_count} درس
               </span>
-            </div>
+            </div> */}
             <div className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
               <Users size={14} className="text-blue-600 dark:text-blue-400" />
               <span className="text-gray-700 dark:text-gray-300">
-                {course.studentsCount || 0} طالب
+                {course.enrolledCount} طالب
               </span>
             </div>
-            {course.rating && (
+            {/* {course.rating && (
               <div className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                 <Star
                   size={14}
@@ -441,37 +464,40 @@ export const ProfessionalCourseCard = ({
                   {course.rating}
                 </span>
               </div>
-            )}
+            )} */}
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 pb-3">
             <span
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border ${topicColors.tagBg} ${topicColors.tagText} ${topicColors.tagBorder}`}
             >
               <TopicIcon size={12} />
-              {course.tags?.courseType || course.category}
+              {course.topic}
             </span>
-            {course.technologies &&
-              course.technologies.slice(0, 2).map((tech: any, index: any) => (
-                <span
-                  key={index}
-                  className="px-2.5 py-1 bg-gray-100 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 rounded-lg text-xs font-medium border border-gray-200 dark:border-gray-700"
-                >
-                  {tech}
+            {course.course_info.new_skills_result &&
+              course.course_info.new_skills_result
+                .slice(0, 2)
+                .map((tech: any, index: any) => (
+                  <span
+                    key={index}
+                    className="px-2.5 py-1 bg-gray-100 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 rounded-lg text-xs font-medium border border-gray-200 dark:border-gray-700"
+                  >
+                    {tech}
+                  </span>
+                ))}
+            {course.course_info.new_skills_result &&
+              course.course_info.new_skills_result.length > 2 && (
+                <span className="px-2.5 py-1 bg-gray-100 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 rounded-lg text-xs font-medium border border-gray-200 dark:border-gray-700">
+                  +{course.course_info.new_skills_result.length - 2}
                 </span>
-              ))}
-            {course.technologies && course.technologies.length > 2 && (
-              <span className="px-2.5 py-1 bg-gray-100 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 rounded-lg text-xs font-medium border border-gray-200 dark:border-gray-700">
-                +{course.technologies.length - 2}
-              </span>
-            )}
+              )}
           </div>
         </div>
 
         <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-800">
           <div className="flex items-center gap-2 text-xs.text-gray-500 dark:text-gray-400">
             <Calendar size={12} />
-            <span>{course.lastUpdated || "منذ أسبوع"}</span>
+            <span>{DateDisplay(course.updated_at ?? "")}</span>
           </div>
           <button
             onClick={() =>
@@ -479,7 +505,7 @@ export const ProfessionalCourseCard = ({
             }
             className={`inline-flex items-center gap-2 bg-gradient-to-r ${topicColors.bg} text-white font-semibold text-sm px-4 py-2 rounded-lg transition-all duration-200 hover:shadow-md`}
           >
-            {isCurrentCourse ? "متابعة" : "البدء"}
+            متابعة
             <ArrowRight size={14} />
           </button>
         </div>
@@ -489,24 +515,19 @@ export const ProfessionalCourseCard = ({
 };
 
 export default function DashboardHome() {
-  const [currentCourses, setCurrentCourses] = useState([]);
-  const [courses, setCourses] = useState([]);
+  const [courses, setCourses] = useState<CoursesContext[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [stats, setStats] = useState<CoursesReport>({completedCourses: 0, totalHours: 0, streakDays: 0, certifications:0});
-
-  const fetchCurrentCourses = async () => {
-    try {
-      const res: any = await getCurrentCoursesApi();
-      setCurrentCourses(res);
-    } catch (err) {
-      console.error("Error fetching current courses:", err);
-    }
-  };
+  const [stats, setStats] = useState<CoursesReport>({
+    completedCourses: 0,
+    totalHours: 0,
+    streakDays: 0,
+    certifications: 0,
+  });
 
   const fetchAllCourses = async () => {
     try {
-      const res: any = await getAllCoursesApi();
+      const res = await getAllCoursesApi();
       setCourses(res);
     } catch (err) {
       setError("حدث خطأ أثناء تحميل الدورات. الرجاء المحاولة لاحقاً.");
@@ -525,19 +546,19 @@ export default function DashboardHome() {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      await Promise.all([fetchCurrentCourses(), fetchAllCourses(),fetchStats()]);
+      fetchAllCourses();
+      fetchStats();
       setLoading(false);
     };
 
     fetchData();
   }, []);
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900/20 transition-colors duration-500">
       <AnimatedBackground />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 space-y-16">
-        <StatsCards stats={stats}/>
+        <StatsCards stats={stats} />
 
         {loading ? (
           <div className="flex items-center justify-center py-16">
@@ -548,7 +569,7 @@ export default function DashboardHome() {
               </span>
             </div>
           </div>
-        ) : currentCourses.length > 0 ? (
+        ) : courses.filter((course) => course.isEnrolled == true).length > 0 ? (
           <section className="space-y-8">
             <ModernSectionHeader
               title="تابع دوراتك الحالية"
@@ -556,13 +577,11 @@ export default function DashboardHome() {
               showViewAll={false}
             />
             <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-              {currentCourses.map((course: any) => (
-                <ProfessionalCourseCard
-                  key={course.id}
-                  course={course}
-                  isCurrentCourse={true}
-                />
-              ))}
+              {courses
+                .filter((course) => course.isEnrolled == true)
+                .map((course: any) => (
+                  <ProfessionalCourseCard key={course.id} course={course} />
+                ))}
             </div>
           </section>
         ) : (
@@ -573,7 +592,7 @@ export default function DashboardHome() {
           />
         )}
 
-        <section className="space-y-8">
+        <section className="space-y-8 pt-8">
           <ModernSectionHeader
             title="موصى به لك"
             description="دورات مختارة بعناية لتناسب اهتماماتك ومستواك التعليمي"
@@ -588,13 +607,11 @@ export default function DashboardHome() {
             </div>
           ) : (
             <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-              {courses.map((course: any) => (
-                <ProfessionalCourseCard
-                  key={course.id}
-                  course={course}
-                  isCurrentCourse={false}
-                />
-              ))}
+              {courses
+                .filter((course) => course.isEnrolled == false)
+                .map((course: any) => (
+                  <ProfessionalCourseCard key={course.id} course={course} />
+                ))}
             </div>
           )}
         </section>

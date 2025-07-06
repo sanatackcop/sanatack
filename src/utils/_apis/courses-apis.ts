@@ -4,11 +4,11 @@ import Api from "./api";
 import {
   CareerPathInterface,
   CourseDetails,
-  CoursesContext,
   CoursesReport,
   RoadMapInterface,
   PatchCourseProgressParams,
 } from "@/types/courses"; /*  */
+import { CoursesContext } from "../types";
 
 export const getCareerPathApi = async (): Promise<CareerPathInterface[]> => {
   try {
@@ -85,7 +85,7 @@ export const getAllCoursesApi = async (): Promise<CoursesContext[]> => {
     const response = await trackPromise(
       Api({
         method: "get",
-        url: "/courses/list",
+        url: "/courses/list/",
         withCredentials: false,
       }) as Promise<{ data: CoursesContext[] }>
     );
@@ -164,23 +164,6 @@ export const enrollCareerPathApi = async ({
     return response;
   } catch (e: any) {
     console.error("enrollCareerPathApi error:", e.message);
-    throw e;
-  }
-};
-
-export const getCurrentCoursesApi = async (): Promise<CoursesContext[]> => {
-  try {
-    console.log("Fetching current courses...");
-    const response = await trackPromise(
-      Api({
-        method: "get",
-        url: "courses/current",
-        withCredentials: false,
-      }) as Promise<{ data: CoursesContext[] }>
-    );
-    return response.data;
-  } catch (e: any) {
-    console.error("getAllCoursesApi error:", e);
     throw e;
   }
 };

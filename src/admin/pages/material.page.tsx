@@ -6,9 +6,15 @@ import {
   deleteQuiz,
   deleteArticle,
   deleteVideo,
+  getCodeList,
 } from "@/utils/_apis/admin-api";
 import { DataTable } from "@/components/ui/data-table";
-import { QuizGroupColumns, ArticlesColumns, VideoColumns } from "../columns";
+import {
+  QuizGroupColumns,
+  ArticlesColumns,
+  CodeColumns,
+  VideoColumns,
+} from "../columns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   DropdownMenu,
@@ -18,20 +24,26 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import QuizDialogCreate from "../components/quiz.create";
+import QuizGroupDialogCreate from "../components/quiz.group.create";
 import VideoDialogCreate from "../components/video.create";
-import ResourceDialogCreate from "../components/resource.create";
-import { QuizGroup, Article, Video } from "@/utils/types/adminTypes";
+import {
+  QuizGroup,
+  Article,
+  Video,
+  MaterialType,
+} from "@/utils/types/adminTypes";
 import { CustomError } from "@/utils/_apis/api";
 import ArticleDialogCreate from "../components/article.create";
-import QuizEdit from "../components/quiz.edit";
+import QuizGroupEdit from "../components/quiz.group.edit";
 import VideoEdit from "../components/video.edit";
 import ArticleEdit from "../components/article.edit";
+import CodeMatrialCreate from "../components/code/code.create";
 
 export default function MaterialsPage() {
   const [quiz, setQuiz] = useState<QuizGroup[]>([]);
   const [video, setVideo] = useState<Video[]>([]);
   const [article, setArticles] = useState<Article[]>([]);
+  const [code, setCode] = useState<any[]>([]);
 
   const [editingQuizId, setEditingQuizId] = useState<string | null>(null);
   const [editingVideoId, setEditingVideoId] = useState<string | null>(null);
@@ -40,21 +52,21 @@ export default function MaterialsPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [menuOpen, setMenuOpen] = useState(false);
-  const [openDialog, setOpenDialog] = useState<
-    "quiz" | "video" | "resource" | "article" | null
-  >(null);
+  const [openDialog, setOpenDialog] = useState<MaterialType | null>(null);
 
   async function fetchCourses() {
     try {
-      const [quizList, videoList, articleList] = await Promise.all([
+      const [quizList, videoList, articleList, codeList] = await Promise.all([
         getQuizList<QuizGroup[]>(),
         getVideosList<Video[]>(),
         getArticlesList<Article[]>(),
+        getCodeList<any[]>(),
       ]);
 
       if (quizList?.length) setQuiz(quizList);
       if (videoList?.length) setVideo(videoList);
       if (articleList?.length) setArticles(articleList);
+      if (codeList?.length) setCode(codeList);
     } catch (err: unknown) {
       if ((err as CustomError).error.type == "network")
         setError("Error when trying to fetch data.");
@@ -91,9 +103,9 @@ export default function MaterialsPage() {
     fetchCourses();
   }, []);
 
-  const dialogMap: Record<string, React.ReactNode> = {
-    quiz: (
-      <QuizDialogCreate
+  const dialogMap: Record<MaterialType, React.ReactNode> = {
+    quiz_group: (
+      <QuizGroupDialogCreate
         open
         onOpenChange={(open) => !open && setOpenDialog(null)}
         updateTable={() => fetchCourses()}
@@ -106,13 +118,6 @@ export default function MaterialsPage() {
         updateTable={() => fetchCourses()}
       />
     ),
-    resource: (
-      <ResourceDialogCreate
-        open
-        onOpenChange={(open) => !open && setOpenDialog(null)}
-        updateTable={() => fetchCourses()}
-      />
-    ),
     article: (
       <ArticleDialogCreate
         open
@@ -120,11 +125,17 @@ export default function MaterialsPage() {
         updateTable={() => fetchCourses()}
       />
     ),
+    code: (
+      <CodeMatrialCreate
+        open
+        onOpenChange={(open) => !open && setOpenDialog(null)}
+        updateTable={() => fetchCourses()}
+      />
+    ),
+    [MaterialType._QUIZ]: undefined,
   };
 
-  const handleDialogOpen = (
-    type: "quiz" | "video" | "resource" | "article"
-  ) => {
+  const handleDialogOpen = (type: MaterialType) => {
     setMenuOpen(false); // close dropdown
     setTimeout(() => setOpenDialog(type), 0); // wait for DOM to clean up
   };
@@ -136,22 +147,30 @@ export default function MaterialsPage() {
       <div className="w-full flex justify-start">
         <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
           <DropdownMenuTrigger className="bg-slate-200 p-2 rounded-lg">
-            إنشاء مورد
+            Create Material
           </DropdownMenuTrigger>
           <DropdownMenuContent className="relative left-5">
             <DropdownMenuLabel>Matrials</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => handleDialogOpen("quiz")}>
+            <DropdownMenuItem
+              onClick={() => handleDialogOpen(MaterialType.QUIZ_GROUP)}
+            >
               اختبار
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleDialogOpen("video")}>
+            <DropdownMenuItem
+              onClick={() => handleDialogOpen(MaterialType.VIDEO)}
+            >
               فيديو
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleDialogOpen("resource")}>
-              مورد
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleDialogOpen("article")}>
+            <DropdownMenuItem
+              onClick={() => handleDialogOpen(MaterialType.ARTICLE)}
+            >
               article{" "}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => handleDialogOpen(MaterialType.CODE)}
+            >
+              code
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -159,13 +178,14 @@ export default function MaterialsPage() {
 
       {openDialog && dialogMap[openDialog]}
 
-      <Tabs defaultValue="quiz">
+      <Tabs defaultValue="quiz_group">
         <TabsList className="mt-2 w-full justify-end">
-          <TabsTrigger value="quiz">quiz</TabsTrigger>
+          <TabsTrigger value="quiz_group">Quiz Group</TabsTrigger>
           <TabsTrigger value="video">video</TabsTrigger>
           <TabsTrigger value="article">article</TabsTrigger>
+          <TabsTrigger value="code">code</TabsTrigger>
         </TabsList>
-        <TabsContent value="quiz">
+        <TabsContent value="quiz_group">
           <DataTable
             columns={QuizGroupColumns(handleDeleteQuiz, (id) =>
               setEditingQuizId(id)
@@ -189,9 +209,13 @@ export default function MaterialsPage() {
             data={article}
           />
         </TabsContent>
+
+        <TabsContent value="code">
+          <DataTable columns={CodeColumns()} data={code} />
+        </TabsContent>
       </Tabs>
       {editingQuizId && (
-        <QuizEdit
+        <QuizGroupEdit
           quizId={editingQuizId}
           onClose={() => setEditingQuizId(null)}
           onUpdated={fetchCourses}

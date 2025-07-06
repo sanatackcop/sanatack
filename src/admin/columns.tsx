@@ -11,6 +11,7 @@ import { Course, Lesson, Module, Roadmap } from "@/utils/types";
 import { QuizGroup, Article, Video } from "@/utils/types/adminTypes";
 import { Link } from "react-router-dom";
 import DeleteDialog from "./components/deleteModal";
+import { CodeItem } from "./components/mapped.materials.create";
 
 export const RoadmapColumns: ColumnDef<Roadmap>[] = [
   {
@@ -230,16 +231,51 @@ export const ArticlesColumns = (
 ): ColumnDef<Article>[] => {
   const columns: ColumnDef<Article>[] = [
     {
+      accessorKey: "title",
+      header: "Title",
+    },
+  ];
+
+  if (onDelete || onEdit) {
+    columns.push({
+      header: "Actions",
+      cell: ({ row }) => (
+        <div className="flex gap-2">
+          {onEdit && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onEdit(row.original.id)}
+            >
+              Edit
+            </Button>
+          )}
+          {onDelete && (
+            <DeleteDialog
+              onDelete={() => onDelete(row.original.id)}
+              label={`the article ID ${row.original.id}`}
+            />
+          )}
+        </div>
+      ),
+    });
+  }
+
+  return columns;
+};
+
+export const CodeColumns = (
+  onDelete?: (id: string) => void,
+  onEdit?: (id: string) => void
+): ColumnDef<CodeItem>[] => {
+  const columns: ColumnDef<CodeItem>[] = [
+    {
       accessorKey: "id",
       id: "id",
     },
     {
-      accessorKey: "data[0].title",
+      accessorKey: "main_title",
       header: "Title",
-    },
-    {
-      accessorKey: "data[0].type",
-      header: "Type",
     },
   ];
 
@@ -334,6 +370,14 @@ export function ModuleLessons(
     {
       header: "Duration",
       accessorKey: "duration",
+    },
+    {
+      header: "Mapped Lessons",
+      cell: ({ row }) => (
+        <Link to={`/admin/modules/${row.original.id}`}>
+          <Button size="sm">Mapped Lessons</Button>
+        </Link>
+      ),
     },
   ];
 

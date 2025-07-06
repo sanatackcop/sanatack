@@ -117,7 +117,11 @@ export const createNewResource = async (quiz: ResourceDto) => {
   return response.data;
 };
 
-export const createNewArticleApi = async (article: ArticleCardDto[]) => {
+export const createNewArticleApi = async (article: {
+  title: string;
+  data: ArticleCardDto[];
+  duration: number;
+}) => {
   const response = await trackPromise(
     Api({
       method: "post",
@@ -560,4 +564,25 @@ export const updateVideo = async (video_id: string, data: UpdateVideoDto) => {
     console.log("error while updating video", { e });
     throw e;
   }
+};
+
+export const creaetNewCodeLesson = async (codeLesson: any) => {
+  const response = await trackPromise(
+    Api({
+      method: "post",
+      url: "admin/code",
+      data: codeLesson,
+    })
+  );
+  return response.data;
+};
+
+export const getCodeList = async <T>() => {
+  const response = await trackPromise(
+    Api({
+      method: "get",
+      url: "admin/code",
+    })
+  );
+  return response.data as T;
 };
