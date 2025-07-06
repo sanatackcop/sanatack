@@ -91,6 +91,9 @@ export interface CoursesContext {
   isEnrolled: boolean;
   enrolledCount: number;
   completionRate: number;
+  enrollment_info: {
+    quizzes_result: { [key: string]: number };
+  };
   progress?: number;
   current_material?: string;
 }
@@ -160,6 +163,13 @@ export enum CourseTopic {
   BACKEND = "الخلفية",
   FRONTEND = "الواجهة الأمامية",
 }
+
+export const CourseTopicArray = [
+  "ذكاء اصطناعي",
+  "تعلم الآلة",
+  "الخلفية",
+  "الواجهة الأمامية",
+];
 
 export interface CourseDto {
   title: string;

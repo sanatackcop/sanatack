@@ -24,6 +24,14 @@
   }
 }
 
+@layer components {
+  .progress {
+    background-image: linear-gradient(to right, #22c55e, #10b981);
+    border-radius: 0px;
+    transition: all 0.3s;
+  }
+}
+
 @layer base {
   html {
     font-family: system-ui, -apple-system, sans-serif;

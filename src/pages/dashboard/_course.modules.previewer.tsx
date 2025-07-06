@@ -1,4 +1,4 @@
-import { CourseDetails } from "@/types/courses";
+import { CourseDetailsContext } from "@/types/courses";
 import { MaterialType } from "@/utils/types/adminTypes";
 import {
   ChevronUp,
@@ -6,22 +6,43 @@ import {
   Video,
   PenTool,
   FileText,
-  CheckCircle,
-  Lock,
   Timer,
   Play,
 } from "lucide-react";
+
+export const MaterialPreview: Record<
+  MaterialType,
+  { label: string; color: string; icon: JSX.Element } | undefined
+> = {
+  video: {
+    label: "فيديو",
+    color: "bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400",
+    icon: <Video className="w-4 h-4" />,
+  },
+  quiz_group: {
+    label: "اختبار",
+    color:
+      "bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400",
+    icon: <PenTool className="w-4 h-4" />,
+  },
+  article: {
+    label: "نص",
+    color: "bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400",
+    icon: <FileText className="w-4 h-4" />,
+  },
+  [MaterialType._QUIZ]: undefined,
+  [MaterialType.CODE]: undefined,
+};
 
 export default function ModulesPreviewer({
   course,
   expandedModules,
   toggleModule,
 }: {
-  course: CourseDetails;
+  course: CourseDetailsContext;
   expandedModules: Set<string>;
   toggleModule: (id: string) => void;
 }) {
-  // Helper function to get all materials in order across all modules/lessons
   const getAllMaterialsInOrder = () => {
     const allMaterials: Array<{
       id: string;
@@ -42,13 +63,12 @@ export default function ModulesPreviewer({
     return allMaterials;
   };
 
-  // Get the index of current material to determine completion status
   const allMaterials = getAllMaterialsInOrder();
 
   const currentMaterialIndex = allMaterials.findIndex(
     (m) => m.id === course.current_material
   );
-  // Helper function to determine material status
+
   const getMaterialStatus = (materialId: string) => {
     const materialIndex = allMaterials.findIndex((m) => m.id === materialId);
 
@@ -61,37 +81,10 @@ export default function ModulesPreviewer({
     }
   };
 
-  const getModulesProgress = () => {
-    //! fix this
-    const result = [];
-    let lockedFlag = false;
-    let percentageFinished = 0;
-    for (const module of course.modules) {
-      let totalMaterials = 0;
-      totalMaterials += module.lessons.reduce(
-        (ac, les) => (ac += les.materials.length),
-        0
-      );
-      for (const lesson of module.lessons) {
-        for (const [mt, material] of lesson.materials.entries()) {
-          if (material.id == course.current_material) {
-            result.push(Math.floor(((mt + 1) / totalMaterials) * 100));
-            lockedFlag = true;
-            percentageFinished = -1;
-          }
-        }
-      }
-      if (lockedFlag && percentageFinished == -1) result.push(0);
-      else result.push(100);
-    }
-    return result;
-  };
-
   return (
     <>
       {course?.modules?.map((module, moduleIndex) => {
         const isExpanded = expandedModules.has(module.id);
-        const modulesProgress = getModulesProgress();
         return (
           <div
             key={module.id}
@@ -117,7 +110,7 @@ export default function ModulesPreviewer({
                       <>
                         <span>•</span>
                         <span className="text-green-600 dark:text-green-400">
-                          {modulesProgress[moduleIndex]}% مكتمل
+                          {module.progress}% مكتمل
                         </span>
                       </>
                     )}
@@ -125,14 +118,15 @@ export default function ModulesPreviewer({
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                {course.isEnrolled && (
-                  <div className="w-16 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-green-500 to-green-600 transition-all duration-500"
-                      style={{ width: `${modulesProgress[moduleIndex]}%` }}
-                    />
-                  </div>
-                )}
+                <div className="w-16 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-green-500 to-green-600 transition-all duration-500"
+                    style={{
+                      width: `${course.isEnrolled ? module.progress : 0}%`,
+                    }}
+                  />
+                </div>
+
                 {isExpanded ? (
                   <ChevronUp className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                 ) : (
@@ -169,33 +163,10 @@ export default function ModulesPreviewer({
                         {lesson.materials?.map((material) => {
                           const materialStatus = getMaterialStatus(material.id);
 
-                          const typeConfig: Record<MaterialType, any> = {
-                            video: {
-                              label: "فيديو",
-                              color:
-                                "bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400",
-                              icon: <Video className="w-4 h-4" />,
-                            },
-                            quiz_group: {
-                              label: "اختبار",
-                              color:
-                                "bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400",
-                              icon: <PenTool className="w-4 h-4" />,
-                            },
-                            article: {
-                              label: "نص",
-                              color:
-                                "bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400",
-                              icon: <FileText className="w-4 h-4" />,
-                            },
-                            [MaterialType._QUIZ]: undefined,
-                            [MaterialType.CODE]: undefined,
-                          };
-
                           const config =
-                            typeConfig[
-                              material.type as keyof typeof typeConfig
-                            ] || typeConfig.article;
+                            MaterialPreview[
+                              material.type as keyof typeof MaterialPreview
+                            ] || MaterialPreview.article;
 
                           return (
                             <button
@@ -211,7 +182,7 @@ export default function ModulesPreviewer({
                                   ? "bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-200 dark:border-yellow-800"
                                   : materialStatus === "locked" &&
                                     !course.isEnrolled
-                                  ? "opacity-50 cursor-not-allowed dark:bg-slate-800/50"
+                                  ? "opacity-100 dark:bg-slate-800/50"
                                   : "bg-blue-50 dark:bg-blue-900/20 border-2 border-transparent border-blue-200 dark:border-blue-800 hover:border-blue-400"
                               }`}
                             >
@@ -227,25 +198,18 @@ export default function ModulesPreviewer({
                                     : "bg-white dark:bg-slate-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30"
                                 }`}
                               >
-                                {materialStatus === "completed" ? (
-                                  <CheckCircle className="w-5 h-5 text-green-600" />
-                                ) : materialStatus === "locked" &&
-                                  !course.isEnrolled ? (
-                                  <Lock className="w-5 h-5 text-slate-400" />
-                                ) : (
-                                  config.icon
-                                )}
+                                {config?.icon}
                               </div>
 
-                              <div className="flex-1 text-right min-w-0">
+                              <div className="flex-1 text-right min-w-0 flex justify-between items-center">
                                 <p className="font-medium text-slate-900 dark:text-slate-100 truncate">
                                   {material.title}
                                 </p>
                                 <div className="flex items-center justify-end gap-3 mt-2">
                                   <span
-                                    className={`text-xs px-2 py-1 rounded-full font-medium ${config.color}`}
+                                    className={`text-xs px-2 py-1 rounded-full font-medium ${config?.color}`}
                                   >
-                                    {config.label}
+                                    {config?.label}
                                   </span>
                                   <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
                                     <Timer className="w-3 h-3" />
