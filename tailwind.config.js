@@ -26,6 +26,8 @@ export default {
         },
       },
       animation: {
+        leftSquare: "leftSquare 2s ease-in-out infinite",
+        rightSquare: "rightSquare 2s ease-in-out infinite",
         shine: "shine 5s linear infinite",
         scroll: "scroll 10s linear infinite",
         "star-movement-bottom":
@@ -35,6 +37,22 @@ export default {
         "accordion-up": "accordion-up 0.2s ease-out",
       },
       keyframes: {
+        leftSquare: {
+          "0%, 100%": {
+            transform: "translateX(-40px) rotate(45deg)",
+          },
+          "50%": {
+            transform: "translateX(0) rotate(45deg)",
+          },
+        },
+        rightSquare: {
+          "0%, 100%": {
+            transform: "translateX(40px) rotate(45deg)",
+          },
+          "50%": {
+            transform: "translateX(0) rotate(45deg)",
+          },
+        },
         "star-movement-bottom": {
           "0%": {
             transform: "translate(0%, 0%)",

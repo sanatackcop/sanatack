@@ -20,6 +20,7 @@ import {
   Mail,
   FileText,
   LucideIcon,
+  UserRound,
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { getProfileApi, updateProfileApi } from "@/utils/_apis/user-api";
@@ -408,7 +409,7 @@ const ProfileForm = memo<{
 ProfileForm.displayName = "ProfileForm";
 
 export default function UserProfile(): JSX.Element {
-  const [activeTab, setActiveTab] = useState<string>("overview");
+  const [activeTab, setActiveTab] = useState<string>("settings");
   const [showUpgradeAlert, setShowUpgradeAlert] = useState<boolean>(false);
   const [userData, setUserData] = useState<UserData | null>(null);
   //const auth = Storage.get("auth");
@@ -533,7 +534,7 @@ export default function UserProfile(): JSX.Element {
   ];
 
   const tabs: TabItem[] = [
-    { id: "overview", label: "النظرة العامة", icon: User },
+    // { id: "overview", label: "النظرة العامة", icon: User },
     // { id: "courses", label: "الدورات التدريبية", icon: BookOpen },
     // { id: "achievements", label: "الإنجازات والشهادات", icon: Award },
     // { id: "subscription", label: "خطة الاشتراك", icon: Crown },
@@ -586,7 +587,7 @@ export default function UserProfile(): JSX.Element {
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-10">
         {/* Enhanced Header */}
         <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-700 overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 dark:from-blue-700 dark:via-blue-800 dark:to-blue-900 p-10 text-white relative overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 dark:from-blue-700 dark:via-blue-800 dark:to-blue-900 p-5 md:p-10 text-white relative overflow-hidden">
             {/* Background Pattern */}
             <div
               className="absolute inset-0 opacity-20"
@@ -595,7 +596,7 @@ export default function UserProfile(): JSX.Element {
               }}
             />
 
-            <div className="relative flex items-center gap-10">
+            <div className="relative flex flex-col sm:flex-row items-center gap-6 sm:gap-10 text-center sm:text-left">
               <div className="w-16 h-16 md:w-28 md:h-28 bg-gradient-to-br from-white/20 to-white/10 rounded-3xl flex items-center justify-center text-2xl md:text-4xl font-black backdrop-blur-sm border border-white/20 shadow-2xl">
                 {userData.avatar}
               </div>
@@ -613,9 +614,13 @@ export default function UserProfile(): JSX.Element {
                     </div>
                   )}
                 </div>
-                <p className="text-sm md:text-xl text-blue-100 font-semibold">
-                  {userData.role}
-                </p>
+                <div className="flex items-center">
+                  <UserRound className="w-4 h-4" />
+                  <p className="text-sm md:text-xl text-blue-100 font-semibold px-2">
+                    {userData.role}
+                  </p>
+                </div>
+
                 <div className="flex flex-col md:flex-row md:items-center md:gap-6 gap-4 text-blue-200">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
@@ -639,25 +644,41 @@ export default function UserProfile(): JSX.Element {
               </div>
             </div>
           </div>
+          <div className="block sm:hidden px-4 py-4">
+            <select
+              onChange={(e) => setActiveTab(e.target.value)}
+              className="w-64 mx-auto block rounded-md
+               bg-white dark:bg-gray-800 font-bold
+               text-blue-600 dark:text-blue-400 shadow-md"
+            >
+              {tabs.map((tab) => (
+                <option key={tab.id} value={tab.id}>
+                  {tab.label}
+                </option>
+              ))}
+            </select>
+          </div>
 
-          <div className="flex bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-4 px-10 py-6 text-sm font-bold transition-all duration-300 relative ${
-                  activeTab === tab.id
-                    ? "text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-700 shadow-lg"
-                    : "text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700/50"
-                }`}
-              >
-                <tab.icon className="w-5 h-5" />
-                {tab.label}
-                {activeTab === tab.id && (
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-600 dark:bg-blue-400" />
-                )}
-              </button>
-            ))}
+          <div className="hidden sm:block">
+            <div className="flex bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-4 px-10 py-6 text-sm font-bold transition-all duration-300 relative ${
+                    activeTab === tab.id
+                      ? "text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-700 shadow-lg"
+                      : "text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700/50"
+                  }`}
+                >
+                  <tab.icon className="w-5 h-5" />
+                  {tab.label}
+                  {activeTab === tab.id && (
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-600 dark:bg-blue-400" />
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -703,8 +724,8 @@ export default function UserProfile(): JSX.Element {
                   ))}
                 </div>
               </div>
-              {/* 
-              <div className="space-y-8">
+
+              {/* <div className="space-y-8">
                 <h2 className="text-3xl font-black text-gray-900 dark:text-white">
                   الإنجازات الأخيرة
                 </h2>

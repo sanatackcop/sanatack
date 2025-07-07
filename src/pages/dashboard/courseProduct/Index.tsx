@@ -124,12 +124,11 @@ export const CoursePlayground: React.FC = () => {
   return (
     <div className={`h-screen flex flex-col ${darkMode ? "dark" : ""}`}>
       <NavigationPlayground
-        courseData={{
-          ...course,
-          completedLessons: completedMaterials,
-          totalLessons: materialsCount,
-          progress: progress,
-        }}
+        courseData={course}
+        completedLessons={completedMaterials}
+        totalLessons={materialsCount}
+        progress={progress}
+        totalDuration={materialsDuration}
         sidebarOpen={sidebarOpen}
         prevMaterial={prevMaterial}
         nextMaterial={nextMaterial}
@@ -148,7 +147,7 @@ export const CoursePlayground: React.FC = () => {
             sidebarOpen={sidebarOpen}
             setSidebarOpen={setSidebarOpen}
             courseData={course}
-            materials={Array.from(materials.values())}
+            materials={materials}
             expandedModules={expandedModules}
             toggleModule={toggleModule}
             currentMaterial={currentIndex}

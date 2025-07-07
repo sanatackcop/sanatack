@@ -598,7 +598,6 @@ export default function DashboardHome() {
             description="دورات مختارة بعناية لتناسب اهتماماتك ومستواك التعليمي"
             showViewAll={true}
           />
-
           {error ? (
             <div className="flex items-center justify-center py-16">
               <div className="px-6 py-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 rounded-xl">

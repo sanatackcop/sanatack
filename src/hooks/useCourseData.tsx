@@ -36,20 +36,20 @@ export const useCourseData = (courseId: string) => {
     [sortedMaterials, currentId]
   );
   const materials = useMemo(() => {
-    const map = new Map();
-    sortedMaterials.forEach((m: any, i: number) => {
-      map.set(m.id, {
-        isCurrent: i === curIndex,
-        completed: i < curIndex,
-        locked: i > curIndex,
-      });
-    });
-    return map;
+    return sortedMaterials.map((material: any, index: number) => ({
+      ...material,
+      isCurrent: index === curIndex,
+      completed: index < curIndex,
+      locked: index > curIndex,
+    }));
   }, [sortedMaterials, curIndex]);
+
   const materialsCount = sortedMaterials.length;
+
   const completedMaterials = sortedMaterials.filter(
     (i: number) => i < curIndex
   ).length;
+
   const progress =
     materialsCount > 0
       ? Math.round((completedMaterials / materialsCount) * 100)

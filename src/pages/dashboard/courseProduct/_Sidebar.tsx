@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import {
   Video,
   PenTool,
@@ -6,6 +6,8 @@ import {
   X,
   ChevronLeft,
   Clock,
+  Lock,
+  CheckCircle,
   Code,
 } from "lucide-react";
 import LogoLight from "@/assets/logo.svg";
@@ -74,6 +76,7 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
+
   const renderMaterialButton = (material: Material) => {
     const Icon = getIcon(material.type);
     const isCompleted = material.completed;
@@ -89,7 +92,7 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
       "bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 shadow-sm";
 
     const disabledStyles =
-      "opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800";
+      "opacity-50 cursor-default bg-gray-100 dark:bg-gray-800";
 
     const completedStyles =
       "bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800";
@@ -179,13 +182,11 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
                 : "bg-gray-100 dark:bg-gray-800")
             }
           >
-            {
-              // material.completed ? (
-              //   <CheckCircle className="w-4 h-4 text-green-600" />
-              // ) :
-              // material.locked ? (
-              //   <Lock className="w-4 h-4 text-gray-400" />
-              // ) :
+            {material.completed ? (
+              <CheckCircle className="w-4 h-4 text-green-600" />
+            ) : material.locked ? (
+              <Lock className="w-4 h-4 text-gray-400" />
+            ) : (
               <Icon
                 className={
                   "w-4 h-4 " +
@@ -194,13 +195,15 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
                     : "text-gray-600 dark:text-gray-400")
                 }
               />
-            }
+            )}
           </div>
         </div>
       </button>
     );
   };
-
+  const materialStatusMap = useMemo(() => {
+    return new Map(materials?.map((m) => [m.id, m]));
+  }, [materials]);
   return (
     <>
       {sidebarOpen && (
@@ -339,9 +342,7 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
                         <div className="space-y-2">
                           {(lesson.materials ?? []).map((material) => {
                             const state =
-                              (Array.isArray(materials) &&
-                                materials.find((m) => m.id === material.id)) ||
-                              {};
+                              materialStatusMap.get(material.id) || {};
 
                             return renderMaterialButton({
                               ...material,
