@@ -45,7 +45,7 @@ export declare type MaterialContext =
   | ArticleContext
   | VideoContext
   | QuizGroupContext
-  | CodeMaterial;
+  | CodeMaterialContext;
 
 export interface LessonDetails {
   id: string;
@@ -159,6 +159,14 @@ export interface CodeMaterial extends BaseMaterial {
     id: number | string;
   };
 }
+export interface CodeMaterialContext extends BaseMaterial {
+  type: MaterialType.CODE;
+  title: string;
+  isFinished: boolean;
+  data: {
+    id: number | string;
+  };
+}
 
 export interface QuizMaterial extends BaseMaterial {
   type: MaterialType.QUIZ_GROUP;
@@ -192,6 +200,7 @@ export interface Quiz {
 export declare type QuizGroupContext = QuizGroup & {
   isFinished: boolean;
   old_result?: number;
+  duration: number;
 };
 
 export enum LevelEnum {

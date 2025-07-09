@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import {
   Video,
   PenTool,
@@ -13,12 +13,7 @@ import {
 import LogoLight from "@/assets/logo.svg";
 import LogoDark from "@/assets/dark_logo.svg";
 import { useNavigate } from "react-router-dom";
-import {
-  CourseDetailsContext,
-  LessonDetailsContext,
-  MaterialContext,
-  ModuleDetailsContext,
-} from "@/types/courses";
+import { CourseDetailsContext, MaterialContext } from "@/types/courses";
 import { MaterialType } from "@/utils/types/adminTypes";
 import { Material } from "@/types/courses";
 
@@ -60,7 +55,7 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
   darkMode,
   currentMaterial,
 }) => {
-  const [searchTerm] = useState("");
+  // const [searchTerm] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
@@ -70,55 +65,54 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
     );
   }
 
-  const normalisedSearch = searchTerm.trim().toLowerCase();
+  // const normalisedSearch = searchTerm.trim().toLowerCase();
+  // const filteredModules: ModuleDetailsContext[] = (courseData.modules ?? [])
+  //   .map((module) => {
+  //     const filteredLessons: LessonDetailsContext[] = (module.lessons ?? [])
+  //       .map((lesson) => {
+  //         const filteredMaterials = (lesson.materials ?? []).filter(
+  //           (material) =>
+  //             (material.title ?? "").toLowerCase().includes(normalisedSearch)
+  //         );
+  //         const totalCount = filteredMaterials.length;
+  //         const completedCount = filteredMaterials.filter(
+  //           (m) => true === true
+  //         ).length;
+  //         const duration = filteredMaterials.reduce(
+  //           (sum, material) => sum + 99,
+  //           0
+  //         );
+  //         return {
+  //           ...lesson,
+  //           materials: filteredMaterials,
+  //           completedCount,
+  //           totalCount,
+  //           duration: duration.toString(),
+  //         };
+  //       })
+  //       .filter((lesson) => lesson.materials.length > 0);
 
-  const filteredModules: ModuleDetailsContext[] = (courseData.modules ?? [])
-    .map((module) => {
-      const filteredLessons: LessonDetailsContext[] = (module.lessons ?? [])
-        .map((lesson) => {
-          const filteredMaterials = (lesson.materials ?? []).filter(
-            (material) =>
-              (material.title ?? "").toLowerCase().includes(normalisedSearch)
-          );
-          const totalCount = filteredMaterials.length;
-          const completedCount = filteredMaterials.filter(
-            (m) => true === true
-          ).length;
-          const duration = filteredMaterials.reduce(
-            (sum, material) => sum + 99,
-            0
-          );
-          return {
-            ...lesson,
-            materials: filteredMaterials,
-            completedCount,
-            totalCount,
-            duration: duration.toString(),
-          };
-        })
-        .filter((lesson) => lesson.materials.length > 0);
+  //     const allMaterials = filteredLessons.flatMap(
+  //       (lesson) => lesson.materials ?? []
+  //     );
+  //     const totalMaterials = allMaterials.length;
+  //     const completedMaterials = allMaterials.filter(
+  //       (m) => true === true
+  //     ).length;
+  //     const moduleProgress =
+  //       totalMaterials > 0
+  //         ? Math.round((completedMaterials / totalMaterials) * 100)
+  //         : 0;
 
-      const allMaterials = filteredLessons.flatMap(
-        (lesson) => lesson.materials ?? []
-      );
-      const totalMaterials = allMaterials.length;
-      const completedMaterials = allMaterials.filter(
-        (m) => true === true
-      ).length;
-      const moduleProgress =
-        totalMaterials > 0
-          ? Math.round((completedMaterials / totalMaterials) * 100)
-          : 0;
-
-      return {
-        ...module,
-        lessons: filteredLessons,
-        completedCount: completedMaterials,
-        totalCount: totalMaterials,
-        progress: moduleProgress,
-      };
-    })
-    .filter((module) => module.lessons.length > 0);
+  //     return {
+  //       ...module,
+  //       lessons: filteredLessons,
+  //       completedCount: completedMaterials,
+  //       totalCount: totalMaterials,
+  //       progress: moduleProgress,
+  //     };
+  //   })
+  //   .filter((module) => module.lessons.length > 0);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -372,7 +366,7 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
                 <div className="pb-4 px-4 space-y-3 ">
                   {(module.lessons ?? []).map((lesson) => {
                     const lessonDuration = (lesson.materials ?? []).reduce(
-                      (sum, material) => sum + 90,
+                      (sum) => sum + 90,
                       0
                     );
                     return (
