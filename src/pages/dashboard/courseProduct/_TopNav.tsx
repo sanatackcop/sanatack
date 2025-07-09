@@ -102,12 +102,6 @@ export const NavigationPlayground = ({
                     {completedLessons}/{totalLessons}
                   </span>
                 </div>
-                <div className="hidden sm:flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                  <span className="text-gray-600 dark:text-gray-400 font-medium">
-                    ≈ {totalDuration} دقيقة
-                  </span>
-                </div>
               </div>
 
               <div className="flex-1 min-w-0">

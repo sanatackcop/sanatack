@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import LogoLight from "@/assets/logo.svg";
 import LogoDark from "@/assets/dark_logo.svg";
+
 import { Link, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -31,6 +32,7 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useSettings } from "@/context/SettingsContexts";
 import UserProfileMenu from "@/components/UserProfile";
+import { cn } from "@/lib/utils";
 
 const items = [
   {
@@ -122,7 +124,7 @@ function SubscriptionBanner({
   return (
     <div
       className="mx-3 mb-3 p-4  border-2
-     border-blue-500 rounded-lg"
+     border-blue-500 rounded-lg animate-crown"
     >
       <div className="flex items-center gap-2 mb-2">
         <Crown size={18} className="text-blue-600 " />
@@ -165,9 +167,18 @@ export function AppSidebar() {
       <SidebarContent className="bg-white dark:bg-gray-900">
         <div className="h-[60px] flex justify-normal items-center overflow-hidden">
           <img
-            src={darkMode ? String(LogoDark) : String(LogoLight)}
+            src={
+              isCollapsed
+                ? "/icon.svg"
+                : darkMode
+                ? String(LogoDark)
+                : String(LogoLight)
+            }
             alt="logo"
-            className="h-full w-auto object-contain transform scale-[2] pr-6 pt-1"
+            className={cn(
+              "h-full w-auto  transition-all ",
+              isCollapsed ? "p-0" : "object-contain pr-6 pt-1 scale-[2] "
+            )}
           />
         </div>
         <Separator className="bg-gray-200 dark:bg-gray-700" />
@@ -227,8 +238,8 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
-        <div className="mt-auto">
+      <SidebarFooter className="bg-white dark:bg-gray-900">
+        <div className="mt-auto ">
           {!isUserPaid && (
             <SubscriptionBanner
               onUpgrade={handleUpgrade}

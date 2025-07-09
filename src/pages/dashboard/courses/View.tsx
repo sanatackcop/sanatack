@@ -52,13 +52,12 @@ export default function CourseView() {
     getTotalLessons,
     getCompletedLessonsCount,
     materialsDuration,
-    loading: dataLoading,
+    loading,
   } = useCourseData(id as string);
   const materialStatusMap = useMemo(() => {
     return new Map(materials.map((m: any) => [m.id, m]));
   }, [materials]);
 
-  const [showContent, setShowContent] = useState(false);
   const [expandedModules, setExpandedModules] = useState<Set<string>>(
     new Set()
   );
@@ -79,17 +78,8 @@ export default function CourseView() {
   const collapseAllModules = () => {
     setExpandedModules(new Set());
   };
-  useEffect(() => {
-    if (!dataLoading) {
-      const delay = setTimeout(() => {
-        setShowContent(true);
-      }, 1500);
 
-      return () => clearTimeout(delay);
-    }
-  }, [dataLoading]);
-
-  if (dataLoading || !showContent) {
+  if (loading) {
     return <LoadingScreen />;
   }
 
@@ -507,21 +497,21 @@ export default function CourseView() {
                     إجمالية
                   </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 ">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={expandAllModules}
-                    className="text-xs"
+                    className="text-xs bg-white dark:bg-gray-900"
                   >
-                    <Plus className="w-3 h-3 mr-1" />
+                    <Plus className="w-3 h-3 mr-1 " />
                     توسيع الكل
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={collapseAllModules}
-                    className="text-xs"
+                    className="text-xs bg-white dark:bg-gray-900"
                   >
                     <Minus className="w-3 h-3 mr-1" />
                     طي الكل

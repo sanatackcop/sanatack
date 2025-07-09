@@ -26,6 +26,7 @@ export default {
         },
       },
       animation: {
+        crown: "fade-in 0.7s ease-out",
         leftSquare: "leftSquare 2s ease-in-out infinite",
         rightSquare: "rightSquare 2s ease-in-out infinite",
         shine: "shine 5s linear infinite",
@@ -37,6 +38,16 @@ export default {
         "accordion-up": "accordion-up 0.2s ease-out",
       },
       keyframes: {
+        "fade-in": {
+          "0%": {
+            opacity: "0",
+            transform: "translateY(10px)",
+          },
+          "100%": {
+            opacity: "1",
+            transform: "translateY(0)",
+          },
+        },
         leftSquare: {
           "0%, 100%": {
             transform: "translateX(-40px) rotate(45deg)",

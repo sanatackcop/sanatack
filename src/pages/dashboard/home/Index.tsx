@@ -27,6 +27,7 @@ import { useNavigate } from "react-router-dom";
 import { CoursesReport } from "@/types/courses";
 import { CoursesContext } from "@/utils/types";
 import { DateDisplay } from "@/lib/utils";
+import LoadingScreen from "@/components/LoadingScreen";
 
 const AnimatedBackground = () => (
   <div className="fixed inset-0 overflow-hidden pointer-events-none">
@@ -561,14 +562,7 @@ export default function DashboardHome() {
         <StatsCards stats={stats} />
 
         {loading ? (
-          <div className="flex items-center justify-center py-16">
-            <div className="flex items-center gap-3 px-6 py-3 bg-white/95 dark:bg-gray-900/95 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm">
-              <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-              <span className="text-gray-900 dark:text-white font-medium">
-                جاري تحميل الدورات...
-              </span>
-            </div>
-          </div>
+          <LoadingScreen />
         ) : courses.filter((course) => course.isEnrolled == true).length > 0 ? (
           <section className="space-y-8">
             <ModernSectionHeader

@@ -301,9 +301,21 @@ const SubscriptionCard = memo<SubscriptionPlan & { onUpgrade: () => void }>(
 
 SubscriptionCard.displayName = "SubscriptionCard";
 
+function getChangedFields<T extends object>(
+  original: T,
+  updated: T
+): Partial<T> {
+  const result: Partial<T> = {};
+  for (const key in updated) {
+    if (updated[key] !== original[key]) {
+      result[key] = updated[key];
+    }
+  }
+  return result;
+}
 const ProfileForm = memo<{
   userData: UserData;
-  onSave: (data: FormData) => void;
+  onSave: (data: Partial<FormData>) => void;
 }>(({ userData, onSave }) => {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [formData, setFormData] = useState<FormData>({
@@ -317,7 +329,10 @@ const ProfileForm = memo<{
   });
 
   const handleSave = (): void => {
-    onSave(formData);
+    const changed = getChangedFields(userData, formData);
+    if (Object.keys(changed).length > 0) {
+      onSave(changed);
+    }
     setIsEditing(false);
   };
 
@@ -596,7 +611,7 @@ export default function UserProfile(): JSX.Element {
               }}
             />
 
-            <div className="relative flex flex-col sm:flex-row items-center gap-6 sm:gap-10 text-center sm:text-left">
+            <div className="relative flex flex-row items-center gap-6 sm:gap-10 text-center sm:text-left">
               <div className="w-16 h-16 md:w-28 md:h-28 bg-gradient-to-br from-white/20 to-white/10 rounded-3xl flex items-center justify-center text-2xl md:text-4xl font-black backdrop-blur-sm border border-white/20 shadow-2xl">
                 {userData.avatar}
               </div>

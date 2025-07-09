@@ -4,6 +4,7 @@ import { Loader2, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ShowErrorMessage from "@/utils/ErrorMessage";
 import { GenericTabsProps } from "@/utils/types";
+import LoadingScreen from "./LoadingScreen";
 
 export default function GenericTabs<T>({
   tabs,
@@ -90,19 +91,7 @@ export default function GenericTabs<T>({
         <div>
           <AnimatePresence mode="wait">
             {loading ? (
-              <motion.div
-                key="loading"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="flex flex-col justify-center items-center py-20"
-              >
-                <Loader2 className="animate-spin h-8 w-8 text-[#5286D2] mb-3" />
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Loading content...
-                </p>
-              </motion.div>
+              <LoadingScreen />
             ) : error ? (
               <motion.div
                 key="error"
