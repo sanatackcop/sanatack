@@ -9,6 +9,7 @@ export default function CodeEditor({
   currentLang,
   runCode,
   resetCode,
+  checkCode,
   iframeRef,
   consoleOutput,
   initialCode,
@@ -19,6 +20,7 @@ export default function CodeEditor({
   currentLang: string;
   runCode: () => void;
   resetCode: () => void;
+  checkCode: () => void;
   copyCode: () => void;
   iframeRef: React.RefObject<HTMLIFrameElement>;
   consoleOutput: ConsoleEntry[];
@@ -71,6 +73,19 @@ export default function CodeEditor({
               <RefreshCcw className="w-4 h-4" />
               Reset
             </button>
+            <button
+              onClick={checkCode}
+              disabled={isRunning}
+              className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-black dark:text-white bg-blue-600 hover:bg-blue-700 disabled:bg-blue-500 border border-blue-700 disabled:border-blue-500 rounded-lg transition-colors disabled:cursor-not-allowed shadow-md hover:shadow-lg`}
+            >
+              {isRunning ? (
+                <LoaderCircleIcon className="w-4 h-4 animate-spin" />
+              ) : (
+                <FileCode className="w-4 h-4" />
+              )}
+              {isRunning ? "Checking…" : "Check"}
+            </button>
+
             <button
               onClick={runCode}
               disabled={isRunning}
