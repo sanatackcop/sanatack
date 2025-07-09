@@ -31,19 +31,14 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
-import { LevelEnum } from "@/types/courses";
-import { CourseTopic } from "@/utils/types";
-
-const LEVEL_VALUES = ["BEGINNER", "INTERMEDIATE", "ADVANCED"] as const;
-export const Level = LEVEL_VALUES;
-
-const CourseTopicArray = ["MACHINE_LEARNING", "BACKEND", "FRONTEND"] as const;
+import { LevelArray, LevelEnum } from "@/types/courses";
+import { CourseTopic, CourseTopicArray } from "@/utils/types";
 
 const courseSchema = z.object({
   title: z.string().min(5),
   description: z.string().min(5),
-  topic: z.enum(CourseTopicArray),
-  level: z.enum(Level),
+  topic: z.enum([CourseTopicArray[0], ...CourseTopicArray]),
+  level: z.enum([LevelArray[0], ...LevelArray]),
   tags: z.array(z.object({ value: z.string().min(1) })),
   new_skills_result: z.array(z.object({ value: z.string().min(1) })),
   prerequisites: z.array(z.object({ value: z.string().min(1) })),
@@ -216,7 +211,7 @@ export default function CourseCreate({
                         <SelectValue placeholder="Select level" />
                       </SelectTrigger>
                       <SelectContent>
-                        {Level.map((lvl) => (
+                        {LevelArray.map((lvl) => (
                           <SelectItem key={lvl} value={lvl}>
                             {lvl}
                           </SelectItem>

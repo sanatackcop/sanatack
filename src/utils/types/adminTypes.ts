@@ -21,6 +21,7 @@ export interface Quiz {
   correctAnswer: string;
   explanation?: string;
   duration: number;
+  order: number;
   type: MaterialType._QUIZ;
 }
 
@@ -33,10 +34,6 @@ export interface QuizGroup {
   type: MaterialType.QUIZ_GROUP;
   quizzes: Quiz[];
 }
-
-export declare type LinkedQuiz = QuizGroup & {
-  order: number;
-};
 
 export declare type LinkedVideo = Video & {
   order: number;

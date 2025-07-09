@@ -72,12 +72,12 @@ export interface Course {
 
 export interface CoursesContext {
   id: string;
-  created_at?: string;
-  updated_at?: string;
+  created_at: string;
+  updated_at: string;
   title: string;
   description: string;
   level: LevelEnum;
-  topic?: CourseTopic;
+  topic: CourseTopic;
   course_info: {
     durationHours: number;
     tags: string[];
@@ -91,6 +91,9 @@ export interface CoursesContext {
   isEnrolled: boolean;
   enrolledCount: number;
   completionRate: number;
+  enrollment_info: {
+    quizzes_result: { [key: string]: number };
+  };
   progress?: number;
   current_material?: string;
 }
@@ -160,6 +163,13 @@ export enum CourseTopic {
   BACKEND = "الخلفية",
   FRONTEND = "الواجهة الأمامية",
 }
+
+export const CourseTopicArray = [
+  "ذكاء اصطناعي",
+  "تعلم الآلة",
+  "الخلفية",
+  "الواجهة الأمامية",
+];
 
 export interface CourseDto {
   title: string;
