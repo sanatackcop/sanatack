@@ -3,8 +3,8 @@ import { getAllCoursesApi } from "@/utils/_apis/courses-apis";
 import { useEffect, useState } from "react";
 import { BookOpen, Sparkles, TrendingUp } from "lucide-react";
 import GenericSection from "./section";
-import { ProfessionalCourseCard } from "@/pages/dashboard/home/Index";
 import { CoursesContext } from "@/utils/types";
+import { ProfessionalCourseCard } from "@/pages/dashboard/home/components/course.helpers";
 
 export default function CoursesCard() {
   const [tab, setTab] = useState("all");

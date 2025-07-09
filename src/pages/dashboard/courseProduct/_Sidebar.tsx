@@ -7,24 +7,28 @@ import {
   ChevronLeft,
   Clock,
   Code,
+  CheckCircle,
+  Lock,
 } from "lucide-react";
 import LogoLight from "@/assets/logo.svg";
 import LogoDark from "@/assets/dark_logo.svg";
 import { useNavigate } from "react-router-dom";
-import { CourseDetails, Material, MaterialType } from "@/types/courses";
+import { CourseDetailsContext, MaterialContext } from "@/types/courses";
+import { MaterialType } from "@/utils/types/adminTypes";
+import { Material } from "@/types/courses";
 
 export interface SideNavbarProps {
   sidebarOpen: boolean;
-  courseData: CourseDetails | null;
+  courseData: CourseDetailsContext | null;
   materials: Material[] | null;
   expandedModules: string[];
   toggleModule: (id: string) => void;
-  currentMaterial: Material;
+  currentMaterial: MaterialContext;
   totalMaterials: number;
   completedMaterials: number;
   progress: number;
   totalDuration: number;
-  setCurrentMaterial: (m: Material) => void;
+  setCurrentMaterial: (m: MaterialContext) => void;
   setSidebarOpen: (v: boolean) => void;
   darkMode: boolean;
 }
@@ -33,12 +37,12 @@ const iconMap: Record<MaterialType, React.FC<any>> = {
   article: FileText,
   video: Video,
   quiz: PenTool,
-  resource: FileText,
-  link: FileText,
   code: Code,
+  [MaterialType.QUIZ_GROUP]: PenTool, // or another icon if more appropriate
 };
 
-export const getIcon = (type: Material["type"]) => iconMap[type] ?? FileText;
+export const getIcon = (type: MaterialContext["type"]) =>
+  iconMap[type] ?? FileText;
 
 export const SideNavbar: React.FC<SideNavbarProps> = ({
   sidebarOpen,
@@ -48,20 +52,67 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
   expandedModules,
   toggleModule,
   setCurrentMaterial,
-  totalMaterials,
-  completedMaterials,
-  progress,
-  totalDuration,
   darkMode,
+  currentMaterial,
 }) => {
+  // const [searchTerm] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
+
   if (!courseData) {
     return (
       <div className="p-4 text-center text-gray-500">Loading course …</div>
     );
   }
 
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  const navigate = useNavigate();
+  // const normalisedSearch = searchTerm.trim().toLowerCase();
+  // const filteredModules: ModuleDetailsContext[] = (courseData.modules ?? [])
+  //   .map((module) => {
+  //     const filteredLessons: LessonDetailsContext[] = (module.lessons ?? [])
+  //       .map((lesson) => {
+  //         const filteredMaterials = (lesson.materials ?? []).filter(
+  //           (material) =>
+  //             (material.title ?? "").toLowerCase().includes(normalisedSearch)
+  //         );
+  //         const totalCount = filteredMaterials.length;
+  //         const completedCount = filteredMaterials.filter(
+  //           (m) => true === true
+  //         ).length;
+  //         const duration = filteredMaterials.reduce(
+  //           (sum, material) => sum + 99,
+  //           0
+  //         );
+  //         return {
+  //           ...lesson,
+  //           materials: filteredMaterials,
+  //           completedCount,
+  //           totalCount,
+  //           duration: duration.toString(),
+  //         };
+  //       })
+  //       .filter((lesson) => lesson.materials.length > 0);
+
+  //     const allMaterials = filteredLessons.flatMap(
+  //       (lesson) => lesson.materials ?? []
+  //     );
+  //     const totalMaterials = allMaterials.length;
+  //     const completedMaterials = allMaterials.filter(
+  //       (m) => true === true
+  //     ).length;
+  //     const moduleProgress =
+  //       totalMaterials > 0
+  //         ? Math.round((completedMaterials / totalMaterials) * 100)
+  //         : 0;
+
+  //     return {
+  //       ...module,
+  //       lessons: filteredLessons,
+  //       completedCount: completedMaterials,
+  //       totalCount: totalMaterials,
+  //       progress: moduleProgress,
+  //     };
+  //   })
+  //   .filter((module) => module.lessons.length > 0);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -74,11 +125,12 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
-  const renderMaterialButton = (material: Material) => {
+
+  const renderMaterialButton = (material: MaterialContext) => {
     const Icon = getIcon(material.type);
-    const isCompleted = material.completed;
-    const isCurrent = material.isCurrent;
-    const isLocked = material.locked;
+    const isCompleted = true;
+    const isCurrent = currentMaterial?.id === material.id;
+    const isLocked = false;
 
     const buttonDisabled = isLocked;
 
@@ -130,37 +182,37 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
                   : "text-gray-900 dark:text-white")
               }
             >
-              {material.type || "بدون عنوان"}
+              {material.title || "بدون عنوان"}
             </p>
             <div className="flex items-center justify-start gap-2 mt-1">
               <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-900/20 text-gray-600 dark:text-gray-400">
-                {/* {material.completed ? (
+                {false ? (
                   "مكتمل"
                 ) : (
-                  <> */}
-                <Clock className="w-3 h-3 inline-block ml-1" />
-                {material.duration} دقيقة
-                {/* </>
-                )} */}
+                  <>
+                    <Clock className="w-3 h-3 inline-block ml-1" />
+                    {90} دقيقة
+                  </>
+                )}
               </span>
 
               <span
                 className={
                   "text-xs px-2 py-0.5 rounded-full " +
-                  (material.type === "video"
+                  (material.type === MaterialType.VIDEO
                     ? "bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400"
-                    : material.type === "article"
+                    : material.type === MaterialType.ARTICLE
                     ? "bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400"
-                    : material.type === "quiz"
+                    : material.type === MaterialType.QUIZ_GROUP
                     ? "bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400"
                     : "bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400")
                 }
               >
-                {material.type === "video"
+                {material.type === MaterialType.VIDEO
                   ? "فيديو"
-                  : material.type === "article"
+                  : material.type === MaterialType.ARTICLE
                   ? "مقال"
-                  : material.type === "quiz"
+                  : material.type === MaterialType.QUIZ_GROUP
                   ? "اختبار"
                   : "نص"}
               </span>
@@ -170,29 +222,27 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
           <div
             className={
               "p-2 rounded-xl flex-shrink-0 " +
-              (material.completed
+              (false
                 ? "bg-green-100 dark:bg-green-900/20"
-                : material.isCurrent
+                : isCurrent
                 ? "bg-blue-100 dark:bg-blue-900/20"
                 : "bg-gray-100 dark:bg-gray-800")
             }
           >
-            {
-              // material.completed ? (
-              //   <CheckCircle className="w-4 h-4 text-green-600" />
-              // ) :
-              // material.locked ? (
-              //   <Lock className="w-4 h-4 text-gray-400" />
-              // ) :
+            {false ? (
+              <CheckCircle className="w-4 h-4 text-green-600" />
+            ) : false ? (
+              <Lock className="w-4 h-4 text-gray-400" />
+            ) : (
               <Icon
                 className={
                   "w-4 h-4 " +
-                  (material.isCurrent
+                  (isCurrent
                     ? "text-blue-600"
                     : "text-gray-600 dark:text-gray-400")
                 }
               />
-            }
+            )}
           </div>
         </div>
       </button>
@@ -244,14 +294,15 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-2xl font-bold text-green-600 dark:text-green-400">
-                {progress}%
+                {courseData.progress}%
               </span>
               <div className="text-right">
                 <div className="text-sm font-medium text-gray-900 dark:text-white">
-                  {completedMaterials} من {totalMaterials} دروس
+                  {courseData.completedMaterials} من {courseData.totalMaterials}{" "}
+                  درس
                 </div>
                 <div className="text-xs text-gray-500">
-                  المدة الإجمالية: {totalDuration} دقيقة
+                  المدة الإجمالية: {courseData.course_info.durationHours} دقيقة
                 </div>
               </div>
             </div>
@@ -280,12 +331,12 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
                 <div className="flex items-center gap-3">
                   <div
                     className={`px-3 py-1 rounded-full text-xs font-bold ${
-                      progress === 100
+                      module.progress === 100
                         ? "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400"
                         : "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
                     }`}
                   >
-                    {progress}%
+                    {module.progress || 0}%
                   </div>
                   <ChevronLeft
                     className={`w-4 h-4 text-gray-500 transition-transform duration-200`}
@@ -304,6 +355,9 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
                   </h3>
                   <div className="flex items-center justify-start gap-3 text-xs text-gray-500">
                     <span>{module.lessons.length} دروس</span>
+                    <span>
+                      {module.completedMaterials}/{module.totalMaterials}
+                    </span>
                   </div>
                 </div>
               </button>
@@ -312,7 +366,7 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
                 <div className="pb-4 px-4 space-y-3 ">
                   {(module.lessons ?? []).map((lesson) => {
                     const lessonDuration = (lesson.materials ?? []).reduce(
-                      (sum, material) => sum + Number(material.duration || 0),
+                      (sum) => sum + 90,
                       0
                     );
                     return (
@@ -336,14 +390,14 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
 
                         <div className="space-y-2">
                           {(lesson.materials ?? []).map((material) => {
-                            const state =
+                            const materialState =
                               (Array.isArray(materials) &&
                                 materials.find((m) => m.id === material.id)) ||
                               {};
 
                             return renderMaterialButton({
                               ...material,
-                              ...state,
+                              ...materialState,
                             });
                           })}
                         </div>
@@ -360,13 +414,13 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
           <div className="grid grid-cols-2 gap-3 text-center">
             <div className="p-3 bg-white dark:bg-gray-900 rounded-xl">
               <div className="text-lg font-bold text-green-600 dark:text-green-400">
-                {completedMaterials}
+                {courseData.completedMaterials}
               </div>
               <div className="text-xs text-gray-500">دروس مكتملة</div>
             </div>
             <div className="p-3 bg-white dark:bg-gray-900 rounded-xl">
               <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                {totalMaterials - completedMaterials}
+                {courseData.totalMaterials - courseData.completedMaterials}
               </div>
               <div className="text-xs text-gray-500">متبقية</div>
             </div>

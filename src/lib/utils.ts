@@ -12,3 +12,12 @@ export function DateDisplay(date: string) {
     day: "numeric",
   });
 }
+
+export function checkIsNewCourse(creation_time: string) {
+  const createdDate = new Date(creation_time);
+  const now = new Date();
+  return (
+    createdDate.getFullYear() === now.getFullYear() &&
+    createdDate.getMonth() === now.getMonth()
+  );
+}

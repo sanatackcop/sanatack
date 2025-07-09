@@ -1,3 +1,4 @@
+import { MaterialType } from "@/utils/types/adminTypes";
 import {
   createContext,
   useContext,
@@ -6,9 +7,34 @@ import {
   ReactNode,
 } from "react";
 
+export declare type VideoCheck = {
+  id: string;
+  type: MaterialType.VIDEO;
+  duration: number;
+};
+export declare type QuizGroupCheck = {
+  id: string;
+  type: MaterialType.QUIZ_GROUP;
+  duration: number;
+  result: number;
+};
+export declare type ArticleCheck = {
+  id: string;
+  type: MaterialType.ARTICLE;
+  duration: number;
+  total_read: number;
+};
+
+export declare type MaterialCheckInfo =
+  | VideoCheck
+  | QuizGroupCheck
+  | ArticleCheck;
+
 interface SettingsContextProps {
   darkMode: boolean;
   toggleDarkMode: () => void;
+  currentCheck: MaterialCheckInfo | undefined;
+  updateCurrentCheck: (material: MaterialCheckInfo) => void;
 }
 
 const SettingsContext = createContext<SettingsContextProps | undefined>(
@@ -19,6 +45,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const [darkMode, setDarkMode] = useState(() => {
     return localStorage.getItem("darkMode") === "true";
   });
+  const [currentCheck, setCurrentCheck] = useState<MaterialCheckInfo>();
 
   useEffect(() => {
     if (darkMode) {
@@ -36,8 +63,19 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const updateCurrentMaterial = (material: MaterialCheckInfo) => {
+    setCurrentCheck(() => material);
+  };
+
   return (
-    <SettingsContext.Provider value={{ darkMode, toggleDarkMode }}>
+    <SettingsContext.Provider
+      value={{
+        darkMode,
+        toggleDarkMode,
+        currentCheck,
+        updateCurrentCheck: updateCurrentMaterial,
+      }}
+    >
       <div>{children}</div>
     </SettingsContext.Provider>
   );
@@ -45,8 +83,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
 
 export const useSettings = () => {
   const context = useContext(SettingsContext);
-  if (!context) {
+  if (!context)
     throw new Error("useSettings must be used within a SettingsProvider");
-  }
   return context;
 };

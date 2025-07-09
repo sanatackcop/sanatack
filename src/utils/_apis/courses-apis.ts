@@ -199,6 +199,7 @@ export const patchCourseProgressApi = async (
           courseId: params.courseId,
           materialId: params.materialId,
         },
+        data: params.material,
         withCredentials: false,
       }) as Promise<{ data: any }>
     );
