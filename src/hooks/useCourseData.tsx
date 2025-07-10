@@ -30,6 +30,16 @@ export const useCourseData = (courseId: string) => {
     ).sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0));
   }, [course]);
 
+  useEffect(() => {
+    if (!loading && sortedMaterials.length > 0) {
+      const current =
+        sortedMaterials.find((m: any) => m.id === course?.current_material) ||
+        sortedMaterials[0];
+
+      setCurrentMaterial(current);
+    }
+  }, [loading, course, sortedMaterials]);
+
   const currentId = course?.current_material;
   const curIndex = useMemo(
     () => sortedMaterials.findIndex((m: any) => m.id === currentId),
@@ -54,7 +64,6 @@ export const useCourseData = (courseId: string) => {
     materialsCount > 0
       ? Math.round((completedMaterials / materialsCount) * 100)
       : 0;
-
   const materialsDuration = sortedMaterials.reduce(
     (sum: any, material: any) => sum + Number(material.duration || 0),
     0

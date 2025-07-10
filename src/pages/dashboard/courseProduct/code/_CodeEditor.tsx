@@ -32,8 +32,8 @@ export default function CodeEditor({
     css: "css",
   };
 
-  const bgCanvas = " bg-white dark:bg-[#0b0e14]";
-  const bgPanel = " bg-[#f3f4f6] dark:bg-[#1a1f2b]";
+  const bgCanvas = "bg-[#f3f4f6] dark:bg-[#0d1117]";
+  const bgPanel = " bg-[#ffffff] dark:bg-[#1a1f2b]";
   const bgSubtle = " bg-[#f3f4f6] dark:bg-[#0d1117]";
   const borderClr = "border-gray-300 dark:border-gray-700";
   const textMuted = "text-gray-900 dark:text-gray-400";
@@ -43,7 +43,7 @@ export default function CodeEditor({
       className={`h-1/2 md:h-full w-full md:w-[60%] overflow-auto scrollbar-hidden ${bgCanvas} text-gray-900 dark:text-gray-200`}
     >
       <header
-        className={`flex items-center justify-end px-4 py-2 ${bgPanel} border-b ${borderClr}`}
+        className={`flex items-center justify-end px-4 py-2 ${bgPanel} border-b ${borderClr} rounded-md m-2`}
       >
         <div className="flex items-center">
           <div

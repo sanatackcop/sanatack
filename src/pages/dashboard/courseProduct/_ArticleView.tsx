@@ -12,7 +12,9 @@ import {
   XCircle,
   Loader2,
 } from "lucide-react";
-import { Material, InfoCardProps, ArticleMaterial } from "@/types/courses";
+import { useSettings } from "@/context/SettingsContexts";
+import { MaterialType } from "@/utils/types/adminTypes";
+import { Article, ArticleContext, InfoCardProps } from "@/types/courses";
 
 interface CodeBlockProps {
   code: string;
@@ -24,38 +26,72 @@ interface QuoteProps {
   author?: string;
 }
 
-interface ArticleViewProps {
-  material: Material;
-}
+// InfoCardProps is imported from "@/types/courses"
+
+// interface ArticleSlide {
+//   id: number;
+//   type: "hero" | "section" | "conclusion";
+//   title?: string;
+//   description?: string;
+//   body?: string;
+//   code?: { code: string; language: string };
+//   quote?: { text: string; author?: string };
+//   info?: InfoCardProps;
+//   image?: string;
+// }
+
+// interface MaterialData {
+//   id: number;
+//   type: string;
+//   title: string;
+//   description: string;
+//   body: string;
+//   code?: { code: string; language: string };
+//   quote?: { text: string; author?: string };
+//   info?: InfoCardProps;
+//   image?: string;
+// }
+
+// interface Material {
+//   id: string;
+//   type: MaterialType.ARTICLE;
+//   data?: {
+//     [key: string]: MaterialData;
+//   };
+//   duration: number;
+//   order: number;
+// }
 
 export default function ArticleView({
-  material,
-}: ArticleViewProps): JSX.Element {
+  article,
+}: {
+  article: ArticleContext;
+}): JSX.Element {
   const [currentSlide, setCurrentSlide] = useState<number>(0);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [touchStart, setTouchStart] = useState<number>(0);
   const [touchEnd, setTouchEnd] = useState<number>(0);
-  const [slides, setSlides] = useState<ArticleMaterial[]>([]);
+  const [slides, setSlides] = useState<Article[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const { updateCurrentCheck: updateCurrentMaterial } = useSettings();
 
   useEffect(() => {
-    if (!material?.data) return;
+    if (!article?.data) return;
 
-    const convertedMaterials: ArticleMaterial[] = Object.values(material.data)
+    const convertedMaterials: any[] = Object.values(article.data)
       .filter(
-        (item): item is ArticleMaterial["data"] =>
-          typeof item === "object" && item !== null && "type" in item
+        (item) => typeof item === "object" && item !== null && "type" in item
       )
-      .sort((a, b) => a.id - b.id)
+      .sort((a, b) => (a as any).id - (b as any).id)
       .map((item) => ({
-        id: `${item.id}`,
-        type: "article",
-        data: item,
+        id: `${(item as any).id}`,
+        type: MaterialType.ARTICLE,
+        data: item as any,
       }));
 
     setSlides(convertedMaterials);
     setLoading(false);
-  }, [material]);
+  }, [article]);
 
   const CodeBlock = ({ code, language }: CodeBlockProps) => {
     const handleCopy = () => {
@@ -149,7 +185,16 @@ export default function ArticleView({
   };
 
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev < slides.length - 1 ? prev + 1 : prev));
+    setCurrentSlide((prev) => {
+      const newSlide = prev < slides.length - 1 ? prev + 1 : prev;
+      updateCurrentMaterial({
+        ...article,
+        total_read: newSlide,
+        id: article.data?.id,
+        duration: article.data?.duration,
+      });
+      return newSlide;
+    });
   };
 
   const prevSlide = () => {
@@ -189,7 +234,7 @@ export default function ArticleView({
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, []);
 
-  const renderSlide = (slide: ArticleMaterial) => {
+  const renderSlide = (slide: any) => {
     switch (slide.data.type) {
       case "hero":
         return (
@@ -289,6 +334,7 @@ export default function ArticleView({
                 </p>
               )}
             </div>
+
             {slide.data.image && (
               <div className="flex justify-start">
                 <img
@@ -298,15 +344,18 @@ export default function ArticleView({
                 />
               </div>
             )}
+
             <div className="space-y-4">
               {slide.data.body && (
                 <div className="text-start">
                   <div className="text-lg text-justify leading-relaxed text-gray-900 dark:text-gray-300 max-w-full">
-                    {slide.data.body.split("\n").map((line, index) => (
-                      <p key={index} className="mb-3">
-                        {line}
-                      </p>
-                    ))}
+                    {slide.data.body
+                      .split("\n")
+                      .map((line: any, index: any) => (
+                        <p key={index} className="mb-3">
+                          {line}
+                        </p>
+                      ))}
                   </div>
                 </div>
               )}
@@ -356,7 +405,7 @@ export default function ArticleView({
     );
   }
 
-  if (!material || !material.data || slides.length === 0) {
+  if (!article || !article.data || slides.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">

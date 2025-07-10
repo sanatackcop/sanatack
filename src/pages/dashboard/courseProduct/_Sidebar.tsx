@@ -13,20 +13,21 @@ import {
 import LogoLight from "@/assets/logo.svg";
 import LogoDark from "@/assets/dark_logo.svg";
 import { useNavigate } from "react-router-dom";
-import { CourseDetails, Material, MaterialType } from "@/types/courses";
+import { CourseDetailsContext, MaterialContext } from "@/types/courses";
+import { MaterialType } from "@/utils/types/adminTypes";
 
 export interface SideNavbarProps {
   sidebarOpen: boolean;
-  courseData: CourseDetails | null;
-  materials: Material[] | null;
+  courseData: CourseDetailsContext | null;
+  materials: MaterialContext[] | null;
   expandedModules: string[];
   toggleModule: (id: string) => void;
-  currentMaterial: Material;
+  currentMaterial: MaterialContext;
   totalMaterials: number;
   completedMaterials: number;
   progress: number;
   totalDuration: number;
-  setCurrentMaterial: (m: Material) => void;
+  setCurrentMaterial: (m: MaterialContext) => void;
   setSidebarOpen: (v: boolean) => void;
   darkMode: boolean;
 }
@@ -35,12 +36,12 @@ const iconMap: Record<MaterialType, React.FC<any>> = {
   article: FileText,
   video: Video,
   quiz: PenTool,
-  resource: FileText,
-  link: FileText,
   code: Code,
+  [MaterialType.QUIZ_GROUP]: PenTool,
 };
 
-export const getIcon = (type: Material["type"]) => iconMap[type] ?? FileText;
+export const getIcon = (type: MaterialContext["type"]) =>
+  iconMap[type] ?? FileText;
 
 export const SideNavbar: React.FC<SideNavbarProps> = ({
   sidebarOpen,
@@ -51,6 +52,7 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
   toggleModule,
   setCurrentMaterial,
   totalMaterials,
+  currentMaterial,
   completedMaterials,
   progress,
   totalDuration,
@@ -61,7 +63,6 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
       <div className="p-4 text-center text-gray-500">Loading course …</div>
     );
   }
-
   const searchInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
@@ -77,11 +78,11 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const renderMaterialButton = (material: Material) => {
+  const renderMaterialButton = (material: MaterialContext) => {
     const Icon = getIcon(material.type);
-    const isCompleted = material.completed;
-    const isCurrent = material.isCurrent;
-    const isLocked = material.locked;
+    const isCompleted = true;
+    const isCurrent = currentMaterial?.id === material.id;
+    const isLocked = false;
 
     const buttonDisabled = isLocked;
 
@@ -133,37 +134,37 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
                   : "text-gray-900 dark:text-white")
               }
             >
-              {material.type || "بدون عنوان"}
+              {material.title || "بدون عنوان"}
             </p>
             <div className="flex items-center justify-start gap-2 mt-1">
               <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-900/20 text-gray-600 dark:text-gray-400">
-                {/* {material.completed ? (
+                {false ? (
                   "مكتمل"
                 ) : (
-                  <> */}
-                <Clock className="w-3 h-3 inline-block ml-1" />
-                {material.duration} دقيقة
-                {/* </>
-                )} */}
+                  <>
+                    <Clock className="w-3 h-3 inline-block ml-1" />
+                    {material.duration} دقيقة
+                  </>
+                )}
               </span>
 
               <span
                 className={
                   "text-xs px-2 py-0.5 rounded-full " +
-                  (material.type === "video"
+                  (material.type === MaterialType.VIDEO
                     ? "bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400"
-                    : material.type === "article"
+                    : material.type === MaterialType.ARTICLE
                     ? "bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400"
-                    : material.type === "quiz"
+                    : material.type === MaterialType.QUIZ_GROUP
                     ? "bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400"
                     : "bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400")
                 }
               >
-                {material.type === "video"
+                {material.type === MaterialType.VIDEO
                   ? "فيديو"
-                  : material.type === "article"
+                  : material.type === MaterialType.ARTICLE
                   ? "مقال"
-                  : material.type === "quiz"
+                  : material.type === MaterialType.QUIZ_GROUP
                   ? "اختبار"
                   : material.type === "code"
                   ? "كود"

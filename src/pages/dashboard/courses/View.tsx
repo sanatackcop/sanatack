@@ -155,9 +155,10 @@ export default function CourseView() {
       trend: "+2%",
     },
   ];
+
   return (
     <AppLayout>
-      <div className="">
+      <div>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <div className="lg:col-span-8 space-y-8">
             <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">

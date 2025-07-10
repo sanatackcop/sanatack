@@ -1,6 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ShowErrorMessage from "@/utils/ErrorMessage";
 import { GenericTabsProps } from "@/utils/types";

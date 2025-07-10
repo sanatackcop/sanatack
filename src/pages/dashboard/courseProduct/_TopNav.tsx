@@ -20,18 +20,18 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { CourseDetails, Material } from "@/types/courses";
+import { CourseDetails, MaterialContext } from "@/types/courses";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 interface NavigationPlaygroundProps {
   courseData: CourseDetails;
-  prevMaterial: Material;
-  nextMaterial: Material;
+  prevMaterial: MaterialContext;
+  nextMaterial: MaterialContext;
   currentIndex: number;
   progress: number;
   totalDuration: number;
   sidebarOpen: boolean;
-  currentMaterial: Material;
+  currentMaterial: MaterialContext;
   totalLessons: number;
   completedLessons: number;
   userData?: {
@@ -100,6 +100,12 @@ export const NavigationPlayground = ({
                   <Target className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                   <span className="text-gray-600 dark:text-gray-400 font-medium">
                     {completedLessons}/{totalLessons}
+                  </span>
+                </div>
+                <div className="hidden sm:flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                  <span className="text-gray-600 dark:text-gray-400 font-medium">
+                    ≈ {totalDuration} دقيقة
                   </span>
                 </div>
               </div>

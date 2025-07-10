@@ -1,16 +1,16 @@
-import React from "react";
 import { BookOpen, FileText } from "lucide-react";
 import { VideoView } from "./_VideoView";
-import { Material } from "@/types/courses";
+import { MaterialContext } from "@/types/courses";
 import ArticleView from "./_ArticleView";
 import QuizView from "./_QuizView";
 import CodePlayground from "./_CodeEditorView";
+import { MaterialType } from "@/utils/types/adminTypes";
 
-interface MaterialViewerProps {
-  material: Material | null;
-}
-
-export const MaterialViewer: React.FC<MaterialViewerProps> = ({ material }) => {
+export default function MaterialViewer({
+  material,
+}: {
+  material: MaterialContext;
+}) {
   if (!material) {
     return (
       <div className="flex h-full items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900">
@@ -24,20 +24,17 @@ export const MaterialViewer: React.FC<MaterialViewerProps> = ({ material }) => {
       </div>
     );
   }
-
-  if (material.type === "video") {
-    return <VideoView video={material} />;
-  }
-
-  if (material.type === "article") {
-    return <ArticleView material={material} />;
-  }
-  if (material.type === "quiz") {
-    return <QuizView quizGroup={material} />;
-  }
-  if (material.type === "code") {
+  if (material.type == MaterialType.CODE)
     return <CodePlayground material={material} />;
-  }
+
+  if (material.type == MaterialType.VIDEO)
+    return <VideoView video={material} />;
+
+  if (material.type == MaterialType.ARTICLE)
+    return <ArticleView article={material} />;
+
+  if (material.type == MaterialType.QUIZ_GROUP)
+    return <QuizView key={material.id} quizGroup={material} />;
 
   return (
     <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-900">
@@ -58,4 +55,4 @@ export const MaterialViewer: React.FC<MaterialViewerProps> = ({ material }) => {
       </div>
     </div>
   );
-};
+}

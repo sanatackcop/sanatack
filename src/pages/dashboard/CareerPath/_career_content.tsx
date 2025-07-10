@@ -1,6 +1,7 @@
 import TimeLine from "@/components/timeLine";
 import { CareerPathInterface, LessonDetails } from "@/types/courses";
 import { getLessonResourceIcon } from "@/utils/getIcon";
+import { MaterialType } from "@/utils/types/adminTypes";
 
 export default function CareerPathTimeline({
   careerPath,
@@ -18,11 +19,9 @@ export default function CareerPathTimeline({
           const isLast = index === lesson.materials.length - 1;
           let title = "";
 
-          if (material.type === "video" && material) {
+          if (material.type == MaterialType.VIDEO) {
             title = material.data.title || "video";
-          } else if (material.type === "resource") {
-            title = material.data.title || "resource";
-          } else if (material.type === "quiz" && material) {
+          } else if (material.type == MaterialType.QUIZ_GROUP) {
             title = "quiz";
           }
 
