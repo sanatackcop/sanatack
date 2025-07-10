@@ -3,6 +3,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import CodeEditor from "./code/_CodeEditor";
 import { ConsoleEntry } from "./code/type";
 import InstructionsPanel from "./code/_InstructionsPanel";
+import { codeCheckApi, codeExecutionApi } from "@/utils/_apis/courses-apis";
 
 export default function CodePlayground({ material }: { material: any }) {
   const [code, setCode] = useState(
@@ -46,27 +47,25 @@ export default function CodePlayground({ material }: { material: any }) {
       setIsRunning(true);
       setConsoleOutput([{ type: "info", content: "Running code..." }]);
 
-      const response = await fetch("/api/execute-code", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          code,
-          language: currentSection?.codeSnippet?.lang || "javascript",
-          materialId: material.id,
-          sectionId: currentSection?.order,
-        }),
+      const result = await codeExecutionApi({
+        code,
+        language: currentSection?.codeSnippet?.lang || "javascript",
+        stdin: "",
       });
 
-      const result = await response.json();
       if (result.success) {
-        setConsoleOutput(
-          result.output || [
-            { type: "success", content: "Code executed successfully!" },
-          ]
-        );
+        setConsoleOutput([
+          {
+            type: "success",
+            content: result.output || "Code executed successfully!",
+          },
+        ]);
       } else {
         setConsoleOutput([
-          { type: "error", content: result.error || "Execution failed" },
+          {
+            type: "error",
+            content: result.error || "Execution failed",
+          },
         ]);
       }
     } catch (error: any) {
@@ -74,6 +73,40 @@ export default function CodePlayground({ material }: { material: any }) {
         {
           type: "error",
           content: `Error: ${error.message || "Failed to execute code"}`,
+        },
+      ]);
+    } finally {
+      setIsRunning(false);
+    }
+  }, [code, currentSection, material.id]);
+
+  const checkCode = useCallback(async () => {
+    try {
+      setIsRunning(true);
+      setConsoleOutput([
+        { type: "info", content: "Checking code against test cases..." },
+      ]);
+
+      const result = await codeCheckApi({
+        code,
+        language: currentSection?.codeSnippet?.lang || "javascript",
+        lessonId: material.id,
+      });
+
+      const summary = `Passed ${result.passed} out of ${result.total} test cases.`;
+      const detailed = result.results.map((r, i) => {
+        return {
+          type: r.success ? "success" : "error",
+          content: `Test ${i + 1}:\n  Input: ${r.input}\n  Expected: ${r.expectedOutput}\n  Actual: ${r.actualOutput}${r.error ? `\n  Error: ${r.error}` : ""}`,
+        } as ConsoleEntry;
+      });
+
+      setConsoleOutput([{ type: "info", content: summary }, ...detailed]);
+    } catch (error: any) {
+      setConsoleOutput([
+        {
+          type: "error",
+          content: `Error: ${error.message || "Failed to check code"}`,
         },
       ]);
     } finally {
@@ -113,6 +146,7 @@ export default function CodePlayground({ material }: { material: any }) {
         isRunning={isRunning}
         currentLang={currentSection?.codeSnippet?.lang || "js"}
         runCode={runCode}
+        checkCode={checkCode}
         resetCode={resetCode}
         copyCode={copyCode}
         iframeRef={iframeRef}
