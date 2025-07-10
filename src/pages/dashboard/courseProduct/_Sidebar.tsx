@@ -80,9 +80,9 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
 
   const renderMaterialButton = (material: MaterialContext) => {
     const Icon = getIcon(material.type);
-    const isCompleted = true;
+    const isCompleted = material.completed;
     const isCurrent = currentMaterial?.id === material.id;
-    const isLocked = false;
+    const isLocked = material.locked;
 
     const buttonDisabled = isLocked;
 
