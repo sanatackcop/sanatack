@@ -20,6 +20,7 @@ import {
   Mail,
   FileText,
   LucideIcon,
+  UserRound,
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { getProfileApi, updateProfileApi } from "@/utils/_apis/user-api";
@@ -99,7 +100,7 @@ interface TabItem {
 }
 
 const StatCard = memo<StatCardProps>(({ icon: Icon, value, label, trend }) => (
-  <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-2xl transition-all duration-500 group relative overflow-hidden">
+  <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 group relative overflow-hidden">
     {/* Background Pattern */}
     <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent dark:from-blue-900/20 dark:to-transparent" />
 
@@ -138,7 +139,7 @@ const CourseCard = memo<CourseData>(
     instructor = "فريق التدريس",
     category = "تقنية",
   }) => (
-    <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-xl border border-gray-100 dark:border-gray-700 hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 group relative overflow-hidden">
+    <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 group relative overflow-hidden">
       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-blue-100/50 to-transparent dark:from-blue-900/30 rounded-bl-full" />
 
       <div className="relative flex items-start gap-6">
@@ -300,9 +301,21 @@ const SubscriptionCard = memo<SubscriptionPlan & { onUpgrade: () => void }>(
 
 SubscriptionCard.displayName = "SubscriptionCard";
 
+function getChangedFields<T extends object>(
+  original: T,
+  updated: T
+): Partial<T> {
+  const result: Partial<T> = {};
+  for (const key in updated) {
+    if (updated[key] !== original[key]) {
+      result[key] = updated[key];
+    }
+  }
+  return result;
+}
 const ProfileForm = memo<{
   userData: UserData;
-  onSave: (data: FormData) => void;
+  onSave: (data: Partial<FormData>) => void;
 }>(({ userData, onSave }) => {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [formData, setFormData] = useState<FormData>({
@@ -311,12 +324,15 @@ const ProfileForm = memo<{
     email: userData.email,
     phone: userData.phone,
     bio: userData.bio,
-    company: userData.company || "جامعة الملك سعود",
+    company: userData.company || "غير معروف",
     location: userData.location || "الرياض، المملكة العربية السعودية",
   });
 
   const handleSave = (): void => {
-    onSave(formData);
+    const changed = getChangedFields(userData, formData);
+    if (Object.keys(changed).length > 0) {
+      onSave(changed);
+    }
     setIsEditing(false);
   };
 
@@ -339,14 +355,14 @@ const ProfileForm = memo<{
   ];
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-3xl p-10 shadow-2xl border border-gray-100 dark:border-gray-700">
+    <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-2xl p-10 shadow-2xl border border-gray-100 dark:border-gray-700">
       <div className="flex items-center justify-between mb-10">
-        <h2 className="text-3xl font-black text-gray-900 dark:text-white">
+        <h2 className="text-lg md:text-3xl font-black text-gray-900 dark:text-white">
           معلومات الملف الشخصي
         </h2>
         <button
           onClick={() => (isEditing ? handleSave() : setIsEditing(true))}
-          className="flex items-center gap-3 px-6 py-3 bg-blue-600 dark:bg-blue-500 text-white rounded-2xl hover:bg-blue-700 dark:hover:bg-blue-600 transition-all duration-300 font-bold shadow-lg hover:shadow-xl"
+          className="flex items-center gap-3 px-3 py-1 md:px-6 md:py-3 text-xs md:text-lg bg-blue-600 dark:bg-blue-500 text-white rounded-2xl hover:bg-blue-700 dark:hover:bg-blue-600 transition-all duration-300 font-bold shadow-lg hover:shadow-xl"
         >
           {isEditing ? (
             <Save className="w-5 h-5" />
@@ -408,7 +424,7 @@ const ProfileForm = memo<{
 ProfileForm.displayName = "ProfileForm";
 
 export default function UserProfile(): JSX.Element {
-  const [activeTab, setActiveTab] = useState<string>("overview");
+  const [activeTab, setActiveTab] = useState<string>("settings");
   const [showUpgradeAlert, setShowUpgradeAlert] = useState<boolean>(false);
   const [userData, setUserData] = useState<UserData | null>(null);
   //const auth = Storage.get("auth");
@@ -533,7 +549,7 @@ export default function UserProfile(): JSX.Element {
   ];
 
   const tabs: TabItem[] = [
-    { id: "overview", label: "النظرة العامة", icon: User },
+    // { id: "overview", label: "النظرة العامة", icon: User },
     // { id: "courses", label: "الدورات التدريبية", icon: BookOpen },
     // { id: "achievements", label: "الإنجازات والشهادات", icon: Award },
     // { id: "subscription", label: "خطة الاشتراك", icon: Crown },
@@ -568,7 +584,10 @@ export default function UserProfile(): JSX.Element {
   };
 
   return (
-    <div className={`min-h-screen transition-colors duration-300`} dir="rtl">
+    <div
+      className={`min-h-screen transition-colors duration-300 bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900/20`}
+      dir="rtl"
+    >
       {showUpgradeAlert && (
         <div className="fixed top-6 left-6 z-50 animate-in slide-in-from-left duration-500">
           <Alert className="bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700 shadow-2xl">
@@ -580,10 +599,10 @@ export default function UserProfile(): JSX.Element {
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto p-6 space-y-10">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-10">
         {/* Enhanced Header */}
         <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-700 overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 dark:from-blue-700 dark:via-blue-800 dark:to-blue-900 p-10 text-white relative overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 dark:from-blue-700 dark:via-blue-800 dark:to-blue-900 p-5 md:p-10 text-white relative overflow-hidden">
             {/* Background Pattern */}
             <div
               className="absolute inset-0 opacity-20"
@@ -592,63 +611,89 @@ export default function UserProfile(): JSX.Element {
               }}
             />
 
-            <div className="relative flex items-center gap-10">
-              <div className="w-28 h-28 bg-gradient-to-br from-white/20 to-white/10 rounded-3xl flex items-center justify-center text-4xl font-black backdrop-blur-sm border border-white/20 shadow-2xl">
+            <div className="relative flex flex-row items-center gap-6 sm:gap-10 text-center sm:text-left">
+              <div className="w-16 h-16 md:w-28 md:h-28 bg-gradient-to-br from-white/20 to-white/10 rounded-3xl flex items-center justify-center text-2xl md:text-4xl font-black backdrop-blur-sm border border-white/20 shadow-2xl">
                 {userData.avatar}
               </div>
               <div className="flex-1 space-y-3">
                 <div className="flex items-center gap-4">
-                  <h1 className="text-4xl font-black tracking-tight">
+                  <h1 className="text-md md:text-4xl font-black tracking-tight">
                     {userData.firstName} {userData.lastName}
                   </h1>
                   {userData.subscription === "Premium" && (
-                    <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-400 to-blue-500 rounded-full">
+                    <div className="flex items-center gap-2 px-2 py-1 md:px-4 md:py-2 bg-gradient-to-r from-blue-400 to-blue-500 rounded-full">
                       <Crown className="w-5 h-5 text-white" />
-                      <span className="text-sm font-bold text-white">
+                      <span className="text-xs md:text-sm  font-bold text-white">
                         عضو مميز
                       </span>
                     </div>
                   )}
                 </div>
-                <p className="text-xl text-blue-100 font-semibold">
-                  {userData.role}
-                </p>
-                <div className="flex items-center gap-6 text-blue-200">
+                <div className="flex items-center">
+                  <UserRound className="w-4 h-4" />
+                  <p className="text-sm md:text-xl text-blue-100 font-semibold px-2">
+                    {userData.role}
+                  </p>
+                </div>
+
+                <div className="flex flex-col md:flex-row md:items-center md:gap-6 gap-4 text-blue-200">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
-                    <span className="font-medium">{userData.joinDate}</span>
+                    <span className="text-sm md:text-xl">
+                      {new Date(userData.joinDate).toLocaleDateString()}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Building2 className="w-4 h-4" />
-                    <span className="font-medium">{userData.company}</span>
+                    <span className="text-sm md:text-xl ">
+                      {userData.company}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <MapPin className="w-4 h-4" />
-                    <span className="font-medium">{userData.location}</span>
+                    <span className="text-sm md:text-xl ">
+                      {userData.location}
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+          <div className="block sm:hidden px-4 py-4">
+            <select
+              onChange={(e) => setActiveTab(e.target.value)}
+              className="w-64 mx-auto block rounded-md
+               bg-white dark:bg-gray-800 font-bold
+               text-blue-600 dark:text-blue-400 shadow-md"
+            >
+              {tabs.map((tab) => (
+                <option key={tab.id} value={tab.id}>
+                  {tab.label}
+                </option>
+              ))}
+            </select>
+          </div>
 
-          <div className="flex bg-gray-50 dark:bg-gray-800/50">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-4 px-10 py-6 text-sm font-bold transition-all duration-300 relative ${
-                  activeTab === tab.id
-                    ? "text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-700 shadow-lg"
-                    : "text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700/50"
-                }`}
-              >
-                <tab.icon className="w-5 h-5" />
-                {tab.label}
-                {activeTab === tab.id && (
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-600 dark:bg-blue-400" />
-                )}
-              </button>
-            ))}
+          <div className="hidden sm:block">
+            <div className="flex bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-4 px-10 py-6 text-sm font-bold transition-all duration-300 relative ${
+                    activeTab === tab.id
+                      ? "text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-700 shadow-lg"
+                      : "text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700/50"
+                  }`}
+                >
+                  <tab.icon className="w-5 h-5" />
+                  {tab.label}
+                  {activeTab === tab.id && (
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-600 dark:bg-blue-400" />
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -694,8 +739,8 @@ export default function UserProfile(): JSX.Element {
                   ))}
                 </div>
               </div>
-              {/* 
-              <div className="space-y-8">
+
+              {/* <div className="space-y-8">
                 <h2 className="text-3xl font-black text-gray-900 dark:text-white">
                   الإنجازات الأخيرة
                 </h2>

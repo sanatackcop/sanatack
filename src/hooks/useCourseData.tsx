@@ -30,31 +30,40 @@ export const useCourseData = (courseId: string) => {
     ).sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0));
   }, [course]);
 
+  useEffect(() => {
+    if (!loading && sortedMaterials.length > 0) {
+      const current =
+        sortedMaterials.find((m: any) => m.id === course?.current_material) ||
+        sortedMaterials[0];
+
+      setCurrentMaterial(current);
+    }
+  }, [loading, course, sortedMaterials]);
+
   const currentId = course?.current_material;
   const curIndex = useMemo(
     () => sortedMaterials.findIndex((m: any) => m.id === currentId),
     [sortedMaterials, currentId]
   );
   const materials = useMemo(() => {
-    const map = new Map();
-    sortedMaterials.forEach((m: any, i: number) => {
-      map.set(m.id, {
-        isCurrent: i === curIndex,
-        completed: i < curIndex,
-        locked: i > curIndex,
-      });
-    });
-    return map;
+    return sortedMaterials.map((material: any, index: number) => ({
+      ...material,
+      isCurrent: index === curIndex,
+      completed: index < curIndex,
+      locked: index > curIndex,
+    }));
   }, [sortedMaterials, curIndex]);
+
   const materialsCount = sortedMaterials.length;
+
   const completedMaterials = sortedMaterials.filter(
     (i: number) => i < curIndex
   ).length;
+
   const progress =
     materialsCount > 0
       ? Math.round((completedMaterials / materialsCount) * 100)
       : 0;
-
   const materialsDuration = sortedMaterials.reduce(
     (sum: any, material: any) => sum + Number(material.duration || 0),
     0

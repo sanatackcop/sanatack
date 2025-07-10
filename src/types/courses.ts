@@ -197,11 +197,12 @@ export interface Quiz {
 //   };
 // }
 
-export declare type QuizGroupContext = QuizGroup & {
-  isFinished: boolean;
-  old_result?: number;
-  duration: number;
-};
+export declare type QuizGroupContext = QuizGroup &
+  BaseMaterial & {
+    isFinished: boolean;
+    old_result?: number;
+    duration: number;
+  };
 
 export enum LevelEnum {
   BEGINNER = "مبتدئ",

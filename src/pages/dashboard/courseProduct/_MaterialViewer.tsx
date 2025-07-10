@@ -28,7 +28,7 @@ export default function MaterialViewer({
     return <CodePlayground material={material} />;
 
   if (material.type == MaterialType.VIDEO)
-    return <VideoView key={material.data.youtubeId} video={material} />;
+    return <VideoView video={material} />;
 
   if (material.type == MaterialType.ARTICLE)
     return <ArticleView article={material} />;

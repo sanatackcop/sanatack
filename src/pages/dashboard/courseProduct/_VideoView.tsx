@@ -5,7 +5,7 @@ import { Video as VideoIcon, Clock, PlayCircle } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 function extractYouTubeId(url: string): string | null {
-  const match = url.match(
+  const match = url?.match(
     /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
   );
   return match ? match[1] : null;
@@ -17,7 +17,7 @@ export function VideoView({ video }: { video: Video }) {
   const ytPlayerInstance = useRef<any>(null);
 
   useEffect(() => {
-    const embedId = extractYouTubeId(video.data.youtubeId);
+    const embedId = extractYouTubeId(video?.data?.youtubeId);
     if (!embedId) return;
 
     if (ytPlayerInstance.current && ytPlayerInstance.current.loadVideoById) {
@@ -28,11 +28,11 @@ export function VideoView({ video }: { video: Video }) {
         duration: 0,
       });
     }
-  }, [video.data.youtubeId]);
+  }, [video?.data?.youtubeId]);
 
   // Load player once when first mounted
   useEffect(() => {
-    const embedId = extractYouTubeId(video.data.youtubeId);
+    const embedId = extractYouTubeId(video?.data?.youtubeId);
     if (!embedId || !playerRef.current) return;
 
     const loadPlayer = () => {
@@ -70,7 +70,7 @@ export function VideoView({ video }: { video: Video }) {
 
   // Update player when video changes
   useEffect(() => {
-    const embedId = extractYouTubeId(video.data.youtubeId);
+    const embedId = extractYouTubeId(video?.data?.youtubeId);
     if (!embedId) return;
 
     // If player already exists, just update it
@@ -109,7 +109,7 @@ export function VideoView({ video }: { video: Video }) {
                   {video.title}
                 </h1>
                 <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-lg max-w-4xl">
-                  {video.data.description}
+                  {video?.data?.description}
                 </p>
               </div>
             </div>

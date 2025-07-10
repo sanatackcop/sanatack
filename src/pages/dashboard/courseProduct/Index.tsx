@@ -137,12 +137,11 @@ export const CoursePlayground: React.FC = () => {
   return (
     <div className={`h-screen flex flex-col ${darkMode ? "dark" : ""}`}>
       <NavigationPlayground
-        courseData={{
-          ...course,
-          completedLessons: completedMaterials,
-          totalLessons: materialsCount,
-          progress: progress,
-        }}
+        courseData={course}
+        completedLessons={completedMaterials}
+        totalLessons={materialsCount}
+        progress={progress}
+        totalDuration={materialsDuration}
         sidebarOpen={sidebarOpen}
         prevMaterial={prevMaterial}
         nextMaterial={nextMaterial}
@@ -152,24 +151,29 @@ export const CoursePlayground: React.FC = () => {
         handleNext={handleNext}
         setSidebarOpen={setSidebarOpen}
         handleComplete={handleComplete}
+        handleRestart={function (): void {
+          throw new Error("Function not implemented.");
+        }}
       />
 
       <div className="flex flex-1 overflow-hidden">
-        <SideNavbar
-          sidebarOpen={sidebarOpen}
-          setSidebarOpen={setSidebarOpen}
-          courseData={course}
-          materials={Array.from(materials.values())}
-          expandedModules={expandedModules}
-          toggleModule={toggleModule}
-          currentMaterial={currentIndex}
-          totalMaterials={materialsCount}
-          completedMaterials={completedMaterials}
-          progress={progress}
-          totalDuration={materialsDuration}
-          setCurrentMaterial={setCurrentMaterial}
-          darkMode={darkMode}
-        />
+        {
+          <SideNavbar
+            sidebarOpen={sidebarOpen}
+            setSidebarOpen={setSidebarOpen}
+            courseData={course}
+            materials={materials}
+            expandedModules={expandedModules}
+            toggleModule={toggleModule}
+            currentMaterial={currentIndex}
+            totalMaterials={materialsCount}
+            completedMaterials={completedMaterials}
+            progress={progress}
+            totalDuration={materialsDuration}
+            setCurrentMaterial={setCurrentMaterial}
+            darkMode={darkMode}
+          />
+        }
 
         <main className="flex-1 flex flex-col overflow-hidden">
           <MaterialViewer material={currentMaterial} />

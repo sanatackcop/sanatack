@@ -133,7 +133,11 @@ export default function CodePlayground({ material }: { material: any }) {
   }, [code]);
 
   return (
-    <div className={`flex h-screen w-full font-sans ${darkMode ? "dark" : ""}`}>
+    <div
+      className={`flex flex-col md:flex-row h-screen w-full font-sans ${
+        darkMode ? "dark" : ""
+      }`}
+    >
       <InstructionsPanel
         material={material}
         currentContainerIndex={currentSectionIndex}
