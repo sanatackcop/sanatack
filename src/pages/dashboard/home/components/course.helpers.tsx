@@ -338,35 +338,29 @@ export const ProfessionalCourseCard = ({
   course: CoursesContext;
 }) => {
   const nav = useNavigate();
+
+  if (!course) {
+    return null;
+  }
+
   const TopicIcon = getTopicIcon(course.topic);
   const topicColors = getTopicColors(course.topic);
 
   return (
-    <div
-      className={`
-        group relative bg-white dark:bg-gray-900
-        rounded-2xl border border-gray-200 dark:border-gray-700
-        shadow-sm hover:shadow-lg transition-all duration-300
-        overflow-hidden
-        h-full
-        grid grid-rows-[auto,1fr]
-      `}
-    >
-      <div
-        className={`relative h-24 bg-gradient-to-br ${topicColors.iconBg} overflow-hidden`}
-      >
+    <div className="group relative bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden h-full grid grid-rows-[auto,1fr]">
+      <div className="relative h-24 bg-gradient-to-br overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent" />
 
         <div className="absolute bottom-4 right-4 flex items-center gap-3">
-          {checkIsNewCourse(course.created_at) && (
+          {course.created_at && checkIsNewCourse(course.created_at) && (
             <span className="inline-flex items-center px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-medium border border-blue-200 dark:border-blue-700">
               جديد
             </span>
           )}
           <div className="w-11 h-11 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-sm">
-            <TopicIcon size={22} className={topicColors.iconColor} />
+            <TopicIcon size={22} />
           </div>
-          <LevelBadge level={course.level} />
+          {course.level && <LevelBadge level={course.level} />}
         </div>
       </div>
 
@@ -375,31 +369,28 @@ export const ProfessionalCourseCard = ({
           <div className="space-y-3">
             <div className="flex items-start justify-between gap-2">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-2 leading-tight">
-                {course.title}
+                {course.title || "Untitled Course"}
               </h3>
-              {/* <button className="p-1 text-gray-400 hover:text-blue-600 transition-colors">
-                <Bookmark size={18} />
-              </button> */}
             </div>
-            <p className="text-gray-600 truncate dark:text-gray-400 text-sm line-clamp-2 leading-relaxed">
-              {course.description}
+            <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-2 leading-relaxed">
+              {course.description || "No description available"}
             </p>
           </div>
 
-          {course.progress !== undefined && (
+          {course.progress !== undefined && course.progress !== null && (
             <div className="space-y-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-100 dark:border-green-800">
               <div className="flex justify-between items-center text-sm">
                 <span className="text-green-700 dark:text-green-300 font-medium">
                   التقدم
                 </span>
                 <span className="font-bold text-green-800 dark:text-green-200">
-                  {course.progress ?? 0}%
+                  {course.progress || 0}%
                 </span>
               </div>
               <div className="w-full bg-green-200 dark:bg-green-800 rounded-full h-2">
                 <div
                   className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full transition-all duration-300"
-                  style={{ width: `${course.progress ?? 0}%` }}
+                  style={{ width: `${course.progress || 0}%` }}
                 />
               </div>
             </div>
@@ -409,46 +400,35 @@ export const ProfessionalCourseCard = ({
             <div className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
               <Clock size={14} className="text-blue-600 dark:text-blue-400" />
               <span className="text-gray-700 dark:text-gray-300">
-                {course.course_info.durationHours} ساعة
+                {course.course_info?.durationHours || 0} ساعة
               </span>
             </div>
-            {/* <div className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-              <Target size={14} className="text-blue-600 dark:text-blue-400" />
-              <span className="text-gray-700 dark:text-gray-300">
-                {course.material_count} درس
-              </span>
-            </div> */}
             <div className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
               <Users size={14} className="text-blue-600 dark:text-blue-400" />
               <span className="text-gray-700 dark:text-gray-300">
-                {course.enrolledCount} طالب
+                {course.enrolledCount || 0} طالب
               </span>
             </div>
-            {/* {course.rating && (
-              <div className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                <Star
-                  size={14}
-                  className="text-amber-500"
-                  fill="currentColor"
-                />
-                <span className="text-gray-700 dark:text-gray-300">
-                  {course.rating}
-                </span>
-              </div>
-            )} */}
           </div>
 
           <div className="flex flex-wrap gap-2 pb-3">
-            <span
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border ${topicColors.tagBg} ${topicColors.tagText} ${topicColors.tagBorder}`}
-            >
-              <TopicIcon size={12} />
-              {course.topic}
-            </span>
-            {course.course_info.new_skills_result &&
+            {course.topic && (
+              <span
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border ${
+                  topicColors?.tagBg || "bg-gray-100"
+                } ${topicColors?.tagText || "text-gray-700"} ${
+                  topicColors?.tagBorder || "border-gray-200"
+                }`}
+              >
+                <TopicIcon size={12} />
+                {course.topic}
+              </span>
+            )}
+            {course.course_info?.new_skills_result &&
+              Array.isArray(course.course_info.new_skills_result) &&
               course.course_info.new_skills_result
                 .slice(0, 2)
-                .map((tech: any, index: any) => (
+                .map((tech: any, index: number) => (
                   <span
                     key={index}
                     className="px-2.5 py-1 bg-gray-100 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 rounded-lg text-xs font-medium border border-gray-200 dark:border-gray-700"
@@ -456,7 +436,8 @@ export const ProfessionalCourseCard = ({
                     {tech}
                   </span>
                 ))}
-            {course.course_info.new_skills_result &&
+            {course.course_info?.new_skills_result &&
+              Array.isArray(course.course_info.new_skills_result) &&
               course.course_info.new_skills_result.length > 2 && (
                 <span className="px-2.5 py-1 bg-gray-100 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 rounded-lg text-xs font-medium border border-gray-200 dark:border-gray-700">
                   +{course.course_info.new_skills_result.length - 2}
@@ -466,18 +447,24 @@ export const ProfessionalCourseCard = ({
         </div>
 
         <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-800">
-          <div className="flex items-center gap-2 text-xs.text-gray-500 dark:text-gray-400">
+          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
             <Calendar size={12} />
-            <span>{DateDisplay(course.updated_at)}</span>
+            <span>
+              {course.updated_at ? DateDisplay(course.updated_at) : "N/A"}
+            </span>
           </div>
-          {course.progress == 100 ? (
-            <p>لقد انتهيت من هذه الدورة</p>
+          {course.progress === 100 ? (
+            <p className="text-sm text-green-600 dark:text-green-400">
+              لقد انتهيت من هذه الدورة
+            </p>
           ) : (
             <button
               onClick={() =>
                 nav(`/dashboard/courses/${course.id}`, { replace: true })
               }
-              className={`inline-flex items-center gap-2 bg-gradient-to-r ${topicColors.bg} text-white font-semibold text-sm px-4 py-2 rounded-lg transition-all duration-200 hover:shadow-md`}
+              className={`inline-flex items-center gap-2 bg-gradient-to-r ${
+                topicColors?.bg || "from-blue-500 to-blue-600"
+              } text-white font-semibold text-sm px-4 py-2 rounded-lg transition-all duration-200 hover:shadow-md`}
             >
               متابعة
               <ArrowRight size={14} />
