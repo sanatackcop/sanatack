@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   GitBranchPlus,
@@ -38,6 +38,7 @@ import { enrollCoursesApi } from "@/utils/_apis/courses-apis";
 import AppLayout from "@/components/layout/Applayout";
 import { useCourseData } from "@/hooks/useCourseData";
 import { DateDisplay } from "@/lib/utils";
+import LoadingScreen from "@/components/LoadingScreen";
 
 export default function CourseView() {
   const { id } = useParams<{ id: string }>();
@@ -46,10 +47,16 @@ export default function CourseView() {
   const location = useLocation();
   const {
     course,
+    setCurrentMaterial,
+    materials,
     getTotalLessons,
     getCompletedLessonsCount,
     materialsDuration,
+    loading,
   } = useCourseData(id as string);
+  const materialStatusMap = useMemo(() => {
+    return new Map(materials.map((m: any) => [m.id, m]));
+  }, [materials]);
 
   const [expandedModules, setExpandedModules] = useState<Set<string>>(
     new Set()
@@ -59,7 +66,6 @@ export default function CourseView() {
   );
   useEffect(() => {
     if (!course) return;
-
     if (course.modules?.length > 0)
       setExpandedModules(new Set([course.modules[0].id]));
   }, [course]);
@@ -72,6 +78,10 @@ export default function CourseView() {
   const collapseAllModules = () => {
     setExpandedModules(new Set());
   };
+
+  if (loading) {
+    return <LoadingScreen />;
+  }
 
   if (!course) {
     return <h1 className="text-center">Loading Course</h1>;
@@ -490,21 +500,21 @@ export default function CourseView() {
                     ساعة إجمالية
                   </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 ">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={expandAllModules}
-                    className="text-xs"
+                    className="text-xs bg-white dark:bg-gray-900"
                   >
-                    <Plus className="w-3 h-3 mr-1" />
+                    <Plus className="w-3 h-3 mr-1 " />
                     توسيع الكل
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={collapseAllModules}
-                    className="text-xs"
+                    className="text-xs bg-white dark:bg-gray-900"
                   >
                     <Minus className="w-3 h-3 mr-1" />
                     طي الكل
@@ -616,8 +626,17 @@ export default function CourseView() {
 
                                     {isLessonExpanded && (
                                       <div className="p-5 space-y-3 border-t border-slate-200 dark:border-slate-700">
-                                        {lesson.materials?.map(
+                                        {(lesson.materials ?? []).map(
                                           (material: any) => {
+                                            const state =
+                                              materialStatusMap?.get(
+                                                material.id
+                                              ) || {};
+                                            const fullMaterial = {
+                                              ...material,
+                                              ...state,
+                                            };
+
                                             const typeConfig = {
                                               video: {
                                                 label: "فيديو",
@@ -663,38 +682,48 @@ export default function CourseView() {
 
                                             const config =
                                               typeConfig[
-                                                material.type as keyof typeof typeConfig
+                                                fullMaterial.type as keyof typeof typeConfig
                                               ] || typeConfig.text;
 
                                             return (
                                               <button
-                                                key={material.id}
+                                                onClick={() => {
+                                                  if (
+                                                    !fullMaterial.locked ||
+                                                    course.isEnrolled
+                                                  ) {
+                                                    setCurrentMaterial(
+                                                      fullMaterial
+                                                    );
+                                                  }
+                                                }}
+                                                key={fullMaterial.id}
                                                 disabled={
-                                                  material.locked &&
+                                                  fullMaterial.locked ||
                                                   !course.isEnrolled
                                                 }
                                                 className={`w-full p-4 rounded-xl transition-all duration-200 flex items-center gap-4 group ${
-                                                  material.completed
+                                                  fullMaterial.completed
                                                     ? "bg-green-50 dark:bg-green-900/20 border-2 border-green-200 dark:border-green-800"
-                                                    : material.locked &&
+                                                    : fullMaterial.locked ||
                                                       !course.isEnrolled
-                                                    ? "opacity-50 cursor-not-allowed  dark:bg-slate-800/50"
+                                                    ? "opacity-50 cursor-default dark:bg-slate-800/50"
                                                     : "bg-blue-50 dark:bg-blue-900/20 border-2 border-transparent border-blue-200 dark:border-blue-800 hover:border-blue-400"
                                                 }`}
                                               >
                                                 <div
                                                   className={`p-3 rounded-xl flex-shrink-0 transition-colors ${
-                                                    material.completed
+                                                    fullMaterial.completed
                                                       ? "bg-green-100 dark:bg-green-900/30"
-                                                      : material.locked &&
+                                                      : fullMaterial.locked &&
                                                         !course.isEnrolled
                                                       ? "bg-slate-100 dark:bg-slate-700"
                                                       : "bg-white dark:bg-slate-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30"
                                                   }`}
                                                 >
-                                                  {material.completed ? (
+                                                  {fullMaterial.completed ? (
                                                     <CheckCircle className="w-5 h-5 text-green-600" />
-                                                  ) : material.locked &&
+                                                  ) : fullMaterial.locked ||
                                                     !course.isEnrolled ? (
                                                     <Lock className="w-5 h-5 text-slate-400" />
                                                   ) : (
@@ -705,8 +734,8 @@ export default function CourseView() {
                                                 <div className="flex justify-between items-center gap-4 w-full">
                                                   <div className="flex items-center gap-2 text-right">
                                                     <p className="font-medium text-slate-900 dark:text-slate-100 truncate">
-                                                      {material.title ||
-                                                        material?.main_title}
+                                                      {fullMaterial.title ||
+                                                        fullMaterial?.main_title}
                                                     </p>
                                                   </div>
                                                   <div className="flex flex-wrap items-center justify-end gap-2 text-left">
@@ -718,10 +747,11 @@ export default function CourseView() {
 
                                                     <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
                                                       <Timer className="w-3 h-3" />
-                                                      {material.duration} دقيقة
+                                                      {fullMaterial.duration}{" "}
+                                                      دقيقة
                                                     </div>
 
-                                                    {material.completed && (
+                                                    {fullMaterial.completed && (
                                                       <span className="text-xs text-green-600 dark:text-green-400 font-medium">
                                                         مكتمل
                                                       </span>
@@ -729,8 +759,9 @@ export default function CourseView() {
                                                   </div>
                                                 </div>
 
-                                                {material.type === "video" &&
-                                                  !material.locked && (
+                                                {fullMaterial.type ===
+                                                  "video" &&
+                                                  !fullMaterial.locked && (
                                                     <div className="flex-shrink-0">
                                                       <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
                                                         <Play className="w-4 h-4 text-white fill-white" />
@@ -745,7 +776,7 @@ export default function CourseView() {
                                     )}
                                   </div>
                                 );
-                              } ///
+                              }
                             )}
                           </div>
                         </div>
@@ -756,8 +787,7 @@ export default function CourseView() {
               </div>
             </div>
           </div>
-        )}{" "}
-        //
+        )}
       </div>
 
       {!course.isEnrolled && (

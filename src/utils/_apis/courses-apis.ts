@@ -7,6 +7,8 @@ import {
   CoursesReport,
   RoadMapInterface,
   PatchCourseProgressParams,
+  CodeExecutionResponse,
+  CodeCheckResponse,
 } from "@/types/courses"; /*  */
 import { CoursesContext } from "../types";
 
@@ -208,3 +210,48 @@ export const patchCourseProgressApi = async (
     throw e;
   }
 };
+
+export const codeExecutionApi = async (data: {
+  code: string;
+  language: string;
+  stdin: string;
+}): Promise<CodeExecutionResponse> => {
+  try {
+    const response = await Api<CodeExecutionResponse>({
+      method: "post",
+      url: `courses/code/run`,
+      withCredentials: false,
+      data: {
+        code: data.code,
+        language: data.language,
+        stdin: data.stdin || "",
+      },
+    });
+
+    return response.data;
+  } catch (e: any) {
+    console.error("codeExecutionApi error:", e.message);
+    throw e;
+  }
+};
+
+export const codeCheckApi = async (data: {
+  code: string;
+  language: string;
+  lessonId: string;
+}): Promise<CodeCheckResponse> => {
+  try {
+    const response = await Api<CodeCheckResponse>({
+      method: "post",
+      url: `courses/code/check`,
+      withCredentials: false,
+      data,
+    });
+
+    return response.data;
+  } catch (e: any) {
+    console.error("codeCheckApi error:", e.message);
+    throw e;
+  }
+};
+

@@ -205,3 +205,22 @@ export interface CodeMaterialContext {
     id: number | string;
   };
 }
+
+export interface CodeExecutionResponse {
+  output: string;
+  error?: string;
+  executionTime: number;
+  success: boolean;
+}
+
+export interface CodeCheckResponse {
+  passed: number;
+  total: number;
+  results: {
+    input: string;
+    expectedOutput: string;
+    actualOutput: string;
+    success: boolean;
+    error?: string;
+  }[];
+}

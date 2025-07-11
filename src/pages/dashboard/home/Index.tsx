@@ -13,6 +13,7 @@ import {
   ProfessionalCourseCard,
   StatsCards,
 } from "./components/course.helpers";
+import LoadingScreen from "@/components/LoadingScreen";
 
 export default function DashboardHome() {
   const [courses, setCourses] = useState<CoursesContext[]>([]);
@@ -62,14 +63,7 @@ export default function DashboardHome() {
         <StatsCards stats={stats} />
 
         {loading ? (
-          <div className="flex items-center justify-center py-16">
-            <div className="flex items-center gap-3 px-6 py-3 bg-white/95 dark:bg-gray-900/95 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm">
-              <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-              <span className="text-gray-900 dark:text-white font-medium">
-                جاري تحميل الدورات...
-              </span>
-            </div>
-          </div>
+          <LoadingScreen />
         ) : courses.filter((course) => course.isEnrolled == true).length > 0 ? (
           <section className="space-y-8">
             <ModernSectionHeader
@@ -99,7 +93,6 @@ export default function DashboardHome() {
             description="دورات مختارة بعناية لتناسب اهتماماتك ومستواك التعليمي"
             showViewAll={true}
           />
-
           {error ? (
             <div className="flex items-center justify-center py-16">
               <div className="px-6 py-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 rounded-xl">

@@ -25,7 +25,7 @@ export default function UserProfileMenu() {
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"
-          className="w-62 ml-5 dark:bg-gray-900 dark:border-gray-700"
+          className="relative w-62 ml-5 dark:bg-gray-900 dark:border-gray-700"
         >
           <div>
             <DropdownMenuItem className="gap-2 cursor-pointer dark:hover:!bg-blue-900/20">
