@@ -13,12 +13,14 @@ class ErrorBoundary extends React.Component<
   ErrorBoundaryState
 > {
   state: ErrorBoundaryState = { hasError: false };
+  error: Error | null = null;
 
   static getDerivedStateFromError() {
     return { hasError: true };
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    this.error = error;
     console.error("Error caught in ErrorBoundary:", error, errorInfo);
   }
 
@@ -53,16 +55,9 @@ class ErrorBoundary extends React.Component<
           <h1 className="font-semibold text-xl text-center text-gray-800 mb-2">
             حدث خطأ
           </h1>
-          <p className="text-center text-gray-600 mb-4">
-            نحن على علم بالمشكلة وسيتم إصلاحها قريبًا. شكرًا لصبرك!
-          </p>
           <h1 className="font-semibold text-xl text-center text-gray-800 mb-2">
             Oops, something minor happened
           </h1>
-          <p className="text-center text-gray-600">
-            !We're aware of the issue and it should be fixed soon. Thanks for
-            your patience
-          </p>
         </div>
       );
     }

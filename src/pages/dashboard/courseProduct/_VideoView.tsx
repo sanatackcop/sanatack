@@ -17,22 +17,22 @@ export function VideoView({ video }: { video: Video }) {
   const ytPlayerInstance = useRef<any>(null);
 
   useEffect(() => {
-    const embedId = extractYouTubeId(video?.data?.youtubeId);
+    const embedId = extractYouTubeId(video.youtubeId);
     if (!embedId) return;
 
     if (ytPlayerInstance.current && ytPlayerInstance.current.loadVideoById) {
       ytPlayerInstance.current.loadVideoById(embedId);
       updateCurrentMaterial({
-        ...video.data,
+        ...video,
         type: MaterialType.VIDEO,
         duration: 0,
       });
     }
-  }, [video?.data?.youtubeId]);
+  }, [video.youtubeId]);
 
   // Load player once when first mounted
   useEffect(() => {
-    const embedId = extractYouTubeId(video?.data?.youtubeId);
+    const embedId = extractYouTubeId(video.youtubeId);
     if (!embedId || !playerRef.current) return;
 
     const loadPlayer = () => {
@@ -49,7 +49,6 @@ export function VideoView({ video }: { video: Video }) {
           events: {
             onStateChange: (event: any) => {
               if (event.data === (window as any).YT.PlayerState.ENDED) {
-                console.log("Video ended");
                 updateCurrentMaterial(video);
               }
             },
@@ -70,7 +69,7 @@ export function VideoView({ video }: { video: Video }) {
 
   // Update player when video changes
   useEffect(() => {
-    const embedId = extractYouTubeId(video?.data?.youtubeId);
+    const embedId = extractYouTubeId(video.youtubeId);
     if (!embedId) return;
 
     // If player already exists, just update it
@@ -109,7 +108,7 @@ export function VideoView({ video }: { video: Video }) {
                   {video.title}
                 </h1>
                 <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-lg max-w-4xl">
-                  {video?.data?.description}
+                  {video.description}
                 </p>
               </div>
             </div>

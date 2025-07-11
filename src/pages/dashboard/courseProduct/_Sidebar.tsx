@@ -80,9 +80,9 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
 
   const renderMaterialButton = (material: MaterialContext) => {
     const Icon = getIcon(material.type);
-    const isCompleted = material.completed;
+    const isCompleted = material.isFinished;
     const isCurrent = currentMaterial?.id === material.id;
-    const isLocked = material.locked;
+    const isLocked = !material.isFinished;
 
     const buttonDisabled = isLocked;
 
@@ -176,22 +176,22 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
           <div
             className={
               "p-2 rounded-xl flex-shrink-0 " +
-              (material.completed
+              (material.isFinished
                 ? "bg-green-100 dark:bg-green-900/20"
-                : material.isCurrent
+                : material.id === courseData.current_material
                 ? "bg-blue-100 dark:bg-blue-900/20"
                 : "bg-gray-100 dark:bg-gray-800")
             }
           >
-            {material.completed ? (
+            {material.isFinished ? (
               <CheckCircle className="w-4 h-4 text-green-600" />
-            ) : material.locked ? (
+            ) : !material.isFinished ? (
               <Lock className="w-4 h-4 text-gray-400" />
             ) : (
               <Icon
                 className={
                   "w-4 h-4 " +
-                  (material.isCurrent
+                  (material.id == courseData.current_material
                     ? "text-blue-600"
                     : "text-gray-600 dark:text-gray-400")
                 }

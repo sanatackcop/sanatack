@@ -11,7 +11,7 @@ export default function MaterialViewer({
 }: {
   material: MaterialContext;
 }) {
-  if (!material) {
+  if (!material)
     return (
       <div className="flex h-full items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900">
         <div className="text-center">
@@ -23,15 +23,15 @@ export default function MaterialViewer({
         </div>
       </div>
     );
-  }
+
   if (material.type == MaterialType.CODE)
-    return <CodePlayground material={material} />;
+    return <CodePlayground key={material.id} material={material} />;
 
   if (material.type == MaterialType.VIDEO)
-    return <VideoView video={material} />;
+    return <VideoView key={material.youtubeId} video={material} />;
 
   if (material.type == MaterialType.ARTICLE)
-    return <ArticleView article={material} />;
+    return <ArticleView key={material.id} article={material} />;
 
   if (material.type == MaterialType.QUIZ_GROUP)
     return <QuizView key={material.id} quizGroup={material} />;

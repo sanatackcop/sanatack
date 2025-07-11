@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Menu,
   ChevronLeft,
@@ -9,7 +9,6 @@ import {
   Flame,
   Trophy,
   CheckCircle2,
-  Clock,
 } from "lucide-react";
 import {
   Dialog,
@@ -22,6 +21,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { CourseDetails, MaterialContext } from "@/types/courses";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { useSettings } from "@/context/SettingsContexts";
+import { MaterialType } from "@/utils/types/adminTypes";
 
 interface NavigationPlaygroundProps {
   courseData: CourseDetails;
@@ -53,19 +54,20 @@ export const NavigationPlayground = ({
   courseData,
   prevMaterial,
   nextMaterial,
-  handlePrev,
-  handleNext,
-  setSidebarOpen,
   progress,
-  totalDuration,
+  completedLessons,
+  totalLessons,
   sidebarOpen,
   currentMaterial,
-  totalLessons,
-  completedLessons,
-  handleComplete,
   userData,
+  handlePrev,
+  handleComplete,
+  handleNext,
+  setSidebarOpen,
 }: NavigationPlaygroundProps) => {
   const [congratsOpen, setCongratsOpen] = useState(false);
+  const [finished, setFinished] = useState(currentMaterial.isFinished);
+  const { currentCheck } = useSettings();
 
   const xpGained = Math.round((userData?.totalXp || 1000) * 0.05);
   const streakBonus = (userData?.streak || 0) > 7 ? 50 : 0;
@@ -74,6 +76,42 @@ export const NavigationPlayground = ({
     handleComplete();
     setCongratsOpen(true);
   };
+
+  useEffect(() => {
+    if (!currentCheck || finished) return;
+    if (
+      currentCheck.type == MaterialType.ARTICLE &&
+      currentMaterial.type == MaterialType.ARTICLE
+    ) {
+      const totalSlides = Object.keys(currentMaterial.data).length - 1;
+      if (totalSlides != currentCheck.total_read) {
+        setFinished(false);
+        return;
+      }
+    } else if (
+      currentCheck.type == MaterialType.VIDEO &&
+      currentMaterial.type == MaterialType.VIDEO
+    ) {
+      if (currentCheck.duration == 0) {
+        setFinished(false);
+        return;
+      }
+    } else if (
+      currentCheck.type == MaterialType.QUIZ_GROUP &&
+      currentMaterial.type == MaterialType.QUIZ_GROUP
+    ) {
+      if (currentCheck.result < 60) {
+        setFinished(false);
+        return;
+      }
+    }
+
+    setFinished(true);
+  }, [currentCheck]);
+
+  useEffect(() => {
+    setFinished(currentMaterial.isFinished);
+  }, [currentMaterial]);
 
   return (
     <TooltipProvider>
@@ -94,8 +132,25 @@ export const NavigationPlayground = ({
               </Button>
             </div>
 
-            <div className="flex-1 flex items-center gap-6">
-              <div className="flex items-center gap-4 text-sm flex-shrink-0">
+            {/* Center Section - Progress & Stats */}
+            <div className="flex-1 max-w-2xl mx-4">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <Target className="h-4 w-4 text-emerald-500" />
+                    <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                      {9999}/{9999}
+                      {/*  set here the current completed materials of the current module and the total materials */}
+                    </span>
+                  </div>
+                  {/* <div className="hidden sm:flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-blue-500" />
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                      ≈ {Math.round(estimatedDuration/ 60 / 60)}س{" "}
+                      {estimatedDuration % 60}د
+                    </span>
+                  </div> */}
+                </div>
                 <div className="flex items-center gap-2">
                   <Target className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                   <span className="text-gray-600 dark:text-gray-400 font-medium">
@@ -162,7 +217,7 @@ export const NavigationPlayground = ({
                 variant="ghost"
                 size="sm"
                 disabled={
-                  !nextMaterial || (nextMaterial && nextMaterial.locked)
+                  !nextMaterial || (nextMaterial && !nextMaterial.isFinished)
                 }
                 onClick={handleNext}
                 className="gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-blue-50 dark:hover:bg-blue-900/20"
@@ -199,7 +254,7 @@ export const NavigationPlayground = ({
                 size="lg"
                 disabled={!prevMaterial}
                 onClick={handlePrev}
-                className="gap-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-40 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="gap-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <ChevronRight className="h-5 w-5" />
                 <div className="hidden sm:block text-right">
@@ -217,7 +272,7 @@ export const NavigationPlayground = ({
                 size="lg"
                 disabled={!nextMaterial}
                 onClick={handleNext}
-                className="gap-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-40 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="gap-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-40  disabled:cursor-not-allowed"
               >
                 <div className="hidden sm:block text-left">
                   <div className="text-sm font-medium">التالي</div>
@@ -238,8 +293,11 @@ export const NavigationPlayground = ({
                 <div className="text-sm font-semibold text-gray-900 dark:text-white">
                   {currentMaterial?.title || "الدرس الحالي"}
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">
-                  {currentMaterial?.type || "فيديو"} • ≈ 15 دقيقة
+                <div className="text-xs text-gray-500 dark:text-gray-400 flex gap-4">
+                  <p className=" mr-3">
+                    {MaterialPreview[currentMaterial.type]?.label}
+                  </p>
+                  <p>{Math.floor(currentMaterial.duration / 60 / 60)} دقيقة</p>
                 </div>
               </div>
             </div> */}

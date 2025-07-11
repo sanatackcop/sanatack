@@ -1,6 +1,8 @@
 import { CoursesContext } from "@/utils/types";
-import { ArticleDto, MaterialType, QuizGroup } from "@/utils/types/adminTypes";
+import { MaterialType } from "@/utils/types/adminTypes";
+
 export type TabType = "all" | "started" | "done";
+
 export interface CareerPathInterface {
   id: string;
   title: string;
@@ -8,6 +10,7 @@ export interface CareerPathInterface {
   roadmaps?: RoadMapInterface[];
   isEnrolled?: boolean;
 }
+
 export interface RoadMapInterface {
   id: string;
   title: string;
@@ -16,6 +19,7 @@ export interface RoadMapInterface {
   isEnrolled?: boolean;
   courses: CourseDetails[];
 }
+
 export interface CourseDetails extends CoursesContext {
   modules: ModuleDetails[];
 }
@@ -30,6 +34,7 @@ export interface ModuleDetails {
   id: string;
   title: string;
   lessons: LessonDetails[];
+  order: number;
 }
 
 export interface ModuleDetailsContext {
@@ -39,13 +44,8 @@ export interface ModuleDetailsContext {
   progress: number;
   completedMaterials: number;
   totalMaterials: number;
+  order: number;
 }
-
-export declare type MaterialContext =
-  | ArticleContext
-  | VideoContext
-  | QuizGroupContext
-  | CodeMaterialContext;
 
 export interface LessonDetails {
   id: string;
@@ -63,15 +63,23 @@ export interface LessonDetailsContext {
   materials: MaterialContext[];
 }
 
+export declare type Material = Article | Video | QuizGroup | CodeMaterial;
+
+export declare type MaterialContext =
+  | ArticleContext
+  | VideoContext
+  | QuizGroupContext
+  | CodeMaterialContext;
+
 export interface InfoCardProps {
-  title?: string;
-  content: string;
   type: "info" | "tip" | "warning" | "success" | "error";
+  title: string;
+  content: string;
 }
 
 export interface MaterialData {
-  id: number;
-  type: string;
+  article_id: number;
+  type: "hero" | "section" | "conclusion";
   title: string;
   description: string;
   body: string;
@@ -79,130 +87,67 @@ export interface MaterialData {
   quote?: { text: string; author?: string };
   info?: InfoCardProps;
   image?: string;
+  order: number;
 }
-// export interface Article {
-//   id: string;
-//   created_at: string;
-//   updated_at: string;
-//   title: string;
-//   data: {
-//     [key: string]: MaterialData;
-//   };
-//   description: string;
-//   order: number;
-//   duration: number;
-//   type: MaterialType.ARTICLE;
-// }
+
+export interface Article {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  title: string;
+  data: MaterialData[];
+  duration: number;
+  order: number;
+  type: MaterialType.ARTICLE;
+}
 
 export declare type ArticleContext = Article & {
   isFinished: boolean;
 };
 
+export interface Video {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  title: string;
+  description: string;
+  order: number;
+  youtubeId: string;
+  duration: number;
+  type: MaterialType.VIDEO;
+}
+
 export declare type VideoContext = Video & {
   isFinished: boolean;
 };
 
-export declare type BaseMaterial = {
-  id: string;
-  title: string;
-  created_at: string;
-  updated_at: string;
-  order: number;
-  duration: number;
-  completed: boolean;
-  type: MaterialType;
-  isCurrent: boolean;
-  locked: boolean;
-};
-
-export type Material = Article | Video | QuizMaterial | CodeMaterial;
-
-export interface InfoCardProps {
-  type: "info" | "tip" | "warning" | "success" | "error";
-  title?: string;
-  content: string;
-}
-
-export interface Article extends BaseMaterial {
-  type: MaterialType.ARTICLE;
-  data: {
-    id: string;
-    created_at: string;
-    updated_at: string;
-    title: string;
-    data: {
-      [key: string]: MaterialData;
-    };
-    description: string;
-    order: number;
-    duration: number;
-  };
-}
-
-export interface Video extends BaseMaterial {
-  type: MaterialType.VIDEO;
-  data: {
-    id: string;
-    created_at: string;
-    updated_at: string;
-    title: string;
-    youtubeId: string;
-    duration: number;
-    description: string;
-    order: number;
-  };
-}
-export interface CodeMaterial extends BaseMaterial {
-  type: MaterialType.CODE;
-  title: string;
-  data: {
-    id: number | string;
-  };
-}
-export interface CodeMaterialContext extends BaseMaterial {
-  type: MaterialType.CODE;
-  title: string;
-  isFinished: boolean;
-  data: {
-    id: number | string;
-  };
-}
-
-export interface QuizMaterial extends BaseMaterial {
-  type: MaterialType.QUIZ_GROUP;
-  quizzes: Quiz[];
-  data?: {
-    question: string;
-    options: string[];
-    correctAnswer: string;
-    explanation?: string;
-  };
-}
 export interface Quiz {
   id: string;
+  created_at: string;
+  updated_at: string;
   question: string;
   options: string[];
   correctAnswer: string;
   explanation?: string;
-  duration: number;
   order: number;
+  type: string;
 }
 
-// export interface LinkMaterial extends BaseMaterial {
-//   type: "link";
-//   data: {
-//     url: string;
-//     title?: string;
-//     description?: string;
-//   };
-// }
+export interface QuizGroup {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  title: string;
+  order: number;
+  quizzes: Quiz[];
+  duration: number;
+  type: MaterialType.QUIZ_GROUP;
+}
 
-export declare type QuizGroupContext = QuizGroup &
-  BaseMaterial & {
-    isFinished: boolean;
-    old_result?: number;
-    duration: number;
-  };
+export declare type QuizGroupContext = QuizGroup & {
+  isFinished: boolean;
+  old_result?: number;
+};
 
 export enum LevelEnum {
   BEGINNER = "مبتدئ",
@@ -219,58 +164,6 @@ export interface CoursesReport {
   certifications: number;
 }
 
-export interface UpdateCourseDto {
-  title?: string;
-  description?: string;
-  level?: LevelEnum;
-  course_info?: {
-    durationHours: number;
-    tags: string[];
-    new_skills_result: string[];
-    learning_outcome: { [key: string]: number };
-    prerequisites: string[];
-  };
-  isPublished?: boolean;
-}
-
-export interface UpdateModuleDto {
-  title?: string;
-  description?: string;
-}
-
-export interface UpdateLessonDto {
-  name?: string;
-  description?: string;
-}
-
-export interface UpdateArticleDto {
-  data?: ArticleDto[];
-  duration?: number;
-}
-
-export interface UpdateQuizDto {
-  question?: string;
-  options?: string[];
-  correctAnswer?: string;
-  explanation?: string;
-  duration?: number;
-}
-
-export interface UpdateResourceDto {
-  title?: string;
-  description?: string;
-  url?: string;
-  content?: string;
-  duration?: number;
-}
-
-export interface UpdateVideoDto {
-  title?: string;
-  youtubeId?: string;
-  description?: string;
-  duration?: number;
-}
-
 export interface PatchCourseProgressParams {
   userId: string;
   courseId: string;
@@ -279,6 +172,37 @@ export interface PatchCourseProgressParams {
     type: MaterialType;
     quizGroup_id?: string;
     result?: number;
+  };
+}
+
+export interface CodeMaterial {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  order: number;
+  duration: number;
+  isCurrent: boolean;
+  locked: boolean;
+  type: MaterialType.CODE;
+  title: string;
+  data: {
+    id: number | string;
+  };
+}
+
+export interface CodeMaterialContext {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  order: number;
+  duration: number;
+  isCurrent: boolean;
+  locked: boolean;
+  type: MaterialType.CODE;
+  title: string;
+  isFinished: boolean;
+  data: {
+    id: number | string;
   };
 }
 
