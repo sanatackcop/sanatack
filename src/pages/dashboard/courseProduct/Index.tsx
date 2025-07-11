@@ -8,27 +8,16 @@ import { patchCourseProgressApi } from "@/utils/_apis/courses-apis";
 import { useParams } from "react-router-dom";
 import { MaterialType } from "@/utils/types/adminTypes";
 import { useCourseData } from "@/hooks/useCourseData";
+import { CourseDetailsContext } from "@/types/courses";
 
 export const CoursePlayground: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [expandedModules, setExpandedModules] = useState<string[]>(["basics"]);
-
-  const {
-    darkMode,
-    currentCheck,
-    updateCurrentCheck: updateCurrentMaterial,
-  } = useSettings();
-
   const { id } = useParams();
-  const userContext = useContext(UserContext);
-  if (!userContext || !userContext.auth?.user) return null;
-  const user = userContext.auth.user;
-
   const {
     course,
-    setCourseData,
     currentMaterial,
-    setCurrentMaterial,
+    sortedMaterials,
     materials,
     materialsCount,
     completedMaterials,
@@ -37,22 +26,37 @@ export const CoursePlayground: React.FC = () => {
     nextMaterial,
     prevMaterial,
     currentIndex,
+    setCourseData,
+    setCurrentMaterial,
   } = useCourseData(id as string);
+  const { darkMode, currentCheck, updateCurrentCheck } = useSettings();
+  const userContext = useContext(UserContext);
+  if (!userContext || !userContext.auth?.user) return null;
+  const user = userContext.auth.user;
 
   useEffect(() => {
-    if (currentMaterial) {
-      updateCurrentMaterial(
-        currentMaterial.type === MaterialType.ARTICLE
-          ? { ...currentMaterial, total_read: 0 }
-          : currentMaterial.type === MaterialType.QUIZ_GROUP
-          ? { ...currentMaterial, result: 0 }
-          : currentMaterial
-      );
+    if (sortedMaterials.length) {
+      const curMaterial =
+        sortedMaterials.find((m) => m.id === course?.current_material) ??
+        sortedMaterials[0];
+
+      setCurrentMaterial(curMaterial);
+      if (curMaterial) {
+        updateCurrentCheck(
+          curMaterial.type === MaterialType.ARTICLE
+            ? { ...curMaterial, duration: 0, total_read: 0 }
+            : curMaterial.type === MaterialType.QUIZ_GROUP
+            ? { ...curMaterial, duration: 0, result: 0 }
+            : curMaterial.type == MaterialType.VIDEO
+            ? { ...curMaterial, duration: 0 }
+            : curMaterial
+        );
+      }
     }
-  }, [currentMaterial]);
+  }, [sortedMaterials]);
 
   const handleComplete = async () => {
-    if (!user?.id || !currentCheck || !course) return;
+    if (!user?.id || !currentCheck || !currentMaterial || !course) return;
 
     try {
       await patchCourseProgressApi({
@@ -71,20 +75,37 @@ export const CoursePlayground: React.FC = () => {
         },
       });
 
-      const updatedCourseData = {
+      const updatedCourseData: CourseDetailsContext = {
         ...course,
-        modules: course.modules.map((module: any) => ({
+        current_material: nextMaterial?.id,
+        modules: course.modules.map((module) => ({
           ...module,
-          lessons: module.lessons.map((lesson: any) => ({
+          lessons: module.lessons.map((lesson) => ({
             ...lesson,
-            materials: lesson.materials.map((material: any) =>
+            materials: lesson.materials.map((material) =>
               material.id === currentMaterial.id
-                ? { ...material, completed: true }
+                ? {
+                    ...material,
+                    isFinished: true,
+                    ...(material.type == MaterialType.QUIZ_GROUP &&
+                    currentCheck.type == MaterialType.QUIZ_GROUP
+                      ? {
+                          old_result: currentCheck.result,
+                        }
+                      : {}),
+                  }
                 : material
             ),
           })),
         })),
       };
+
+      if (
+        currentCheck.type == MaterialType.QUIZ_GROUP &&
+        currentMaterial.type == MaterialType.QUIZ_GROUP
+      )
+        updatedCourseData.enrollment_info.quizzes_result[currentMaterial.id] =
+          currentCheck.result;
 
       setCourseData(updatedCourseData);
     } catch (err) {
@@ -100,7 +121,7 @@ export const CoursePlayground: React.FC = () => {
     }
 
     setCurrentMaterial(nextMaterial);
-    updateCurrentMaterial(
+    updateCurrentCheck(
       nextMaterial.type === MaterialType.ARTICLE
         ? { ...nextMaterial, total_read: 0 }
         : nextMaterial.type === MaterialType.QUIZ_GROUP
@@ -113,7 +134,7 @@ export const CoursePlayground: React.FC = () => {
     if (!prevMaterial) return;
 
     setCurrentMaterial(prevMaterial);
-    updateCurrentMaterial(
+    updateCurrentCheck(
       prevMaterial.type === MaterialType.ARTICLE
         ? { ...prevMaterial, total_read: 0 }
         : prevMaterial.type === MaterialType.QUIZ_GROUP
@@ -130,17 +151,16 @@ export const CoursePlayground: React.FC = () => {
     );
   };
 
-  if (!course || !materials || !currentMaterial) {
+  if (!course || !materials || !currentMaterial)
     return <p>Loading course material...</p>;
-  }
 
   return (
     <div className={`h-screen flex flex-col ${darkMode ? "dark" : ""}`}>
       <NavigationPlayground
         courseData={{
           ...course,
-          completedLessons: completedMaterials,
-          totalLessons: materialsCount,
+          // completedLessons: completedMaterials,
+          // totalLessons: materialsCount,
           progress: progress,
         }}
         sidebarOpen={sidebarOpen}
@@ -162,7 +182,7 @@ export const CoursePlayground: React.FC = () => {
           materials={Array.from(materials.values())}
           expandedModules={expandedModules}
           toggleModule={toggleModule}
-          currentMaterial={currentIndex}
+          currentMaterial={currentMaterial}
           totalMaterials={materialsCount}
           completedMaterials={completedMaterials}
           progress={progress}
@@ -178,5 +198,6 @@ export const CoursePlayground: React.FC = () => {
     </div>
   );
 };
+``;
 
 export default CoursePlayground;

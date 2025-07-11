@@ -3,35 +3,6 @@ export interface ConsoleEntry {
   content: string;
 }
 
-export interface CodeSnippet {
-  lang: string;
-  code: string;
-}
-
-export interface Section {
-  type: string;
-  title: string;
-  description: string;
-  body: string;
-  imageUrl?: string;
-  videoUrl?: string;
-  codeSnippet?: CodeSnippet;
-  order: number;
-}
-
-export interface Material {
-  id: string;
-  created_at: string;
-  updated_at: string;
-  main_title: string;
-  duration: number;
-  data: Section[];
-  hint: string;
-  initialCode: string;
-  order: number;
-  type: string;
-}
-
 export const ICON_MAP: any = {
   error: "❌",
   warn: "⚠️",

@@ -20,7 +20,7 @@ export default function RoadMapContent({
           let title = "";
 
           if (material.type == MaterialType.VIDEO) {
-            title = material.data.title || "video";
+            title = material.title || "video";
           } else if (material.type == MaterialType.QUIZ_GROUP) {
             title = "quiz";
           }

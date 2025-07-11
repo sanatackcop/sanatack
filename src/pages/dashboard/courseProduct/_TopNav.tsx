@@ -61,14 +61,14 @@ export const NavigationPlayground = ({
   courseData,
   prevMaterial,
   nextMaterial,
-  handlePrev,
-  handleNext,
-  setSidebarOpen,
   sidebarOpen,
   currentMaterial,
-  handleComplete,
   userData,
   currentIndex,
+  handlePrev,
+  handleComplete,
+  handleNext,
+  setSidebarOpen,
 }: NavigationPlaygroundProps) => {
   const [congratsOpen, setCongratsOpen] = useState(false);
   const [finished, setFinished] = useState(currentMaterial.isFinished);
@@ -133,7 +133,6 @@ export const NavigationPlayground = ({
       currentCheck.type == MaterialType.QUIZ_GROUP &&
       currentMaterial.type == MaterialType.QUIZ_GROUP
     ) {
-      console.log({ currentCheck });
       if (currentCheck.result < 60) {
         setFinished(false);
         return;
@@ -144,7 +143,6 @@ export const NavigationPlayground = ({
   }, [currentCheck]);
 
   useEffect(() => {
-    console.log(currentMaterial);
     setFinished(currentMaterial.isFinished);
   }, [currentMaterial]);
 
@@ -198,7 +196,7 @@ export const NavigationPlayground = ({
                   {/* <div className="hidden sm:flex items-center gap-2">
                     <Clock className="h-4 w-4 text-blue-500" />
                     <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      ≈ {Math.round(estimatedDuration / 60)}س{" "}
+                      ≈ {Math.round(estimatedDuration/ 60 / 60)}س{" "}
                       {estimatedDuration % 60}د
                     </span>
                   </div> */}
@@ -360,7 +358,7 @@ export const NavigationPlayground = ({
                   <p className=" mr-3">
                     {MaterialPreview[currentMaterial.type]?.label}
                   </p>
-                  <p>{Math.floor(currentMaterial.duration / 60)} دقيقة</p>
+                  <p>{Math.floor(currentMaterial.duration / 60 / 60)} دقيقة</p>
                 </div>
               </div>
             </div>

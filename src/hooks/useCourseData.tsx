@@ -1,9 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { getSingleCoursesApi } from "@/utils/_apis/courses-apis";
+import { MaterialType } from "@/utils/types/adminTypes";
+import { CourseDetailsContext, MaterialContext } from "@/types/courses";
 
 export const useCourseData = (courseId: string) => {
-  const [course, setCourseData] = useState<any>({});
-  const [currentMaterial, setCurrentMaterial] = useState<any>(null);
+  const [course, setCourseData] = useState<CourseDetailsContext | undefined>();
+  const [currentMaterial, setCurrentMaterial] = useState<
+    MaterialContext | undefined
+  >();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -12,8 +16,72 @@ export const useCourseData = (courseId: string) => {
       try {
         setLoading(true);
         const data = await getSingleCoursesApi({ course_id: courseId });
-        setCourseData(data);
+
+        const flatMaterialList: string[] = [];
+        data.modules.forEach((module) =>
+          module.lessons.forEach((lesson) =>
+            lesson.materials.forEach((material) =>
+              flatMaterialList.push(material.id)
+            )
+          )
+        );
+
+        const currentMaterialIndex = flatMaterialList.indexOf(
+          data.current_material ?? ""
+        );
+
+        const courseDetails: CourseDetailsContext = {
+          ...data,
+          modules: data.modules.map((module) => {
+            let moduleCompleted = 0;
+            let moduleTotal = 0;
+
+            const mod = {
+              ...module,
+              lessons: module.lessons.map((lesson) => {
+                return {
+                  ...lesson,
+                  materials: lesson.materials.map((material) => {
+                    const indexInFlat = flatMaterialList.indexOf(material.id);
+                    const isFinished = indexInFlat < currentMaterialIndex;
+
+                    moduleTotal++;
+                    if (isFinished) moduleCompleted++;
+
+                    if (material.type === MaterialType.QUIZ_GROUP) {
+                      return {
+                        ...material,
+                        isFinished,
+                        old_result:
+                          data?.enrollment_info?.quizzes_result[material.id] ??
+                          0,
+                      };
+                    } else {
+                      return {
+                        ...material,
+                        isFinished,
+                      };
+                    }
+                  }),
+                };
+              }),
+              totalMaterials: moduleTotal,
+              completedMaterials: moduleCompleted,
+              progress: moduleTotal
+                ? Math.floor((moduleCompleted / moduleTotal) * 100)
+                : 0,
+            };
+
+            return mod;
+          }),
+          completedMaterials: flatMaterialList.slice(0, currentMaterialIndex)
+            .length,
+          totalMaterials: flatMaterialList.length,
+        };
+
+        setCourseData(courseDetails);
       } catch (err: any) {
+        console.log({ err });
         setError(err);
       } finally {
         setLoading(false);
@@ -23,21 +91,37 @@ export const useCourseData = (courseId: string) => {
   }, [courseId]);
 
   const sortedMaterials = useMemo(() => {
-    return (
-      course?.modules?.flatMap((m: any) =>
-        m?.lessons?.flatMap((l: any) => l?.materials)
-      ) ?? []
-    ).sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0));
+    if (!course?.modules) return [];
+    const result: any[] = [];
+    course.modules.forEach((module, moduleIdx) => {
+      module.lessons.forEach((lesson) => {
+        // Sort materials by their order within the lesson
+        const sorted = [...lesson.materials].sort(
+          (a, b) => (a.order ?? 0) - (b.order ?? 0)
+        );
+        sorted.forEach((material) => {
+          // Attach module and material order for reference if needed
+          result.push({
+            ...material,
+            moduleNumber: moduleIdx + 1,
+            materialNumber:
+              result.filter((m) => m.moduleNumber === moduleIdx + 1).length + 1,
+          });
+        });
+      });
+    });
+    return result;
   }, [course]);
 
   const currentId = course?.current_material;
   const curIndex = useMemo(
-    () => sortedMaterials.findIndex((m: any) => m.id === currentId),
+    () => sortedMaterials.findIndex((m) => m.id === currentId),
     [sortedMaterials, currentId]
   );
+
   const materials = useMemo(() => {
     const map = new Map();
-    sortedMaterials.forEach((m: any, i: number) => {
+    sortedMaterials.forEach((m, i: number) => {
       map.set(m.id, {
         isCurrent: i === curIndex,
         completed: i < curIndex,
@@ -46,9 +130,10 @@ export const useCourseData = (courseId: string) => {
     });
     return map;
   }, [sortedMaterials, curIndex]);
+
   const materialsCount = sortedMaterials.length;
   const completedMaterials = sortedMaterials.filter(
-    (i: number) => i < curIndex
+    (_, i: number) => i < curIndex
   ).length;
   const progress =
     materialsCount > 0
@@ -56,12 +141,12 @@ export const useCourseData = (courseId: string) => {
       : 0;
 
   const materialsDuration = sortedMaterials.reduce(
-    (sum: any, material: any) => sum + Number(material.duration || 0),
+    (sum, material) => sum + Number(material.duration || 0),
     0
   );
 
   const currentIndex = currentMaterial
-    ? sortedMaterials.findIndex((m: any) => m.id === currentMaterial.id)
+    ? sortedMaterials.findIndex((m) => m.id === currentMaterial.id)
     : -1;
 
   const nextMaterial =
@@ -71,18 +156,17 @@ export const useCourseData = (courseId: string) => {
 
   const getTotalLessons = () => {
     return course?.modules?.reduce(
-      (total: number, module: any) => total + (module?.lessons?.length || 0),
+      (total: number, module) => total + (module?.lessons?.length || 0),
       0
     );
   };
+
   const getCompletedLessonsCount = () => {
     let completedCount = 0;
-    course?.modules?.forEach((module: any) => {
-      module?.lessons?.forEach((lesson: any) => {
+    course?.modules?.forEach((module) => {
+      module?.lessons?.forEach((lesson) => {
         if (
-          lesson?.materials?.some(
-            (m: any) => m?.id === course?.current_material
-          )
+          lesson?.materials?.some((m) => m?.id === course?.current_material)
         ) {
           completedCount++;
         }
@@ -92,13 +176,13 @@ export const useCourseData = (courseId: string) => {
   };
 
   const getTotalDuration = () => {
-    return course?.modules?.reduce((total: number, module: any) => {
+    return course?.modules?.reduce((total: number, module) => {
       return (
         total +
-        module?.lessons?.reduce((lessonTotal: number, lesson: any) => {
+        module?.lessons?.reduce((lessonTotal: number, lesson) => {
           return (
             lessonTotal +
-            lesson.materials.reduce((materialTotal: number, material: any) => {
+            lesson.materials.reduce((materialTotal: number, material) => {
               const duration = Number(material.duration || 0);
               return materialTotal + duration;
             }, 0)
@@ -110,9 +194,8 @@ export const useCourseData = (courseId: string) => {
 
   return {
     course,
-    setCourseData,
     currentMaterial,
-    setCurrentMaterial,
+    sortedMaterials,
     materials,
     materialsCount,
     completedMaterials,
@@ -121,10 +204,12 @@ export const useCourseData = (courseId: string) => {
     nextMaterial,
     prevMaterial,
     currentIndex,
+    loading,
+    error,
+    setCourseData,
+    setCurrentMaterial,
     getTotalDuration,
     getCompletedLessonsCount,
     getTotalLessons,
-    loading,
-    error,
   };
 };

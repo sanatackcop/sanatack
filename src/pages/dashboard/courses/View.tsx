@@ -118,7 +118,7 @@ export default function CourseView() {
   const courseStats = [
     {
       title: "إجمالي الساعات",
-      value: `${Math.round((materialsDuration / 60) * 100) / 100} ساعة`,
+      value: `${Math.round((materialsDuration / 60 / 60) * 100) / 100} ساعة`,
       icon: <Clock className="w-5 h-5" />,
       color: "bg-blue-500",
       trend: "+12%",
@@ -215,7 +215,8 @@ export default function CourseView() {
                         وقت الإكمال
                       </div>
                       <div className="text-xs text-slate-600 dark:text-slate-400">
-                        {Math.round((materialsDuration / 60) * 100) / 100} ساعة
+                        {Math.round((materialsDuration / 60 / 60) * 100) / 100}{" "}
+                        ساعة
                       </div>
                     </div>
                   </div>
@@ -429,7 +430,8 @@ export default function CourseView() {
                       وقت الإكمال
                     </span>
                     <span className="font-medium text-slate-900 dark:text-slate-100">
-                      {Math.round((materialsDuration / 60) * 100) / 100} ساعة
+                      {Math.round((materialsDuration / 60 / 60) * 100) / 100}{" "}
+                      ساعة
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -484,8 +486,8 @@ export default function CourseView() {
                   <p className="text-sm text-slate-600 dark:text-slate-400">
                     {course?.modules?.length || 0} وحدات • {getTotalLessons()}{" "}
                     درس •{" "}
-                    {Math.round((materialsDuration / 60) * 100) / 100 || 0} ساعة
-                    إجمالية
+                    {Math.round((materialsDuration / 60 / 60) * 100) / 100 || 0}{" "}
+                    ساعة إجمالية
                   </p>
                 </div>
                 <div className="flex gap-2">

@@ -12,12 +12,14 @@ export declare type VideoCheck = {
   type: MaterialType.VIDEO;
   duration: number;
 };
+
 export declare type QuizGroupCheck = {
   id: string;
   type: MaterialType.QUIZ_GROUP;
   duration: number;
   result: number;
 };
+
 export declare type ArticleCheck = {
   id: string;
   type: MaterialType.ARTICLE;
@@ -25,10 +27,16 @@ export declare type ArticleCheck = {
   total_read: number;
 };
 
+export declare type CodeCheck = {
+  id: string;
+  type: MaterialType.CODE;
+};
+
 export declare type MaterialCheckInfo =
   | VideoCheck
   | QuizGroupCheck
-  | ArticleCheck;
+  | ArticleCheck
+  | CodeCheck;
 
 interface SettingsContextProps {
   darkMode: boolean;
