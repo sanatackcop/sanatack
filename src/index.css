@@ -39,7 +39,6 @@
 
   body {
     @apply bg-white text-neutral-900 dark:bg-black dark:text-white;
-    overflow: hidden;
   }
   :root {
     --radius: 0.5rem;

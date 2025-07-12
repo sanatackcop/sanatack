@@ -4,13 +4,11 @@ import {
   Moon,
   Crown,
   Zap,
-  Briefcase,
   BookOpen,
   ClipboardList,
-  FolderOpen,
   Map,
   ChartScatter,
-  Bot,
+  Brain,
 } from "lucide-react";
 import LogoLight from "@/assets/logo.svg";
 import LogoDark from "@/assets/dark_logo.svg";
@@ -57,9 +55,9 @@ const items = [
     comingSoon: false,
   },
   {
-    title: "المسار المهني",
-    url: "/dashboard/careerPath",
-    icon: Briefcase,
+    title: "صناعة كورسات",
+    url: "/dashboard/ai/course",
+    icon: Brain,
     requiresPaid: true,
     comingSoon: true,
   },
@@ -70,28 +68,6 @@ const items = [
     requiresPaid: true,
     comingSoon: true,
   },
-  {
-    title: "المشاريع",
-    url: "/dashboard/assessments",
-    icon: FolderOpen,
-    requiresPaid: true,
-    comingSoon: true,
-  },
-  // {
-  //   title: "ليت كود",
-  //   url: "/dashboard/assessments",
-  //   icon: Code,
-  //   requiresPaid: true,
-  //   comingSoon: true,
-  // },
-  {
-    title: "مدرب  AI",
-    url: "/dashboard/assessments",
-    icon: Bot,
-    requiresPaid: true,
-    comingSoon: true,
-  },
-
   {
     title: "التحليل العميق",
     url: "/dashboard/assessments",
