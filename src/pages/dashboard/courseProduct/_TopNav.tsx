@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Menu,
   ChevronLeft,
@@ -21,13 +21,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { CourseDetails, MaterialContext } from "@/types/courses";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { useSettings } from "@/context/SettingsContexts";
+import { MaterialType } from "@/utils/types/adminTypes";
 
 interface NavigationPlaygroundProps {
   courseData: CourseDetails;
   prevMaterial: MaterialContext;
   nextMaterial: MaterialContext;
   currentIndex: number;
-  progress: number;
   totalDuration: number;
   sidebarOpen: boolean;
   currentMaterial: MaterialContext;
@@ -55,7 +56,6 @@ export const NavigationPlayground = ({
   handlePrev,
   handleNext,
   setSidebarOpen,
-  progress,
   sidebarOpen,
   currentMaterial,
   totalLessons,
@@ -64,6 +64,8 @@ export const NavigationPlayground = ({
   userData,
 }: NavigationPlaygroundProps) => {
   const [congratsOpen, setCongratsOpen] = useState(false);
+  const [finished, setFinished] = useState(currentMaterial.isFinished);
+  const { currentCheck } = useSettings();
 
   const xpGained = Math.round((userData?.totalXp || 1000) * 0.05);
   const streakBonus = (userData?.streak || 0) > 7 ? 50 : 0;
@@ -73,12 +75,47 @@ export const NavigationPlayground = ({
     setCongratsOpen(true);
   };
 
+  useEffect(() => {
+    if (!currentCheck || finished) return;
+
+    if (
+      currentCheck.type === MaterialType.ARTICLE &&
+      currentMaterial.type === MaterialType.ARTICLE
+    ) {
+      const totalSlides = Object.keys(currentMaterial.data).length - 1;
+      if (totalSlides !== currentCheck.total_read) {
+        setFinished(false);
+        return;
+      }
+    } else if (
+      currentCheck.type === MaterialType.VIDEO &&
+      currentMaterial.type === MaterialType.VIDEO
+    ) {
+      if (currentCheck.duration === 0) {
+        setFinished(false);
+        return;
+      }
+    } else if (
+      currentCheck.type === MaterialType.QUIZ_GROUP &&
+      currentMaterial.type === MaterialType.QUIZ_GROUP
+    ) {
+      if (currentCheck.result < 60) {
+        setFinished(false);
+        return;
+      }
+    }
+
+    setFinished(true);
+  }, [currentCheck]);
+
+  useEffect(() => {
+    setFinished(currentMaterial.isFinished);
+  }, [currentMaterial]);
+
   return (
     <TooltipProvider>
-      <nav
-        className="sticky top-0 z-50 
-      flex-shrink-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-600 shadow-sm "
-      >
+      {/* Top Navbar */}
+      <nav className="sticky top-0 z-50 flex-shrink-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-600 shadow-sm">
         <div className="w-full">
           <div className="flex h-16 items-center justify-between px-4 lg:px-8 gap-4">
             <div className="flex items-center gap-4 flex-shrink-0">
@@ -108,14 +145,14 @@ export const NavigationPlayground = ({
                     التقدم الإجمالي
                   </span>
                   <span className="text-xs font-bold text-gray-700 dark:text-gray-300">
-                    {progress}%
+                    {courseData.progress}%
                   </span>
                 </div>
                 <div className="relative">
                   <div className="h-3 w-full rounded-full bg-gray-200 dark:bg-gray-700 shadow-inner">
                     <div
                       className="h-full rounded-full bg-gradient-to-r from-green-200 via-green-500 to-green-600 transition-all duration-700 ease-out shadow-sm"
-                      style={{ width: `${progress}%` }}
+                      style={{ width: `${courseData.progress}%` }}
                     />
                   </div>
                   <div className="absolute top-0 left-0 w-full h-3 flex items-center justify-between">
@@ -123,7 +160,7 @@ export const NavigationPlayground = ({
                       <div
                         key={marker}
                         className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                          12 >= marker
+                          courseData.progress! >= marker
                             ? "bg-white ring-2 ring-blue-500 shadow-lg"
                             : "bg-gray-300 dark:bg-gray-600"
                         } ${marker === 0 || marker === 100 ? "opacity-0" : ""}`}
@@ -141,6 +178,8 @@ export const NavigationPlayground = ({
           </div>
         </div>
       </nav>
+
+      {/* Mid Navbar */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-t border-gray-200 dark:border-gray-600 shadow-2xl">
         <div className="w-full px-4 lg:px-8">
           <div className="flex h-16 items-center justify-between">
@@ -159,9 +198,7 @@ export const NavigationPlayground = ({
               <Button
                 variant="ghost"
                 size="sm"
-                disabled={
-                  !nextMaterial || (nextMaterial && nextMaterial.isFinished)
-                }
+                disabled={!nextMaterial || !finished}
                 onClick={handleNext}
                 className="gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-blue-50 dark:hover:bg-blue-900/20"
               >
@@ -186,6 +223,7 @@ export const NavigationPlayground = ({
         </div>
       </nav>
 
+      {/* Footer */}
       <footer className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700 shadow-2xl">
         <div className="w-full px-4 lg:px-8">
           <div className="flex h-18 items-center justify-between py-3">
@@ -195,7 +233,7 @@ export const NavigationPlayground = ({
                 size="lg"
                 disabled={!prevMaterial}
                 onClick={handlePrev}
-                className="gap-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-40 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="gap-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <ChevronRight className="h-5 w-5" />
                 <div className="hidden sm:block text-right">
@@ -211,9 +249,9 @@ export const NavigationPlayground = ({
               <Button
                 variant="ghost"
                 size="lg"
-                disabled={!nextMaterial}
+                disabled={!nextMaterial || !finished}
                 onClick={handleNext}
-                className="gap-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-40 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="gap-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <div className="hidden sm:block text-left">
                   <div className="text-sm font-medium">التالي</div>
@@ -228,21 +266,13 @@ export const NavigationPlayground = ({
             </div>
 
             <div className="flex items-center gap-3">
-              {currentMaterial && !nextMaterial ? (
-                <Button
-                  size="lg"
-                  className="gap-3 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl"
-                  onClick={onCompleteClick}
-                >
-                  <Trophy className="h-5 w-5" />
-                  <span className="font-semibold">إكمال الكورس</span>
-                </Button>
-              ) : (
+              {currentMaterial && !nextMaterial && (
                 <Button
                   size="lg"
                   variant="outline"
-                  className="gap-2 border-emerald-200 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-300 dark:hover:bg-emerald-900/20 rounded-xl transition-all duration-200 "
+                  className="gap-2 border-emerald-200 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-300 dark:hover:bg-emerald-900/20 rounded-xl transition-all duration-200"
                   onClick={onCompleteClick}
+                  disabled={finished}
                 >
                   <CheckCircle2 className="h-4 w-4" />
                   <span>إكمال الدرس</span>
@@ -253,6 +283,7 @@ export const NavigationPlayground = ({
         </div>
       </footer>
 
+      {/* Congratulations Dialog */}
       <Dialog open={congratsOpen} onOpenChange={setCongratsOpen}>
         <DialogContent className="max-w-lg border-gray-200 dark:border-gray-700 bg-gradient-to-br from-white to-blue-50 dark:from-gray-900 dark:to-blue-950">
           <DialogHeader>
@@ -268,7 +299,6 @@ export const NavigationPlayground = ({
           </DialogHeader>
 
           <div className="mt-8 space-y-4">
-            {/* XP Reward */}
             <div className="flex items-center justify-center gap-4 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 rounded-xl p-6 shadow-sm border border-amber-200 dark:border-amber-800">
               <div className="p-3 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full">
                 <Sparkles className="h-6 w-6 text-white" />
@@ -283,7 +313,6 @@ export const NavigationPlayground = ({
               </div>
             </div>
 
-            {/* Progress Update */}
             <div className="flex items-center justify-center gap-4 bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 rounded-xl p-6 shadow-sm border border-emerald-200 dark:border-emerald-800">
               <div className="p-3 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full">
                 <TrendingUp className="h-6 w-6 text-white" />
@@ -298,7 +327,6 @@ export const NavigationPlayground = ({
               </div>
             </div>
 
-            {/* Streak Bonus */}
             {streakBonus > 0 && (
               <div className="flex items-center justify-center gap-4 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-xl p-6 shadow-sm border border-orange-200 dark:border-orange-800">
                 <div className="p-3 bg-gradient-to-br from-orange-500 to-red-500 rounded-full">

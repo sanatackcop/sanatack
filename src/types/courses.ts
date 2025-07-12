@@ -26,7 +26,6 @@ export interface CourseDetails extends CoursesContext {
 
 export interface CourseDetailsContext extends CoursesContext {
   completedMaterials: number;
-  totalMaterials: number;
   modules: ModuleDetailsContext[];
 }
 

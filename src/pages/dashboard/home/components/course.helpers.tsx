@@ -453,23 +453,17 @@ export const ProfessionalCourseCard = ({
               {course.updated_at ? DateDisplay(course.updated_at) : "N/A"}
             </span>
           </div>
-          {course.progress === 100 ? (
-            <p className="text-sm text-green-600 dark:text-green-400">
-              لقد انتهيت من هذه الدورة
-            </p>
-          ) : (
-            <button
-              onClick={() =>
-                nav(`/dashboard/courses/${course.id}`, { replace: true })
-              }
-              className={`inline-flex items-center gap-2 bg-gradient-to-r ${
-                topicColors?.bg || "from-blue-500 to-blue-600"
-              } text-white font-semibold text-sm px-4 py-2 rounded-lg transition-all duration-200 hover:shadow-md`}
-            >
-              متابعة
-              <ArrowRight size={14} />
-            </button>
-          )}
+          <button
+            onClick={() =>
+              nav(`/dashboard/courses/${course.id}`, { replace: true })
+            }
+            className={`inline-flex items-center gap-2 bg-gradient-to-r ${
+              topicColors?.bg || "from-blue-500 to-blue-600"
+            } text-white font-semibold text-sm px-4 py-2 rounded-lg transition-all duration-200 hover:shadow-md`}
+          >
+            متابعة
+            <ArrowRight size={14} />
+          </button>
         </div>
       </div>
     </div>

@@ -128,7 +128,7 @@ export default function CourseView() {
   const courseStats = [
     {
       title: "إجمالي الساعات",
-      value: `${Math.round((materialsDuration / 60 / 60) * 100) / 100} ساعة`,
+      value: `${Math.round((materialsDuration / 60) * 100) / 100} ساعة`,
       icon: <Clock className="w-5 h-5" />,
       color: "bg-blue-500",
       trend: "+12%",
@@ -225,8 +225,7 @@ export default function CourseView() {
                         وقت الإكمال
                       </div>
                       <div className="text-xs text-slate-600 dark:text-slate-400">
-                        {Math.round((materialsDuration / 60 / 60) * 100) / 100}{" "}
-                        ساعة
+                        {Math.round((materialsDuration / 60) * 100) / 100} ساعة
                       </div>
                     </div>
                   </div>
@@ -345,7 +344,7 @@ export default function CourseView() {
                   <div className="mb-6 p-6 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-200 dark:border-emerald-800">
                     <div className="text-center">
                       <div className="text-3xl font-bold text-emerald-700 dark:text-emerald-300 mb-2">
-                        {course.completionRate}%
+                        {course.progress}%
                       </div>
                       <div className="text-sm text-emerald-600 dark:text-emerald-400 mb-4">
                         تقدمك في الدورة
@@ -353,7 +352,7 @@ export default function CourseView() {
                       <div className="w-full bg-emerald-200 dark:bg-emerald-800 rounded-full h-3 mb-4">
                         <div
                           className="bg-emerald-500 h-3 rounded-full transition-all duration-500"
-                          style={{ width: `${course.completionRate}%` }}
+                          style={{ width: `${course.progress}%` }}
                         ></div>
                       </div>
                       <div className="text-xs text-emerald-500 dark:text-emerald-400">
@@ -440,8 +439,7 @@ export default function CourseView() {
                       وقت الإكمال
                     </span>
                     <span className="font-medium text-slate-900 dark:text-slate-100">
-                      {Math.round((materialsDuration / 60 / 60) * 100) / 100}{" "}
-                      ساعة
+                      {Math.round((materialsDuration / 60) * 100) / 100} ساعة
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -496,8 +494,8 @@ export default function CourseView() {
                   <p className="text-sm text-slate-600 dark:text-slate-400">
                     {course?.modules?.length || 0} وحدات • {getTotalLessons()}{" "}
                     درس •{" "}
-                    {Math.round((materialsDuration / 60 / 60) * 100) / 100 || 0}{" "}
-                    ساعة إجمالية
+                    {Math.round((materialsDuration / 60) * 100) / 100 || 0} ساعة
+                    إجمالية
                   </p>
                 </div>
                 <div className="flex gap-2 ">
@@ -532,13 +530,11 @@ export default function CourseView() {
                         lesson.materials.filter((m: any) => m.completed).length
                       );
                     }, 0) || 0;
-                  const totalMaterials =
-                    module.lessons?.reduce((acc: number, lesson: any) => {
-                      return acc + lesson.materials.length;
-                    }, 0) || 0;
                   const progressPercent =
-                    totalMaterials > 0
-                      ? Math.round((moduleProgress / totalMaterials) * 100)
+                    course.material_count! > 0
+                      ? Math.round(
+                          (moduleProgress / course.material_count!) * 100
+                        )
                       : 0;
 
                   return (
@@ -561,7 +557,7 @@ export default function CourseView() {
                             <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-slate-400 mt-1">
                               <span>{module.lessons?.length || 0} دروس</span>
                               <span>•</span>
-                              <span>{totalMaterials} عنصر</span>
+                              <span>{course.material_count} عنصر</span>
                               {course.isEnrolled && (
                                 <>
                                   <span>•</span>
