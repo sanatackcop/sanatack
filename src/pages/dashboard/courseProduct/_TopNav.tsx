@@ -244,7 +244,7 @@ export const NavigationPlayground = ({
               <Button
                 variant="ghost"
                 size="lg"
-                disabled={!nextMaterial || !finished}
+                disabled={!nextMaterial}
                 onClick={handleNext}
                 className="gap-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-40 disabled:cursor-not-allowed"
               >
