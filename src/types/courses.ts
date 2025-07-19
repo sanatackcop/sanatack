@@ -184,6 +184,7 @@ export interface CodeMaterial {
   locked: boolean;
   type: MaterialType.CODE;
   title: string;
+  initialCode: string
   data: {
     id: number | string;
   };
@@ -199,6 +200,7 @@ export interface CodeMaterialContext {
   locked: boolean;
   type: MaterialType.CODE;
   title: string;
+  initialCode: string;
   isFinished: boolean;
   data: {
     id: number | string;

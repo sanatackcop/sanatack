@@ -11,7 +11,7 @@ import { Course, Lesson, Module, Roadmap } from "@/utils/types";
 import { QuizGroup, Article, Video } from "@/utils/types/adminTypes";
 import { Link } from "react-router-dom";
 import DeleteDialog from "./components/deleteModal";
-import { CodeItem } from "./components/mapped.materials.create";
+import { CodeMaterial } from "@/types/courses";
 
 export const RoadmapColumns: ColumnDef<Roadmap>[] = [
   {
@@ -267,8 +267,8 @@ export const ArticlesColumns = (
 export const CodeColumns = (
   onDelete?: (id: string) => void,
   onEdit?: (id: string) => void
-): ColumnDef<CodeItem>[] => {
-  const columns: ColumnDef<CodeItem>[] = [
+): ColumnDef<CodeMaterial>[] => {
+  const columns: ColumnDef<CodeMaterial>[] = [
     {
       accessorKey: "id",
       id: "id",

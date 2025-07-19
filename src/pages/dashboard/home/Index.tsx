@@ -69,7 +69,6 @@ export default function DashboardHome() {
             <ModernSectionHeader
               title="تابع دوراتك الحالية"
               description="أكمل ما بدأته وارتقِ بمهاراتك إلى المستوى التالي"
-              showViewAll={false}
             />
             <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
               {courses
@@ -91,7 +90,6 @@ export default function DashboardHome() {
           <ModernSectionHeader
             title="موصى به لك"
             description="دورات مختارة بعناية لتناسب اهتماماتك ومستواك التعليمي"
-            showViewAll={true}
           />
           {error ? (
             <div className="flex items-center justify-center py-16">

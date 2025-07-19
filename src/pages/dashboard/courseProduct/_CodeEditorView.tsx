@@ -4,8 +4,13 @@ import CodeEditor from "./code/_CodeEditor";
 import { ConsoleEntry } from "./code/type";
 import InstructionsPanel from "./code/_InstructionsPanel";
 import { codeCheckApi, codeExecutionApi } from "@/utils/_apis/courses-apis";
+import { CodeMaterialContext } from "@/types/courses";
 
-export default function CodePlayground({ material }: { material: any }) {
+export default function CodePlayground({
+  material,
+}: {
+  material: CodeMaterialContext;
+}) {
   const [code, setCode] = useState(
     material.initialCode || "// Start coding here..."
   );
@@ -20,7 +25,9 @@ export default function CodePlayground({ material }: { material: any }) {
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const currentSection = material.data[currentSectionIndex];
+  const currentSection = (material.data as { [key: number]: any })[
+    currentSectionIndex
+  ];
 
   useEffect(() => {
     const theme = darkMode ? "vs-dark" : "vs";
@@ -97,7 +104,11 @@ export default function CodePlayground({ material }: { material: any }) {
       const detailed = result.results.map((r, i) => {
         return {
           type: r.success ? "success" : "error",
-          content: `Test ${i + 1}:\n  Input: ${r.input}\n  Expected: ${r.expectedOutput}\n  Actual: ${r.actualOutput}${r.error ? `\n  Error: ${r.error}` : ""}`,
+          content: `Test ${i + 1}:\n  Input: ${r.input}\n  Expected: ${
+            r.expectedOutput
+          }\n  Actual: ${r.actualOutput}${
+            r.error ? `\n  Error: ${r.error}` : ""
+          }`,
         } as ConsoleEntry;
       });
 
