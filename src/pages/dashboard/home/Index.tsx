@@ -32,6 +32,7 @@ export default function DashboardHome() {
       setCourses(res);
     } catch (err) {
       setError("حدث خطأ أثناء تحميل الدورات. الرجاء المحاولة لاحقاً.");
+      console.log({ error: error });
     }
   };
 

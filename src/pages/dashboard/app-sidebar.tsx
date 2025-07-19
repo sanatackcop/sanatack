@@ -3,12 +3,12 @@ import {
   Sun,
   Moon,
   Crown,
-  Zap,
   BookOpen,
   ClipboardList,
   Map,
   ChartScatter,
   Brain,
+  Group,
 } from "lucide-react";
 import LogoLight from "@/assets/logo.svg";
 import LogoDark from "@/assets/dark_logo.svg";
@@ -41,23 +41,30 @@ const items = [
     comingSoon: false,
   },
   {
-    title: "الدورات",
+    title: "صناعة كورس",
+    url: "/dashboard/ai/course",
+    icon: Brain,
+    requiresPaid: false,
+    comingSoon: false,
+  },
+  {
+    title: "دوراتي",
     url: "/dashboard/courses",
     icon: BookOpen,
     requiresPaid: false,
     comingSoon: false,
   },
   {
+    title: "بيئة الدراسة",
+    url: "/dashboard/ai/env",
+    icon: Group,
+    requiresPaid: true,
+    comingSoon: true,
+  },
+  {
     title: "المسارات",
     url: "/dashboard/roadMap",
     icon: Map,
-    requiresPaid: false,
-    comingSoon: false,
-  },
-  {
-    title: "صناعة كورسات",
-    url: "/dashboard/ai/course",
-    icon: Brain,
     requiresPaid: true,
     comingSoon: true,
   },
@@ -111,14 +118,14 @@ function SubscriptionBanner({
       <p className="text-xs text-blue-300 300 mb-3">
         احصل على وصول كامل لجميع الميزات والدورات المتقدمة
       </p>
-      <button
+      {/* <button
         onClick={onUpgrade}
         className="w-full bg-blue-500  text-white 
          hover:bg-gray-800  transition-colors duration-200 py-2 px-3 rounded-md text-sm font-semibold flex items-center justify-center gap-2"
       >
         <Zap size={14} />
         ترقية الآن
-      </button>
+      </button> */}
     </div>
   );
 }
