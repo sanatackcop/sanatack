@@ -21,7 +21,6 @@ export const CoursePlayground: React.FC = () => {
     materials,
     materialsCount,
     completedMaterials,
-    progress,
     materialsDuration,
     nextMaterial,
     prevMaterial,
@@ -77,6 +76,10 @@ export const CoursePlayground: React.FC = () => {
 
       const updatedCourseData: CourseDetailsContext = {
         ...course,
+        progress: Math.min(
+          100,
+          Math.round(course.progress! + 100 / course.material_count!)
+        ),
         current_material: nextMaterial?.id,
         modules: course.modules.map((module) => ({
           ...module,
@@ -160,7 +163,6 @@ export const CoursePlayground: React.FC = () => {
         courseData={course}
         completedLessons={completedMaterials}
         totalLessons={materialsCount}
-        progress={progress}
         totalDuration={materialsDuration}
         sidebarOpen={sidebarOpen}
         prevMaterial={prevMaterial}
@@ -185,9 +187,7 @@ export const CoursePlayground: React.FC = () => {
           expandedModules={expandedModules}
           toggleModule={toggleModule}
           currentMaterial={currentMaterial}
-          totalMaterials={materialsCount}
           completedMaterials={completedMaterials}
-          progress={progress}
           totalDuration={materialsDuration}
           setCurrentMaterial={setCurrentMaterial}
           darkMode={darkMode}

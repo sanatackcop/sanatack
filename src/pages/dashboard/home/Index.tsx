@@ -70,7 +70,6 @@ export default function DashboardHome() {
             <ModernSectionHeader
               title="تابع دوراتك الحالية"
               description="أكمل ما بدأته وارتقِ بمهاراتك إلى المستوى التالي"
-              showViewAll={false}
             />
             <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
               {courses
@@ -87,6 +86,28 @@ export default function DashboardHome() {
             actionText="ابدأ التعلم الآن"
           />
         )}
+
+        <section className="space-y-8 pt-8">
+          <ModernSectionHeader
+            title="موصى به لك"
+            description="دورات مختارة بعناية لتناسب اهتماماتك ومستواك التعليمي"
+          />
+          {error ? (
+            <div className="flex items-center justify-center py-16">
+              <div className="px-6 py-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 rounded-xl">
+                {error}
+              </div>
+            </div>
+          ) : (
+            <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+              {courses
+                .filter((course) => course.isEnrolled == false)
+                .map((course: any) => (
+                  <ProfessionalCourseCard key={course.id} course={course} />
+                ))}
+            </div>
+          )}
+        </section>
       </div>
     </div>
   );

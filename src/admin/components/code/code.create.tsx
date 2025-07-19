@@ -24,6 +24,17 @@ import {
   Hash,
 } from "lucide-react";
 import { creaetNewCodeLesson } from "@/utils/_apis/admin-api";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import CodePlayground from "@/pages/dashboard/courseProduct/_CodeEditorView";
+import { MaterialType } from "@/utils/types/adminTypes";
 
 interface BasicInfo {
   main_title: string;
@@ -853,6 +864,40 @@ export default function CodeMaterialCreate({
                   )}
                 </button>
               )}
+            </div>
+
+            <div className="flex items-center space-x-4">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button>View Material</Button>
+                </DialogTrigger>
+                <DialogContent className="min-w-[90%]">
+                  <DialogHeader>
+                    <DialogTitle>Code Material Viewer</DialogTitle>
+                    <DialogDescription>
+                      This is Code Material Viewer
+                    </DialogDescription>
+                  </DialogHeader>
+                  <CodePlayground
+                    material={{
+                      id: "temp-id",
+                      created_at: new Date().toISOString(),
+                      updated_at: new Date().toISOString(),
+                      order: 1,
+                      duration: basicInfo.duration,
+                      isCurrent: true,
+                      locked: false,
+                      type: MaterialType.CODE,
+                      title: basicInfo.main_title,
+                      initialCode: "", // provide default or actual initial code
+                      isFinished: false,
+                      data: {
+                        id: "temp-data-id", // you can use actual ID if available
+                      },
+                    }}
+                  />
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
         </div>

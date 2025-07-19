@@ -26,7 +26,6 @@ export interface CourseDetails extends CoursesContext {
 
 export interface CourseDetailsContext extends CoursesContext {
   completedMaterials: number;
-  totalMaterials: number;
   modules: ModuleDetailsContext[];
 }
 
@@ -185,6 +184,7 @@ export interface CodeMaterial {
   locked: boolean;
   type: MaterialType.CODE;
   title: string;
+  initialCode: string
   data: {
     id: number | string;
   };
@@ -200,6 +200,7 @@ export interface CodeMaterialContext {
   locked: boolean;
   type: MaterialType.CODE;
   title: string;
+  initialCode: string;
   isFinished: boolean;
   data: {
     id: number | string;

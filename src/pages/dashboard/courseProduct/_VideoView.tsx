@@ -2,7 +2,7 @@ import { useSettings } from "@/context/SettingsContexts";
 import { Video } from "@/types/courses";
 import { MaterialType } from "@/utils/types/adminTypes";
 import { Video as VideoIcon, Clock, PlayCircle } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 function extractYouTubeId(url: string): string | null {
   const match = url?.match(
@@ -15,22 +15,10 @@ export function VideoView({ video }: { video: Video }) {
   const { updateCurrentCheck: updateCurrentMaterial } = useSettings();
   const playerRef = useRef<HTMLDivElement>(null);
   const ytPlayerInstance = useRef<any>(null);
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [videoDuration, setVideoDuration] = useState(0);
 
-  useEffect(() => {
-    const embedId = extractYouTubeId(video.youtubeId);
-    if (!embedId) return;
-
-    if (ytPlayerInstance.current && ytPlayerInstance.current.loadVideoById) {
-      ytPlayerInstance.current.loadVideoById(embedId);
-      updateCurrentMaterial({
-        ...video,
-        type: MaterialType.VIDEO,
-        duration: 0,
-      });
-    }
-  }, [video.youtubeId]);
-
-  // Load player once when first mounted
+  // Initialize player
   useEffect(() => {
     const embedId = extractYouTubeId(video.youtubeId);
     if (!embedId || !playerRef.current) return;
@@ -47,9 +35,27 @@ export function VideoView({ video }: { video: Video }) {
             rel: 0,
           },
           events: {
+            onReady: (event: any) => {
+              // Get video duration when player is ready
+              const duration = event.target.getDuration();
+              setVideoDuration(duration);
+
+              // Update material with initial state
+              updateCurrentMaterial({
+                ...video,
+                type: MaterialType.VIDEO,
+                duration: 0, // 0 means not completed yet
+              });
+            },
             onStateChange: (event: any) => {
               if (event.data === (window as any).YT.PlayerState.ENDED) {
-                updateCurrentMaterial(video);
+                // Video finished - mark as completed
+                setIsCompleted(true);
+                updateCurrentMaterial({
+                  ...video,
+                  type: MaterialType.VIDEO,
+                  duration: videoDuration || 1, // Set duration > 0 to indicate completion
+                });
               }
             },
           },
@@ -65,24 +71,29 @@ export function VideoView({ video }: { video: Video }) {
     } else {
       loadPlayer();
     }
-  }, []);
+
+    // Cleanup function
+    return () => {
+      if (ytPlayerInstance.current && ytPlayerInstance.current.destroy) {
+        ytPlayerInstance.current.destroy();
+      }
+    };
+  }, [video.youtubeId]);
 
   // Update player when video changes
   useEffect(() => {
     const embedId = extractYouTubeId(video.youtubeId);
     if (!embedId) return;
 
-    // If player already exists, just update it
+    // Reset completion state for new video
+    setIsCompleted(false);
+    setVideoDuration(0);
+
+    // If player already exists, load new video
     if (ytPlayerInstance.current && ytPlayerInstance.current.loadVideoById) {
       ytPlayerInstance.current.loadVideoById(embedId);
     }
-
-    updateCurrentMaterial({
-      ...video,
-      type: MaterialType.VIDEO,
-      duration: 0,
-    });
-  }, [video]);
+  }, [video.youtubeId]);
 
   return (
     <div className="w-full bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 overflow-y-auto">
@@ -103,6 +114,13 @@ export function VideoView({ video }: { video: Video }) {
                     <Clock className="w-3 h-3" />
                     {video.duration}
                   </span>
+                  {/* Show completion status */}
+                  {isCompleted && (
+                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300">
+                      <PlayCircle className="w-3 h-3" />
+                      مكتمل
+                    </span>
+                  )}
                 </div>
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-3 leading-tight">
                   {video.title}

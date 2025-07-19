@@ -163,11 +163,7 @@ export const StatsCards = ({ stats }: { stats: CoursesReport }) => (
   </div>
 );
 
-export const ModernSectionHeader = ({
-  title,
-  description,
-  showViewAll = false,
-}: any) => (
+export const ModernSectionHeader = ({ title, description }: any) => (
   <div className="flex items-end justify-between mb-8">
     <div className="space-y-2">
       <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
@@ -177,7 +173,7 @@ export const ModernSectionHeader = ({
         {description}
       </p>
     </div>
-    {showViewAll && (
+    {/* {showViewAll && (
       <button
         className="group inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 font-semibold hover:text-blue-700 dark:hover:text-blue-300 
       transition-colors duration-200 px-4 py-2 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20"
@@ -188,7 +184,7 @@ export const ModernSectionHeader = ({
           className="group-hover:translate-x-1 transition-transform"
         />
       </button>
-    )}
+    )} */}
   </div>
 );
 
@@ -453,23 +449,17 @@ export const ProfessionalCourseCard = ({
               {course.updated_at ? DateDisplay(course.updated_at) : "N/A"}
             </span>
           </div>
-          {course.progress === 100 ? (
-            <p className="text-sm text-green-600 dark:text-green-400">
-              لقد انتهيت من هذه الدورة
-            </p>
-          ) : (
-            <button
-              onClick={() =>
-                nav(`/dashboard/courses/${course.id}`, { replace: true })
-              }
-              className={`inline-flex items-center gap-2 bg-gradient-to-r ${
-                topicColors?.bg || "from-blue-500 to-blue-600"
-              } text-white font-semibold text-sm px-4 py-2 rounded-lg transition-all duration-200 hover:shadow-md`}
-            >
-              متابعة
-              <ArrowRight size={14} />
-            </button>
-          )}
+          <button
+            onClick={() =>
+              nav(`/dashboard/courses/${course.id}`, { replace: true })
+            }
+            className={`inline-flex items-center gap-2 bg-gradient-to-r ${
+              topicColors?.bg || "from-blue-500 to-blue-600"
+            } text-white font-semibold text-sm px-4 py-2 rounded-lg transition-all duration-200 hover:shadow-md`}
+          >
+            متابعة
+            <ArrowRight size={14} />
+          </button>
         </div>
       </div>
     </div>

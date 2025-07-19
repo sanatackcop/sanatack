@@ -65,8 +65,8 @@ export const useCourseData = (courseId: string) => {
                   }),
                 };
               }),
-              totalMaterials: moduleTotal,
               completedMaterials: moduleCompleted,
+              totalMaterials: moduleTotal,
               progress: moduleTotal
                 ? Math.floor((moduleCompleted / moduleTotal) * 100)
                 : 0,
@@ -76,7 +76,6 @@ export const useCourseData = (courseId: string) => {
           }),
           completedMaterials: flatMaterialList.slice(0, currentMaterialIndex)
             .length,
-          totalMaterials: flatMaterialList.length,
         };
 
         setCourseData(courseDetails);
@@ -144,14 +143,13 @@ export const useCourseData = (courseId: string) => {
     (_, i: number) => i < curIndex
   ).length;
 
-  const progress =
-    materialsCount > 0
-      ? Math.round((completedMaterials / materialsCount) * 100)
-      : 0;
-  const materialsDuration = sortedMaterials.reduce(
-    (sum, material) => sum + Number(material.duration || 0),
-    0
-  );
+  const materialsDuration = Math.floor(
+    sortedMaterials.reduce(
+      (sum, material) => sum + Number(material.duration || 0),
+      0
+    ) /
+      (1000 * 60)
+  ); // Convert milliseconds to minutes
 
   const currentIndex = currentMaterial
     ? sortedMaterials.findIndex((m) => m.id === currentMaterial.id)
@@ -184,7 +182,7 @@ export const useCourseData = (courseId: string) => {
   };
 
   const getTotalDuration = () => {
-    return course?.modules?.reduce((total: number, module) => {
+    const totalMs = course?.modules?.reduce((total: number, module) => {
       return (
         total +
         module?.lessons?.reduce((lessonTotal: number, lesson) => {
@@ -198,6 +196,8 @@ export const useCourseData = (courseId: string) => {
         }, 0)
       );
     }, 0);
+
+    return Math.floor(totalMs ? totalMs / (1000 * 60) : 0);
   };
 
   return {
@@ -207,7 +207,6 @@ export const useCourseData = (courseId: string) => {
     materials,
     materialsCount,
     completedMaterials,
-    progress,
     materialsDuration,
     nextMaterial,
     prevMaterial,

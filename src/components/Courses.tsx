@@ -33,17 +33,22 @@ export default function CoursesCard() {
 
   const filteredCourses = courses.filter((course) => {
     const matchesSearch =
-      course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      course.description.toLowerCase().includes(searchQuery.toLowerCase());
+      (course.title?.toLowerCase().includes(searchQuery.toLowerCase()) ??
+        false) ||
+      (course.description?.toLowerCase().includes(searchQuery.toLowerCase()) ??
+        false);
     const matchesFilter =
       selectedFilter === "all" || course.level === selectedFilter;
     return matchesSearch && matchesFilter;
   });
 
+  const started = filteredCourses.filter((course) => course.progress != 100);
+  const done = filteredCourses.filter((course) => course.progress == 100);
+
   const data = {
     all: filteredCourses,
-    started: [],
-    done: [],
+    started,
+    done,
   };
 
   const tabs = [
@@ -53,8 +58,13 @@ export default function CoursesCard() {
       count: filteredCourses.length,
       icon: BookOpen,
     },
-    { label: "بدأت", value: "started", count: 0, icon: TrendingUp },
-    { label: "اكتملت", value: "done", count: 0, icon: Sparkles },
+    {
+      label: "بدأت",
+      value: "started",
+      count: started.length,
+      icon: TrendingUp,
+    },
+    { label: "اكتملت", value: "done", count: done.length, icon: Sparkles },
   ];
 
   return (

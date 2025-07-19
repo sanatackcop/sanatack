@@ -23,9 +23,7 @@ export interface SideNavbarProps {
   expandedModules: string[];
   toggleModule: (id: string) => void;
   currentMaterial: MaterialContext;
-  totalMaterials: number;
   completedMaterials: number;
-  progress: number;
   totalDuration: number;
   setCurrentMaterial: (m: MaterialContext) => void;
   setSidebarOpen: (v: boolean) => void;
@@ -51,10 +49,8 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
   expandedModules,
   toggleModule,
   setCurrentMaterial,
-  totalMaterials,
   currentMaterial,
   completedMaterials,
-  progress,
   totalDuration,
   darkMode,
 }) => {
@@ -143,7 +139,7 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
                 ) : (
                   <>
                     <Clock className="w-3 h-3 inline-block ml-1" />
-                    {material.duration} دقيقة
+                    {Math.floor(material.duration / (1000 * 60))} دقيقة
                   </>
                 )}
               </span>
@@ -250,11 +246,11 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-2xl font-bold text-green-600 dark:text-green-400">
-                {progress}%
+                {courseData.progress}%
               </span>
               <div className="text-right">
                 <div className="text-sm font-medium text-gray-900 dark:text-white">
-                  {completedMaterials} من {totalMaterials} دروس
+                  {completedMaterials} من {courseData.material_count} دروس
                 </div>
                 <div className="text-xs text-gray-500">
                   المدة الإجمالية: {totalDuration} دقيقة
@@ -265,7 +261,7 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-green-500 to-green-600 rounded-full transition-all duration-1000 relative"
-                style={{ width: `${courseData.completionRate}%` }}
+                style={{ width: `${courseData.progress}%` }}
               >
                 <div className="absolute inset-0 bg-white/20 animate-pulse rounded-full" />
               </div>
@@ -286,12 +282,12 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
                 <div className="flex items-center gap-3">
                   <div
                     className={`px-3 py-1 rounded-full text-xs font-bold ${
-                      progress === 100
+                      courseData.progress === 100
                         ? "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400"
                         : "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
                     }`}
                   >
-                    {progress}%
+                    {courseData.progress}%
                   </div>
                   <ChevronLeft
                     className={`w-4 h-4 text-gray-500 transition-transform duration-200`}
@@ -370,7 +366,7 @@ export const SideNavbar: React.FC<SideNavbarProps> = ({
             </div>
             <div className="p-3 bg-white dark:bg-gray-900 rounded-xl">
               <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                {totalMaterials - completedMaterials}
+                {courseData.material_count! - completedMaterials}
               </div>
               <div className="text-xs text-gray-500">متبقية</div>
             </div>
