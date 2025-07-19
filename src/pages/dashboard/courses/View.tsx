@@ -154,7 +154,7 @@ export default function CourseView() {
       color: "bg-orange-500",
       trend: "+2%",
     },
-  ];
+  ]; 
 
   return (
     <AppLayout>
@@ -309,7 +309,7 @@ export default function CourseView() {
                         {skill}
                       </span>
                       <span className="text-sm text-slate-600 dark:text-slate-400">
-                        {course.level}%
+                        {level}%
                       </span>
                     </div>
                     <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3">
@@ -326,19 +326,6 @@ export default function CourseView() {
 
           <div className="lg:col-span-4">
             <div className="sticky top-8 space-y-6">
-              <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-                <div className="relative bg-slate-900 aspect-video">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Button className="bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full p-6 transition-all duration-300 transform hover:scale-110">
-                      <Play className="w-8 h-8 text-white" />
-                    </Button>
-                  </div>
-                  <div className="absolute bottom-4 left-4 bg-black/60 text-white text-sm px-3 py-1 rounded-lg backdrop-blur-sm">
-                    معاينة مجانية • 5:42
-                  </div>
-                </div>
-              </div>
-
               <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
                 {course.isEnrolled && (
                   <div className="mb-6 p-6 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-200 dark:border-emerald-800">
