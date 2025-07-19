@@ -21,7 +21,7 @@ interface CodeBlockProps {
   language: string;
 }
 
-interface QuoteProps {
+export interface QuoteProps {
   text: string;
   author?: string;
 }
@@ -38,20 +38,23 @@ export default function ArticleView({
   const [slides, setSlides] = useState<Article[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const { updateCurrentCheck: updateCurrentMaterial } = useSettings();
-
   useEffect(() => {
     if (!article?.data) return;
 
-    const convertedMaterials: any[] = Object.values(article.data)
-      .filter(
-        (item) => typeof item === "object" && item !== null && "type" in item
+    const convertedMaterials: any[] = article.data
+      .filter((container: any) => container && container.components)
+      .flatMap((container: any) =>
+        container.components.map((component: any) => ({
+          id: `${component.id}`,
+          type: MaterialType.ARTICLE,
+          data: {
+            ...component.data,
+            containerTitle: container.title,
+            componentType: component.type,
+          },
+        }))
       )
-      .sort((a, b) => (a as any).id - (b as any).id)
-      .map((item) => ({
-        id: `${(item as any).id}`,
-        type: MaterialType.ARTICLE,
-        data: item as any,
-      }));
+      .sort((a: any, b: any) => parseInt(a.id) - parseInt(b.id));
 
     setSlides(convertedMaterials);
     setLoading(false);
@@ -64,8 +67,21 @@ export default function ArticleView({
       setTimeout(() => setCopiedCode(null), 2000);
     };
 
+    // Clean and format the code
+    const formatCode = (codeString: string) => {
+      // Replace literal \n with actual line breaks
+      let formattedCode = codeString.replace(/\\n/g, "\n");
+      // Replace literal \t with actual tabs
+      formattedCode = formattedCode.replace(/\\t/g, "\t");
+      // Replace literal spaces with actual spaces
+      formattedCode = formattedCode.replace(/\\s/g, " ");
+      return formattedCode;
+    };
+
+    const formattedCode = formatCode(code);
+
     return (
-      <div className="bg-gray-900 dark:bg-gray-800 rounded-2xl overflow-hidden shadow-2xl w--">
+      <div className="bg-gray-900 dark:bg-gray-800 rounded-2xl overflow-hidden shadow-2xl">
         <div className="flex items-center justify-between px-6 py-4 bg-gray-800 dark:bg-gray-700">
           <button
             onClick={handleCopy}
@@ -88,26 +104,12 @@ export default function ArticleView({
             <span className="text-gray-300 font-medium">{language}</span>
           </div>
         </div>
-        <pre className="p-6 text-gray-100 overflow-x-auto text-sm leading-relaxed">
-          <code>{code}</code>
+        <pre className="p-6 text-gray-100 overflow-x-auto text-sm leading-relaxed whitespace-pre font-mono">
+          <code>{formattedCode}</code>
         </pre>
       </div>
     );
   };
-
-  const Quote = ({ text, author }: QuoteProps) => (
-    <div className="text-center py-8">
-      <div className="text-5xl text-blue-500 mb-1">"</div>
-      <blockquote className="text-xl italic text-gray-700 dark:text-gray-300 mb-6 leading-relaxed max-w-3xl mx-auto">
-        {text}
-      </blockquote>
-      {author && (
-        <cite className="text-lg font-medium text-blue-600 dark:text-blue-400">
-          — {author}
-        </cite>
-      )}
-    </div>
-  );
 
   const InfoCard = ({ type, title, content }: InfoCardProps) => {
     const configs = {
@@ -199,157 +201,180 @@ export default function ArticleView({
   }, []);
 
   const renderSlide = (slide: any) => {
-    switch (slide.data.type) {
-      case "hero":
+    const { componentType, containerTitle, ...data } = slide.data;
+
+    switch (componentType) {
+      case "text":
         return (
           <div className="space-y-8 text-justify">
             <div className="text-start">
               <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
-                {slide.title}
+                {data.title || containerTitle}
               </h2>
-              {slide.data.description && (
-                <p className="text-xl text-gray-600 dark:text-blue-400 mb-6 ">
-                  {slide.data.description}
-                </p>
-              )}
             </div>
             <div className="flex flex-col justify-between flex-grow">
-              {slide.data.body && (
-                <p className="text-base sm:text-lg mt-2 text-gray-900 dark:text-gray-300 whitespace-pre-line">
-                  {slide.data.body}
-                </p>
+              {/* Handle paragraph text */}
+              {data.textType === "paragraph" && (data.content || data.text) && (
+                <div className="text-base sm:text-lg mt-2 text-gray-900 dark:text-gray-300 whitespace-pre-line">
+                  <p className="mb-3">{data.content || data.text}</p>
+                </div>
+              )}
+
+              {/* Handle heading text */}
+              {data.textType === "heading" && (data.content || data.text) && (
+                <div className="space-y-4">
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {data.content || data.text}
+                  </h3>
+                </div>
+              )}
+
+              {/* Handle paragraph with listItems */}
+              {data.textType === "paragraph" &&
+                data.listItems &&
+                data.listItems.length > 0 && (
+                  <div className="text-base sm:text-lg mt-2 text-gray-900 dark:text-gray-300 whitespace-pre-line">
+                    {data.listItems.map((item: any, index: number) => (
+                      <p
+                        key={index}
+                        className={`mb-3 ${item.bold ? "font-bold" : ""}`}
+                      >
+                        {item.text}
+                      </p>
+                    ))}
+                  </div>
+                )}
+
+              {/* Handle heading with listItems */}
+              {data.textType === "heading" &&
+                data.listItems &&
+                data.listItems.length > 0 && (
+                  <div className="space-y-4">
+                    {data.listItems.map((item: any, index: number) => (
+                      <h3
+                        key={index}
+                        className={`text-2xl font-bold text-gray-900 dark:text-white ${
+                          item.bold ? "font-extrabold" : ""
+                        }`}
+                      >
+                        {item.text}
+                      </h3>
+                    ))}
+                  </div>
+                )}
+
+              {/* Handle bullet list */}
+              {data.textType === "bullet-list" &&
+                data.listItems &&
+                data.listItems.length > 0 && (
+                  <ul className="list-disc list-inside space-y-2 text-base sm:text-lg text-gray-900 dark:text-gray-300">
+                    {data.listItems.map((item: any, index: number) => (
+                      <li
+                        key={index}
+                        className={`${item.bold ? "font-bold" : ""}`}
+                      >
+                        {item.text}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+              {/* Handle numbered list */}
+              {data.textType === "numbered-list" &&
+                data.listItems &&
+                data.listItems.length > 0 && (
+                  <ol className="list-decimal list-inside space-y-2 text-base sm:text-lg text-gray-900 dark:text-gray-300">
+                    {data.listItems.map((item: any, index: number) => (
+                      <li
+                        key={index}
+                        className={`${item.bold ? "font-bold" : ""}`}
+                      >
+                        {item.text}
+                      </li>
+                    ))}
+                  </ol>
+                )}
+
+              {/* Fallback for any text content */}
+              {!data.textType && (data.content || data.text) && (
+                <div className="text-base sm:text-lg mt-2 text-gray-900 dark:text-gray-300 whitespace-pre-line">
+                  <p className="mb-3">{data.content || data.text}</p>
+                </div>
               )}
             </div>
           </div>
         );
 
-      case "section":
+      case "code":
         return (
           <div className="space-y-8">
             <div className="text-start">
               <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
-                {slide.title}
+                {data.title || containerTitle}
               </h2>
-              {slide.data.description && (
-                <p className="text-xl text-gray-600 dark:text-blue-400 mb-6">
-                  {slide.data.description}
-                </p>
+            </div>
+            <div className="space-y-4 text-left">
+              {data.code && (
+                <div className="max-w-full mx-auto">
+                  <CodeBlock
+                    code={data.code}
+                    language={data.language || "javascript"}
+                  />
+                </div>
               )}
             </div>
-            {slide.data.image && (
+          </div>
+        );
+
+      case "image":
+        return (
+          <div className="space-y-8">
+            <div className="text-start">
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
+                {data.title || containerTitle}
+              </h2>
+            </div>
+            {data.url && (
               <div className="flex justify-start">
                 <img
-                  src={slide.data.image}
-                  alt={slide.title || "صورة المقال"}
+                  src={data.url}
+                  alt={data.title || "صورة المقال"}
                   className="w-full h-auto rounded-xl shadow-lg max-h-80 object-cover"
                 />
               </div>
             )}
-            <div className="space-y-4">
-              {slide.data.body && (
-                <div className="text-start">
-                  <div className="text-lg text-justify leading-relaxed text-gray-900 dark:text-gray-300 max-w-full">
-                    {slide.data.body
-                      .split("\n")
-                      .map((line: any, index: any) => (
-                        <p key={index} className="mb-3">
-                          {line}
-                        </p>
-                      ))}
-                  </div>
-                </div>
-              )}
-
-              {slide.data.code && (
-                <div className="max-w-full mx-auto">
-                  <CodeBlock
-                    code={slide.data.code.code}
-                    language={slide.data.code.language}
-                  />
-                </div>
-              )}
-
-              {slide.data.quote && (
-                <Quote
-                  text={slide.data.quote.text}
-                  author={slide.data.quote.author}
-                />
-              )}
-
-              {slide.data.info && (
-                <div className="max-w-2xl mx-auto">
-                  <InfoCard {...slide.data.info} />
-                </div>
-              )}
-            </div>
           </div>
         );
 
-      case "conclusion":
+      case "hint":
         return (
           <div className="space-y-8">
             <div className="text-start">
               <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
-                {slide.title}
+                {data.title || containerTitle}
               </h2>
-              {slide.data.description && (
-                <p className="text-xl text-gray-600 dark:text-blue-400 mb-6">
-                  {slide.data.description}
-                </p>
-              )}
             </div>
-
-            {slide.data.image && (
-              <div className="flex justify-start">
-                <img
-                  src={slide.data.image}
-                  alt={slide.title || "صورة المقال"}
-                  className="max-w-full h-auto rounded-xl shadow-lg max-h-80 object-cover"
-                />
+            {data.hint && (
+              <div className="max-w-2xl mx-auto">
+                <InfoCard type="info" title="نصيحة" content={data.hint} />
               </div>
             )}
+          </div>
+        );
 
-            <div className="space-y-4">
-              {slide.data.body && (
-                <div className="text-start">
-                  <div className="text-lg text-justify leading-relaxed text-gray-900 dark:text-gray-300 max-w-full">
-                    {slide.data.body
-                      .split("\n")
-                      .map((line: any, index: any) => (
-                        <p key={index} className="mb-3">
-                          {line}
-                        </p>
-                      ))}
-                  </div>
-                </div>
-              )}
-
-              {slide.data.code && (
-                <div className="max-w-full mx-auto">
-                  <CodeBlock
-                    code={slide.data.code.code}
-                    language={slide.data.code.language}
-                  />
-                </div>
-              )}
-
-              {slide.data.quote && (
-                <Quote
-                  text={slide.data.quote.text}
-                  author={slide.data.quote.author}
-                />
-              )}
-
-              {slide.data.info && (
-                <div className="max-w-2xl mx-auto">
-                  <InfoCard {...slide.data.info} />
-                </div>
-              )}
+      default:
+        return (
+          <div className="space-y-8 text-justify">
+            <div className="text-start">
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
+                {data.title || containerTitle || "محتوى المقال"}
+              </h2>
+            </div>
+            <div className="text-base sm:text-lg mt-2 text-gray-900 dark:text-gray-300">
+              محتوى غير معروف
             </div>
           </div>
         );
-      default:
-        return null;
     }
   };
 

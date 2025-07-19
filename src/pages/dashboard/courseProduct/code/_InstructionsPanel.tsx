@@ -20,6 +20,7 @@ interface CodeData {
   title?: string;
   language?: string;
   code?: string;
+  hint?: string; // Added hint property
 }
 
 interface ImageData {
@@ -69,6 +70,7 @@ export default function InstructionsPanel({
   setCurrentContainerIndex: (index: number) => void;
   isArabic?: boolean;
 }) {
+  console.log({ material: material });
   const [copiedCode, setCopiedCode] = useState<number | null>(null);
   const [expandedCode, setExpandedCode] = useState<Set<number>>(new Set());
   console.log({ material: material.data });
@@ -266,6 +268,19 @@ export default function InstructionsPanel({
             </div>
           </div>
         )}
+        {/* Patch: If codeData.hint exists, render it as a hint below the code block */}
+        {codeData.hint && (
+          <div className="bg-yellow-500/5 dark:bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 mt-2">
+            <div className="flex flex-col md:flex-row md:items-start gap-2 md:gap-3">
+              <span className="text-yellow-400 font-bold text-xs md:text-sm">
+                {isArabic ? "💡 تلميح" : "💡 Hint"}
+              </span>
+              <p className="text-gray-800 dark:text-gray-200 leading-relaxed text-right text-xs md:text-sm">
+                {codeData.hint}
+              </p>
+            </div>
+          </div>
+        )}
       </section>
     );
   };
@@ -441,6 +456,7 @@ export default function InstructionsPanel({
   };
 
   const renderComponent = (component: Component, index: number) => {
+    console.log({ component: component });
     switch (component.type) {
       case "text":
         return renderTextComponent(component, index);
@@ -458,7 +474,7 @@ export default function InstructionsPanel({
         return null;
     }
   };
-
+  console.log({ currentContainer: currentContainer });
   return (
     <aside
       className="h-1/2 md:h-full w-full md:w-[40%] flex flex-col border-l md:border-l-0 border-b md:border-b-0 bg-[#f3f4f6] dark:bg-gray-900 p-4 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white overflow-hidden"
