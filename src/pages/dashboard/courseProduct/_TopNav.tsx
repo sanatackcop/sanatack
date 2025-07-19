@@ -23,6 +23,7 @@ import { CourseDetails, MaterialContext } from "@/types/courses";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useSettings } from "@/context/SettingsContexts";
 import { MaterialType } from "@/utils/types/adminTypes";
+import { Link } from "react-router-dom";
 
 interface NavigationPlaygroundProps {
   courseData: CourseDetails;
@@ -267,23 +268,31 @@ export const NavigationPlayground = ({
 
             <div className="flex items-center gap-3">
               {currentMaterial && !nextMaterial && (
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="gap-2 border-emerald-200 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-300 dark:hover:bg-emerald-900/20 rounded-xl transition-all duration-200"
-                  onClick={onCompleteClick}
-                  disabled={finished}
-                >
-                  <CheckCircle2 className="h-4 w-4" />
-                  <span>إكمال الدرس</span>
-                </Button>
+                // <Button
+                //   size="lg"
+                //   variant="outline"
+                //   className="gap-2 border-emerald-200 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-300 dark:hover:bg-emerald-900/20 rounded-xl transition-all duration-200"
+                //   onClick={onCompleteClick}
+                //   disabled={!finished}
+                // >
+                //   <CheckCircle2 className="h-4 w-4" />
+                //   <span>إكمال الدرس</span>
+                // </Button>
+                <Link to="/dashboard">
+                  <Button
+                    variant="outline"
+                    className="gap-2 border-emerald-200 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-300 dark:hover:bg-emerald-900/20 rounded-xl transition-all duration-200"
+                  >
+                    <CheckCircle2 className="h-4 w-4" />
+                    إكمال الدرس
+                  </Button>
+                </Link>
               )}
             </div>
           </div>
         </div>
       </footer>
 
-      {/* Congratulations Dialog */}
       <Dialog open={congratsOpen} onOpenChange={setCongratsOpen}>
         <DialogContent className="max-w-lg border-gray-200 dark:border-gray-700 bg-gradient-to-br from-white to-blue-50 dark:from-gray-900 dark:to-blue-950">
           <DialogHeader>
