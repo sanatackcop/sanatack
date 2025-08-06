@@ -1,4 +1,10 @@
-import { LoaderCircleIcon, PlayIcon, RefreshCcw, FileCode } from "lucide-react";
+import {
+  LoaderCircleIcon,
+  PlayIcon,
+  RefreshCcw,
+  FileCode,
+  CodeIcon,
+} from "lucide-react";
 import EditorFrame from "./_EditorFrame";
 import TerminalView from "./_TerminalView";
 import { ConsoleEntry } from "./type";
@@ -35,7 +41,6 @@ export default function CodeEditor({
   };
 
   const bgCanvas = "bg-[#f3f4f6] dark:bg-[#0d1117]";
-  const bgPanel = " bg-[#ffffff] dark:bg-[#1a1f2b]";
   const bgSubtle = " bg-[#f3f4f6] dark:bg-[#0d1117]";
   const borderClr = "border-gray-300 dark:border-gray-700";
   const textMuted = "text-gray-900 dark:text-gray-400";
@@ -45,20 +50,24 @@ export default function CodeEditor({
       className={`h-1/2 md:h-full w-full md:w-[60%] overflow-auto scrollbar-hidden ${bgCanvas} text-gray-900 dark:text-gray-200`}
     >
       <header
-        className={`flex items-center justify-end px-4 py-2 ${bgPanel} border-b ${borderClr} rounded-md m-2`}
+        className="sticky top-0 left-0 right-0 z-30 border-r
+             bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 px-8 py-6"
+        dir="ltr"
       >
-        <div className="flex items-center">
-          <div
-            className={`flex items-center gap-2 ${bgSubtle} border ${borderClr} rounded-t-lg px-3 py-2 font-mono text-sm shadow-sm`}
-          >
-            <FileCode className="w-4 h-4 text-blue-500" />
-            <span>{`index.${langMap[currentLang] || currentLang}`}</span>
+        <div className="mx-auto flex  items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
+              <CodeIcon className="w-5 h-5 text-white" />
+            </div>
+            <h1 className="font-bold text-gray-900 dark:text-white text-2xl">
+              <span>{`index.${langMap[currentLang] || currentLang}`}</span>
+            </h1>
           </div>
         </div>
       </header>
 
-      <div className="flex-1 flex flex-col overflow-hidden scrollbar-hidden relative">
-        <div className="flex-1 overflow-hidden relative p-4 ">
+      <div className="flex-1 flex flex-col overflow-hidden scrollbar-hidden  relative">
+        <div className="flex-1 overflow-hidden relative p-4">
           <EditorFrame
             ref={iframeRef}
             initialCode={initialCode}

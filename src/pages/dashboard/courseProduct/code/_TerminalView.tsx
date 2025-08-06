@@ -16,11 +16,11 @@ export default function TerminalView({ entries }: { entries: ConsoleEntry[] }) {
       </div>
 
       <div
-        className={`h-[calc(100%-2.5rem)] overflow-y-auto p-4 ${bgBody} font-mono text-sm`}
+        className={`h-[calc(100%-2.5rem)]  overflow-y-auto p-4 ${bgBody} font-mono text-sm`}
       >
         {entries.length > 0 ? (
           entries.map((entry, i) => (
-            <div key={i} className="mb-2 flex items-start gap-3">
+            <div key={i} className="mb-2 flex justify-start gap-3">
               <span className="flex-shrink-0 text-gray-900 dark:text-gray-300">
                 {ICON_MAP[entry.type]}
               </span>
@@ -34,7 +34,7 @@ export default function TerminalView({ entries }: { entries: ConsoleEntry[] }) {
             </div>
           ))
         ) : (
-          <div className="flex h-full items-center justify-center ${textMuted}">
+          <div className="flex h-full items-center justify-center text-gray-400 dark:text-gray-500">
             <div className="text-center space-y-2">
               <TerminalIcon className="w-6 h-6 mx-auto" />
               <p>Run your code to see the output...</p>

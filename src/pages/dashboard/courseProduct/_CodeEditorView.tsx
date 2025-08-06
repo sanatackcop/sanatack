@@ -18,7 +18,7 @@ export default function CodePlayground({
   const [consoleOutput, setConsoleOutput] = useState<ConsoleEntry[]>([
     {
       type: "info",
-      content: "Console ready. Run your code to see the output! 🚀",
+      content: "وحدة التحكم جاهزة. شغّل الكود الخاص بك لرؤية النتائج! 🚀",
     },
   ]);
   const [isRunning, setIsRunning] = useState(false);
@@ -130,7 +130,7 @@ export default function CodePlayground({
     setConsoleOutput([
       {
         type: "info",
-        content: "Console ready. Run your code to see the output! 🚀",
+        content: "وحدة التحكم جاهزة. شغّل الكود الخاص بك لرؤية النتائج! 🚀",
       },
     ]);
   }, [material.initialCode]);
@@ -149,25 +149,30 @@ export default function CodePlayground({
         darkMode ? "dark" : ""
       }`}
     >
-      <InstructionsPanel
-        material={material}
-        currentContainerIndex={currentSectionIndex}
-        setCurrentContainerIndex={setCurrentSectionIndex}
-      />
-
-      <CodeEditor
-        code={code}
-        darkMode={darkMode}
-        isRunning={isRunning}
-        currentLang={currentSection?.codeSnippet?.lang || "js"}
-        runCode={runCode}
-        checkCode={checkCode}
-        resetCode={resetCode}
-        copyCode={copyCode}
-        iframeRef={iframeRef}
-        consoleOutput={consoleOutput}
-        initialCode={material.initialCode}
-      />
+      <div className="flex flex-1 w-full h-full">
+        <div className="w-full md:w-2/5 h-full flex-shrink-0 flex-grow-0">
+          <InstructionsPanel
+            material={material}
+            currentContainerIndex={currentSectionIndex}
+            setCurrentContainerIndex={setCurrentSectionIndex}
+          />
+        </div>
+        <div className="w-full  h-full flex-shrink-0 flex-grow-0">
+          <CodeEditor
+            code={code}
+            darkMode={darkMode}
+            isRunning={isRunning}
+            currentLang={currentSection?.codeSnippet?.lang || "js"}
+            runCode={runCode}
+            checkCode={checkCode}
+            resetCode={resetCode}
+            copyCode={copyCode}
+            iframeRef={iframeRef}
+            consoleOutput={consoleOutput}
+            initialCode={material.initialCode}
+          />
+        </div>
+      </div>
     </div>
   );
 }

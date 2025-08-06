@@ -202,3 +202,7 @@
 .animate-float-delayed {
   animation: float-delayed 6s ease-in-out infinite 3s;
 }
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

@@ -54,7 +54,7 @@ const EditorFrame = forwardRef<HTMLIFrameElement, EditorFrameProps>(
       const editor = monaco.editor.create(document.getElementById("container"), {
         value: ${escapedCode},
         language: "javascript",
-        fontSize: 14,
+        fontSize: 18,
         fontFamily: "Fira Code, Consolas, monospace",
         automaticLayout: true,
         minimap: { enabled: false },
@@ -90,7 +90,7 @@ const EditorFrame = forwardRef<HTMLIFrameElement, EditorFrameProps>(
       <iframe
         ref={ref}
         title="monaco-editor"
-        className="h-full w-full border-none"
+        className="h-[400px] w-full border-none"
         sandbox="allow-scripts allow-same-origin"
         srcDoc={srcDoc}
       />
