@@ -8,7 +8,6 @@ import Roadmap from "./RoadMap";
 import CareerPaths from "./CareerPath/Index";
 import CareerView from "./CareerPath/View";
 import UserProfile from "./userProfile/Index";
-import AiCourseGeneration from "./ai/course-creation/Index";
 
 export default function MainDashboard() {
   return (
@@ -30,7 +29,6 @@ export default function MainDashboard() {
         <Route path="careerPath" element={<CareerPaths />} />
         <Route path="careerPath/:id" element={<CareerView />} />
         <Route path="roadMap" element={<Roadmap />} />
-        <Route path="ai/course" element={<AiCourseGeneration />} />
         <Route
           path="*"
           element={<h1 className="text-xl">المسار غير موجود</h1>}

@@ -7,7 +7,6 @@ import {
   ClipboardList,
   Map,
   ChartScatter,
-  Brain,
   Group,
 } from "lucide-react";
 import LogoLight from "@/assets/logo.svg";
@@ -17,7 +16,6 @@ import { Link, useLocation } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarMenu,
@@ -41,17 +39,10 @@ const items = [
     comingSoon: false,
   },
   {
-    title: "مكتبتي",
+    title: "صناعة كورس",
     url: "/dashboard/courses",
     icon: BookOpen,
     requiresPaid: false,
-    comingSoon: false,
-  },
-  {
-    title: "صناعة كورس",
-    url: "/dashboard/ai/course",
-    icon: Brain,
-    requiresPaid: true,
     comingSoon: false,
   },
   {
@@ -83,7 +74,8 @@ const items = [
     comingSoon: true,
   },
 ];
-function SubscriptionBanner({
+
+export function SubscriptionBanner({
   onUpgrade,
   isCollapsed,
 }: {
@@ -137,9 +129,6 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
   const isUserPaid = false;
-  const handleUpgrade = () => {
-    console.log("Upgrade");
-  };
 
   return (
     <Sidebar
@@ -221,7 +210,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="bg-white dark:bg-gray-900">
+      {/* <SidebarFooter className="bg-white dark:bg-gray-900">
         <div className="mt-auto ">
           {!isUserPaid && (
             <SubscriptionBanner
@@ -230,7 +219,7 @@ export function AppSidebar() {
             />
           )}
         </div>
-      </SidebarFooter>
+      </SidebarFooter> */}
       <SidebarRail />
     </Sidebar>
   );
