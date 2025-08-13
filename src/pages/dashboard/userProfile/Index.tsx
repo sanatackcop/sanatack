@@ -620,14 +620,14 @@ export default function UserProfile(): JSX.Element {
                   <h1 className="text-md md:text-4xl font-black tracking-tight">
                     {userData.firstName} {userData.lastName}
                   </h1>
-                  {userData.subscription === "Premium" && (
+                  {/* {userData.subscription === "Premium" && (
                     <div className="flex items-center gap-2 px-2 py-1 md:px-4 md:py-2 bg-gradient-to-r from-blue-400 to-blue-500 rounded-full">
                       <Crown className="w-5 h-5 text-white" />
                       <span className="text-xs md:text-sm  font-bold text-white">
                         عضو مميز
                       </span>
                     </div>
-                  )}
+                  )} */}
                 </div>
                 <div className="flex items-center">
                   <UserRound className="w-4 h-4" />

@@ -39,7 +39,7 @@ const items = [
     comingSoon: false,
   },
   {
-    title: "صناعة كورس",
+    title: "كورساتك",
     url: "/dashboard/courses",
     icon: BookOpen,
     requiresPaid: false,

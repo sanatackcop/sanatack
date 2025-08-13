@@ -344,7 +344,7 @@ export const ProfessionalCourseCard = ({
 
   return (
     <div className="group relative bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden h-full grid grid-rows-[auto,1fr]">
-      <div className="relative h-24 bg-gradient-to-br overflow-hidden">
+      <div className="relative h-16 bg-gradient-to-br overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent" />
 
         <div className="absolute bottom-4 right-4 flex items-center gap-3">
@@ -353,9 +353,6 @@ export const ProfessionalCourseCard = ({
               جديد
             </span>
           )}
-          <div className="w-11 h-11 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-sm">
-            <TopicIcon size={22} />
-          </div>
           {course.level && <LevelBadge level={course.level} />}
         </div>
       </div>
