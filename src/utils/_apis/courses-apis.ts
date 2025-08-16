@@ -9,6 +9,7 @@ import {
   PatchCourseProgressParams,
   CodeExecutionResponse,
   CodeCheckResponse,
+  Space,
 } from "@/types/courses"; /*  */
 import { CoursesContext } from "../types";
 
@@ -269,6 +270,94 @@ export const aiCourseGenerator = async (
     return response.data;
   } catch (e: any) {
     console.error("codeCheckApi error:", e.message);
+    throw e;
+  }
+};
+
+export const getAllSpacesApi = async (): Promise<{ data: Space[] }> => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "get",
+        url: "spaces/",
+        withCredentials: false,
+      }) as Promise<{ data: Space[] }>
+    );
+    return response.data as any;
+  } catch (e: any) {
+    console.error("getAllCoursesApi error:", e);
+    throw e;
+  }
+};
+
+export const createSpacesApi = async ({
+  name,
+}: {
+  name: string;
+}): Promise<any> => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "post",
+        url: "spaces/",
+        data: {
+          name,
+        },
+        withCredentials: false,
+      }) as Promise<{ data: Space[] }>
+    );
+    return response.data;
+  } catch (e: any) {
+    console.error("getAllCoursesApi error:", e);
+    throw e;
+  }
+};
+
+export const deleteSpacesApi = async (id: string): Promise<Space[]> => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "delete",
+        url: `spaces/${id}`,
+        withCredentials: false,
+      }) as Promise<{ data: Space[] }>
+    );
+    return response.data;
+  } catch (e: any) {
+    console.error("getAllCoursesApi error:", e);
+    throw e;
+  }
+};
+
+export const getSingleSpaceApi = async (id: string): Promise<any> => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "get",
+        url: `spaces/${id}`,
+        withCredentials: false,
+      }) as Promise<{ data: any }>
+    );
+    return response.data;
+  } catch (e: any) {
+    console.error("getAllCoursesApi error:", e);
+    throw e;
+  }
+};
+
+export const updateSpaceApi = async (id: string, dto: any): Promise<any> => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "patch",
+        url: `spaces/${id}`,
+        data: dto,
+        withCredentials: false,
+      }) as Promise<{ data: Space[] }>
+    );
+    return response.data;
+  } catch (e: any) {
+    console.error("getAllCoursesApi error:", e);
     throw e;
   }
 };

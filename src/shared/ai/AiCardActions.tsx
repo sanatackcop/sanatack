@@ -1,20 +1,8 @@
 import { useMemo, useRef, useState } from "react";
+
 import { CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  UploadCloud,
-  Link2,
-  Mic,
-  ArrowUp,
-  FileText,
-  BookOpen,
-  CheckCircle,
-  Bot,
-  Wand2,
-  Info,
-  Send,
-} from "lucide-react";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -23,10 +11,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Separator } from "@radix-ui/react-separator";
 import * as React from "react";
 import Slider from "@mui/material/Slider";
 import Switch from "@mui/material/Switch";
+import {
+  UploadCloud,
+  Link2,
+  Mic,
+  ArrowUp,
+  BookOpen,
+  CheckCircle,
+  Bot,
+  Wand2,
+  Info,
+  Send,
+} from "lucide-react";
 import { aiCourseGenerator } from "@/utils/_apis/courses-apis";
 
 type Level = "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
@@ -75,10 +82,8 @@ const STYLE_LABELS: Record<AssessmentStyle, string> = {
 };
 
 export default function AiCardActions() {
-  // const navigate = useNavigate();
-
   const [query, setQuery] = useState("");
-  const [uploadName, setUploadName] = useState<string>("");
+  const [, setUploadName] = useState<string>("");
   const uploadRef = useRef<HTMLInputElement | null>(null);
 
   const [builderActive, setBuilderActive] = useState(false);
@@ -102,9 +107,6 @@ export default function AiCardActions() {
     language: "ar",
   });
 
-  function handleUploadClick() {
-    uploadRef.current?.click();
-  }
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (file) setUploadName(file.name);
@@ -142,6 +144,8 @@ export default function AiCardActions() {
     [settings.max_modules, lessonsPerModule]
   );
 
+  const soonFeaturesActive = true;
+
   async function handleCreateCourse() {
     if (!prompt.trim()) return;
     setErrorMsg(null);
@@ -171,11 +175,6 @@ export default function AiCardActions() {
       const res = await aiCourseGenerator(payload);
       console.log({ res });
       setGenerationProgress(100);
-      // if (res.courseId) {
-      //   try {
-      //     navigate(`/dashboard/courses/${data.courseId}`);
-      //   } catch {}
-      // }
     } catch (err: any) {
       setErrorMsg(err?.message || "تعذر الاتصال بالخادم");
     } finally {
@@ -194,13 +193,25 @@ export default function AiCardActions() {
             : "")
         }
       >
-        <h1 className="text-center text-3xl md:text-[44px] font-extrabold mb-2">
-          ماذا تريد أن تتعلم؟
-        </h1>
-        <p className="mb-6 text-center text-gray-600 dark:text-gray-300">
-          ارفع المحتوى أو ألصق رابطًا أو سجّل درسًا — وسيبني لك النظام تجربة
-          تعلم ذكية.
-        </p>
+        <header className="mb-2">
+          {soonFeaturesActive && (
+            <div className="flex justify-center mb-8">
+              <Badge
+                variant="secondary"
+                className="rounded-full px-3 py-1 text-sm"
+              >
+                بعض الميزات قيد التطوير — قريبًا ✨
+              </Badge>
+            </div>
+          )}
+          <h1 className="text-center text-3xl md:text-[44px] font-extrabold mb-2">
+            ماذا تريد أن تتعلم؟
+          </h1>
+          <p className="mb-6 text-center text-gray-600 dark:text-gray-300">
+            ارفع المحتوى أو ألصق رابطًا أو سجّل درسًا — وسيبني لك النظام تجربة
+            تعلم ذكية.
+          </p>
+        </header>
 
         {(builderActive || isGenerating) && (
           <div className="mt-6 flex items-center justify-center gap-3 text-sm">
@@ -210,43 +221,43 @@ export default function AiCardActions() {
           </div>
         )}
 
-        {/* Tiles (shown only before creation mode) */}
         {!builderActive && !isGenerating && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4 text-center mt-10">
             <ActionTile
               title="صناعة كورس"
               subtitle="بناء دورة تعليمية"
               onClick={handleStartBuilder}
-              active={builderActive}
-            >
-              <BookOpen className="h-6 w-6 ml-2" />
-            </ActionTile>
-            <ActionTile
+              icon={<BookOpen className="h-6 w-6 ml-2" />}
+            />
+
+            <SoonTile
               title="رفع"
               subtitle="ملف، صوت، فيديو"
-              onClick={handleUploadClick}
+              tooltip="ميزة الرفع ستتوفر قريبًا"
+              icon={<UploadCloud className="h-6 w-6 ml-2" />}
             >
-              <UploadCloud className="h-6 w-6 ml-2" />
               <input
                 ref={uploadRef}
                 type="file"
                 className="hidden"
                 onChange={handleFileChange}
+                disabled
               />
-            </ActionTile>
-            <ActionTile title="لصق" subtitle="يوتيوب، موقع، نص">
-              <Link2 className="h-6 w-6 ml-2" />
-            </ActionTile>
-            <ActionTile title="تسجيل" subtitle="تسجيل درس أو مكالمة فيديو">
-              <Mic className="h-6 w-6 ml-2" />
-            </ActionTile>
-          </div>
-        )}
+            </SoonTile>
 
-        {uploadName && !builderActive && !isGenerating && (
-          <div className="-mt-1 mb-4 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-            <FileText className="h-4 w-4 text-blue-600" />
-            <span>تم اختيار: {uploadName}</span>
+            <SoonTile
+              title="لصق"
+              subtitle="يوتيوب، موقع، نص"
+              tooltip="ميزة اللصق ستتوفر قريبًا"
+              icon={<Link2 className="h-6 w-6 ml-2" />}
+            />
+
+            <SoonTile
+              title="تسجيل"
+              subtitle="تسجيل درس أو مكالمة فيديو"
+              tooltip="ميزة التسجيل ستتوفر قريبًا"
+              icon={<Mic className="h-6 w-6 ml-2" />}
+            />
           </div>
         )}
 
@@ -254,9 +265,10 @@ export default function AiCardActions() {
           <div className="relative group">
             <Input
               value={query}
+              disabled
               onChange={(e) => setQuery(e.target.value)}
               placeholder="تعلم أي شيء"
-              className="peer h-[58px] rounded-full border-gray-200 bg-white pr-6 pl-16 text-[17px] text-right"
+              className={`w-full rounded-2xl border text-right shadow-sm flex items-center justify-end gap-3 px-6 transition-all bg-gray-50 dark:bg-gray-800 border-dashed border-gray-300 dark:border-gray-700  select-none peer h-[58px]`}
             />
             <Button
               type="button"
@@ -495,14 +507,25 @@ export default function AiCardActions() {
               >
                 إلغاء
               </Button>
-              <Button
-                onClick={handleCreateCourse}
-                disabled={!prompt.trim() || isGenerating}
-                className="rounded-xl"
-              >
-                <Send className="w-4 h-4 ml-2" />
-                إنشاء الدورة
-              </Button>
+              <TooltipProvider delayDuration={200}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={handleCreateCourse}
+                      disabled={!prompt.trim() || isGenerating}
+                      className="rounded-xl"
+                    >
+                      <Send className="w-4 h-4 ml-2" />
+                      إنشاء الدورة
+                    </Button>
+                  </TooltipTrigger>
+                  {!prompt.trim() && (
+                    <TooltipContent side="top" align="end">
+                      <p>اكتب وصفًا مختصرًا أولاً</p>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
               {errorMsg && (
                 <span className="text-sm text-red-600">{errorMsg}</span>
               )}
@@ -591,38 +614,72 @@ function Step({ active, label }: { active: boolean; label: string }) {
 }
 
 function ActionTile({
-  children,
   title,
   subtitle,
   onClick,
-  active = false,
+  icon,
 }: {
-  children: React.ReactNode;
   title: string;
   subtitle: string;
   onClick?: () => void;
-  active?: boolean;
+  icon: React.ReactNode;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`h-[88px] w-full rounded-2xl border text-right shadow-sm flex items-center justify-end gap-3 px-6 transition-all dark:bg-gray-900 dark:border-gray-800 ${
-        active
-          ? "bg-blue-600 text-white border-zinc-600 hover:shadow-md"
-          : "bg-white border-gray-200 hover:shadow-md"
-      }`}
+      className={`relative h-[88px] w-full rounded-2xl border text-right shadow-sm flex items-center justify-end gap-3 px-6 transition-all dark:bg-gray-900 dark:border-gray-800 bg-white border-gray-200 hover:shadow-md`}
     >
       <div className="flex flex-col items-end">
         <div className="text-base font-semibold">{title}</div>
-        <div
-          className={`text-sm ${active ? "text-blue-100" : "text-gray-500"}`}
-        >
-          {subtitle}
-        </div>
+        <div className={`text-sm text-gray-500`}>{subtitle}</div>
       </div>
-      {children}
+      {icon}
     </button>
+  );
+}
+
+function SoonTile({
+  title,
+  subtitle,
+  tooltip,
+  icon,
+  children,
+}: {
+  title: string;
+  subtitle: string;
+  tooltip: string;
+  icon: React.ReactNode;
+  children?: React.ReactNode;
+}) {
+  return (
+    <TooltipProvider delayDuration={150}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="relative">
+            <button
+              type="button"
+              disabled
+              aria-disabled
+              className={`h-[88px] w-full rounded-2xl border text-right shadow-sm flex items-center justify-end gap-3 px-6 transition-all bg-gray-50 dark:bg-gray-800 border-dashed border-gray-300 dark:border-gray-700  select-none`}
+            >
+              <div className="flex flex-col items-end opacity-70">
+                <div className="text-base font-semibold">{title}</div>
+                <div className="text-sm text-gray-500">{subtitle}</div>
+              </div>
+              {icon}
+              <Badge className="absolute -top-2 -left-2 rounded-full">
+                قريبًا
+              </Badge>
+            </button>
+            {children}
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="top" align="center">
+          <p>{tooltip}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 

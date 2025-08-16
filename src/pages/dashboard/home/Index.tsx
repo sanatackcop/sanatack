@@ -12,30 +12,31 @@ import {
 } from "@/components/ui/dialog";
 import { CoursesContext } from "@/utils/types";
 
-import { getAllCoursesApi } from "@/utils/_apis/courses-apis";
+import {
+  createSpacesApi,
+  deleteSpacesApi,
+  getAllCoursesApi,
+  getAllSpacesApi,
+} from "@/utils/_apis/courses-apis";
 import { Plus, Boxes, Trash2 } from "lucide-react";
 import AppLayout from "@/components/layout/Applayout";
 import { useNavigate } from "react-router-dom";
 import AiCardActions from "@/shared/ai/AiCardActions";
-import { ProfessionalCourseCard } from "./components/course.helpers";
-
-type Space = { id: number; name: string; contents: number };
+import { CourseCardNew } from "./components/course.helpers";
+import { Space } from "@/types/courses";
 
 export default function LearningDashboard() {
   const navigate = useNavigate();
 
   const [openAdd, setOpenAdd] = useState(false);
   const [newSpaceName, setNewSpaceName] = useState("");
-  const [spaces, setSpaces] = useState<Space[]>([
-    { id: 1, name: "مساحة أسامة", contents: 0 },
-    { id: 2, name: "مساحة بدون عنوان", contents: 1 },
-    { id: 3, name: "مساحة بدون عنوان (0)", contents: 0 },
-  ]);
+  const [spaces, setSpaces] = useState<Space[]>([]);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [spaceToDelete, setSpaceToDelete] = useState<Space | null>(null);
 
   const [courses, setCourses] = useState<CoursesContext[]>([]);
   const [loading, setLoading] = useState(true);
+  const [spaceRef, setSpaceRef] = useState(false);
   const [, setError] = useState("");
 
   const fetchAllCourses = async () => {
@@ -48,21 +49,29 @@ export default function LearningDashboard() {
     }
   };
 
+  const fetchAllSpaces = async () => {
+    try {
+      const { data } = await getAllSpacesApi();
+      setSpaces(data);
+    } catch (error) {}
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      await Promise.all([fetchAllCourses()]);
+      await Promise.all([fetchAllCourses(), fetchAllSpaces()]);
       setLoading(false);
     };
     fetchData();
-  }, []);
+  }, [spaceRef]);
 
-  function handleCreateSpace() {
-    const name = newSpaceName.trim() || `مساحة بدون عنوان (${spaces.length})`;
-    const nextId = spaces.length ? Math.max(...spaces.map((s) => s.id)) + 1 : 1;
-    setSpaces((prev) => [{ id: nextId, name, contents: 0 }, ...prev]);
-    setNewSpaceName("");
-    setOpenAdd(false);
+  async function handleCreateSpace() {
+    try {
+      const name = newSpaceName.trim() || `مساحة بدون عنوان (${spaces.length})`;
+      createSpacesApi({ name });
+      setOpenAdd(false);
+      setSpaceRef(!spaceRef);
+    } catch (error) {}
   }
 
   function requestDelete(space: Space) {
@@ -70,14 +79,14 @@ export default function LearningDashboard() {
     setDeleteOpen(true);
   }
 
-  function confirmDelete() {
+  async function confirmDelete() {
     if (!spaceToDelete) return;
-    setSpaces((prev) => prev.filter((s) => s.id !== spaceToDelete.id));
+    await deleteSpacesApi(spaceToDelete.id);
     setDeleteOpen(false);
-    setSpaceToDelete(null);
+    setSpaceRef(!spaceRef);
   }
 
-  function openSpace(id: number) {
+  function openSpace(id: string) {
     navigate(`/dashboard/spaces/${id}`);
   }
 
@@ -98,7 +107,7 @@ export default function LearningDashboard() {
                 key={s.id}
                 id={s.id}
                 name={s.name}
-                count={s.contents}
+                count={s.contents || 0}
                 onOpen={openSpace}
                 onDeleteRequest={requestDelete}
               />
@@ -132,10 +141,7 @@ export default function LearningDashboard() {
           ) : (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {enrolledCourses.map((course) => (
-                <ProfessionalCourseCard
-                  key={(course as any).id}
-                  course={course}
-                />
+                <CourseCardNew key={(course as any).id} course={course} />
               ))}
             </div>
           )}
@@ -235,12 +241,12 @@ function SpaceItem({
   onOpen,
   onDeleteRequest,
 }: {
-  id: number;
+  id: string;
   name: string;
   count: number;
-  onOpen: (id: number) => void;
+  onOpen: (id: string) => void;
   onDeleteRequest: (space: {
-    id: number;
+    id: string;
     name: string;
     contents: number;
   }) => void;

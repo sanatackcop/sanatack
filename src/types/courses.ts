@@ -184,7 +184,7 @@ export interface CodeMaterial {
   locked: boolean;
   type: MaterialType.CODE;
   title: string;
-  initialCode: string
+  initialCode: string;
   data: {
     id: number | string;
   };
@@ -225,3 +225,5 @@ export interface CodeCheckResponse {
     error?: string;
   }[];
 }
+
+export type Space = { id: string; name: string; contents: number };

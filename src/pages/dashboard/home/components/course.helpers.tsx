@@ -1,214 +1,72 @@
-import { checkIsNewCourse, DateDisplay } from "@/lib/utils";
-import { CoursesReport } from "@/types/courses";
-import { CoursesContext } from "@/utils/types";
+import { useNavigate } from "react-router-dom";
 import {
+  ArrowRight,
+  Calendar,
+  Clock,
+  Users,
+  Image as ImageIcon,
+  BarChart3,
   BookOpen,
-  TrendingUp,
-  Code,
   Brain,
+  Camera,
+  Code,
+  Cpu,
   Database,
+  Globe,
+  Palette,
   Shield,
   Smartphone,
-  BarChart3,
-  Palette,
-  Globe,
-  Camera,
-  Cpu,
-  Award,
-  ArrowRight,
-  Clock,
-  Calendar,
-  Users,
+  TrendingUp,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 
-export function getTopicIcon(topic: string) {
-  const iconMap: any = {
-    "ذكاء اصطناعي": Brain,
-    الخلفية: Code,
-    "تطوير ويب": Globe,
-    "تطوير جوال": Smartphone,
-    "قواعد بيانات": Database,
-    "أمن معلومات": Shield,
-    "علم بيانات": BarChart3,
-    تسويق: TrendingUp,
-    تصميم: Palette,
-    تصوير: Camera,
-    شبكات: Cpu,
-    تقني: Code,
-  };
+import { checkIsNewCourse, DateDisplay } from "@/lib/utils";
+import { CoursesContext } from "@/utils/types";
 
-  return iconMap[topic] || BookOpen;
-}
+function ProgressRing({
+  size = 44,
+  stroke = 6,
+  value = 0,
+}: {
+  size?: number;
+  stroke?: number;
+  value?: number;
+}) {
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const clamped = Math.max(0, Math.min(100, value || 0));
+  const dash = (clamped / 100) * circumference;
 
-export const AnimatedBackground = () => (
-  <div className="fixed inset-0 overflow-hidden pointer-events-none">
-    <div className="absolute top-20 right-20 w-96 h-96 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-full blur-3xl opacity-60 animate-pulse"></div>
+  return (
     <div
-      className="absolute bottom-20 left-20 w-80 h-80 bg-gradient-to-tr from-cyan-100 to-blue-100 dark:from-cyan-900/30 dark:to-blue-900/30 rounded-full blur-3xl opacity-50 animate-bounce"
-      style={{ animationDuration: "6s" }}
-    ></div>
-
-    <div
-      className="absolute top-1/4 left-1/3 w-32 h-32 bg-gradient-to-r from-sky-200 to-blue-200 dark:from-sky-900/20 dark:to-blue-900/20 rounded-2xl rotate-45 blur-xl opacity-40 animate-spin"
-      style={{ animationDuration: "20s" }}
-    ></div>
-    <div
-      className="absolute top-3/4 right-1/4 w-24 h-24 bg-gradient-to-l from-indigo-200 to-cyan-200 dark:from-indigo-900/20 dark:to-cyan-900/20 rounded-full blur-lg opacity-30 animate-ping"
-      style={{ animationDuration: "8s" }}
-    ></div>
-
-    <div className="absolute inset-0 opacity-10">
-      <div
-        className="w-full h-full bg-gradient-to-br from-transparent via-blue-300 dark:via-blue-700 to-transparent"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle at 25% 25%, rgba(59, 130, 246, 0.1) 1px, transparent 1px)",
-          backgroundSize: "40px 40px",
-        }}
-      ></div>
-    </div>
-
-    {[...Array(12)].map((_, i) => (
-      <div
-        key={i}
-        className="absolute w-2 h-2 bg-gradient-to-r from-blue-400 to-indigo-400 rounded-full opacity-60 animate-bounce"
-        style={{
-          left: `${Math.random() * 100}%`,
-          top: `${Math.random() * 100}%`,
-          animationDelay: `${Math.random() * 5}s`,
-          animationDuration: `${3 + Math.random() * 4}s`,
-        }}
-      />
-    ))}
-  </div>
-);
-
-export const StatsCards = ({ stats }: { stats: CoursesReport }) => (
-  <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-    <div className="group relative overflow-hidden bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300">
-      <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-800/30 dark:to-indigo-800/30 rounded-full blur-2xl opacity-70 group-hover:opacity-100 transition-opacity"></div>
-      <div
-        className="absolute -top-2 -right-2 w-16 h-16 border border-blue-200 dark:border-blue-700 rounded-full animate-spin"
-        style={{ animationDuration: "10s" }}
-      ></div>
-      <div className="relative z-10 flex items-center gap-4">
-        <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
-          <BookOpen size={24} className="text-white" />
-        </div>
-        <div>
-          <p className="text-3xl font-bold text-gray-900 dark:text-white">
-            {stats.completedCourses}
-          </p>
-          <p className="text-gray-600 dark:text-gray-400 font-medium">
-            دورة مكتملة
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <div className="group relative overflow-hidden bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300">
-      <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-cyan-100 to-blue-100 dark:from-cyan-800/30 dark:to-blue-800/30 rounded-full blur-2xl opacity-70 group-hover:opacity-100 transition-opacity"></div>
-      <div className="absolute -top-1 -right-1 w-12 h-12 border-2 border-cyan-200 dark:border-cyan-700 rounded-lg rotate-45 animate-pulse"></div>
-      <div className="relative z-10 flex items-center gap-4">
-        <div className="w-14 h-14 bg-gradient-to-br from-cyan-600 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
-          <Clock size={24} className="text-white" />
-        </div>
-        <div>
-          <p className="text-3xl font-bold text-gray-900 dark:text-white">
-            {stats.totalHours}
-          </p>
-          <p className="text-gray-600 dark:text-gray-400 font-medium">
-            ساعة تعلم
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <div className="group relative overflow-hidden bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300">
-      <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-indigo-100 to-sky-100 dark:from-indigo-800/30 dark:to-sky-800/30 rounded-full blur-2xl opacity-70 group-hover:opacity-100 transition-opacity"></div>
-      <div className="absolute -top-3 -right-3 w-20 h-20 border border-indigo-200 dark:border-indigo-700 rounded-full animate-ping opacity-30"></div>
-      <div className="relative z-10 flex items-center gap-4">
-        <div className="w-14 h-14 bg-gradient-to-br from-indigo-600 to-sky-600 rounded-2xl flex items-center justify-center shadow-lg">
-          <Award size={24} className="text-white" />
-        </div>
-        <div>
-          <p className="text-3xl font-bold text-gray-900 dark:text-white">
-            {stats.certifications}
-          </p>
-          <p className="text-gray-600 dark:text-gray-400 font-medium">
-            شهادة حاصل عليها
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <div className="group relative overflow-hidden bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300">
-      <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-indigo-100 to-sky-100 dark:from-indigo-800/30 dark:to-sky-800/30 rounded-full blur-2xl opacity-70 group-hover:opacity-100 transition-opacity"></div>
-      <div className="absolute -top-3 -right-3 w-20 h-20 border border-indigo-200 dark:border-indigo-700 rounded-full animate-ping opacity-30"></div>
-      <div className="relative z-10 flex items-center gap-4">
-        <div className="w-14 h-14 bg-gradient-to-br from-indigo-600 to-sky-600 rounded-2xl flex items-center justify-center shadow-lg">
-          <TrendingUp size={24} className="text-white" />
-        </div>
-        <div>
-          <p className="text-3xl font-bold text-gray-900 dark:text-white">
-            {stats.streakDays}
-          </p>
-          <p className="text-gray-600 dark:text-gray-400 font-medium">
-            يوم متتالي
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-export const ModernSectionHeader = ({ title, description }: any) => (
-  <div className="flex items-end justify-between mb-8">
-    <div className="space-y-2">
-      <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-        {title}
-      </h2>
-      <p className="text-gray-600 dark:text-gray-400 text-lg max-w-lg">
-        {description}
-      </p>
-    </div>
-    {/* {showViewAll && (
-      <button
-        className="group inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 font-semibold hover:text-blue-700 dark:hover:text-blue-300 
-      transition-colors duration-200 px-4 py-2 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20"
-      >
-        عرض الكل
-        <ArrowRight
-          size={16}
-          className="group-hover:translate-x-1 transition-transform"
+      className="relative inline-flex items-center justify-center"
+      style={{ width: size, height: size }}
+    >
+      <svg width={size} height={size} className="-rotate-90">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          className="stroke-gray-200 dark:stroke-gray-800"
+          strokeWidth={stroke}
         />
-      </button>
-    )} */}
-  </div>
-);
-
-export const EmptyState = ({ title, description, actionText }: any) => (
-  <div className="relative overflow-hidden bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-3xl p-12 text-center shadow-sm">
-    <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-indigo-50/30 dark:from-blue-800/20 dark:to-indigo-900/10"></div>
-    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-32 bg-gradient-to-b from-blue-200 to-indigo-200 dark:from-blue-800/30 dark:to-indigo-800/30 rounded-full blur-3xl opacity-40 animate-pulse"></div>
-    <div className="relative z-10 max-w-md mx-auto space-y-6">
-      <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-800/50 dark:to-indigo-700/50 rounded-2xl flex items-center justify-center mx-auto shadow-sm">
-        <BookOpen size={32} className="text-blue-600 dark:text-blue-400" />
-      </div>
-      <div className="space-y-2">
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-          {title}
-        </h3>
-        <p className="text-gray-600 dark:text-gray-400">{description}</p>
-      </div>
-      <button className="group inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl px-6 py-3 font-semibold hover:shadow-lg transition-all duration-200">
-        <BookOpen size={18} />
-        {actionText}
-      </button>
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          className="stroke-blue-600 dark:stroke-blue-400 transition-[stroke-dasharray] duration-500"
+          strokeDasharray={`${dash} ${circumference}`}
+        />
+      </svg>
+      <span className="absolute text-xs font-bold text-gray-900 dark:text-white">
+        {clamped}%
+      </span>
     </div>
-  </div>
-);
+  );
+}
 
 export const getTopicColors = (topic: string) => {
   const colorMap: any = {
@@ -298,167 +156,206 @@ export const getTopicColors = (topic: string) => {
   return colorMap[topic] || colorMap["برمجة"];
 };
 
-export const LevelBadge = ({ level }: any) => {
-  const levelConfig: any = {
-    مبتدئ: {
-      bg: "bg-green-100 dark:bg-green-900/30",
-      text: "text-green-700 dark:text-green-300",
-      border: "border-green-200 dark:border-green-700",
-    },
-    متوسط: {
-      bg: "bg-amber-100 dark:bg-amber-900/30",
-      text: "text-amber-700 dark:text-amber-300",
-      border: "border-amber-200 dark:border-amber-700",
-    },
-    متقدم: {
-      bg: "bg-red-100 dark:bg-red-900/30",
-      text: "text-red-700 dark:text-red-300",
-      border: "border-red-200 dark:border-red-700",
-    },
+export function getTopicIcon(topic: string) {
+  const iconMap: any = {
+    "ذكاء اصطناعي": Brain,
+    الخلفية: Code,
+    "تطوير ويب": Globe,
+    "تطوير جوال": Smartphone,
+    "قواعد بيانات": Database,
+    "أمن معلومات": Shield,
+    "علم بيانات": BarChart3,
+    تسويق: TrendingUp,
+    تصميم: Palette,
+    تصوير: Camera,
+    شبكات: Cpu,
+    تقني: Code,
   };
 
-  const config = levelConfig[level] || levelConfig["مبتدئ"];
+  return iconMap[topic] || BookOpen;
+}
 
-  return (
-    <span
-      className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold border ${config.bg} ${config.text} ${config.border}`}
-    >
-      {level}
-    </span>
-  );
-};
-
-export const ProfessionalCourseCard = ({
-  course,
-}: {
-  course: CoursesContext;
-}) => {
+export function CourseCardNew({ course }: { course: CoursesContext }) {
   const nav = useNavigate();
-
-  if (!course) {
-    return null;
-  }
+  if (!course) return null;
 
   const TopicIcon = getTopicIcon(course.topic);
   const topicColors = getTopicColors(course.topic);
 
-  return (
-    <div className="group relative bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden h-full grid grid-rows-[auto,1fr]">
-      <div className="relative h-16 bg-gradient-to-br overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent" />
+  const coverUrl = (course as any)?.cover || (course as any)?.thumbnail || "";
 
-        <div className="absolute bottom-4 right-4 flex items-center gap-3">
+  return (
+    <div className="group relative overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm hover:shadow-lg transition-all duration-300">
+      <div className="relative aspect-[4/3] overflow-hidden">
+        {coverUrl ? (
+          <img
+            src={coverUrl}
+            alt={course.title || "Course cover"}
+            className="h-full w-full object-cover"
+            loading="lazy"
+          />
+        ) : (
+          <div className="h-full w-full grid place-items-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900">
+            <div className="flex items-center gap-2 text-gray-400">
+              <ImageIcon size={18} />
+              <span className="text-sm">لا توجد صورة</span>
+            </div>
+          </div>
+        )}
+
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
+
+        <div className="absolute top-3 right-3 flex items-center gap-2">
           {course.created_at && checkIsNewCourse(course.created_at) && (
-            <span className="inline-flex items-center px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-medium border border-blue-200 dark:border-blue-700">
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-white/80 dark:bg-white/10 border border-white/60 dark:border-white/20 text-blue-700 dark:text-blue-300 backdrop-blur">
               جديد
             </span>
           )}
-          {course.level && <LevelBadge level={course.level} />}
+        </div>
+
+        <div className="absolute bottom-3 left-3">
+          <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold bg-white/80 dark:bg-white/10 border border-white/60 dark:border-white/20 text-gray-700 dark:text-gray-100 backdrop-blur">
+            <TopicIcon size={12} />
+            {course.topic || "عام"}
+          </span>
         </div>
       </div>
 
-      <div className="p-6 grid grid-rows-[1fr,auto] h-full">
-        <div className="space-y-4">
-          <div className="space-y-3">
-            <div className="flex items-start justify-between gap-2">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-2 leading-tight">
-                {course.title || "Untitled Course"}
-              </h3>
-            </div>
-            <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-2 leading-relaxed">
-              {course.description || "No description available"}
-            </p>
-          </div>
+      <div className="p-4">
+        <div className="mb-2 flex items-start justify-between gap-3">
+          <h3 className="text-base leading-6 font-bold text-gray-900 dark:text-white line-clamp-2">
+            {course.title || "دورة بدون عنوان"}
+          </h3>
 
           {course.progress !== undefined && course.progress !== null && (
-            <div className="space-y-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-100 dark:border-green-800">
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-green-700 dark:text-green-300 font-medium">
-                  التقدم
-                </span>
-                <span className="font-bold text-green-800 dark:text-green-200">
-                  {course.progress || 0}%
-                </span>
-              </div>
-              <div className="w-full bg-green-200 dark:bg-green-800 rounded-full h-2">
-                <div
-                  className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full transition-all duration-300"
-                  style={{ width: `${course.progress || 0}%` }}
-                />
-              </div>
+            <div className="shrink-0">
+              <ProgressRing value={course.progress || 0} />
             </div>
           )}
-
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <div className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-              <Clock size={14} className="text-blue-600 dark:text-blue-400" />
-              <span className="text-gray-700 dark:text-gray-300">
-                {course.course_info?.durationHours || 0} ساعة
-              </span>
-            </div>
-            <div className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-              <Users size={14} className="text-blue-600 dark:text-blue-400" />
-              <span className="text-gray-700 dark:text-gray-300">
-                {course.enrolledCount || 0} طالب
-              </span>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap gap-2 pb-3">
-            {course.topic && (
-              <span
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border ${
-                  topicColors?.tagBg || "bg-gray-100"
-                } ${topicColors?.tagText || "text-gray-700"} ${
-                  topicColors?.tagBorder || "border-gray-200"
-                }`}
-              >
-                <TopicIcon size={12} />
-                {course.topic}
-              </span>
-            )}
-            {course.course_info?.new_skills_result &&
-              Array.isArray(course.course_info.new_skills_result) &&
-              course.course_info.new_skills_result
-                .slice(0, 2)
-                .map((tech: any, index: number) => (
-                  <span
-                    key={index}
-                    className="px-2.5 py-1 bg-gray-100 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 rounded-lg text-xs font-medium border border-gray-200 dark:border-gray-700"
-                  >
-                    {tech}
-                  </span>
-                ))}
-            {course.course_info?.new_skills_result &&
-              Array.isArray(course.course_info.new_skills_result) &&
-              course.course_info.new_skills_result.length > 2 && (
-                <span className="px-2.5 py-1 bg-gray-100 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 rounded-lg text-xs font-medium border border-gray-200 dark:border-gray-700">
-                  +{course.course_info.new_skills_result.length - 2}
-                </span>
-              )}
-          </div>
         </div>
 
-        <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-800">
-          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-            <Calendar size={12} />
+        {course.description && (
+          <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3">
+            {course.description}
+          </p>
+        )}
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-[12px] text-gray-500 dark:text-gray-400">
+            <Clock size={14} />
+            <span>{course.course_info?.durationHours || 0} ساعة</span>
+            <span className="mx-1">•</span>
+            <Users size={14} />
+            <span>{course.enrolledCount || 0} طالب</span>
+            <span className="mx-1">•</span>
+            <Calendar size={14} />
             <span>
               {course.updated_at ? DateDisplay(course.updated_at) : "N/A"}
             </span>
           </div>
+
           <button
             onClick={() =>
               nav(`/dashboard/courses/${course.id}`, { replace: true })
             }
-            className={`inline-flex items-center gap-2 bg-gradient-to-r ${
-              topicColors?.bg || "from-blue-500 to-blue-600"
-            } text-white font-semibold text-sm px-4 py-2 rounded-lg transition-all duration-200 hover:shadow-md`}
+            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold text-white bg-gradient-to-r ${
+              topicColors?.bg || "from-blue-600 to-indigo-600"
+            } hover:shadow-md transition-all`}
           >
             متابعة
             <ArrowRight size={14} />
           </button>
         </div>
+
+        {course.progress !== undefined && course.progress !== null && (
+          <div className="mt-3">
+            <div className="h-1.5 w-full rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all"
+                style={{ width: `${course.progress || 0}%` }}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
-};
+}
+
+/**
+ * Optional: Study card variant – keeps your existing style but you can tweak freely.
+ */
+export function StudyCard({
+  title,
+  subtitle,
+  onClick,
+}: {
+  title: string;
+  subtitle?: string;
+  onClick?: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="w-full text-start rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 hover:shadow-md transition-shadow"
+    >
+      <div className="font-bold text-gray-900 dark:text-white line-clamp-1">
+        {title}
+      </div>
+      {subtitle && (
+        <div className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mt-1">
+          {subtitle}
+        </div>
+      )}
+    </button>
+  );
+}
+
+/**
+ * Wrapper that chooses which card to render. We assume your `CoursesContext` includes a `type` field ("course" | "study").
+ * If it doesn't, pass an explicit `variant` prop or adapt the condition below.
+ */
+export function LearningCard({
+  course,
+}: {
+  course: CoursesContext & { type?: string };
+}) {
+  if ((course as any)?.type === "study") {
+    return (
+      <StudyCard
+        title={course.title || "مذكرة دراسة"}
+        subtitle={course.description}
+        onClick={() => {}}
+      />
+    );
+  }
+  return <CourseCardNew course={course} />; // default to course
+}
+
+/** Demo for canvas preview only */
+export default function Demo() {
+  const fake: any = {
+    id: "1",
+    title: "اتخاذ القرار في الذكاء الاصطناعي",
+    description:
+      "مقدمة عملية حول النماذج الإحصائية وأساليب التعلّم لاتخاذ القرارات.",
+    topic: "ذكاء اصطناعي",
+    level: "متوسط",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    progress: 64,
+    course_info: {
+      durationHours: 18,
+      new_skills_result: ["Python", "Pandas", "RL"],
+    },
+    enrolledCount: 245,
+    // cover: "https://images.unsplash.com/photo-1551281044-8d8d8a6d7d05?q=80&w=1200&auto=format&fit=crop", // add your own cover if you want
+    type: "course",
+  };
+
+  return (
+    <div className="p-6 max-w-xl mx-auto">
+      <CourseCardNew course={fake} />
+    </div>
+  );
+}
