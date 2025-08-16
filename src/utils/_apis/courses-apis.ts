@@ -255,3 +255,20 @@ export const codeCheckApi = async (data: {
   }
 };
 
+export const aiCourseGenerator = async (
+  payload: any
+): Promise<CodeCheckResponse> => {
+  try {
+    const response = await Api<CodeCheckResponse>({
+      method: "post",
+      url: `courses/aicourses`,
+      withCredentials: false,
+      data: payload,
+    });
+
+    return response.data;
+  } catch (e: any) {
+    console.error("codeCheckApi error:", e.message);
+    throw e;
+  }
+};

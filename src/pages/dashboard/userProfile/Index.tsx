@@ -1,9 +1,7 @@
 import { useState, memo, useEffect } from "react";
 import {
   User,
-  BookOpen,
   Award,
-  Clock,
   TrendingUp,
   Settings,
   Calendar,
@@ -699,33 +697,6 @@ export default function UserProfile(): JSX.Element {
 
         {activeTab === "overview" && (
           <div className="space-y-10">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              <StatCard
-                icon={BookOpen}
-                value={userData.stats.coursesCompleted}
-                label="دورة مكتملة"
-                trend="+4 هذا الشهر"
-              />
-              <StatCard
-                icon={Clock}
-                value={userData.stats.hoursLearned}
-                label="ساعة تعلم"
-                trend="+24 هذا الأسبوع"
-              />
-              <StatCard
-                icon={Award}
-                value={userData.stats.certificates}
-                label="شهادة معتمدة"
-                trend="+2 هذا الشهر"
-              />
-              <StatCard
-                icon={TrendingUp}
-                value={userData.stats.currentStreak}
-                label="يوم متتالي"
-                trend="رقم قياسي جديد!"
-              />
-            </div>
-
             <div className="grid lg:grid-cols-2 gap-10">
               <div className="lg:col-span-2 space-y-8">
                 <div className="flex items-center justify-between">
