@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Progress } from "@/components/ui/progress";
 import {
   Tooltip,
   TooltipContent,
@@ -26,20 +37,27 @@ import {
   UploadCloud,
   Link2,
   Mic,
-  ArrowUp,
   BookOpen,
   CheckCircle,
   Bot,
   Wand2,
   Info,
   Send,
+  FileText,
+  Image,
+  Video,
+  Music,
+  Play,
+  Square,
+  Youtube,
+  Globe,
 } from "lucide-react";
 import { aiCourseGenerator } from "@/utils/_apis/courses-apis";
+import ChatInput from "./chatInput";
 
 type Level = "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
 type Pace = "EASY" | "BALANCED" | "INTENSE";
 type AssessmentStyle = "QUIZZES" | "PROJECTS" | "MIXED" | "LIGHT";
-
 type Topic =
   | "Artificial_Intelligence"
   | "MACHINE_LEARNING"
@@ -59,6 +77,30 @@ interface SettingsState {
   assessment_style: AssessmentStyle;
   pace: Pace;
   language: "ar" | "en";
+}
+
+// Modal state types
+type ModalType = "upload" | "paste" | "record" | "course" | null;
+
+interface UploadState {
+  files: File[];
+  isUploading: boolean;
+  uploadProgress: number;
+  error: string | null;
+}
+
+interface PasteState {
+  url: string;
+  text: string;
+  isProcessing: boolean;
+  error: string | null;
+}
+
+interface RecordState {
+  isRecording: boolean;
+  recordedBlob: Blob | null;
+  recordingTime: number;
+  error: string | null;
 }
 
 const LEVEL_LABELS: Record<Level, string> = {
@@ -82,10 +124,40 @@ const STYLE_LABELS: Record<AssessmentStyle, string> = {
 };
 
 export default function AiCardActions() {
+  const navigate = useNavigate();
   const [query, setQuery] = useState("");
-  const [, setUploadName] = useState<string>("");
   const uploadRef = useRef<HTMLInputElement | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const recordingTimerRef = useRef<any>(null);
 
+  // Modal state
+  const [activeModal, setActiveModal] = useState<ModalType>(null);
+
+  // Upload state
+  const [uploadState, setUploadState] = useState<UploadState>({
+    files: [],
+    isUploading: false,
+    uploadProgress: 0,
+    error: null,
+  });
+
+  // Paste state
+  const [pasteState, setPasteState] = useState<PasteState>({
+    url: "",
+    text: "",
+    isProcessing: false,
+    error: null,
+  });
+
+  // Record state
+  const [recordState, setRecordState] = useState<RecordState>({
+    isRecording: false,
+    recordedBlob: null,
+    recordingTime: 0,
+    error: null,
+  });
+
+  // Course builder state (keep existing)
   const [builderActive, setBuilderActive] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -107,16 +179,171 @@ export default function AiCardActions() {
     language: "ar",
   });
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (file) setUploadName(file.name);
+  // File upload handlers
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const selectedFiles = Array.from(e.target.files || []);
+    setUploadState((prev) => ({
+      ...prev,
+      files: selectedFiles,
+      error: null,
+    }));
   }
 
-  function handleStartBuilder() {
-    setBuilderActive(true);
-    setIsGenerating(false);
-    setGenerationProgress(0);
+  function handleFileDrop(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    const droppedFiles = Array.from(e.dataTransfer.files);
+    setUploadState((prev) => ({
+      ...prev,
+      files: droppedFiles,
+      error: null,
+    }));
   }
+
+  function handleDragOver(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+  }
+
+  async function handleFileUpload() {
+    if (uploadState.files.length === 0) return;
+
+    setUploadState((prev) => ({
+      ...prev,
+      isUploading: true,
+      uploadProgress: 0,
+    }));
+
+    try {
+      const formData = new FormData();
+      uploadState.files.forEach((file, index) => {
+        formData.append(`file${index}`, file);
+      });
+
+      // Simulate upload progress
+      const uploadInterval = setInterval(() => {
+        setUploadState((prev) => ({
+          ...prev,
+          uploadProgress: Math.min(prev.uploadProgress + 10, 90),
+        }));
+      }, 200);
+
+      // Replace with actual upload API call
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      clearInterval(uploadInterval);
+      setUploadState((prev) => ({ ...prev, uploadProgress: 100 }));
+
+      // Navigate to learning playground after success
+      setTimeout(() => {
+        navigate("/learning-playground");
+      }, 1000);
+    } catch (error: any) {
+      setUploadState((prev) => ({
+        ...prev,
+        error: error.message || "فشل في رفع الملف",
+        isUploading: false,
+      }));
+    }
+  }
+
+  // Paste handlers
+  async function handlePasteSubmit() {
+    if (!pasteState.url && !pasteState.text) return;
+
+    setPasteState((prev) => ({ ...prev, isProcessing: true, error: null }));
+
+    try {
+      // Replace with actual processing API call
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // Navigate to learning playground after success
+      navigate("/learning-playground");
+    } catch (error: any) {
+      setPasteState((prev) => ({
+        ...prev,
+        error: error.message || "فشل في معالجة المحتوى",
+        isProcessing: false,
+      }));
+    }
+  }
+
+  // Recording handlers
+  async function startRecording() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: false,
+      });
+
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+
+      const chunks: Blob[] = [];
+      mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(chunks, { type: "audio/webm" });
+        setRecordState((prev) => ({ ...prev, recordedBlob: blob }));
+      };
+
+      mediaRecorder.start();
+      setRecordState((prev) => ({
+        ...prev,
+        isRecording: true,
+        recordingTime: 0,
+      }));
+
+      // Start timer
+      recordingTimerRef.current = setInterval(() => {
+        setRecordState((prev) => ({
+          ...prev,
+          recordingTime: prev.recordingTime + 1,
+        }));
+      }, 1000);
+    } catch (error: any) {
+      setRecordState((prev) => ({
+        ...prev,
+        error: "فشل في الوصول للميكروفون",
+      }));
+    }
+  }
+
+  function stopRecording() {
+    if (mediaRecorderRef.current && recordState.isRecording) {
+      mediaRecorderRef.current.stop();
+      mediaRecorderRef.current.stream
+        .getTracks()
+        .forEach((track) => track.stop());
+      setRecordState((prev) => ({ ...prev, isRecording: false }));
+    }
+
+    if (recordingTimerRef.current) {
+      clearInterval(recordingTimerRef.current);
+    }
+  }
+
+  async function handleRecordingSubmit() {
+    if (!recordState.recordedBlob) return;
+
+    try {
+      // Upload recorded audio
+      const formData = new FormData();
+      formData.append("audio", recordState.recordedBlob, "recording.webm");
+
+      // Replace with actual upload API call
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // Navigate to learning playground after success
+      navigate("/learning-playground");
+    } catch (error: any) {
+      setRecordState((prev) => ({
+        ...prev,
+        error: error.message || "فشل في رفع التسجيل",
+      }));
+    }
+  }
+
+  // Chat input handler
+
+  // Course builder handlers (keep existing logic)
 
   function updateSetting<K extends keyof SettingsState>(
     key: K,
@@ -143,8 +370,6 @@ export default function AiCardActions() {
     () => settings.max_modules * lessonsPerModule,
     [settings.max_modules, lessonsPerModule]
   );
-
-  const soonFeaturesActive = true;
 
   async function handleCreateCourse() {
     if (!prompt.trim()) return;
@@ -175,6 +400,11 @@ export default function AiCardActions() {
       const res = await aiCourseGenerator(payload);
       console.log({ res });
       setGenerationProgress(100);
+
+      // Navigate to learning playground after generation
+      setTimeout(() => {
+        navigate("/learning-playground");
+      }, 1000);
     } catch (err: any) {
       setErrorMsg(err?.message || "تعذر الاتصال بالخادم");
     } finally {
@@ -182,6 +412,49 @@ export default function AiCardActions() {
       setIsGenerating(false);
     }
   }
+
+  function closeModal() {
+    setActiveModal(null);
+    setBuilderActive(false);
+    // Reset all states
+    setUploadState({
+      files: [],
+      isUploading: false,
+      uploadProgress: 0,
+      error: null,
+    });
+    setPasteState({
+      url: "",
+      text: "",
+      isProcessing: false,
+      error: null,
+    });
+    setRecordState({
+      isRecording: false,
+      recordedBlob: null,
+      recordingTime: 0,
+      error: null,
+    });
+  }
+
+  const soonFeaturesActive = true;
+
+  const [, setCurrentModel] = useState(null);
+
+  const models = [
+    { id: "gemini-2.5-flash", name: "Gemini 2.5 Flash", isActive: true },
+    { id: "gpt-4o", name: "GPT-4o", isActive: false },
+    { id: "claude-3.5", name: "Claude 3.5 Sonnet", isActive: false },
+  ];
+
+  const handleSubmit = () => {
+    navigate("/dashboard/learn/conent/23");
+  };
+
+  const handleModelChange = (model: any) => {
+    setCurrentModel(model);
+    console.log("Model changed to:", model);
+  };
 
   return (
     <div className={"px-24 mt-10 mb-20 transition-colors"}>
@@ -222,64 +495,304 @@ export default function AiCardActions() {
         )}
 
         {!builderActive && !isGenerating && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4 text-center mt-10">
-            <ActionTile
-              title="صناعة كورس"
-              subtitle="بناء دورة تعليمية"
-              onClick={handleStartBuilder}
-              icon={<BookOpen className="h-6 w-6 ml-2" />}
-            />
-
-            <SoonTile
-              title="رفع"
-              subtitle="ملف، صوت، فيديو"
-              tooltip="ميزة الرفع ستتوفر قريبًا"
-              icon={<UploadCloud className="h-6 w-6 ml-2" />}
-            >
-              <input
-                ref={uploadRef}
-                type="file"
-                className="hidden"
-                onChange={handleFileChange}
-                disabled
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-8 text-center mt-10">
+              <ActionTile
+                title="رفع"
+                subtitle="ملف، صوت، فيديو"
+                onClick={() => setActiveModal("upload")}
+                icon={<UploadCloud className="h-6 w-6 ml-2" />}
               />
-            </SoonTile>
 
-            <SoonTile
-              title="لصق"
-              subtitle="يوتيوب، موقع، نص"
-              tooltip="ميزة اللصق ستتوفر قريبًا"
-              icon={<Link2 className="h-6 w-6 ml-2" />}
-            />
+              <ActionTile
+                title="لصق"
+                subtitle="يوتيوب، موقع، نص"
+                onClick={() => setActiveModal("paste")}
+                icon={<Link2 className="h-6 w-6 ml-2" />}
+              />
 
-            <SoonTile
-              title="تسجيل"
-              subtitle="تسجيل درس أو مكالمة فيديو"
-              tooltip="ميزة التسجيل ستتوفر قريبًا"
-              icon={<Mic className="h-6 w-6 ml-2" />}
-            />
-          </div>
-        )}
+              <SoonTile
+                title="تسجيل"
+                subtitle="تسجيل درس أو مكالمة فيديو"
+                tooltip={""}
+                icon={<Mic className="h-6 w-6 ml-2" />}
+              />
 
-        {!builderActive && !isGenerating && (
-          <div className="relative group">
-            <Input
+              <SoonTile
+                title="صناعة كورس"
+                subtitle="بناء دورة تعليمية"
+                tooltip={""}
+                icon={<BookOpen className="h-6 w-6 ml-2" />}
+              />
+            </div>
+
+            <ChatInput
               value={query}
-              disabled
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={setQuery}
+              onSubmit={handleSubmit}
+              onModelChange={handleModelChange}
               placeholder="تعلم أي شيء"
-              className={`w-full rounded-2xl border text-right shadow-sm flex items-center justify-end gap-3 px-6 transition-all bg-gray-50 dark:bg-gray-800 border-dashed border-gray-300 dark:border-gray-700  select-none peer h-[58px]`}
+              models={models}
             />
-            <Button
-              type="button"
-              aria-label="إرسال"
-              className="absolute left-2 top-1/2 -translate-y-1/2 h-[44px] w-[44px] rounded-full shadow"
-              size="icon"
-            >
-              <ArrowUp className="h-5 w-5" />
-            </Button>
-          </div>
+          </>
         )}
+
+        <Dialog
+          open={activeModal === "upload"}
+          onOpenChange={(open) => !open && closeModal()}
+        >
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle className="text-right">رفع الملفات</DialogTitle>
+              <DialogDescription className="text-right">
+                اختر الملفات التي تريد تحويلها إلى محتوى تعليمي
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              <div
+                onDrop={handleFileDrop}
+                onDragOver={handleDragOver}
+                className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-8 text-center hover:border-blue-400 transition-colors"
+              >
+                <UploadCloud className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <div className="text-lg font-medium mb-2">
+                  اسحب وأفلت الملفات هنا
+                </div>
+                <div className="text-sm text-gray-500 mb-4">
+                  أو اختر الملفات يدويًا
+                </div>
+                <Button
+                  onClick={() => uploadRef.current?.click()}
+                  variant="outline"
+                  className="mb-2"
+                >
+                  اختيار الملفات
+                </Button>
+                <input
+                  ref={uploadRef}
+                  type="file"
+                  multiple
+                  accept=".pdf,.doc,.docx,.txt,.mp3,.mp4,.avi,.mov,.jpg,.png"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+                <div className="text-xs text-gray-400 mt-2">
+                  المسموح: PDF, Word, النصوص, الصوت, الفيديو, الصور
+                </div>
+              </div>
+
+              {uploadState.files.length > 0 && (
+                <div className="space-y-2">
+                  <div className="font-medium">الملفات المحددة:</div>
+                  {uploadState.files.map((file, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800 rounded"
+                    >
+                      <FileTypeIcon file={file} />
+                      <span className="flex-1 text-sm">{file.name}</span>
+                      <span className="text-xs text-gray-500">
+                        {formatFileSize(file.size)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {uploadState.isUploading && (
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>جاري الرفع...</span>
+                    <span>{uploadState.uploadProgress}%</span>
+                  </div>
+                  <Progress
+                    value={uploadState.uploadProgress}
+                    className="h-2"
+                  />
+                </div>
+              )}
+
+              {uploadState.error && (
+                <div className="text-red-600 text-sm text-center">
+                  {uploadState.error}
+                </div>
+              )}
+            </div>
+
+            <DialogFooter className="flex justify-start gap-2">
+              <Button variant="outline" onClick={closeModal}>
+                إلغاء
+              </Button>
+              <Button
+                onClick={handleFileUpload}
+                disabled={
+                  uploadState.files.length === 0 || uploadState.isUploading
+                }
+              >
+                {uploadState.isUploading ? "جاري الرفع..." : "رفع الملفات"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog
+          open={activeModal === "paste"}
+          onOpenChange={(open) => !open && closeModal()}
+        >
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle className="text-right">لصق المحتوى</DialogTitle>
+              <DialogDescription className="text-right">
+                الصق رابط أو نص للمحتوى الذي تريد تعلمه
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="url" className="text-right block mb-2">
+                  رابط (YouTube, موقع ويب)
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="url"
+                    placeholder="https://youtube.com/watch?v=..."
+                    value={pasteState.url}
+                    onChange={(e) =>
+                      setPasteState((prev) => ({
+                        ...prev,
+                        url: e.target.value,
+                      }))
+                    }
+                    className="text-right"
+                  />
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 flex gap-1">
+                    <Youtube className="h-4 w-4 text-gray-400" />
+                    <Globe className="h-4 w-4 text-gray-400" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-center text-gray-500">أو</div>
+
+              <div>
+                <Label htmlFor="text" className="text-right block mb-2">
+                  نص مباشر
+                </Label>
+                <Textarea
+                  id="text"
+                  placeholder="الصق النص هنا..."
+                  value={pasteState.text}
+                  onChange={(e) =>
+                    setPasteState((prev) => ({ ...prev, text: e.target.value }))
+                  }
+                  className="text-right min-h-[120px]"
+                />
+              </div>
+
+              {pasteState.error && (
+                <div className="text-red-600 text-sm text-center">
+                  {pasteState.error}
+                </div>
+              )}
+            </div>
+
+            <DialogFooter className="flex justify-start gap-2">
+              <Button variant="outline" onClick={closeModal}>
+                إلغاء
+              </Button>
+              <Button
+                onClick={handlePasteSubmit}
+                disabled={
+                  (!pasteState.url && !pasteState.text) ||
+                  pasteState.isProcessing
+                }
+              >
+                {pasteState.isProcessing
+                  ? "جاري المعالجة..."
+                  : "معالجة المحتوى"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog
+          open={activeModal === "record"}
+          onOpenChange={(open) => !open && closeModal()}
+        >
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle className="text-right">تسجيل صوتي</DialogTitle>
+              <DialogDescription className="text-right">
+                سجل درسًا أو اشرح موضوعًا بصوتك
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-6 text-center py-6">
+              <div className="relative">
+                <div className="w-24 h-24 rounded-full bg-gradient-to-r from-red-500 to-pink-500 flex items-center justify-center mx-auto mb-4">
+                  <Mic className="h-12 w-12 text-white" />
+                  {recordState.isRecording && (
+                    <div className="absolute inset-0 rounded-full border-4 border-red-400 animate-ping" />
+                  )}
+                </div>
+
+                {recordState.isRecording && (
+                  <div className="text-2xl font-mono font-bold text-red-600">
+                    {Math.floor(recordState.recordingTime / 60)}:
+                    {(recordState.recordingTime % 60)
+                      .toString()
+                      .padStart(2, "0")}
+                  </div>
+                )}
+              </div>
+
+              {!recordState.isRecording && !recordState.recordedBlob && (
+                <Button onClick={startRecording} className="rounded-full px-8">
+                  <Play className="h-4 w-4 ml-2" />
+                  بدء التسجيل
+                </Button>
+              )}
+
+              {recordState.isRecording && (
+                <Button
+                  onClick={stopRecording}
+                  variant="destructive"
+                  className="rounded-full px-8"
+                >
+                  <Square className="h-4 w-4 ml-2" />
+                  إيقاف التسجيل
+                </Button>
+              )}
+
+              {recordState.recordedBlob && !recordState.isRecording && (
+                <div className="space-y-4">
+                  <CheckCircle className="h-16 w-16 text-green-500 mx-auto" />
+                  <div className="text-lg font-medium">تم التسجيل بنجاح!</div>
+                  <div className="text-sm text-gray-600">
+                    المدة: {Math.floor(recordState.recordingTime / 60)}:
+                    {(recordState.recordingTime % 60)
+                      .toString()
+                      .padStart(2, "0")}
+                  </div>
+                </div>
+              )}
+
+              {recordState.error && (
+                <div className="text-red-600 text-sm">{recordState.error}</div>
+              )}
+            </div>
+
+            <DialogFooter className="flex justify-start gap-2">
+              <Button variant="outline" onClick={closeModal}>
+                إلغاء
+              </Button>
+              {recordState.recordedBlob && (
+                <Button onClick={handleRecordingSubmit}>معالجة التسجيل</Button>
+              )}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {builderActive && !isGenerating && (
           <div>
@@ -291,7 +804,7 @@ export default function AiCardActions() {
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
                     placeholder="اكتب وصفًا موجزًا لما تريد تعلمه، وسيتم إنشاء خطة مخصصة."
-                    className="w-full p-4 text-base border-2 border-zinc-200 dark:border-zinc-800 rounded-2xl  focus:border-zinc-500 resize-none bg-white dark:bg-gray-900 placeholder-gray-400 text-right"
+                    className="w-full p-4 text-base border-2 border-zinc-200 dark:border-zinc-800 rounded-2xl focus:border-zinc-500 resize-none bg-white dark:bg-gray-900 placeholder-gray-400 text-right"
                     maxLength={1000}
                   />
                 </div>
@@ -502,7 +1015,7 @@ export default function AiCardActions() {
             <div className="flex items-center justify-end gap-3 mt-4">
               <Button
                 variant="outline"
-                onClick={() => setBuilderActive(false)}
+                onClick={closeModal}
                 className="rounded-xl"
               >
                 إلغاء
@@ -628,7 +1141,7 @@ function ActionTile({
     <button
       type="button"
       onClick={onClick}
-      className={`relative h-[88px] w-full rounded-2xl border text-right shadow-sm flex items-center justify-end gap-3 px-6 transition-all dark:bg-gray-900 dark:border-gray-800 bg-white border-gray-200 hover:shadow-md`}
+      className={`relative h-[88px] w-full rounded-2xl border text-right shadow-sm flex items-center justify-end gap-3 px-6 transition-all dark:bg-gray-900 dark:border-gray-800 bg-white border-gray-200 hover:shadow-md hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
     >
       <div className="flex flex-col items-end">
         <div className="text-base font-semibold">{title}</div>
@@ -707,4 +1220,25 @@ function FeatureToggle({
       />
     </div>
   );
+}
+
+// Helper function for file type icons
+function FileTypeIcon({ file }: { file: File }) {
+  const getIcon = (type: string) => {
+    if (type.startsWith("image/")) return <Image className="h-4 w-4" />;
+    if (type.startsWith("video/")) return <Video className="h-4 w-4" />;
+    if (type.startsWith("audio/")) return <Music className="h-4 w-4" />;
+    return <FileText className="h-4 w-4" />;
+  };
+
+  return getIcon(file.type);
+}
+
+// Helper function for file size formatting
+function formatFileSize(bytes: number): string {
+  if (bytes === 0) return "0 Bytes";
+  const k = 1024;
+  const sizes = ["Bytes", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 }

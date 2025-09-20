@@ -22,7 +22,6 @@ import { Plus, Boxes, Trash2 } from "lucide-react";
 import AppLayout from "@/components/layout/Applayout";
 import { useNavigate } from "react-router-dom";
 import AiCardActions from "@/shared/ai/AiCardActions";
-import { CourseCardNew } from "./components/course.helpers";
 import { Space } from "@/types/courses";
 
 export default function LearningDashboard() {
@@ -34,8 +33,8 @@ export default function LearningDashboard() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [spaceToDelete, setSpaceToDelete] = useState<Space | null>(null);
 
-  const [courses, setCourses] = useState<CoursesContext[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [, setCourses] = useState<CoursesContext[]>([]);
+  const [, setLoading] = useState(true);
   const [spaceRef, setSpaceRef] = useState(false);
   const [, setError] = useState("");
 
@@ -90,8 +89,6 @@ export default function LearningDashboard() {
     navigate(`/dashboard/spaces/${id}`);
   }
 
-  const enrolledCourses = courses.filter((c) => (c as any).isEnrolled === true);
-
   return (
     <AppLayout className="mb-20">
       <main className="px-24">
@@ -123,11 +120,9 @@ export default function LearningDashboard() {
           </div>
         </section>
 
-        <section className="mt-12" dir="rtl">
+        {/* <section className="mt-12" dir="rtl">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold text-right">
-              تابع دوراتك الحالية
-            </h2>
+            <h2 className="text-lg font-semibold text-right">مؤخرًا</h2>
             {loading && (
               <span className="text-sm text-gray-500">جاري التحميل…</span>
             )}
@@ -145,7 +140,7 @@ export default function LearningDashboard() {
               ))}
             </div>
           )}
-        </section>
+        </section> */}
       </main>
 
       {/* Create Space Dialog */}
@@ -286,21 +281,6 @@ function SpaceItem({
         <div className="text-[13px] text-gray-500">{count} عناصر</div>
       </div>
       <span className="pointer-events-none absolute inset-0 rounded-2xl ring-0 group-hover:ring-1 group-hover:ring-blue-300" />
-    </div>
-  );
-}
-
-function EmptyState({
-  title,
-  description,
-}: {
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="rounded-2xl border border-dashed border-gray-300 p-8 text-center text-gray-600 dark:text-gray-300">
-      <div className="text-xl font-bold mb-2">{title}</div>
-      <div className="text-sm">{description}</div>
     </div>
   );
 }

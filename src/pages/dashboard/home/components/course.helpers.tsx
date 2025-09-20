@@ -1,10 +1,4 @@
-import { useNavigate } from "react-router-dom";
 import {
-  ArrowRight,
-  Calendar,
-  Clock,
-  Users,
-  Image as ImageIcon,
   BarChart3,
   BookOpen,
   Brain,
@@ -19,54 +13,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 
-import { checkIsNewCourse, DateDisplay } from "@/lib/utils";
 import { CoursesContext } from "@/utils/types";
-
-function ProgressRing({
-  size = 44,
-  stroke = 6,
-  value = 0,
-}: {
-  size?: number;
-  stroke?: number;
-  value?: number;
-}) {
-  const radius = (size - stroke) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const clamped = Math.max(0, Math.min(100, value || 0));
-  const dash = (clamped / 100) * circumference;
-
-  return (
-    <div
-      className="relative inline-flex items-center justify-center"
-      style={{ width: size, height: size }}
-    >
-      <svg width={size} height={size} className="-rotate-90">
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          className="stroke-gray-200 dark:stroke-gray-800"
-          strokeWidth={stroke}
-        />
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          strokeWidth={stroke}
-          strokeLinecap="round"
-          className="stroke-blue-600 dark:stroke-blue-400 transition-[stroke-dasharray] duration-500"
-          strokeDasharray={`${dash} ${circumference}`}
-        />
-      </svg>
-      <span className="absolute text-xs font-bold text-gray-900 dark:text-white">
-        {clamped}%
-      </span>
-    </div>
-  );
-}
 
 export const getTopicColors = (topic: string) => {
   const colorMap: any = {
@@ -176,109 +123,104 @@ export function getTopicIcon(topic: string) {
 }
 
 export function CourseCardNew({ course }: { course: CoursesContext }) {
-  const nav = useNavigate();
   if (!course) return null;
 
-  const TopicIcon = getTopicIcon(course.topic);
-  const topicColors = getTopicColors(course.topic);
-
-  const coverUrl = (course as any)?.cover || (course as any)?.thumbnail || "";
-
   return (
-    <div className="group relative overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm hover:shadow-lg transition-all duration-300">
-      <div className="relative aspect-[4/3] overflow-hidden">
-        {coverUrl ? (
-          <img
-            src={coverUrl}
-            alt={course.title || "Course cover"}
-            className="h-full w-full object-cover"
-            loading="lazy"
-          />
-        ) : (
-          <div className="h-full w-full grid place-items-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900">
-            <div className="flex items-center gap-2 text-gray-400">
-              <ImageIcon size={18} />
-              <span className="text-sm">لا توجد صورة</span>
-            </div>
-          </div>
-        )}
+    <></>
+    // <div className="group relative overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm hover:shadow-lg transition-all duration-300">
+    //   <div className="relative aspect-[4/3] overflow-hidden">
+    //     {coverUrl ? (
+    //       <img
+    //         src={coverUrl}
+    //         alt={course.title || "Course cover"}
+    //         className="h-full w-full object-cover"
+    //         loading="lazy"
+    //       />
+    //     ) : (
+    //       <div className="h-full w-full grid place-items-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900">
+    //         <div className="flex items-center gap-2 text-gray-400">
+    //           <ImageIcon size={18} />
+    //           <span className="text-sm">لا توجد صورة</span>
+    //         </div>
+    //       </div>
+    //     )}
 
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
+    //     <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
 
-        <div className="absolute top-3 right-3 flex items-center gap-2">
-          {course.created_at && checkIsNewCourse(course.created_at) && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-white/80 dark:bg-white/10 border border-white/60 dark:border-white/20 text-blue-700 dark:text-blue-300 backdrop-blur">
-              جديد
-            </span>
-          )}
-        </div>
+    //     <div className="absolute top-3 right-3 flex items-center gap-2">
+    //       {course.created_at && checkIsNewCourse(course.created_at) && (
+    //         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-white/80 dark:bg-white/10 border border-white/60 dark:border-white/20 text-blue-700 dark:text-blue-300 backdrop-blur">
+    //           جديد
+    //         </span>
+    //       )}
+    //     </div>
 
-        <div className="absolute bottom-3 left-3">
-          <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold bg-white/80 dark:bg-white/10 border border-white/60 dark:border-white/20 text-gray-700 dark:text-gray-100 backdrop-blur">
-            <TopicIcon size={12} />
-            {course.topic || "عام"}
-          </span>
-        </div>
-      </div>
+    //     <div className="absolute bottom-3 left-3">
+    //       <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold bg-white/80 dark:bg-white/10 border border-white/60 dark:border-white/20 text-gray-700 dark:text-gray-100 backdrop-blur">
+    //         <TopicIcon size={12} />
+    //         {course.topic || "عام"}
+    //       </span>
+    //     </div>
+    //   </div>
 
-      <div className="p-4">
-        <div className="mb-2 flex items-start justify-between gap-3">
-          <h3 className="text-base leading-6 font-bold text-gray-900 dark:text-white line-clamp-2">
-            {course.title || "دورة بدون عنوان"}
-          </h3>
+    //   <div className="p-4">
+    //     <div className="mb-2 flex items-start justify-between gap-3">
+    //       <h3 className="text-base leading-6 font-bold text-gray-900 dark:text-white line-clamp-2">
+    //         {course.title || "دورة بدون عنوان"}
+    //       </h3>
 
-          {course.progress !== undefined && course.progress !== null && (
-            <div className="shrink-0">
-              <ProgressRing value={course.progress || 0} />
-            </div>
-          )}
-        </div>
+    //       {course.progress !== undefined && course.progress !== null && (
+    //         <div className="shrink-0">
+    //           <ProgressRing value={course.progress || 0} />
+    //         </div>
+    //       )}
+    //     </div>
 
-        {course.description && (
-          <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3">
-            {course.description}
-          </p>
-        )}
+    //     {course.description && (
+    //       <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3">
+    //         {course.description}
+    //       </p>
+    //     )}
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-[12px] text-gray-500 dark:text-gray-400">
-            <Clock size={14} />
-            <span>{course.course_info?.durationHours || 0} ساعة</span>
-            <span className="mx-1">•</span>
-            <Users size={14} />
-            <span>{course.enrolledCount || 0} طالب</span>
-            <span className="mx-1">•</span>
-            <Calendar size={14} />
-            <span>
-              {course.updated_at ? DateDisplay(course.updated_at) : "N/A"}
-            </span>
-          </div>
+    //     <div className="flex items-center justify-between">
+    //       <div className="flex items-center gap-2 text-[12px] text-gray-500 dark:text-gray-400">
+    //         <Clock size={14} />
+    //         <span>{course.course_info?.durationHours || 0} ساعة</span>
+    //         <span className="mx-1">•</span>
+    //         <Users size={14} />
+    //         <span>{course.enrolledCount || 0} طالب</span>
+    //         <span className="mx-1">•</span>
+    //         <Calendar size={14} />
+    //         <span>
+    //           {course.updated_at ? DateDisplay(course.updated_at) : "N/A"}
+    //         </span>
+    //       </div>
 
-          <button
-            onClick={() =>
-              nav(`/dashboard/courses/${course.id}`, { replace: true })
-            }
-            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold text-white bg-gradient-to-r ${
-              topicColors?.bg || "from-blue-600 to-indigo-600"
-            } hover:shadow-md transition-all`}
-          >
-            متابعة
-            <ArrowRight size={14} />
-          </button>
-        </div>
+    //       <button
+    //         onClick={() =>
+    //           nav(`/dashboard/courses/${course.id}`, { replace: true })
+    //         }
+    //         className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold text-white bg-gradient-to-r ${
+    //           topicColors?.bg || "from-blue-600 to-indigo-600"
+    //         } hover:shadow-md transition-all`}
+    //       >
+    //         متابعة
+    //         <ArrowRight size={14} />
+    //       </button>
+    //     </div>
 
-        {course.progress !== undefined && course.progress !== null && (
-          <div className="mt-3">
-            <div className="h-1.5 w-full rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all"
-                style={{ width: `${course.progress || 0}%` }}
-              />
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+    //     {course.progress !== undefined && course.progress !== null && (
+    //       <div className="mt-3">
+    //         <div className="h-1.5 w-full rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden">
+    //           <div
+    //             className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all"
+    //             style={{ width: `${course.progress || 0}%` }}
+    //           />
+    //         </div>
+    //       </div>
+    //     )}
+    //   </div>
+    // </div>
   );
 }
 

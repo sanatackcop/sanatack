@@ -17,6 +17,8 @@ import {
   DollarSign,
   LogOut,
   MessageCircle,
+  ChevronRight,
+  ChevronLeft,
 } from "lucide-react";
 import LogoLight from "@/assets/logo.svg";
 import LogoDark from "@/assets/dark_logo.svg";
@@ -34,6 +36,12 @@ import {
   DialogFooter,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { createSpacesApi, getAllSpacesApi } from "@/utils/_apis/courses-apis";
 import Switch from "@mui/material/Switch";
 
@@ -105,6 +113,15 @@ export function AppSidebar() {
   const [recents] = useState<MenuItem[]>([]);
   const [showAllSpaces, setShowAllSpaces] = useState(false);
 
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(() => {
+    try {
+      return JSON.parse(localStorage.getItem("sidebar:collapsed") || "false");
+    } catch {
+      return false;
+    }
+  });
+  const [isHovering, setIsHovering] = useState(false);
+
   const navigate = useNavigate();
 
   const topItems = useMemo(() => initialTopItems, []);
@@ -130,10 +147,10 @@ export function AppSidebar() {
 
   const linkClasses = ({ isActive }: { isActive: boolean }) =>
     clsx(
-      "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors rounded-full",
+      "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors",
       isActive
         ? "bg-gray-100 dark:bg-gray-800"
-        : "hover:bg-gray-100  dark:hover:bg-gray-800/50"
+        : "hover:bg-gray-100 dark:hover:bg-gray-800/50"
     );
 
   const disabledClasses =
@@ -205,57 +222,122 @@ export function AppSidebar() {
     const ItemIcon = item.icon;
     const isDisabled = !!(item.isPremium || item.isSoon);
 
-    if (isDisabled) {
-      return (
-        <div
-          className={disabledClasses}
-          aria-disabled
-          title={
-            item.isPremium
-              ? "متاح في الباقة بريميوم"
-              : item.isSoon
-              ? "قريبًا"
-              : ""
-          }
-        >
-          <ItemIcon size={18} className="text-gray-600 dark:text-gray-400" />
+    const content = (
+      <div
+        className={clsx(
+          isDisabled ? disabledClasses : linkClasses({ isActive: false }),
+          isCollapsed && "justify-center px-0"
+        )}
+        aria-disabled={isDisabled || undefined}
+      >
+        <ItemIcon size={20} className="text-gray-600 dark:text-gray-400" />
+        {!isCollapsed && (
           <span className="text-sm text-gray-700 dark:text-gray-300">
             {item.title}
           </span>
-          <Badges item={item} />
-        </div>
+        )}
+        {!isCollapsed && !isDisabled && <Badges item={item} />}
+      </div>
+    );
+
+    if (isDisabled) {
+      return (
+        <TooltipProvider delayDuration={100}>
+          <Tooltip>
+            <TooltipTrigger asChild>{content}</TooltipTrigger>
+            {isCollapsed && (
+              <TooltipContent side="right">
+                <span className="text-sm">{item.title}</span>
+              </TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
       );
     }
 
     return (
-      <NavLink to={item.url} className={linkClasses}>
-        <ItemIcon size={18} className="text-gray-600 dark:text-gray-400" />
-        <span className="text-sm text-gray-700 dark:text-gray-300">
-          {item.title}
-        </span>
-        <Badges item={item} />
-      </NavLink>
+      <TooltipProvider delayDuration={100}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <NavLink
+              to={item.url}
+              className={({ isActive }) =>
+                clsx(
+                  linkClasses({ isActive }),
+                  isCollapsed && "justify-center px-0"
+                )
+              }
+            >
+              <ItemIcon
+                size={20}
+                className="text-gray-600 dark:text-gray-400"
+              />
+              {!isCollapsed && (
+                <span className="text-sm text-gray-700 dark:text-gray-300">
+                  {item.title}
+                </span>
+              )}
+              {!isCollapsed && <Badges item={item} />}
+            </NavLink>
+          </TooltipTrigger>
+          {isCollapsed && (
+            <TooltipContent side="right">
+              <span className="text-sm">{item.title}</span>
+            </TooltipContent>
+          )}
+        </Tooltip>
+      </TooltipProvider>
     );
   };
 
+  // Persist collapse state
+  useEffect(() => {
+    localStorage.setItem("sidebar:collapsed", JSON.stringify(isCollapsed));
+  }, [isCollapsed]);
+
+  const toggleCollapsed = () => setIsCollapsed((v) => !v);
+
   return (
     <div
-      className="h-full w-72 bg-[#fbfbfa] dark:bg-gray-950 z-50 flex flex-col border-l border-gray-200 dark:border-gray-800"
       dir="rtl"
       lang="ar"
+      className={clsx(
+        "h-full bg-[#fbfbfa] dark:bg-gray-950 z-50 flex flex-col border-l border-gray-200 dark:border-gray-800 transition-[width] duration-200 ease-in-out",
+        isCollapsed ? "w-12" : "w-72"
+      )}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
     >
       <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-800">
-        <div className="h-[60px] flex justify-normal items-center overflow-hidden w-full">
-          <img
-            src={darkMode ? String(LogoDark) : String(LogoLight)}
-            alt="logo"
-            className={clsx(
-              "h-full w-auto transition-all object-contain pr-6 scale-[2]"
-            )}
-          />
-        </div>
+        {!isCollapsed && (
+          <div className="h-[60px] flex justify-normal items-center overflow-hidden w-full">
+            <img
+              src={darkMode ? String(LogoDark) : String(LogoLight)}
+              alt="logo"
+              className={clsx(
+                "h-full w-auto transition-all object-contain pr-6 scale-[2]"
+              )}
+            />
+          </div>
+        )}
+
+        {/* Collapse/Expand Button */}
+        <button
+          onClick={toggleCollapsed}
+          aria-label={
+            isCollapsed ? "توسيع الشريط الجانبي" : "طيّ الشريط الجانبي"
+          }
+          className={clsx(
+            "m-2 inline-flex items-center justify-center rounded-full border border-gray-200 dark:border-gray-700",
+            "hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors p-1",
+            isCollapsed && !isHovering ? "opacity-60" : "opacity-100"
+          )}
+        >
+          {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+        </button>
       </div>
 
+      {/* Primary */}
       <div className="px-3 py-4 border-b border-gray-200 dark:border-gray-800">
         <div className="space-y-1">
           {topItems.map((item) => (
@@ -264,13 +346,14 @@ export function AppSidebar() {
         </div>
       </div>
 
+      {/* Scrollable content */}
       <div
         className="flex-1 overflow-y-auto px-3 py-4"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
         <style>{`.flex-1::-webkit-scrollbar { display: none; }`}</style>
 
-        {recents.length > 0 && (
+        {!!recents.length && !isCollapsed && (
           <div className="mb-6">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white px-3 mb-3">
               الأخيرة
@@ -278,7 +361,6 @@ export function AppSidebar() {
             <div className="space-y-1">
               {recents.map((item) => {
                 const ItemIcon = item.icon ?? History;
-
                 const isAddContent = item.url === "/dashboard/add-content";
                 const isSpace = item.url.startsWith("/dashboard/spaces/");
                 const canClick = isAddContent || isSpace;
@@ -320,110 +402,122 @@ export function AppSidebar() {
           </div>
         )}
 
-        <div className="mb-6">
-          <div className="px-3 mb-3 flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-              المساحات
-            </h3>
+        {/* Spaces */}
+        {!isCollapsed && (
+          <div className="mb-6">
+            <div className="px-3 mb-3 flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+                المساحات
+              </h3>
 
-            <Dialog open={openCreate} onOpenChange={setOpenCreate}>
-              <DialogTrigger asChild>
-                <button className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300">
-                  <Plus size={14} />
-                  إنشاء
-                </button>
-              </DialogTrigger>
-              <DialogContent dir="rtl">
-                <DialogHeader>
-                  <DialogTitle>إنشاء مساحة جديدة</DialogTitle>
-                  <DialogDescription>
-                    اختر اسمًا لمساحتك ثم اضغط إنشاء.
-                  </DialogDescription>
-                </DialogHeader>
-
-                <div className="grid gap-2">
-                  <Label htmlFor="space-name">اسم المساحة</Label>
-                  <Input
-                    id="space-name"
-                    value={newName}
-                    onChange={(e) => setNewName(e.target.value)}
-                    placeholder="مثال: مساحة الفريق"
-                  />
-                </div>
-
-                {spacesError && (
-                  <p className="text-sm text-destructive">{spacesError}</p>
-                )}
-
-                <DialogFooter className="gap-2 sm:gap-0">
-                  <Button
-                    variant="ghost"
-                    onClick={() => setOpenCreate(false)}
-                    disabled={creating}
-                  >
-                    إلغاء
-                  </Button>
-                  <Button
-                    onClick={doCreateSpace}
-                    disabled={creating || !newName.trim()}
-                  >
-                    {creating ? "جارٍ الإنشاء…" : "إنشاء"}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </div>
-
-          {/* Spaces list */}
-          <div className="space-y-1">
-            {loadingSpaces ? (
-              <>
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="flex items-center gap-3 px-3 py-2.5">
-                    <Skeleton className="h-5 w-5 rounded-full" />
-                    <Skeleton className="h-4 w-40" />
-                  </div>
-                ))}
-              </>
-            ) : spacesError ? (
-              <div className="px-3 py-2 text-sm text-destructive">
-                {spacesError}
-              </div>
-            ) : spaces.length === 0 ? (
-              <div className="px-3 py-2 text-sm text-muted-foreground">
-                لا توجد مساحات بعد.
-              </div>
-            ) : (
-              <>
-                {(showAllSpaces ? spaces : spaces.slice(0, 6)).map((item) => (
-                  <NavLink key={item.id} to={item.url} className={linkClasses}>
-                    <Users
-                      size={18}
-                      className="text-gray-600 dark:text-gray-400"
-                    />
-                    <span className="text-sm text-gray-700 dark:text-gray-300">
-                      {item.title}
-                    </span>
-                  </NavLink>
-                ))}
-
-                {spaces.length > 6 && (
-                  <button
-                    onClick={() => setShowAllSpaces((prev) => !prev)}
-                    className="w-full text-xs text-blue-600 dark:text-blue-400 text-center py-1 hover:underline"
-                  >
-                    {showAllSpaces ? "عرض أقل" : "عرض المزيد"}
+              <Dialog open={openCreate} onOpenChange={setOpenCreate}>
+                <DialogTrigger asChild>
+                  <button className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300">
+                    <Plus size={14} />
+                    إنشاء
                   </button>
-                )}
-              </>
-            )}
-          </div>
-        </div>
+                </DialogTrigger>
+                <DialogContent dir="rtl">
+                  <DialogHeader>
+                    <DialogTitle>إنشاء مساحة جديدة</DialogTitle>
+                    <DialogDescription>
+                      اختر اسمًا لمساحتك ثم اضغط إنشاء.
+                    </DialogDescription>
+                  </DialogHeader>
 
-        <div>
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-white px-3 mb-3">
-            المساعدة والأدوات
-          </h3>
+                  <div className="grid gap-2">
+                    <Label htmlFor="space-name">اسم المساحة</Label>
+                    <Input
+                      id="space-name"
+                      value={newName}
+                      onChange={(e) => setNewName(e.target.value)}
+                      placeholder="مثال: مساحة الفريق"
+                    />
+                  </div>
+
+                  {spacesError && (
+                    <p className="text-sm text-destructive">{spacesError}</p>
+                  )}
+
+                  <DialogFooter className="gap-2 sm:gap-0">
+                    <Button
+                      variant="ghost"
+                      onClick={() => setOpenCreate(false)}
+                      disabled={creating}
+                    >
+                      إلغاء
+                    </Button>
+                    <Button
+                      onClick={doCreateSpace}
+                      disabled={creating || !newName.trim()}
+                    >
+                      {creating ? "جارٍ الإنشاء…" : "إنشاء"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            <div className="space-y-1">
+              {loadingSpaces ? (
+                <>
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center gap-3 px-3 py-2.5"
+                    >
+                      <Skeleton className="h-5 w-5 rounded-full" />
+                      <Skeleton className="h-4 w-40" />
+                    </div>
+                  ))}
+                </>
+              ) : spacesError ? (
+                <div className="px-3 py-2 text-sm text-destructive">
+                  {spacesError}
+                </div>
+              ) : spaces.length === 0 ? (
+                <div className="px-3 py-2 text-sm text-muted-foreground">
+                  لا توجد مساحات بعد.
+                </div>
+              ) : (
+                <>
+                  {(showAllSpaces ? spaces : spaces.slice(0, 6)).map((item) => (
+                    <NavLink
+                      key={item.id}
+                      to={item.url}
+                      className={linkClasses}
+                    >
+                      <Users
+                        size={18}
+                        className="text-gray-600 dark:text-gray-400"
+                      />
+                      <span className="text-sm text-gray-700 dark:text-gray-300">
+                        {item.title}
+                      </span>
+                    </NavLink>
+                  ))}
+
+                  {spaces.length > 6 && (
+                    <button
+                      onClick={() => setShowAllSpaces((prev) => !prev)}
+                      className="w-full text-xs text-blue-600 dark:text-blue-400 text-center py-1 hover:underline"
+                    >
+                      {showAllSpaces ? "عرض أقل" : "عرض المزيد"}
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Help & tools */}
+        <div className="mb-6">
+          {!isCollapsed && (
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white px-3 mb-3">
+              المساعدة والأدوات
+            </h3>
+          )}
           <div className="space-y-1">
             {helpItems.map((item) => (
               <MenuEntry key={item.url} item={item} />
@@ -432,36 +526,52 @@ export function AppSidebar() {
         </div>
       </div>
 
+      {/* Footer / user */}
       <div className="p-3">
-        <div className="mb-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-          <button className="w-full py-2 text-green-700 dark:text-green-300 text-sm font-medium">
-            خطة مجانية
-          </button>
-        </div>
+        {!isCollapsed && (
+          <div className="mb-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+            <button className="w-full py-2 text-green-700 dark:text-green-300 text-sm font-medium">
+              خطة مجانية
+            </button>
+          </div>
+        )}
 
-        <div className="relative user-dropdown-container bg-white rounded-2xl border-zinc-300 border">
+        <div
+          className={clsx(
+            "relative user-dropdown-container bg-white dark:bg-gray-900 rounded-2xl border border-zinc-300 dark:border-zinc-700",
+            isCollapsed && "px-2 py-2 flex items-center justify-center"
+          )}
+        >
           <button
-            onClick={() => setShowUserDropdown((s) => !s)}
-            className="w-full flex items-center gap-3 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+            onClick={() => !isCollapsed && setShowUserDropdown((s) => !s)}
+            className={clsx(
+              "w-full flex items-center gap-3 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors",
+              isCollapsed && "justify-center"
+            )}
           >
             <div className="w-8 h-8 bg-gradient-to-br from-gray-400 to-gray-600 rounded-full flex items-center justify-center">
               <User size={16} className="text-white" />
             </div>
-            <div className="flex-1 text-right">
-              <p className="text-sm font-medium text-gray-900 dark:text-white">
-                أسامة زيد
-              </p>
-            </div>
-            <ChevronDown
-              size={16}
-              className={clsx(
-                "text-gray-400 transition-transform",
-                showUserDropdown && "rotate-180"
-              )}
-            />
+            {!isCollapsed && (
+              <div className="flex-1 text-right">
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  أسامة زيد
+                </p>
+              </div>
+            )}
+            {!isCollapsed && (
+              <ChevronDown
+                size={16}
+                className={clsx(
+                  "text-gray-400 transition-transform",
+                  showUserDropdown && "rotate-180"
+                )}
+              />
+            )}
           </button>
 
-          {showUserDropdown && (
+          {/* Dropdown only when expanded */}
+          {!isCollapsed && showUserDropdown && (
             <div className="absolute bottom-full left-0 right-0 mb-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-1">
               <button className="w-full flex items-center gap-3 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded text-right text-sm">
                 <Settings size={16} className="text-gray-500" />
