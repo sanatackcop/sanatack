@@ -4,6 +4,7 @@ import { ResizablePanelGroup, ResizablePanel } from "@/components/ui/resizable";
 import { ToolTipNav } from "./ToolTipNav";
 import PdfReader from "./PdfReader";
 import { State, Action } from "./types";
+import YouTubeReader from "./YoutubeReader";
 
 const reducer = (state: State, action: Action): State => {
   switch (action.type) {
@@ -64,6 +65,16 @@ const reducer = (state: State, action: Action): State => {
         tab: "chat",
         prompt: `يرجى شرح النص المحدد التالي:\n\n"${action.text}"\n\n`,
       };
+    case "SET_YOUTUBE_VIDEO":
+      return { ...state, youtubeVideoId: action.videoId };
+    case "SET_YOUTUBE_TIME":
+      return {
+        ...state,
+        youtubeCurrentTime: action.currentTime,
+        youtubeDuration: action.duration,
+      };
+    case "SET_YOUTUBE_PLAYING":
+      return { ...state, youtubeIsPlaying: action.isPlaying };
     default:
       return state;
   }
@@ -105,7 +116,7 @@ const useLocalStorageHighlights = (
 
 const initialState: State = {
   tab: "flashcards",
-  contentType: "pdf",
+  contentType: "youtube",
   src: "https://arxiv.org/pdf/1706.03762",
   page: 1,
   pageCount: null,
@@ -116,6 +127,11 @@ const initialState: State = {
   sidebarOpen: true,
   highlights: [],
   selectedText: "",
+
+  youtubeVideoId: "dQw4w9WgXcQ", // Default video
+  youtubeCurrentTime: 0,
+  youtubeDuration: 0,
+  youtubeIsPlaying: false,
 };
 
 const LearnPlaygroundRoot: React.FC = () => {
@@ -137,42 +153,67 @@ const LearnPlaygroundRoot: React.FC = () => {
         <ResizablePanelGroup direction="horizontal">
           <ResizablePanel defaultSize={50} minSize={30}>
             <div className="pl-4 h-[56rem]">
-              <PdfReader
-                src={state.src}
-                page={state.page}
-                zoom={state.zoom}
-                status={state.status}
-                selectedText={state.selectedText}
-                // highlights={safeHighlights}
-                onLoaded={(pageCount) => {
-                  dispatch({ type: "SET_PAGE_COUNT", pageCount });
-                  dispatch({
-                    type: "SET_STATUS",
-                    status: { kind: "idle" },
-                  });
-                }}
-                onError={(message) => {
-                  dispatch({
-                    type: "SET_STATUS",
-                    status: { kind: "error", message },
-                  });
-                }}
-                onNext={() => dispatch({ type: "NEXT_PAGE" })}
-                onPrev={() => dispatch({ type: "PREV_PAGE" })}
-                onGoto={(p) => dispatch({ type: "SET_PAGE", page: p })}
-                onZoomIn={() => dispatch({ type: "ZOOM_IN" })}
-                onZoomOut={() => dispatch({ type: "ZOOM_OUT" })}
-                onResetZoom={() => dispatch({ type: "RESET_ZOOM" })}
-                onTextSelect={(text) =>
-                  dispatch({ type: "SET_SELECTED_TEXT", text })
-                }
-                // onAddHighlight={(highlight: Highlight) => {
-                //   dispatch({ type: "ADD_HIGHLIGHT", highlight });
-                //   setHighlights([...highlights, highlight]);
-                // }}
-                onAddToChat={(text) => dispatch({ type: "ADD_TO_CHAT", text })}
-                pageCount={state.pageCount}
-              />
+              {state.contentType === "pdf" ? (
+                <PdfReader
+                  src={state.src}
+                  page={state.page}
+                  zoom={state.zoom}
+                  status={state.status}
+                  selectedText={state.selectedText}
+                  // highlights={safeHighlights}
+                  onLoaded={(pageCount) => {
+                    dispatch({ type: "SET_PAGE_COUNT", pageCount });
+                    dispatch({
+                      type: "SET_STATUS",
+                      status: { kind: "idle" },
+                    });
+                  }}
+                  onError={(message) => {
+                    dispatch({
+                      type: "SET_STATUS",
+                      status: { kind: "error", message },
+                    });
+                  }}
+                  onNext={() => dispatch({ type: "NEXT_PAGE" })}
+                  onPrev={() => dispatch({ type: "PREV_PAGE" })}
+                  onGoto={(p) => dispatch({ type: "SET_PAGE", page: p })}
+                  onZoomIn={() => dispatch({ type: "ZOOM_IN" })}
+                  onZoomOut={() => dispatch({ type: "ZOOM_OUT" })}
+                  onResetZoom={() => dispatch({ type: "RESET_ZOOM" })}
+                  onTextSelect={(text) =>
+                    dispatch({ type: "SET_SELECTED_TEXT", text })
+                  }
+                  // onAddHighlight={(highlight: Highlight) => {
+                  //   dispatch({ type: "ADD_HIGHLIGHT", highlight });
+                  //   setHighlights([...highlights, highlight]);
+                  // }}
+                  onAddToChat={(text) =>
+                    dispatch({ type: "ADD_TO_CHAT", text })
+                  }
+                  pageCount={state.pageCount}
+                />
+              ) : state.contentType === "youtube" ? (
+                <YouTubeReader
+                  videoId={state.youtubeVideoId}
+                  onVideoSelect={(videoId) =>
+                    dispatch({ type: "SET_YOUTUBE_VIDEO", videoId })
+                  }
+                  onTimeUpdate={(currentTime, duration) =>
+                    dispatch({
+                      type: "SET_YOUTUBE_TIME",
+                      currentTime,
+                      duration,
+                    })
+                  }
+                  onPlay={() =>
+                    dispatch({ type: "SET_YOUTUBE_PLAYING", isPlaying: true })
+                  }
+                  onPause={() =>
+                    dispatch({ type: "SET_YOUTUBE_PLAYING", isPlaying: false })
+                  }
+                  className="w-full h-full"
+                />
+              ) : null}
             </div>
           </ResizablePanel>
 

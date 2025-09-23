@@ -42,6 +42,11 @@ export interface State {
   sidebarOpen: boolean;
   highlights: Highlight[];
   selectedText: string;
+
+  youtubeVideoId: string;
+  youtubeCurrentTime: number;
+  youtubeDuration: number;
+  youtubeIsPlaying: boolean;
 }
 
 export type Action =
@@ -63,4 +68,7 @@ export type Action =
   | { type: "REMOVE_HIGHLIGHT"; id: string }
   | { type: "SET_HIGHLIGHTS"; highlights: Highlight[] }
   | { type: "SET_SELECTED_TEXT"; text: string }
-  | { type: "ADD_TO_CHAT"; text: string };
+  | { type: "ADD_TO_CHAT"; text: string }
+  | { type: "SET_YOUTUBE_VIDEO"; videoId: string }
+  | { type: "SET_YOUTUBE_TIME"; currentTime: number; duration: number }
+  | { type: "SET_YOUTUBE_PLAYING"; isPlaying: boolean };
