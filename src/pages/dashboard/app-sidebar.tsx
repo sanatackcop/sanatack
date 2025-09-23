@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   Sun,
   Moon,
@@ -19,6 +20,10 @@ import {
   MessageCircle,
   ChevronRight,
   ChevronLeft,
+  HomeIcon,
+  MapIcon,
+  Globe,
+  Monitor,
 } from "lucide-react";
 import LogoLight from "@/assets/logo.svg";
 import LogoDark from "@/assets/dark_logo.svg";
@@ -43,7 +48,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { createSpacesApi, getAllSpacesApi } from "@/utils/_apis/courses-apis";
-import Switch from "@mui/material/Switch";
+import { useSettings } from "@/context/SettingsContexts";
 
 interface MenuItem {
   title: string;
@@ -58,54 +63,17 @@ interface MenuItem {
 type RawSpace = { id: string; name: string; description?: string | null };
 type SpaceItem = { id: string; title: string; url: string };
 
-const initialTopItems: MenuItem[] = [
-  {
-    title: "إضافة محتوى",
-    url: "/dashboard/overview",
-    icon: Plus,
-    isPremium: false,
-  },
-  { title: "البحث", url: "/dashboard/search", icon: Search, isSoon: true },
-  { title: "استكشاف", url: "/dashboard/explore", icon: Compass, isSoon: true },
-  { title: "التاريخ", url: "/dashboard/history", icon: History, isSoon: true },
-];
-
-const initialHelpItems: MenuItem[] = [
-  {
-    title: "ملاحظات",
-    url: "/dashboard/feedback",
-    icon: ThumbsUp,
-    isSoon: true,
-  },
-  {
-    title: "إضافة كروم",
-    url: "/dashboard/extension",
-    icon: Chrome,
-    isSoon: true,
-  },
-  {
-    title: "ديسكورد",
-    url: "/dashboard/discord",
-    icon: MessageCircle,
-    isSoon: true,
-  },
-  {
-    title: "ادعو واكسب",
-    url: "/dashboard/invite",
-    icon: DollarSign,
-    isSoon: true,
-  },
-];
-
 export function AppSidebar() {
+  const { t, i18n } = useTranslation();
   const [showUserDropdown, setShowUserDropdown] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
+  const { setLanguage } = useSettings();
+  const [theme, setTheme] = useState<"light" | "dark" | "system">("system");
   const [spaces, setSpaces] = useState<SpaceItem[]>([]);
   const [loadingSpaces, setLoadingSpaces] = useState<boolean>(true);
   const [spacesError, setSpacesError] = useState<string | null>(null);
   const [creating, setCreating] = useState<boolean>(false);
   const [openCreate, setOpenCreate] = useState(false);
-  const [newName, setNewName] = useState("مساحة جديدة");
+  const [newName, setNewName] = useState(t("sidebar.newSpace"));
   const [recents] = useState<MenuItem[]>([]);
   const [showAllSpaces, setShowAllSpaces] = useState(false);
 
@@ -119,15 +87,106 @@ export function AppSidebar() {
   const [isHovering, setIsHovering] = useState(false);
 
   const navigate = useNavigate();
-  const topItems = useMemo(() => initialTopItems, []);
-  const helpItems = useMemo(() => initialHelpItems, []);
 
-  const toggleDarkMode = () => {
-    setDarkMode((d) => !d);
+  const languages = [
+    { code: "ar", name: t("languages.ar"), flag: "🇸🇦" },
+    { code: "en", name: t("languages.en"), flag: "🇺🇸" },
+  ];
+
+  const themeOptions = [
+    { value: "light", label: t("theme.light"), icon: Sun },
+    { value: "dark", label: t("theme.dark"), icon: Moon },
+    { value: "system", label: t("theme.system"), icon: Monitor },
+  ];
+
+  const currentTheme =
+    themeOptions.find((opt) => opt.value === theme) || themeOptions[2];
+
+  const changeLanguage = (langCode: string) => {
+    setLanguage(langCode);
+  };
+
+  const changeTheme = (newTheme: "light" | "dark" | "system") => {
+    setTheme(newTheme);
+    localStorage.setItem("theme", newTheme);
+
     if (typeof document !== "undefined") {
-      document.documentElement.classList.toggle("dark");
+      if (newTheme === "system") {
+        const systemDark = window.matchMedia(
+          "(prefers-color-scheme: dark)"
+        ).matches;
+        document.documentElement.classList.toggle("dark", systemDark);
+      } else {
+        document.documentElement.classList.toggle("dark", newTheme === "dark");
+      }
     }
   };
+
+  const topItems = useMemo(
+    (): MenuItem[] => [
+      {
+        title: t("sidebar.home"),
+        url: "/dashboard/overview",
+        icon: HomeIcon,
+        isPremium: false,
+      },
+      {
+        title: t("sidebar.createMap"),
+        url: "/dashboard/overview",
+        icon: MapIcon,
+        isPremium: true,
+      },
+      {
+        title: t("sidebar.search"),
+        url: "/dashboard/search",
+        icon: Search,
+        isSoon: true,
+      },
+      {
+        title: t("sidebar.explore"),
+        url: "/dashboard/explore",
+        icon: Compass,
+        isSoon: true,
+      },
+      {
+        title: t("sidebar.history"),
+        url: "/dashboard/history",
+        icon: History,
+        isSoon: true,
+      },
+    ],
+    [t]
+  );
+
+  const helpItems = useMemo(
+    (): MenuItem[] => [
+      {
+        title: t("sidebar.feedback"),
+        url: "/dashboard/feedback",
+        icon: ThumbsUp,
+        isSoon: true,
+      },
+      {
+        title: t("sidebar.chromeExtension"),
+        url: "/dashboard/extension",
+        icon: Chrome,
+        isSoon: true,
+      },
+      {
+        title: t("sidebar.discord"),
+        url: "/dashboard/discord",
+        icon: MessageCircle,
+        isSoon: true,
+      },
+      {
+        title: t("sidebar.inviteAndEarn"),
+        url: "/dashboard/invite",
+        icon: DollarSign,
+        isSoon: true,
+      },
+    ],
+    [t]
+  );
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -165,20 +224,20 @@ export function AppSidebar() {
         }));
         setSpaces(mapped);
       } catch (e: any) {
-        setSpacesError(e?.message ?? "تعذّر تحميل المساحات");
+        setSpacesError(e?.message ?? t("errors.failedToLoadSpaces"));
       } finally {
         setLoadingSpaces(false);
       }
     };
 
     fetchSpaces();
-  }, []);
+  }, [t]);
 
   const doCreateSpace = async () => {
     setCreating(true);
     setSpacesError(null);
     try {
-      const payload = { name: newName?.trim() || "مساحة جديدة" };
+      const payload = { name: newName?.trim() || t("sidebar.newSpace") };
       const res = await createSpacesApi(payload);
       const created: RawSpace = (res?.data ?? res) as RawSpace;
       const item: SpaceItem = {
@@ -190,7 +249,7 @@ export function AppSidebar() {
       setOpenCreate(false);
       navigate(item.url);
     } catch (e: any) {
-      setSpacesError(e?.message ?? "تعذّر إنشاء المساحة");
+      setSpacesError(e?.message ?? t("errors.failedToCreateSpace"));
     } finally {
       setCreating(false);
     }
@@ -201,12 +260,12 @@ export function AppSidebar() {
       {item.isPremium && (
         <span className="inline-flex items-center gap-1 text-[10px] px-2 py-1 rounded-full bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-700 dark:from-yellow-900/30 dark:to-orange-900/30 dark:text-yellow-300 shadow-sm">
           <Crown size={10} />
-          بريميوم
+          {t("sidebar.premium")}
         </span>
       )}
       {item.isSoon && (
         <span className="inline-flex items-center text-[10px] px-2 py-1 rounded-full bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-700 dark:from-blue-900/30 dark:to-cyan-900/30 dark:text-blue-300 shadow-sm">
-          قريبًا
+          {t("sidebar.soon")}
         </span>
       )}
       {item.isNew && (
@@ -265,11 +324,7 @@ export function AppSidebar() {
                 )
               }
             >
-              <div
-                className="w-full flex items-center gap-3 px-4 py-3
-               rounded-2xl transition-all duration-300 
-                 select-none dark:text-black hover:bg-zinc-100/50"
-              >
+              <div className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 select-none dark:text-black hover:bg-zinc-100/50">
                 <ItemIcon size={20} className="flex-shrink-0" />
                 {!isCollapsed && (
                   <span className="text-sm font-medium flex-1 text-right">
@@ -290,7 +345,6 @@ export function AppSidebar() {
     );
   };
 
-  // Persist collapse state
   useEffect(() => {
     localStorage.setItem("sidebar:collapsed", JSON.stringify(isCollapsed));
   }, [isCollapsed]);
@@ -299,10 +353,10 @@ export function AppSidebar() {
 
   return (
     <>
-      <div className="my-2 ml-0 mr-2">
+      <div className="my-2 ml-0 mr-2 border rounded-3xl">
         <div
-          dir="rtl"
-          lang="ar"
+          dir={i18n.language === "ar" ? "rtl" : "ltr"}
+          lang={i18n.language}
           className={clsx(
             "h-full flex flex-col transition-all duration-300 ease-in-out ml-0",
             isCollapsed ? "w-16" : "w-80"
@@ -311,11 +365,14 @@ export function AppSidebar() {
           onMouseLeave={() => setIsHovering(false)}
         >
           <div className="h-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl shadow-2xl shadow-blue-100/20 dark:shadow-gray-900/50 border border-white/20 dark:border-gray-700/30 flex flex-col overflow-hidden">
+            {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200/50 dark:border-gray-700/30">
               {!isCollapsed && (
                 <div className="h-[60px] flex justify-normal items-center overflow-hidden w-full">
                   <img
-                    src={darkMode ? String(LogoDark) : String(LogoLight)}
+                    src={
+                      theme === "dark" ? String(LogoDark) : String(LogoLight)
+                    }
                     alt="logo"
                     className={clsx(
                       "h-full w-auto transition-all object-contain pr-6 scale-[2]"
@@ -327,7 +384,9 @@ export function AppSidebar() {
               <button
                 onClick={toggleCollapsed}
                 aria-label={
-                  isCollapsed ? "توسيع الشريط الجانبي" : "طيّ الشريط الجانبي"
+                  isCollapsed
+                    ? t("sidebar.expandSidebar")
+                    : t("sidebar.collapseSidebar")
                 }
                 className={clsx(
                   "inline-flex items-center justify-center rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800",
@@ -337,6 +396,12 @@ export function AppSidebar() {
                 )}
               >
                 {isCollapsed ? (
+                  i18n.language === "ar" ? (
+                    <ChevronLeft size={18} />
+                  ) : (
+                    <ChevronRight size={18} />
+                  )
+                ) : i18n.language === "ar" ? (
                   <ChevronRight size={18} />
                 ) : (
                   <ChevronLeft size={18} />
@@ -363,7 +428,7 @@ export function AppSidebar() {
                 <div className="mb-6">
                   <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200 px-4 mb-3 flex items-center gap-2">
                     <div className="w-2 h-2 bg-gradient-to-r from-green-400 to-blue-500 rounded-full"></div>
-                    الأخيرة
+                    {t("sidebar.recent")}
                   </h3>
                   <div className="space-y-2">
                     {recents.map((item) => {
@@ -380,7 +445,7 @@ export function AppSidebar() {
                             key={item.url}
                             className={disabledClasses}
                             aria-disabled
-                            title="قريبًا"
+                            title={t("sidebar.soon")}
                           >
                             <ItemIcon size={18} className="flex-shrink-0" />
                             <span className="text-sm font-medium flex-1 text-right">
@@ -414,34 +479,38 @@ export function AppSidebar() {
                   <div className="px-4 mb-3 flex items-center justify-between">
                     <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2">
                       <div className="w-2 h-2 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full"></div>
-                      المساحات
+                      {t("sidebar.spaces")}
                     </h3>
 
                     <Dialog open={openCreate} onOpenChange={setOpenCreate}>
                       <DialogTrigger asChild>
-                        <button
-                          className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-xl 
-                        transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
-                        >
+                        <button className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105">
                           <Plus size={14} />
-                          إنشاء
+                          {t("sidebar.create")}
                         </button>
                       </DialogTrigger>
-                      <DialogContent dir="rtl" className="rounded-3xl">
+                      <DialogContent
+                        dir={i18n.language === "ar" ? "rtl" : "ltr"}
+                        className="rounded-3xl"
+                      >
                         <DialogHeader>
-                          <DialogTitle>إنشاء مساحة جديدة</DialogTitle>
+                          <DialogTitle>
+                            {t("dialogs.createNewSpace")}
+                          </DialogTitle>
                           <DialogDescription>
-                            اختر اسمًا لمساحتك ثم اضغط إنشاء.
+                            {t("dialogs.chooseSpaceName")}
                           </DialogDescription>
                         </DialogHeader>
 
                         <div className="grid gap-2">
-                          <Label htmlFor="space-name">اسم المساحة</Label>
+                          <Label htmlFor="space-name">
+                            {t("dialogs.spaceName")}
+                          </Label>
                           <Input
                             id="space-name"
                             value={newName}
                             onChange={(e) => setNewName(e.target.value)}
-                            placeholder="مثال: مساحة الفريق"
+                            placeholder={t("dialogs.spaceNamePlaceholder")}
                             className="rounded-xl"
                           />
                         </div>
@@ -459,14 +528,16 @@ export function AppSidebar() {
                             disabled={creating}
                             className="rounded-xl"
                           >
-                            إلغاء
+                            {t("common.cancel")}
                           </Button>
                           <Button
                             onClick={doCreateSpace}
                             disabled={creating || !newName.trim()}
                             className="rounded-xl"
                           >
-                            {creating ? "جارٍ الإنشاء…" : "إنشاء"}
+                            {creating
+                              ? t("dialogs.creating")
+                              : t("common.save")}
                           </Button>
                         </DialogFooter>
                       </DialogContent>
@@ -492,7 +563,7 @@ export function AppSidebar() {
                       </div>
                     ) : spaces.length === 0 ? (
                       <div className="px-4 py-2 text-sm text-muted-foreground">
-                        لا توجد مساحات بعد.
+                        {t("sidebar.noSpacesYet")}
                       </div>
                     ) : (
                       <>
@@ -516,7 +587,9 @@ export function AppSidebar() {
                             onClick={() => setShowAllSpaces((prev) => !prev)}
                             className="w-full text-xs text-blue-600 dark:text-blue-400 text-center py-2 hover:underline transition-colors rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20"
                           >
-                            {showAllSpaces ? "عرض أقل" : "عرض المزيد"}
+                            {showAllSpaces
+                              ? t("sidebar.showLess")
+                              : t("sidebar.showMore")}
                           </button>
                         )}
                       </>
@@ -530,7 +603,7 @@ export function AppSidebar() {
                 {!isCollapsed && (
                   <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200 px-4 mb-3 flex items-center gap-2">
                     <div className="w-2 h-2 bg-gradient-to-r from-orange-400 to-red-500 rounded-full"></div>
-                    المساعدة والأدوات
+                    {t("sidebar.helpAndTools")}
                   </h3>
                 )}
                 <div className="space-y-2">
@@ -546,7 +619,7 @@ export function AppSidebar() {
               {!isCollapsed && (
                 <div className="mb-4 p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200/50 dark:border-green-800/30 rounded-2xl shadow-sm">
                   <button className="w-full py-2 text-green-700 dark:text-green-300 text-sm font-bold">
-                    🌟 خطة مجانية
+                    {t("sidebar.freePlan")}
                   </button>
                 </div>
               )}
@@ -570,7 +643,7 @@ export function AppSidebar() {
                   {!isCollapsed && (
                     <div className="flex-1 text-right">
                       <p className="text-sm font-bold text-gray-900 dark:text-white">
-                        أسامة زيد
+                        {t("user.userName")}
                       </p>
                     </div>
                   )}
@@ -590,33 +663,85 @@ export function AppSidebar() {
                   <div className="absolute bottom-full left-0 right-0 mb-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/30 rounded-2xl shadow-2xl p-2">
                     <button className="w-full flex items-center gap-3 p-3 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 rounded-xl text-right text-sm transition-all duration-200">
                       <Settings size={16} className="text-gray-500" />
-                      <span className="flex-1 font-medium">الإعدادات</span>
+                      <span className="flex-1 font-medium">
+                        {t("sidebar.settings")}
+                      </span>
                     </button>
+
                     <button className="w-full flex items-center gap-3 p-3 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 rounded-xl text-right text-sm transition-all duration-200">
                       <Crown size={16} className="text-yellow-500" />
-                      <span className="flex-1 font-medium">الترقية</span>
+                      <span className="flex-1 font-medium">
+                        {t("sidebar.upgrade")}
+                      </span>
                     </button>
-                    <div className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition-all duration-200">
-                      <Switch
-                        checked={darkMode}
-                        onChange={(e) => {
-                          e.stopPropagation();
-                          toggleDarkMode();
-                        }}
-                      />
-                      <div className="flex items-center gap-2 text-sm font-medium">
-                        <span>الوضع الليلي</span>
-                        {darkMode ? (
-                          <Moon size={14} className="text-blue-500" />
-                        ) : (
-                          <Sun size={14} className="text-yellow-500" />
-                        )}
+
+                    <div className="p-2">
+                      <div className="flex items-center gap-3 p-2 text-right text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <Globe size={16} className="text-gray-500" />
+                        <span className="flex-1">{t("sidebar.language")}</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 mt-2">
+                        {languages.map((lang) => (
+                          <button
+                            key={lang.code}
+                            onClick={() => changeLanguage(lang.code)}
+                            className={clsx(
+                              "flex items-center gap-2 p-2 rounded-xl text-xs font-medium transition-all duration-200",
+                              i18n.language === lang.code
+                                ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 shadow-sm"
+                                : "hover:bg-gray-100/50 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
+                            )}
+                          >
+                            <span className="text-sm">{lang.flag}</span>
+                            <span className="flex-1 text-center">
+                              {lang.name}
+                            </span>
+                          </button>
+                        ))}
                       </div>
                     </div>
+
+                    <div className="p-2">
+                      <div className="flex items-center gap-3 p-2 text-right text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <currentTheme.icon
+                          size={16}
+                          className="text-gray-500"
+                        />
+                        <span className="flex-1">{t("theme.theme")}</span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-1 mt-2">
+                        {themeOptions.map((option) => {
+                          const IconComponent = option.icon;
+                          return (
+                            <button
+                              key={option.value}
+                              onClick={() =>
+                                changeTheme(
+                                  option.value as "light" | "dark" | "system"
+                                )
+                              }
+                              className={clsx(
+                                "flex flex-col items-center gap-1 p-2 rounded-xl text-xs font-medium transition-all duration-200",
+                                theme === option.value
+                                  ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 shadow-sm"
+                                  : "hover:bg-gray-100/50 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400"
+                              )}
+                            >
+                              <IconComponent size={14} />
+                              <span>{option.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
                     <div className="h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent my-2" />
+
                     <button className="w-full flex items-center gap-3 p-3 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl text-right text-sm text-red-600 dark:text-red-400 transition-all duration-200">
                       <LogOut size={16} />
-                      <span className="flex-1 font-medium">تسجيل الخروج</span>
+                      <span className="flex-1 font-medium">
+                        {t("sidebar.logout")}
+                      </span>
                     </button>
                   </div>
                 )}

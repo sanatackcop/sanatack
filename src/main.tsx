@@ -3,8 +3,7 @@ import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 import { SettingsProvider } from "./context/SettingsContexts.tsx";
-
-// test
+import "./i18n"; // 👈 initialize i18n here
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

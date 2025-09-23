@@ -8,7 +8,7 @@ export default function DashboardLayout({
 }) {
   return (
     <SidebarProvider>
-      <div className="flex h-[100dvh] w-screen overflow-hidden bg-zinc-100/50 ">
+      <div className="flex h-[100dvh] w-screen overflow-hidden bg-zinc-100/20 ">
         <AppSidebar />
 
         <div className="flex-1 min-w-0 min-h-0 flex flex-col">
@@ -20,7 +20,7 @@ export default function DashboardLayout({
                 hover:shadow-3xl transition-shadow duration-300"
               >
                 <div
-                  className="h-full min-h-0 overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-blue-200/70 
+                  className="h-full min-h-0 border rounded-3xl overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-blue-200/70 
                   scrollbar-track-transparent hover:scrollbar-thumb-blue-300/80 p-4 sm:p-6 md:p-8 lg:p-10"
                 >
                   <div className="w-full">{children}</div>

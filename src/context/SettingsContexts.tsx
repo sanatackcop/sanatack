@@ -6,7 +6,9 @@ import {
   useEffect,
   ReactNode,
 } from "react";
+import i18n from "@/i18n";
 
+// ================== Types ==================
 export declare type VideoCheck = {
   id: string;
   type: MaterialType.VIDEO;
@@ -41,20 +43,32 @@ export declare type MaterialCheckInfo =
 interface SettingsContextProps {
   darkMode: boolean;
   toggleDarkMode: () => void;
+  language: string;
+  setLanguage: (lng: string) => void;
   currentCheck: MaterialCheckInfo | undefined;
   updateCurrentCheck: (material: MaterialCheckInfo) => void;
 }
 
+// ================== Context ==================
 const SettingsContext = createContext<SettingsContextProps | undefined>(
   undefined
 );
 
 export const SettingsProvider = ({ children }: { children: ReactNode }) => {
+  // dark mode
   const [darkMode, setDarkMode] = useState(() => {
     return localStorage.getItem("darkMode") === "true";
   });
+
+  // ✅ language: default Arabic if nothing saved
+  const [language, setLanguageState] = useState(() => {
+    return localStorage.getItem("language") || "ar";
+  });
+
+  // current material
   const [currentCheck, setCurrentCheck] = useState<MaterialCheckInfo>();
 
+  // sync dark mode
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add("dark");
@@ -62,6 +76,13 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
       document.documentElement.classList.remove("dark");
     }
   }, [darkMode]);
+
+  // ✅ sync language with i18n + save to localStorage + set dir
+  useEffect(() => {
+    i18n.changeLanguage(language);
+    document.documentElement.dir = i18n.dir(language);
+    localStorage.setItem("language", language);
+  }, [language]);
 
   const toggleDarkMode = () => {
     setDarkMode((prev) => {
@@ -75,11 +96,17 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     setCurrentCheck(() => material);
   };
 
+  const setLanguage = (lng: string) => {
+    setLanguageState(lng);
+  };
+
   return (
     <SettingsContext.Provider
       value={{
         darkMode,
         toggleDarkMode,
+        language,
+        setLanguage,
         currentCheck,
         updateCurrentCheck: updateCurrentMaterial,
       }}
