@@ -391,7 +391,7 @@ export function AppSidebar() {
         >
           <div className="h-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl shadow-2xl shadow-blue-100/20 dark:shadow-gray-900/50 border border-white/20 dark:border-gray-700/30 flex flex-col overflow-hidden">
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-200/50 dark:border-gray-700/30">
+            <div className="flex items-center justify-between p-4 pb-2 border-b border-gray-200/50 dark:border-gray-700/30">
               {!isCollapsed && (
                 <div
                   className={clsx(
@@ -404,7 +404,9 @@ export function AppSidebar() {
                       theme === "dark" ? String(LogoDark) : String(LogoLight)
                     }
                     alt="logo"
-                    className="h-full w-auto transition-all object-contain pr-6 scale-[2]"
+                    className={`h-full w-auto transition-all object-contain scale-[3] ${
+                      i18n.dir() === "rtl" ? "pr-6" : "pl-6"
+                    }`}
                   />
                 </div>
               )}
