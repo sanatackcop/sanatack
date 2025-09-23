@@ -4,8 +4,11 @@ import ErrorBoundary from "./utils/ErrorBoundary";
 import Router from "./utils/router";
 import { DASHBOARDTYPE } from "./utils/types/platfrom";
 
+import { Toaster } from "sonner";
+
 function App({ switch_dashboard }: { switch_dashboard: DASHBOARDTYPE }) {
   const { i18n } = useTranslation();
+
   return (
     <div
       className="font-rubik min-h-screen bg-white dark:bg-black"
@@ -17,6 +20,12 @@ function App({ switch_dashboard }: { switch_dashboard: DASHBOARDTYPE }) {
             <Router switch_dashboard={switch_dashboard} />
           </ErrorBoundary>
         </UserContextProvider>
+
+        <Toaster
+          position={i18n.dir() === "rtl" ? "top-left" : "top-right"}
+          richColors
+          closeButton
+        />
       </div>
     </div>
   );

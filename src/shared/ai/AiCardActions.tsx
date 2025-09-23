@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import { CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -103,28 +104,11 @@ interface RecordState {
   error: string | null;
 }
 
-const LEVEL_LABELS: Record<Level, string> = {
-  BEGINNER: "مبتدئ",
-  INTERMEDIATE: "متوسط",
-  ADVANCED: "متقدم",
-};
-
-const TOPIC_LABELS: Record<Topic, string> = {
-  Artificial_Intelligence: "الذكاء الاصطناعي",
-  MACHINE_LEARNING: "التعلم الآلي",
-  BACKEND: "تطوير الخادم",
-  FRONTEND: "واجهة المستخدم",
-};
-
-const STYLE_LABELS: Record<AssessmentStyle, string> = {
-  QUIZZES: "اختبارات قصيرة",
-  PROJECTS: "مشاريع تطبيقية",
-  MIXED: "مزيج",
-  LIGHT: "خفيف جدًا",
-};
-
 export default function AiCardActions() {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const isRTL = i18n.language === "ar";
+
   const [query, setQuery] = useState("");
   const uploadRef = useRef<HTMLInputElement | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -157,7 +141,7 @@ export default function AiCardActions() {
     error: null,
   });
 
-  // Course builder state (keep existing)
+  // Course builder state
   const [builderActive, setBuilderActive] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -176,8 +160,42 @@ export default function AiCardActions() {
     include_projects: true,
     assessment_style: "MIXED",
     pace: "BALANCED",
-    language: "ar",
+    language: i18n.language as "ar" | "en",
   });
+
+  // Dynamic labels based on current language
+  const LEVEL_LABELS: Record<Level, string> = useMemo(
+    () => ({
+      BEGINNER: t("aiActions.levels.beginner"),
+      INTERMEDIATE: t("aiActions.levels.intermediate"),
+      ADVANCED: t("aiActions.levels.advanced"),
+    }),
+    [t]
+  );
+
+  const TOPIC_LABELS: Record<Topic, string> = useMemo(
+    () => ({
+      Artificial_Intelligence: t("aiActions.topics.ai"),
+      MACHINE_LEARNING: t("aiActions.topics.ml"),
+      BACKEND: t("aiActions.topics.backend"),
+      FRONTEND: t("aiActions.topics.frontend"),
+    }),
+    [t]
+  );
+
+  const STYLE_LABELS: Record<AssessmentStyle, string> = useMemo(
+    () => ({
+      QUIZZES: t("aiActions.assessmentStyles.quizzes"),
+      PROJECTS: t("aiActions.assessmentStyles.projects"),
+      MIXED: t("aiActions.assessmentStyles.mixed"),
+      LIGHT: t("aiActions.assessmentStyles.light"),
+    }),
+    [t]
+  );
+
+  // Helper functions for alignment
+  const getTextAlignment = () => (isRTL ? "text-right" : "text-left");
+  const getFlexDirection = () => (isRTL ? "flex-row-reverse" : "flex-row");
 
   // File upload handlers
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
@@ -239,7 +257,7 @@ export default function AiCardActions() {
     } catch (error: any) {
       setUploadState((prev) => ({
         ...prev,
-        error: error.message || "فشل في رفع الملف",
+        error: error.message || t("aiActions.errors.uploadFailed"),
         isUploading: false,
       }));
     }
@@ -260,7 +278,7 @@ export default function AiCardActions() {
     } catch (error: any) {
       setPasteState((prev) => ({
         ...prev,
-        error: error.message || "فشل في معالجة المحتوى",
+        error: error.message || t("aiActions.errors.processingFailed"),
         isProcessing: false,
       }));
     }
@@ -301,7 +319,7 @@ export default function AiCardActions() {
     } catch (error: any) {
       setRecordState((prev) => ({
         ...prev,
-        error: "فشل في الوصول للميكروفون",
+        error: t("aiActions.errors.microphoneAccess"),
       }));
     }
   }
@@ -336,15 +354,12 @@ export default function AiCardActions() {
     } catch (error: any) {
       setRecordState((prev) => ({
         ...prev,
-        error: error.message || "فشل في رفع التسجيل",
+        error: error.message || t("aiActions.errors.recordingUploadFailed"),
       }));
     }
   }
 
-  // Chat input handler
-
-  // Course builder handlers (keep existing logic)
-
+  // Course builder handlers
   function updateSetting<K extends keyof SettingsState>(
     key: K,
     value: SettingsState[K]
@@ -406,7 +421,7 @@ export default function AiCardActions() {
         navigate("/learning-playground");
       }, 1000);
     } catch (err: any) {
-      setErrorMsg(err?.message || "تعذر الاتصال بالخادم");
+      setErrorMsg(err?.message || t("aiActions.errors.connectionFailed"));
     } finally {
       clearInterval(tick);
       setIsGenerating(false);
@@ -457,7 +472,7 @@ export default function AiCardActions() {
   };
 
   return (
-    <div className={"px-24 mt-10 mb-20 transition-colors"}>
+    <div className="px-24 mt-10 mb-20 transition-colors">
       <CardContent
         className={
           "p-6 md:p-10 " +
@@ -473,56 +488,73 @@ export default function AiCardActions() {
                 variant="secondary"
                 className="rounded-full px-3 py-1 text-sm"
               >
-                بعض الميزات قيد التطوير — قريبًا ✨
+                {t("aiActions.featuresComingSoon")}
               </Badge>
             </div>
           )}
-          <h1 className="text-center text-3xl md:text-[44px] font-extrabold mb-2">
-            ماذا تريد أن تتعلم؟
+          <h1
+            className={`text-center text-3xl md:text-[44px] font-extrabold mb-2`}
+          >
+            {t("aiActions.mainTitle")}
           </h1>
-          <p className="mb-6 text-center text-gray-600 dark:text-gray-300">
-            ارفع المحتوى أو ألصق رابطًا أو سجّل درسًا — وسيبني لك النظام تجربة
-            تعلم ذكية.
+          <p className={`mb-6 text-center text-gray-600 dark:text-gray-300`}>
+            {t("aiActions.subtitle")}
           </p>
         </header>
 
         {(builderActive || isGenerating) && (
           <div className="mt-6 flex items-center justify-center gap-3 text-sm">
-            <Step active={!isGenerating} label="وصف + إعدادات" />
+            <Step
+              active={!isGenerating}
+              label={t("aiActions.steps.settings")}
+            />
             <span className="opacity-40">—</span>
-            <Step active={isGenerating} label="التوليد" />
+            <Step
+              active={isGenerating}
+              label={t("aiActions.steps.generation")}
+            />
           </div>
         )}
 
         {!builderActive && !isGenerating && (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-8 text-center mt-10">
+            <div
+              className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-8 text-center mt-10 ${getTextAlignment()}`}
+            >
               <ActionTile
-                title="رفع"
-                subtitle="ملف، صوت، فيديو"
+                title={t("aiActions.upload.title")}
+                subtitle={t("aiActions.upload.subtitle")}
                 onClick={() => setActiveModal("upload")}
-                icon={<UploadCloud className="h-6 w-6 ml-2" />}
+                icon={
+                  <UploadCloud
+                    className={`h-6 w-6 ${isRTL ? "ml-2" : "mr-2"}`}
+                  />
+                }
               />
 
               <ActionTile
-                title="لصق"
-                subtitle="يوتيوب، موقع، نص"
+                title={t("aiActions.paste.title")}
+                subtitle={t("aiActions.paste.subtitle")}
                 onClick={() => setActiveModal("paste")}
-                icon={<Link2 className="h-6 w-6 ml-2" />}
+                icon={
+                  <Link2 className={`h-6 w-6 ${isRTL ? "ml-2" : "mr-2"}`} />
+                }
               />
 
               <SoonTile
-                title="تسجيل"
-                subtitle="تسجيل درس أو مكالمة فيديو"
-                tooltip={""}
-                icon={<Mic className="h-6 w-6 ml-2" />}
+                title={t("aiActions.record.title")}
+                subtitle={t("aiActions.record.subtitle")}
+                tooltip=""
+                icon={<Mic className={`h-6 w-6 ${isRTL ? "ml-2" : "mr-2"}`} />}
               />
 
               <SoonTile
-                title="صناعة كورس"
-                subtitle="بناء دورة تعليمية"
-                tooltip={""}
-                icon={<BookOpen className="h-6 w-6 ml-2" />}
+                title={t("aiActions.createCourse.title")}
+                subtitle={t("aiActions.createCourse.subtitle")}
+                tooltip=""
+                icon={
+                  <BookOpen className={`h-6 w-6 ${isRTL ? "ml-2" : "mr-2"}`} />
+                }
               />
             </div>
 
@@ -531,21 +563,25 @@ export default function AiCardActions() {
               onChange={setQuery}
               onSubmit={handleSubmit}
               onModelChange={handleModelChange}
-              placeholder="تعلم أي شيء"
+              placeholder={t("aiActions.chatPlaceholder")}
               models={models}
             />
           </>
         )}
 
+        {/* Upload Dialog */}
         <Dialog
           open={activeModal === "upload"}
           onOpenChange={(open) => !open && closeModal()}
         >
-          <DialogContent className="sm:max-w-[600px]">
-            <DialogHeader>
-              <DialogTitle className="text-right">رفع الملفات</DialogTitle>
-              <DialogDescription className="text-right">
-                اختر الملفات التي تريد تحويلها إلى محتوى تعليمي
+          <DialogContent
+            className="sm:max-w-[600px]"
+            dir={isRTL ? "rtl" : "ltr"}
+          >
+            <DialogHeader className={getTextAlignment()}>
+              <DialogTitle>{t("aiActions.dialogs.upload.title")}</DialogTitle>
+              <DialogDescription>
+                {t("aiActions.dialogs.upload.description")}
               </DialogDescription>
             </DialogHeader>
 
@@ -557,17 +593,17 @@ export default function AiCardActions() {
               >
                 <UploadCloud className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                 <div className="text-lg font-medium mb-2">
-                  اسحب وأفلت الملفات هنا
+                  {t("aiActions.dialogs.upload.dragDrop")}
                 </div>
                 <div className="text-sm text-gray-500 mb-4">
-                  أو اختر الملفات يدويًا
+                  {t("aiActions.dialogs.upload.orChoose")}
                 </div>
                 <Button
                   onClick={() => uploadRef.current?.click()}
                   variant="outline"
                   className="mb-2"
                 >
-                  اختيار الملفات
+                  {t("aiActions.dialogs.upload.chooseFiles")}
                 </Button>
                 <input
                   ref={uploadRef}
@@ -578,17 +614,19 @@ export default function AiCardActions() {
                   className="hidden"
                 />
                 <div className="text-xs text-gray-400 mt-2">
-                  المسموح: PDF, Word, النصوص, الصوت, الفيديو, الصور
+                  {t("aiActions.dialogs.upload.allowedTypes")}
                 </div>
               </div>
 
               {uploadState.files.length > 0 && (
                 <div className="space-y-2">
-                  <div className="font-medium">الملفات المحددة:</div>
+                  <div className={`font-medium ${getTextAlignment()}`}>
+                    {t("aiActions.dialogs.upload.selectedFiles")}:
+                  </div>
                   {uploadState.files.map((file, index) => (
                     <div
                       key={index}
-                      className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800 rounded"
+                      className={`flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800 rounded ${getFlexDirection()}`}
                     >
                       <FileTypeIcon file={file} />
                       <span className="flex-1 text-sm">{file.name}</span>
@@ -602,8 +640,10 @@ export default function AiCardActions() {
 
               {uploadState.isUploading && (
                 <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>جاري الرفع...</span>
+                  <div
+                    className={`flex justify-between text-sm ${getTextAlignment()}`}
+                  >
+                    <span>{t("aiActions.dialogs.upload.uploading")}</span>
                     <span>{uploadState.uploadProgress}%</span>
                   </div>
                   <Progress
@@ -614,15 +654,21 @@ export default function AiCardActions() {
               )}
 
               {uploadState.error && (
-                <div className="text-red-600 text-sm text-center">
+                <div
+                  className={`text-red-600 text-sm text-center ${getTextAlignment()}`}
+                >
                   {uploadState.error}
                 </div>
               )}
             </div>
 
-            <DialogFooter className="flex justify-start gap-2">
+            <DialogFooter
+              className={`flex gap-2 ${
+                isRTL ? "flex-row-reverse" : "flex-row"
+              }`}
+            >
               <Button variant="outline" onClick={closeModal}>
-                إلغاء
+                {t("common.cancel")}
               </Button>
               <Button
                 onClick={handleFileUpload}
@@ -630,33 +676,42 @@ export default function AiCardActions() {
                   uploadState.files.length === 0 || uploadState.isUploading
                 }
               >
-                {uploadState.isUploading ? "جاري الرفع..." : "رفع الملفات"}
+                {uploadState.isUploading
+                  ? t("aiActions.dialogs.upload.uploading")
+                  : t("aiActions.dialogs.upload.uploadFiles")}
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
+        {/* Paste Dialog */}
         <Dialog
           open={activeModal === "paste"}
           onOpenChange={(open) => !open && closeModal()}
         >
-          <DialogContent className="sm:max-w-[600px]">
-            <DialogHeader>
-              <DialogTitle className="text-right">لصق المحتوى</DialogTitle>
-              <DialogDescription className="text-right">
-                الصق رابط أو نص للمحتوى الذي تريد تعلمه
+          <DialogContent
+            className="sm:max-w-[600px]"
+            dir={isRTL ? "rtl" : "ltr"}
+          >
+            <DialogHeader className={getTextAlignment()}>
+              <DialogTitle>{t("aiActions.dialogs.paste.title")}</DialogTitle>
+              <DialogDescription>
+                {t("aiActions.dialogs.paste.description")}
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4">
               <div>
-                <Label htmlFor="url" className="text-right block mb-2">
-                  رابط (YouTube, موقع ويب)
+                <Label
+                  htmlFor="url"
+                  className={`block mb-2 ${getTextAlignment()}`}
+                >
+                  {t("aiActions.dialogs.paste.urlLabel")}
                 </Label>
                 <div className="relative">
                   <Input
                     id="url"
-                    placeholder="https://youtube.com/watch?v=..."
+                    placeholder={t("aiActions.dialogs.paste.urlPlaceholder")}
                     value={pasteState.url}
                     onChange={(e) =>
                       setPasteState((prev) => ({
@@ -664,42 +719,61 @@ export default function AiCardActions() {
                         url: e.target.value,
                       }))
                     }
-                    className="text-right"
+                    className={getTextAlignment()}
+                    dir={isRTL ? "rtl" : "ltr"}
                   />
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 flex gap-1">
+                  <div
+                    className={`absolute top-1/2 -translate-y-1/2 flex gap-1 ${
+                      isRTL ? "right-3" : "left-3"
+                    }`}
+                  >
                     <Youtube className="h-4 w-4 text-gray-400" />
                     <Globe className="h-4 w-4 text-gray-400" />
                   </div>
                 </div>
               </div>
 
-              <div className="text-center text-gray-500">أو</div>
+              <div
+                className={`text-center text-gray-500 ${getTextAlignment()}`}
+              >
+                {t("aiActions.dialogs.paste.or")}
+              </div>
 
               <div>
-                <Label htmlFor="text" className="text-right block mb-2">
-                  نص مباشر
+                <Label
+                  htmlFor="text"
+                  className={`block mb-2 ${getTextAlignment()}`}
+                >
+                  {t("aiActions.dialogs.paste.textLabel")}
                 </Label>
                 <Textarea
                   id="text"
-                  placeholder="الصق النص هنا..."
+                  placeholder={t("aiActions.dialogs.paste.textPlaceholder")}
                   value={pasteState.text}
                   onChange={(e) =>
                     setPasteState((prev) => ({ ...prev, text: e.target.value }))
                   }
-                  className="text-right min-h-[120px]"
+                  className={`min-h-[120px] ${getTextAlignment()}`}
+                  dir={isRTL ? "rtl" : "ltr"}
                 />
               </div>
 
               {pasteState.error && (
-                <div className="text-red-600 text-sm text-center">
+                <div
+                  className={`text-red-600 text-sm text-center ${getTextAlignment()}`}
+                >
                   {pasteState.error}
                 </div>
               )}
             </div>
 
-            <DialogFooter className="flex justify-start gap-2">
+            <DialogFooter
+              className={`flex gap-2 ${
+                isRTL ? "flex-row-reverse" : "flex-row"
+              }`}
+            >
               <Button variant="outline" onClick={closeModal}>
-                إلغاء
+                {t("common.cancel")}
               </Button>
               <Button
                 onClick={handlePasteSubmit}
@@ -709,22 +783,26 @@ export default function AiCardActions() {
                 }
               >
                 {pasteState.isProcessing
-                  ? "جاري المعالجة..."
-                  : "معالجة المحتوى"}
+                  ? t("aiActions.dialogs.paste.processing")
+                  : t("aiActions.dialogs.paste.processContent")}
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
+        {/* Record Dialog */}
         <Dialog
           open={activeModal === "record"}
           onOpenChange={(open) => !open && closeModal()}
         >
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle className="text-right">تسجيل صوتي</DialogTitle>
-              <DialogDescription className="text-right">
-                سجل درسًا أو اشرح موضوعًا بصوتك
+          <DialogContent
+            className="sm:max-w-[500px]"
+            dir={isRTL ? "rtl" : "ltr"}
+          >
+            <DialogHeader className={getTextAlignment()}>
+              <DialogTitle>{t("aiActions.dialogs.record.title")}</DialogTitle>
+              <DialogDescription>
+                {t("aiActions.dialogs.record.description")}
               </DialogDescription>
             </DialogHeader>
 
@@ -749,8 +827,8 @@ export default function AiCardActions() {
 
               {!recordState.isRecording && !recordState.recordedBlob && (
                 <Button onClick={startRecording} className="rounded-full px-8">
-                  <Play className="h-4 w-4 ml-2" />
-                  بدء التسجيل
+                  <Play className={`h-4 w-4 ${isRTL ? "ml-2" : "mr-2"}`} />
+                  {t("aiActions.dialogs.record.startRecording")}
                 </Button>
               )}
 
@@ -760,17 +838,20 @@ export default function AiCardActions() {
                   variant="destructive"
                   className="rounded-full px-8"
                 >
-                  <Square className="h-4 w-4 ml-2" />
-                  إيقاف التسجيل
+                  <Square className={`h-4 w-4 ${isRTL ? "ml-2" : "mr-2"}`} />
+                  {t("aiActions.dialogs.record.stopRecording")}
                 </Button>
               )}
 
               {recordState.recordedBlob && !recordState.isRecording && (
                 <div className="space-y-4">
                   <CheckCircle className="h-16 w-16 text-green-500 mx-auto" />
-                  <div className="text-lg font-medium">تم التسجيل بنجاح!</div>
+                  <div className="text-lg font-medium">
+                    {t("aiActions.dialogs.record.recordingSuccess")}
+                  </div>
                   <div className="text-sm text-gray-600">
-                    المدة: {Math.floor(recordState.recordingTime / 60)}:
+                    {t("aiActions.dialogs.record.duration")}:{" "}
+                    {Math.floor(recordState.recordingTime / 60)}:
                     {(recordState.recordingTime % 60)
                       .toString()
                       .padStart(2, "0")}
@@ -779,53 +860,75 @@ export default function AiCardActions() {
               )}
 
               {recordState.error && (
-                <div className="text-red-600 text-sm">{recordState.error}</div>
+                <div className={`text-red-600 text-sm ${getTextAlignment()}`}>
+                  {recordState.error}
+                </div>
               )}
             </div>
 
-            <DialogFooter className="flex justify-start gap-2">
+            <DialogFooter
+              className={`flex gap-2 ${
+                isRTL ? "flex-row-reverse" : "flex-row"
+              }`}
+            >
               <Button variant="outline" onClick={closeModal}>
-                إلغاء
+                {t("common.cancel")}
               </Button>
               {recordState.recordedBlob && (
-                <Button onClick={handleRecordingSubmit}>معالجة التسجيل</Button>
+                <Button onClick={handleRecordingSubmit}>
+                  {t("aiActions.dialogs.record.processRecording")}
+                </Button>
               )}
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
+        {/* Course Builder UI */}
         {builderActive && !isGenerating && (
           <div>
             <div className="mb-5">
-              <div className="text-right">
-                <div className="text-lg font-semibold mb-2">وصف الدورة</div>
+              <div className={getTextAlignment()}>
+                <div className="text-lg font-semibold mb-2">
+                  {t("aiActions.courseBuilder.courseDescription")}
+                </div>
                 <div className="relative">
                   <textarea
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
-                    placeholder="اكتب وصفًا موجزًا لما تريد تعلمه، وسيتم إنشاء خطة مخصصة."
-                    className="w-full p-4 text-base border-2 border-zinc-200 dark:border-zinc-800 rounded-2xl focus:border-zinc-500 resize-none bg-white dark:bg-gray-900 placeholder-gray-400 text-right"
+                    placeholder={t(
+                      "aiActions.courseBuilder.descriptionPlaceholder"
+                    )}
+                    className={`w-full p-4 text-base border-2 border-zinc-200 dark:border-zinc-800 rounded-2xl focus:border-zinc-500 resize-none bg-white dark:bg-gray-900 placeholder-gray-400 ${getTextAlignment()}`}
                     maxLength={1000}
+                    dir={isRTL ? "rtl" : "ltr"}
                   />
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 mb-2">
-              <span className="font-semibold">الإعدادات</span>
+            <div
+              className={`flex items-center gap-2 mb-2 ${getFlexDirection()}`}
+            >
+              <span className="font-semibold">
+                {t("aiActions.courseBuilder.settings")}
+              </span>
             </div>
             <div className="rounded-2xl border-2 border-zinc-200 dark:border-zinc-800 bg-white dark:bg-gray-900 p-4">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                  <Label className="mb-2 block">المستوى</Label>
+                  <Label className={`mb-2 block ${getTextAlignment()}`}>
+                    {t("aiActions.courseBuilder.level")}
+                  </Label>
                   <Select
                     value={settings.level}
                     onValueChange={(v: Level) => updateSetting("level", v)}
                   >
-                    <SelectTrigger className="text-right">
-                      <SelectValue placeholder="اختر المستوى" />
+                    <SelectTrigger className={getTextAlignment()}>
+                      <SelectValue
+                        placeholder={t("aiActions.courseBuilder.selectLevel")}
+                      />
                     </SelectTrigger>
-                    <SelectContent align="end">
+                    <SelectContent align={isRTL ? "start" : "end"}>
                       {(Object.keys(LEVEL_LABELS) as Level[]).map((lvl) => (
                         <SelectItem key={lvl} value={lvl}>
                           {LEVEL_LABELS[lvl]}
@@ -836,15 +939,19 @@ export default function AiCardActions() {
                 </div>
 
                 <div>
-                  <Label className="mb-2 block">المجال</Label>
+                  <Label className={`mb-2 block ${getTextAlignment()}`}>
+                    {t("aiActions.courseBuilder.topic")}
+                  </Label>
                   <Select
                     value={settings.topic}
                     onValueChange={(v: Topic) => updateSetting("topic", v)}
                   >
-                    <SelectTrigger className="text-right">
-                      <SelectValue placeholder="اختر المجال" />
+                    <SelectTrigger className={getTextAlignment()}>
+                      <SelectValue
+                        placeholder={t("aiActions.courseBuilder.selectTopic")}
+                      />
                     </SelectTrigger>
-                    <SelectContent align="end">
+                    <SelectContent align={isRTL ? "start" : "end"}>
                       {(Object.keys(TOPIC_LABELS) as Topic[]).map((t) => (
                         <SelectItem key={t} value={t}>
                           {TOPIC_LABELS[t]}
@@ -855,41 +962,53 @@ export default function AiCardActions() {
                 </div>
 
                 <div>
-                  <Label className="mb-2 block">اللغة</Label>
+                  <Label className={`mb-2 block ${getTextAlignment()}`}>
+                    {t("aiActions.courseBuilder.language")}
+                  </Label>
                   <Select
                     value={settings.language}
                     onValueChange={(v: any) => updateSetting("language", v)}
                   >
-                    <SelectTrigger className="text-right">
+                    <SelectTrigger className={getTextAlignment()}>
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent align="end">
-                      <SelectItem value="ar">العربية</SelectItem>
-                      <SelectItem value="en">English</SelectItem>
+                    <SelectContent align={isRTL ? "start" : "end"}>
+                      <SelectItem value="ar">{t("languages.ar")}</SelectItem>
+                      <SelectItem value="en">{t("languages.en")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div>
-                  <Label className="mb-2 block">الإيقاع</Label>
+                  <Label className={`mb-2 block ${getTextAlignment()}`}>
+                    {t("aiActions.courseBuilder.pace")}
+                  </Label>
                   <Select
                     value={settings.pace}
                     onValueChange={(v: Pace) => updateSetting("pace", v)}
                   >
-                    <SelectTrigger className="text-right">
+                    <SelectTrigger className={getTextAlignment()}>
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent align="end">
-                      <SelectItem value="EASY">خفيف</SelectItem>
-                      <SelectItem value="BALANCED">متوازن</SelectItem>
-                      <SelectItem value="INTENSE">مكثف</SelectItem>
+                    <SelectContent align={isRTL ? "start" : "end"}>
+                      <SelectItem value="EASY">
+                        {t("aiActions.pace.easy")}
+                      </SelectItem>
+                      <SelectItem value="BALANCED">
+                        {t("aiActions.pace.balanced")}
+                      </SelectItem>
+                      <SelectItem value="INTENSE">
+                        {t("aiActions.pace.intense")}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="md:col-span-2">
-                  <Label className="mb-2 block">
-                    المدة الإجمالية (ساعات) — {settings.duration_hours}
+                  <Label className={`mb-2 block ${getTextAlignment()}`}>
+                    {t("aiActions.courseBuilder.totalHours", {
+                      hours: settings.duration_hours,
+                    })}
                   </Label>
                   <div className="rounded-xl border p-3">
                     <Slider
@@ -905,17 +1024,25 @@ export default function AiCardActions() {
                       step={1}
                       valueLabelDisplay="auto"
                     />
-                    <div className="flex justify-between text-xs text-gray-500 mt-2">
+                    <div
+                      className={`flex justify-between text-xs text-gray-500 mt-2 ${getTextAlignment()}`}
+                    >
                       <span>1</span>
-                      <span>{settings.duration_hours} ساعة</span>
+                      <span>
+                        {t("aiActions.courseBuilder.hoursLabel", {
+                          hours: settings.duration_hours,
+                        })}
+                      </span>
                       <span>200</span>
                     </div>
                   </div>
                 </div>
 
                 <div className="md:col-span-2">
-                  <Label className="mb-2 block">
-                    عدد الوحدات — {settings.max_modules}
+                  <Label className={`mb-2 block ${getTextAlignment()}`}>
+                    {t("aiActions.courseBuilder.moduleCount", {
+                      count: settings.max_modules,
+                    })}
                   </Label>
                   <div className="rounded-xl border p-3">
                     <Slider
@@ -931,9 +1058,15 @@ export default function AiCardActions() {
                       step={1}
                       valueLabelDisplay="auto"
                     />
-                    <div className="flex justify-between text-xs text-gray-500 mt-2">
+                    <div
+                      className={`flex justify-between text-xs text-gray-500 mt-2 ${getTextAlignment()}`}
+                    >
                       <span>1</span>
-                      <span>{settings.max_modules} وحدة</span>
+                      <span>
+                        {t("aiActions.courseBuilder.modulesLabel", {
+                          count: settings.max_modules,
+                        })}
+                      </span>
                       <span>20</span>
                     </div>
                   </div>
@@ -948,47 +1081,49 @@ export default function AiCardActions() {
                   onCheckedChange={(v) =>
                     updateSetting("include_code_lessons", v)
                   }
-                  label="دروس برمجية"
-                  hint="أمثلة عملية وشفرات قابلة للتنفيذ"
+                  label={t("aiActions.features.codeLessons.label")}
+                  hint={t("aiActions.features.codeLessons.hint")}
                 />
                 <FeatureToggle
                   checked={settings.include_quizzes}
                   onCheckedChange={(v) => updateSetting("include_quizzes", v)}
-                  label="اختبارات قصيرة"
-                  hint="أسئلة تقييم فورية مع شرح"
+                  label={t("aiActions.features.quizzes.label")}
+                  hint={t("aiActions.features.quizzes.hint")}
                 />
                 <FeatureToggle
                   checked={settings.include_articles}
                   onCheckedChange={(v) => updateSetting("include_articles", v)}
-                  label="مقالات"
-                  hint="قراءات نظرية مكثفة"
+                  label={t("aiActions.features.articles.label")}
+                  hint={t("aiActions.features.articles.hint")}
                 />
                 <FeatureToggle
                   checked={settings.include_flashcards}
                   onCheckedChange={(v) =>
                     updateSetting("include_flashcards", v)
                   }
-                  label="بطاقات مراجعة"
-                  hint="تكرار متباعد للمفاهيم"
+                  label={t("aiActions.features.flashcards.label")}
+                  hint={t("aiActions.features.flashcards.hint")}
                 />
                 <FeatureToggle
                   checked={settings.include_projects}
                   onCheckedChange={(v) => updateSetting("include_projects", v)}
-                  label="مشاريع تطبيقية"
-                  hint="مهام عملية بناتج نهائي"
+                  label={t("aiActions.features.projects.label")}
+                  hint={t("aiActions.features.projects.hint")}
                 />
                 <div>
-                  <Label className="mb-1 block">أسلوب التقييم</Label>
+                  <Label className={`mb-1 block ${getTextAlignment()}`}>
+                    {t("aiActions.courseBuilder.assessmentStyle")}
+                  </Label>
                   <Select
                     value={settings.assessment_style}
                     onValueChange={(v: AssessmentStyle) =>
                       updateSetting("assessment_style", v)
                     }
                   >
-                    <SelectTrigger className="text-right">
+                    <SelectTrigger className={getTextAlignment()}>
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent align="end">
+                    <SelectContent align={isRTL ? "start" : "end"}>
                       {(Object.keys(STYLE_LABELS) as AssessmentStyle[]).map(
                         (s) => (
                           <SelectItem key={s} value={s}>
@@ -1001,24 +1136,35 @@ export default function AiCardActions() {
                 </div>
               </div>
 
-              <div className="mt-5 p-4 rounded-xl border bg-zinc-50 dark:bg-zinc-900">
-                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+              <div
+                className={`mt-5 p-4 rounded-xl border bg-zinc-50 dark:bg-zinc-900 ${getTextAlignment()}`}
+              >
+                <div
+                  className={`flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 ${getFlexDirection()}`}
+                >
                   <Info className="w-4 h-4" />
                   <span>
-                    تقدير مبدئي: {settings.max_modules} وحدات ×{" "}
-                    {lessonsPerModule} درس ≈ {totalEstimatedLessons} درس
+                    {t("aiActions.courseBuilder.estimation", {
+                      modules: settings.max_modules,
+                      lessonsPerModule,
+                      totalLessons: totalEstimatedLessons,
+                    })}
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 mt-4">
+            <div
+              className={`flex items-center gap-3 mt-4 ${
+                isRTL ? "justify-start" : "justify-end"
+              }`}
+            >
               <Button
                 variant="outline"
                 onClick={closeModal}
                 className="rounded-xl"
               >
-                إلغاء
+                {t("common.cancel")}
               </Button>
               <TooltipProvider delayDuration={200}>
                 <Tooltip>
@@ -1028,13 +1174,15 @@ export default function AiCardActions() {
                       disabled={!prompt.trim() || isGenerating}
                       className="rounded-xl"
                     >
-                      <Send className="w-4 h-4 ml-2" />
-                      إنشاء الدورة
+                      <Send className={`w-4 h-4 ${isRTL ? "ml-2" : "mr-2"}`} />
+                      {t("aiActions.courseBuilder.createCourse")}
                     </Button>
                   </TooltipTrigger>
                   {!prompt.trim() && (
                     <TooltipContent side="top" align="end">
-                      <p>اكتب وصفًا مختصرًا أولاً</p>
+                      <p>
+                        {t("aiActions.courseBuilder.writeDescriptionFirst")}
+                      </p>
                     </TooltipContent>
                   )}
                 </Tooltip>
@@ -1046,6 +1194,7 @@ export default function AiCardActions() {
           </div>
         )}
 
+        {/* Generation Progress */}
         {isGenerating && (
           <div className="py-12 text-center space-y-6">
             <div className="w-20 h-20 rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center mx-auto shadow-2xl">
@@ -1053,15 +1202,17 @@ export default function AiCardActions() {
             </div>
             <div>
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                جاري إنشاء دورتك المخصصة
+                {t("aiActions.generation.title")}
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                يعمل الذكاء الاصطناعي على تصميم محتوى تعليمي متخصص
+                {t("aiActions.generation.description")}
               </p>
             </div>
             <div className="max-w-md mx-auto">
-              <div className="flex justify-between text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
-                <span>التقدم</span>
+              <div
+                className={`flex justify-between text-sm font-medium text-gray-600 dark:text-gray-400 mb-2 ${getTextAlignment()}`}
+              >
+                <span>{t("aiActions.generation.progress")}</span>
                 <span>{generationProgress}%</span>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
@@ -1076,17 +1227,17 @@ export default function AiCardActions() {
               {[
                 {
                   icon: BookOpen,
-                  label: "تحليل المتطلبات",
+                  label: t("aiActions.generation.steps.analyzing"),
                   completed: generationProgress > 30,
                 },
                 {
                   icon: Wand2,
-                  label: "توليد المحتوى",
+                  label: t("aiActions.generation.steps.generating"),
                   completed: generationProgress > 60,
                 },
                 {
                   icon: CheckCircle,
-                  label: "مراجعة النتائج",
+                  label: t("aiActions.generation.steps.reviewing"),
                   completed: generationProgress >= 100,
                 },
               ].map((step, idx) => (
@@ -1137,15 +1288,20 @@ function ActionTile({
   onClick?: () => void;
   icon: React.ReactNode;
 }) {
+  const { i18n } = useTranslation();
+  const isRTL = i18n.language === "ar";
+
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`relative h-[88px] w-full rounded-2xl border text-right shadow-sm flex items-center justify-end gap-3 px-6 transition-all dark:bg-gray-900 dark:border-gray-800 bg-white border-gray-200 hover:shadow-md hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
+      className={`relative h-[88px] w-full rounded-2xl border shadow-sm flex items-center gap-3 px-6 transition-all dark:bg-gray-900 dark:border-gray-800 bg-white border-gray-200 hover:shadow-md hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+        isRTL ? "justify-end text-right" : "justify-start text-left"
+      }`}
     >
-      <div className="flex flex-col items-end">
+      <div className={`flex flex-col ${isRTL ? "items-end" : "items-start"}`}>
         <div className="text-base font-semibold">{title}</div>
-        <div className={`text-sm text-gray-500`}>{subtitle}</div>
+        <div className="text-sm text-gray-500">{subtitle}</div>
       </div>
       {icon}
     </button>
@@ -1165,6 +1321,9 @@ function SoonTile({
   icon: React.ReactNode;
   children?: React.ReactNode;
 }) {
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === "ar";
+
   return (
     <TooltipProvider delayDuration={150}>
       <Tooltip>
@@ -1174,15 +1333,25 @@ function SoonTile({
               type="button"
               disabled
               aria-disabled
-              className={`h-[88px] w-full rounded-2xl border text-right shadow-sm flex items-center justify-end gap-3 px-6 transition-all bg-gray-50 dark:bg-gray-800 border-dashed border-gray-300 dark:border-gray-700  select-none`}
+              className={`h-[88px] w-full rounded-2xl border shadow-sm flex items-center gap-3 px-6 transition-all bg-gray-50 dark:bg-gray-800 border-dashed border-gray-300 dark:border-gray-700 select-none ${
+                isRTL ? "justify-end text-right" : "justify-start text-left"
+              }`}
             >
-              <div className="flex flex-col items-end opacity-70">
+              <div
+                className={`flex flex-col opacity-70 ${
+                  isRTL ? "items-end" : "items-start"
+                }`}
+              >
                 <div className="text-base font-semibold">{title}</div>
                 <div className="text-sm text-gray-500">{subtitle}</div>
               </div>
               {icon}
-              <Badge className="absolute -top-2 -left-2 rounded-full">
-                قريبًا
+              <Badge
+                className={`absolute -top-2 rounded-full ${
+                  isRTL ? "-right-2" : "-left-2"
+                }`}
+              >
+                {t("aiActions.comingSoon")}
               </Badge>
             </button>
             {children}
@@ -1207,9 +1376,16 @@ function FeatureToggle({
   label: string;
   hint?: string;
 }) {
+  const { i18n } = useTranslation();
+  const isRTL = i18n.language === "ar";
+
   return (
-    <div className="flex items-center justify-between gap-4 rounded-xl border p-3">
-      <div className="text-right">
+    <div
+      className={`flex items-center gap-4 rounded-xl border p-3 ${
+        isRTL ? "justify-between flex-row-reverse" : "justify-between"
+      }`}
+    >
+      <div className={isRTL ? "text-right" : "text-left"}>
         <div className="font-medium">{label}</div>
         {hint && <div className="text-xs text-gray-500">{hint}</div>}
       </div>

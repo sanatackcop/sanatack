@@ -1,6 +1,7 @@
 {
   "common": {
     "save": "Save",
+    "calendar": "Calendar",
     "cancel": "Cancel",
     "delete": "Delete",
     "edit": "Edit",
@@ -54,7 +55,7 @@
     "spaces": "Spaces",
     "create": "Create",
     "helpAndTools": "Help & Tools",
-    "freePlan": "🌟 Free Plan",
+    "freePlan": "Free Plan",
     "settings": "Settings",
     "preferences": "Preferences",
     "profile": "Profile",
@@ -95,7 +96,8 @@
     "en": "English",
     "fr": "Français",
     "es": "Español",
-    "current": "Current Language"
+    "current": "Current Language",
+    "changed": "تم تغيير اللغة إلى {{lang}}"
   },
   "dialogs": {
     "createNewSpace": "Create New Space",
@@ -132,5 +134,173 @@
     "busy": "Busy",
     "lastSeen": "Last Seen",
     "joinedDate": "Joined Date"
+  },
+  "dashboard": {
+    "errors": {
+      "loadCourses": "An error occurred while loading courses. Please try again later."
+    },
+    "spaces": {
+      "title": "Spaces",
+      "newSpace": "New Space",
+      "defaultName": "Untitled Space ({{count}})",
+      "deleteSpace": "Delete Space",
+      "itemCount": "{{count}} items"
+    },
+    "dialogs": {
+      "createSpace": {
+        "title": "Create New Space",
+        "description": "Add a name for your space to organize related files and lessons.",
+        "nameLabel": "Space Name",
+        "placeholder": "Example: Math Space",
+        "create": "Create"
+      },
+      "deleteSpace": {
+        "title": "Delete Space",
+        "description": "Are you sure you want to delete this space? This action cannot be undone and may result in deleting all associated content.",
+        "spaceName": "Space",
+        "itemCount": "Item count: {{count}}",
+        "confirmDelete": "Yes, Delete"
+      }
+    }
+  },
+  "aiActions": {
+    "featuresComingSoon": "Some features are under development — Coming Soon ✨",
+    "mainTitle": "What do you want to learn?",
+    "subtitle": "Upload content or paste a link or record a lesson — and the system will build you a smart learning experience.",
+    "chatPlaceholder": "Learn anything",
+    "comingSoon": "Soon",
+    "steps": {
+      "settings": "Description + Settings",
+      "generation": "Generation"
+    },
+    "upload": {
+      "title": "Upload",
+      "subtitle": "Files, audio, video"
+    },
+    "paste": {
+      "title": "Paste",
+      "subtitle": "YouTube, website, text"
+    },
+    "record": {
+      "title": "Record",
+      "subtitle": "Record a lesson or video call"
+    },
+    "createCourse": {
+      "title": "Create Course",
+      "subtitle": "Build an educational course"
+    },
+    "levels": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced"
+    },
+    "topics": {
+      "ai": "Artificial Intelligence",
+      "ml": "Machine Learning",
+      "backend": "Backend Development",
+      "frontend": "Frontend Development"
+    },
+    "assessmentStyles": {
+      "quizzes": "Short Quizzes",
+      "projects": "Applied Projects",
+      "mixed": "Mixed",
+      "light": "Very Light"
+    },
+    "pace": {
+      "easy": "Easy",
+      "balanced": "Balanced",
+      "intense": "Intense"
+    },
+    "dialogs": {
+      "upload": {
+        "title": "Upload Files",
+        "description": "Choose the files you want to convert to learning content",
+        "dragDrop": "Drag and drop files here",
+        "orChoose": "or choose files manually",
+        "chooseFiles": "Choose Files",
+        "allowedTypes": "Allowed: PDF, Word, Text, Audio, Video, Images",
+        "selectedFiles": "Selected files",
+        "uploading": "Uploading...",
+        "uploadFiles": "Upload Files"
+      },
+      "paste": {
+        "title": "Paste Content",
+        "description": "Paste a link or text for the content you want to learn",
+        "urlLabel": "Link (YouTube, website)",
+        "urlPlaceholder": "https://youtube.com/watch?v=...",
+        "or": "or",
+        "textLabel": "Direct text",
+        "textPlaceholder": "Paste text here...",
+        "processing": "Processing...",
+        "processContent": "Process Content"
+      },
+      "record": {
+        "title": "Audio Recording",
+        "description": "Record a lesson or explain a topic with your voice",
+        "startRecording": "Start Recording",
+        "stopRecording": "Stop Recording",
+        "recordingSuccess": "Recording successful!",
+        "duration": "Duration",
+        "processRecording": "Process Recording"
+      }
+    },
+    "courseBuilder": {
+      "courseDescription": "Course Description",
+      "descriptionPlaceholder": "Write a brief description of what you want to learn, and a custom plan will be generated.",
+      "settings": "Settings",
+      "level": "Level",
+      "selectLevel": "Select level",
+      "topic": "Topic",
+      "selectTopic": "Select topic",
+      "language": "Language",
+      "pace": "Pace",
+      "totalHours": "Total Duration (hours) — {{hours}}",
+      "hoursLabel": "{{hours}} hours",
+      "moduleCount": "Number of Modules — {{count}}",
+      "modulesLabel": "{{count}} modules",
+      "assessmentStyle": "Assessment Style",
+      "estimation": "Initial estimate: {{modules}} modules × {{lessonsPerModule}} lessons ≈ {{totalLessons}} lessons",
+      "createCourse": "Create Course",
+      "writeDescriptionFirst": "Write a brief description first"
+    },
+    "features": {
+      "codeLessons": {
+        "label": "Code Lessons",
+        "hint": "Practical examples and executable code"
+      },
+      "quizzes": {
+        "label": "Short Quizzes",
+        "hint": "Instant assessment questions with explanations"
+      },
+      "articles": {
+        "label": "Articles",
+        "hint": "Intensive theoretical readings"
+      },
+      "flashcards": {
+        "label": "Review Cards",
+        "hint": "Spaced repetition for concepts"
+      },
+      "projects": {
+        "label": "Applied Projects",
+        "hint": "Practical tasks with final output"
+      }
+    },
+    "generation": {
+      "title": "Creating Your Custom Course",
+      "description": "AI is working on designing specialized educational content",
+      "progress": "Progress",
+      "steps": {
+        "analyzing": "Analyzing Requirements",
+        "generating": "Generating Content",
+        "reviewing": "Reviewing Results"
+      }
+    },
+    "errors": {
+      "uploadFailed": "File upload failed",
+      "processingFailed": "Content processing failed",
+      "microphoneAccess": "Failed to access microphone",
+      "recordingUploadFailed": "Recording upload failed",
+      "connectionFailed": "Unable to connect to server"
+    }
   }
 }

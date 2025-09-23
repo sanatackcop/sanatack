@@ -1,3 +1,4 @@
+import { toast } from "sonner";
 import { useState, useEffect, useMemo } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -5,16 +6,12 @@ import {
   Sun,
   Moon,
   Crown,
-  Users,
   Plus,
-  Search,
   Compass,
   History,
   Chrome,
   ChevronDown,
-  User,
   ThumbsUp,
-  Settings,
   DollarSign,
   LogOut,
   MessageCircle,
@@ -24,6 +21,8 @@ import {
   MapIcon,
   Globe,
   Monitor,
+  BoxIcon,
+  CalendarDaysIcon,
 } from "lucide-react";
 import LogoLight from "@/assets/logo.svg";
 import LogoDark from "@/assets/dark_logo.svg";
@@ -124,6 +123,7 @@ export function AppSidebar() {
 
   const changeLanguage = (langCode: string) => {
     setLanguage(langCode);
+    toast.success(t("languages.changed", { lang: langCode.toUpperCase() }));
   };
 
   const changeTheme = (newTheme: "light" | "dark" | "system") => {
@@ -157,21 +157,15 @@ export function AppSidebar() {
         isPremium: true,
       },
       {
-        title: t("sidebar.search"),
-        url: "/dashboard/search",
-        icon: Search,
+        title: t("common.calendar"),
+        url: "/dashboard/calendar",
+        icon: CalendarDaysIcon,
         isSoon: true,
       },
       {
         title: t("sidebar.explore"),
         url: "/dashboard/explore",
         icon: Compass,
-        isSoon: true,
-      },
-      {
-        title: t("sidebar.history"),
-        url: "/dashboard/history",
-        icon: History,
         isSoon: true,
       },
     ],
@@ -308,7 +302,7 @@ export function AppSidebar() {
         )}
         aria-disabled={isDisabled || undefined}
       >
-        <ItemIcon size={20} className="flex-shrink-0" />
+        <ItemIcon size={16} className="flex-shrink-0" />
         {!isCollapsed && (
           <span
             className={clsx("text-sm font-medium flex-1", getTextAlignment())}
@@ -664,7 +658,7 @@ export function AppSidebar() {
                               to={item.url}
                               className={linkClasses}
                             >
-                              <Users size={18} className="flex-shrink-0" />
+                              <BoxIcon size={16} className="flex-shrink-0" />
                               <span
                                 className={clsx(
                                   "text-sm font-medium flex-1",
@@ -717,24 +711,25 @@ export function AppSidebar() {
               </div>
             </div>
 
-            {/* Enhanced Footer / User Section */}
-            <div className="p-4 mt-auto">
+            <div className="p-4 mt-auto relative">
               {!isCollapsed && (
-                <div className="mb-4 p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200/50 dark:border-green-800/30 rounded-2xl shadow-sm">
-                  <button
+                <div
+                  className="absolute bottom-12 left-1/2 -translate-x-1/2  w-44right-4 h-10 bg-gradient-to-br from-green-50 to-emerald-50
+                 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200/50 dark:border-green-800/30 rounded-xl shadow-sm z-0"
+                >
+                  <div
                     className={clsx(
-                      "w-full py-2 text-green-700 dark:text-green-300 text-sm font-bold",
-                      getTextAlignment()
+                      "py-1 text-green-700 text-center items-center w-44 dark:text-green-300 text-xs font-semibold"
                     )}
                   >
                     {t("sidebar.freePlan")}
-                  </button>
+                  </div>
                 </div>
               )}
 
               <div
                 className={clsx(
-                  "relative user-dropdown-container bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-2xl border border-white/30 dark:border-gray-700/30 shadow-lg",
+                  "relative user-dropdown-container bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-2xl border border-zinc-200/50 dark:border-gray-700/30 z-10",
                   isCollapsed && "px-2 py-2 flex items-center justify-center"
                 )}
               >
@@ -745,9 +740,6 @@ export function AppSidebar() {
                     isCollapsed && "justify-center"
                   )}
                 >
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 rounded-2xl flex items-center justify-center shadow-lg">
-                    <User size={18} className="text-white" />
-                  </div>
                   {!isCollapsed && (
                     <div className={clsx("flex-1", getTextAlignment())}>
                       <p className="text-sm font-bold text-gray-900 dark:text-white">
@@ -766,22 +758,8 @@ export function AppSidebar() {
                   )}
                 </button>
 
-                {/* Enhanced Dropdown */}
                 {!isCollapsed && showUserDropdown && (
-                  <div className="absolute bottom-full left-0 right-0 mb-2 bg-white dark:bg-gray-900/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/30 rounded-2xl shadow-2xl p-2">
-                    <button
-                      className={clsx(
-                        "w-full flex items-center gap-3 p-3 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 rounded-xl text-sm transition-all duration-200",
-                        getFlexDirection(),
-                        getTextAlignment()
-                      )}
-                    >
-                      <Settings size={16} className="text-gray-500" />
-                      <span className="flex-1 font-medium">
-                        {t("sidebar.settings")}
-                      </span>
-                    </button>
-
+                  <div className="absolute bottom-full left-0 right-0 mb-2 bg-white dark:bg-gray-900/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/30 rounded-2xl shadow-2xl p-2 z-50">
                     <button
                       className={clsx(
                         "w-full flex items-center gap-3 p-3 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 rounded-xl text-sm transition-all duration-200",
@@ -869,7 +847,7 @@ export function AppSidebar() {
                       </div>
                     </div>
 
-                    <div className="h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent my-2" />
+                    <hr className="h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent -mx-3 my-2" />
 
                     <button
                       className={clsx(
