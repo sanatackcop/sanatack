@@ -37,9 +37,14 @@ export default function Spaces({ isRTL }: { isRTL: boolean }) {
   const fetchAllSpaces = async () => {
     try {
       const { data } = await getAllSpacesApi();
-      setSpaces(data);
+      const validSpaces = data.filter(
+        (space: any) =>
+          space && space.id && typeof space.id === "string" && space.name
+      );
+      setSpaces(validSpaces);
     } catch (error) {
       console.error("Failed to fetch spaces:", error);
+      setSpaces([]);
     }
   };
 
@@ -65,6 +70,7 @@ export default function Spaces({ isRTL }: { isRTL: boolean }) {
       setSpaces((prev) => [...prev, data]);
       setNewSpaceName("");
       setOpenAdd(false);
+      fetchAllSpaces();
     } catch (error) {
       console.error("Failed to create space:", error);
     } finally {
@@ -124,16 +130,20 @@ export default function Spaces({ isRTL }: { isRTL: boolean }) {
             </>
           ) : (
             <>
-              {spaces.map((space) => (
-                <SpaceItem
-                  key={space.id}
-                  id={space.id}
-                  name={space.name}
-                  count={space.contents || 0}
-                  onOpen={openSpace}
-                  onDeleteRequest={requestDelete}
-                />
-              ))}
+              {spaces
+                .filter(
+                  (space): space is Space => space != null && space.id != null
+                )
+                .map((space) => (
+                  <SpaceItem
+                    key={space.id}
+                    id={space.id}
+                    name={space.name}
+                    count={space.contents || 0}
+                    onOpen={openSpace}
+                    onDeleteRequest={requestDelete}
+                  />
+                ))}
 
               {/* Add New Space Button */}
               <button
