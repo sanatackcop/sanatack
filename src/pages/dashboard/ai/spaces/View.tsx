@@ -13,19 +13,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  UploadCloud,
-  Link2,
-  Mic,
-  FileText,
-  Grid2x2,
-  List,
-  PencilLine,
-} from "lucide-react";
+import { FileText, Grid2x2, List, PencilLine } from "lucide-react";
 import AppLayout from "@/components/layout/Applayout";
 import { useParams } from "react-router-dom";
 import AiCardActions from "@/shared/ai/AiCardActions";
 import { getSingleSpaceApi, updateSpaceApi } from "@/utils/_apis/courses-apis";
+import EmptySpaceCTA from "@/components/EmptyState";
 
 type Space = {
   id: string;
@@ -273,41 +266,5 @@ export default function SpaceView() {
         )}
       </section>
     </AppLayout>
-  );
-}
-
-function EmptySpaceCTA() {
-  return (
-    <div className="text-center py-16 bg-muted/30 rounded-2xl border border-dashed">
-      <h3 className="text-lg font-semibold">أضف محتوى إلى هذه المساحة</h3>
-      <p className="text-muted-foreground max-w-xl mx-auto mt-2 leading-relaxed">
-        تعلّم بذكاء وخصِّص تجربتك مع صناعتك.
-      </p>
-
-      <div className="mt-6 flex items-center justify-center gap-2 flex-wrap">
-        <Button
-          variant="outline"
-          className="rounded-full px-4 py-2 flex gap-2 rtl:flex-row-reverse"
-        >
-          <UploadCloud className="h-4 w-4" />
-          <span>رفع ملف</span>
-        </Button>
-        <Button
-          variant="outline"
-          className="rounded-full px-4 py-2 flex gap-2 rtl:flex-row-reverse"
-        >
-          <Link2 className="h-4 w-4" />
-          <span>لصق رابط</span>
-        </Button>
-        <Button className="rounded-full px-4 py-2 flex gap-2 rtl:flex-row-reverse">
-          <Mic className="h-4 w-4" />
-          <span>تسجيل</span>
-        </Button>
-      </div>
-
-      <p className="text-xs text-muted-foreground mt-4">
-        الصيغ المدعومة: PDF, DOCX, روابط المقالات، والملاحظات الصوتية.
-      </p>
-    </div>
   );
 }

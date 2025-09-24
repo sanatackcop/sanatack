@@ -8,21 +8,25 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   ArrowUp,
-  ChevronDown,
   File,
   X,
-  Paperclip,
   FileText,
   Link,
   Image,
-  Search,
+  ChevronDown,
+  Sparkles,
+  Zap,
+  Brain,
 } from "lucide-react";
+import i18n from "@/i18n";
 
 export type Model = {
   id: string;
   name: string;
   isActive?: boolean;
   color?: string;
+  description?: string;
+  speed?: "fast" | "balanced" | "precise";
 };
 
 export type Context = {
@@ -50,16 +54,30 @@ const ChatInput: React.FC<ChatInputProps> = ({
   value,
   onChange,
   onSubmit,
-  placeholder = "اكتب رسالتك هنا...",
+  placeholder,
   models = [
     {
       id: "gemini-2.5-flash",
       name: "Gemini 2.5 Flash",
       isActive: true,
       color: "emerald",
+      description: "Fast and efficient for most tasks",
+      speed: "fast",
     },
-    { id: "gpt-4o", name: "GPT-4o", color: "blue" },
-    { id: "claude-3.5", name: "Claude 3.5 Sonnet", color: "purple" },
+    {
+      id: "gpt-4o",
+      name: "GPT-4o",
+      color: "blue",
+      description: "Advanced reasoning and analysis",
+      speed: "balanced",
+    },
+    {
+      id: "claude-3.5",
+      name: "Claude 3.5 Sonnet",
+      color: "purple",
+      description: "Creative and detailed responses",
+      speed: "precise",
+    },
   ],
   onModelChange,
   contexts = [],
@@ -68,33 +86,39 @@ const ChatInput: React.FC<ChatInputProps> = ({
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [isModelPopoverOpen, setIsModelPopoverOpen] = useState(false);
-  const [isContextPopoverOpen, setIsContextPopoverOpen] = useState(false);
   const [selectedContexts, setSelectedContexts] = useState<Context[]>(contexts);
-  const [contextSearch, setContextSearch] = useState("");
 
   const activeModel = models.find((m) => m.isActive) ?? models[0];
   const [selectedModel, setSelectedModel] = useState<Model>(activeModel);
 
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const expandedContentRef = useRef<HTMLDivElement>(null);
 
-  // Auto-resize textarea with smooth transitions
+  const currentLanguage = i18n.language || "ar";
+  const isRTL = i18n.dir() === "rtl" || currentLanguage === "ar";
+
+  const defaultPlaceholder = isRTL
+    ? "اسأل الذكاء الاصطناعي أي شيء..."
+    : "Ask AI anything...";
+  const actualPlaceholder = placeholder || defaultPlaceholder;
+
+  // Fixed expansion logic
+  const isExpanded =
+    isFocused || selectedContexts.length > 0 || isModelPopoverOpen;
+
+  // Auto-resize textarea
   const adjustTextareaHeight = useCallback(() => {
     const textarea = textAreaRef.current;
     if (!textarea) return;
 
-    // Reset height to calculate scroll height
     textarea.style.height = "auto";
-
-    // Calculate new height with limits
     const scrollHeight = textarea.scrollHeight;
-    const minHeight = 56; // Single line height
-    const maxHeight = 200; // Maximum height before scroll
-
+    const minHeight = 56;
+    const maxHeight = 160;
     const newHeight = Math.min(Math.max(scrollHeight, minHeight), maxHeight);
-    textarea.style.height = `${newHeight}px`;
 
-    // Enable/disable scroll based on content
+    textarea.style.height = `${newHeight}px`;
     textarea.style.overflowY = scrollHeight > maxHeight ? "auto" : "hidden";
   }, []);
 
@@ -106,27 +130,13 @@ const ChatInput: React.FC<ChatInputProps> = ({
     const trimmed = value?.trim();
     if (!trimmed) return;
     onSubmit?.(trimmed, selectedModel, selectedContexts);
+    setIsFocused(false);
   };
 
   const handleModelSelect = (model: Model) => {
     setSelectedModel(model);
     onModelChange?.(model);
     setIsModelPopoverOpen(false);
-    textAreaRef.current?.focus();
-  };
-
-  const handleContextToggle = (context: Context) => {
-    const isSelected = selectedContexts.some((c) => c.id === context.id);
-    let newContexts: Context[];
-
-    if (isSelected) {
-      newContexts = selectedContexts.filter((c) => c.id !== context.id);
-    } else {
-      newContexts = [...selectedContexts, context];
-    }
-
-    setSelectedContexts(newContexts);
-    onContextsChange?.(newContexts);
   };
 
   const removeContext = (contextId: string) => {
@@ -140,293 +150,345 @@ const ChatInput: React.FC<ChatInputProps> = ({
       e.preventDefault();
       submit();
     }
+    if (e.key === "Escape") {
+      textAreaRef.current?.blur();
+      setIsFocused(false);
+    }
+  };
+
+  const handleFocus = () => {
+    setIsFocused(true);
+  };
+
+  const handleBlur = () => {
+    // Small delay to allow for clicking on buttons
+    setTimeout(() => {
+      if (!isModelPopoverOpen) {
+        setIsFocused(false);
+      }
+    }, 150);
+  };
+
+  // Handle clicks outside to close
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        if (!isModelPopoverOpen) {
+          setIsFocused(false);
+        }
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isModelPopoverOpen]);
+
+  // Handle container clicks to maintain focus
+  const handleContainerClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isFocused) {
+      setIsFocused(true);
+      textAreaRef.current?.focus();
+    }
   };
 
   const getContextIcon = (type: Context["type"]) => {
+    const iconClass = "w-3.5 h-3.5";
     switch (type) {
       case "file":
-        return <FileText className="w-3 h-3" />;
+        return <FileText className={iconClass} />;
       case "image":
-        return <Image className="w-3 h-3" />;
+        return <Image className={iconClass} />;
       case "url":
-        return <Link className="w-3 h-3" />;
+        return <Link className={iconClass} />;
       default:
-        return <File className="w-3 h-3" />;
+        return <File className={iconClass} />;
     }
   };
 
   const getContextColor = (type: Context["type"]) => {
     switch (type) {
       case "file":
-        return "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700";
+        return "bg-blue-50 hover:bg-blue-100 dark:bg-blue-950 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border-blue-200/60 dark:border-blue-800";
       case "image":
-        return "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700";
+        return "bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border-emerald-200/60 dark:border-emerald-800";
       case "url":
-        return "bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-700";
+        return "bg-purple-50 hover:bg-purple-100 dark:bg-purple-950 dark:hover:bg-purple-900/60 text-purple-700 dark:text-purple-300 border-purple-200/60 dark:border-purple-800";
       default:
-        return "bg-gray-50 dark:bg-gray-900/20 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700";
+        return "bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-300 border-slate-200/60 dark:border-slate-700";
     }
   };
 
-  // Sample contexts with better data structure
-  const availableContexts: Context[] = [
-    {
-      id: "1",
-      name: "تقرير المشروع Q4",
-      content: "تقرير ربعي شامل...",
-      type: "file",
-      size: "2.4 MB",
-      preview: "تحليل الأداء المالي والتشغيلي للربع الأخير...",
-    },
-    {
-      id: "2",
-      name: "دليل واجهة المستخدم",
-      content: "دليل التصميم...",
-      type: "file",
-      size: "856 KB",
-      preview: "إرشادات التصميم والألوان والخطوط...",
-    },
-    {
-      id: "3",
-      name: "صورة النموذج الأولي",
-      content: "نموذج التصميم",
-      type: "image",
-      size: "1.2 MB",
-      preview: "صورة توضيحية للتصميم المقترح",
-    },
-    {
-      id: "4",
-      name: "وثائق API",
-      content: "https://api.example.com/docs",
-      type: "url",
-      preview: "دليل مطور واجهة البرمجة الكامل",
-    },
-  ];
+  const getModelColorClass = (color?: string) => {
+    switch (color) {
+      case "emerald":
+        return "bg-emerald-500";
+      case "blue":
+        return "bg-blue-500";
+      case "purple":
+        return "bg-purple-500";
+      default:
+        return "bg-emerald-500";
+    }
+  };
 
-  const filteredContexts = availableContexts.filter(
-    (context) =>
-      context.name.toLowerCase().includes(contextSearch.toLowerCase()) ||
-      context.preview?.toLowerCase().includes(contextSearch.toLowerCase())
-  );
+  const getModelIcon = (speed?: string) => {
+    switch (speed) {
+      case "fast":
+        return <Zap className="w-3.5 h-3.5" />;
+      case "precise":
+        return <Brain className="w-3.5 h-3.5" />;
+      default:
+        return <Sparkles className="w-3.5 h-3.5" />;
+    }
+  };
 
   return (
-    <div ref={containerRef} className={`relative group mx-auto ${className}`}>
-      {/* Context Pills - More modern design */}
-      {selectedContexts.length > 0 && (
-        <div className="mb-3" dir="rtl">
-          <div className="flex flex-wrap gap-2">
-            {selectedContexts.map((context) => (
-              <Badge
-                key={context.id}
-                variant="secondary"
-                className={`${getContextColor(
-                  context.type
-                )} pl-2 pr-3 py-1.5 text-xs font-medium rounded-lg border transition-all hover:shadow-sm`}
-              >
-                <div className="flex items-center gap-1.5">
-                  {getContextIcon(context.type)}
-                  <span className="max-w-32 truncate">{context.name}</span>
-                  <button
-                    onClick={() => removeContext(context.id)}
-                    className="ml-1 hover:bg-black/10 dark:hover:bg-white/10 rounded p-0.5 transition-colors"
-                    aria-label={`إزالة ${context.name}`}
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              </Badge>
-            ))}
-          </div>
+    <div
+      className={`relative w-full mx-auto ${className}`}
+      dir={isRTL ? "rtl" : "ltr"}
+    >
+      {/* Context Pills - Better Animation */}
+      <div
+        className={`transition-all duration-300 ease-out overflow-hidden ${
+          selectedContexts.length > 0
+            ? "max-h-48 opacity-100 mb-4"
+            : "max-h-0 opacity-0 mb-0"
+        } ${isRTL ? "mr-1" : "ml-1"}`}
+      >
+        <div className="flex flex-wrap gap-2 pt-1">
+          {selectedContexts.map((context, index) => (
+            <Badge
+              key={context.id}
+              variant="secondary"
+              className={`
+                ${getContextColor(context.type)} 
+                px-3 py-2 text-sm font-medium rounded-xl border
+                transition-all duration-300 cursor-default backdrop-blur-sm
+                transform translate-y-0 opacity-100
+              `}
+              style={{
+                animationDelay: `${index * 50}ms`,
+              }}
+            >
+              <div className="flex items-center gap-2">
+                {getContextIcon(context.type)}
+                <span className="max-w-32 truncate font-medium">
+                  {context.name}
+                </span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeContext(context.id);
+                  }}
+                  className="p-0.5 rounded-md hover:bg-black/10 dark:hover:bg-white/10 transition-colors duration-200"
+                  aria-label={`${isRTL ? "إزالة" : "Remove"} ${context.name}`}
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </Badge>
+          ))}
         </div>
-      )}
+      </div>
 
       {/* Main Input Container */}
-      <div className="relative">
+      <div
+        ref={containerRef}
+        className="relative"
+        onClick={handleContainerClick}
+      >
         <div
-          className={`relative rounded-2xl border transition-all duration-200 ${
-            isFocused
-              ? "border-gray-300 dark:border-gray-600 shadow-lg ring-4 ring-blue-50 dark:ring-blue-900/20"
-              : "border-gray-200 dark:border-gray-800 shadow-sm hover:border-gray-300 dark:hover:border-gray-700"
-          } bg-white dark:bg-gray-900`}
+          className={`
+            relative rounded-3xl border overflow-hidden
+            transition-all duration-300 ease-out
+            ${
+              isFocused
+                ? "border-gray-300 dark:border-gray-500/50 shadow-lg shadow-gray-200/50 dark:shadow-gray-800/50"
+                : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 shadow-sm hover:shadow-md"
+            }
+            bg-white dark:bg-gray-900
+          `}
         >
-          {/* Textarea */}
-          <textarea
-            ref={textAreaRef}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => {
-              setTimeout(() => {
-                if (!containerRef.current?.contains(document.activeElement)) {
-                  setIsFocused(false);
-                }
-              }, 100);
-            }}
-            onKeyDown={handleKeyDown}
-            placeholder={placeholder}
-            dir="rtl"
-            className="w-full px-4 pr-4 pl-20 py-3 text-base bg-transparent border-0 resize-none focus:outline-none placeholder:text-gray-400 dark:text-white dark:placeholder:text-gray-500 transition-all duration-200"
-            style={{ minHeight: "56px", maxHeight: "200px" }}
-            rows={1}
-          />
+          {/* Input Area */}
+          <div className="relative flex items-center min-h-[56px]">
+            <textarea
+              ref={textAreaRef}
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+              onKeyDown={handleKeyDown}
+              placeholder={actualPlaceholder}
+              dir={isRTL ? "rtl" : "ltr"}
+              className={`
+                flex-1 text-base bg-transparent border-0 resize-none focus:outline-none 
+                ${isRTL ? "text-right pr-6 pl-16" : "text-left pl-6 pr-16"}
+                placeholder:text-gray-400 dark:placeholder:text-gray-500
+                text-gray-900 dark:text-gray-100
+                leading-relaxed transition-all duration-200
+                py-4
+              `}
+              style={{
+                minHeight: "56px",
+                maxHeight: "160px",
+                lineHeight: "1.6",
+              }}
+              rows={1}
+            />
 
-          {/* Bottom Controls Bar */}
-          <div className="flex items-center justify-between px-3 py-2 border-t border-gray-100 dark:border-gray-800">
-            {/* Left side - Context and Model selectors */}
-            <div className="flex items-center gap-2">
-              {/* Context Selector */}
-              <Popover
-                open={isContextPopoverOpen}
-                onOpenChange={setIsContextPopoverOpen}
+            {/* Send Button */}
+            <div
+              className={`absolute top-1/2 -translate-y-1/2 ${
+                isRTL ? "left-4" : "right-4"
+              }`}
+            >
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  submit();
+                }}
+                disabled={!value?.trim()}
+                size="sm"
+                className={`
+                  h-8 w-8 rounded-xl font-medium
+                  transition-all duration-300 ease-out
+                  ${
+                    value?.trim()
+                      ? "bg-zinc-600 hover:bg-zinc-700 dark:bg-zinc-600 dark:hover:bg-zinc-700 text-white hover:scale-105 active:scale-95"
+                      : "bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed"
+                  }
+                `}
               >
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 px-3 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800"
-                  >
-                    <Paperclip className="w-4 h-4 ml-1" />
-                    <span>سياق</span>
-                    {selectedContexts.length > 0 && (
-                      <Badge
-                        variant="secondary"
-                        className="mr-1 h-5 min-w-5 px-1.5 text-xs"
-                      >
-                        {selectedContexts.length}
-                      </Badge>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent
-                  className="w-80 p-0"
-                  align="start"
-                  side="bottom"
-                  sideOffset={8}
-                >
-                  <div className="p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Search className="w-4 h-4 text-gray-400" />
-                      <input
-                        type="text"
-                        placeholder="البحث في السياق..."
-                        value={contextSearch}
-                        onChange={(e) => setContextSearch(e.target.value)}
-                        className="flex-1 text-sm bg-transparent border-0 focus:outline-none placeholder:text-gray-400"
-                        dir="rtl"
-                      />
-                    </div>
+                <ArrowUp className="w-3 h-3" />
+              </Button>
+            </div>
+          </div>
 
-                    <div className="space-y-2 max-h-64 overflow-y-auto">
-                      {filteredContexts.map((context) => {
-                        const isSelected = selectedContexts.some(
-                          (c) => c.id === context.id
-                        );
+          {/* Expanded Section - Fixed Animation */}
+          <div
+            className={`
+              overflow-hidden transition-all duration-500 ease-out
+              ${isExpanded ? "max-h-32 opacity-100" : "max-h-0 opacity-0"}
+            `}
+          >
+            <div
+              ref={expandedContentRef}
+              className={`
+                flex items-center justify-between px-4 py-3 border-t border-gray-100 dark:border-gray-800
+                bg-gray-50/50 dark:bg-gray-800/30 backdrop-blur-sm
+                transition-all duration-300 ease-out
+                ${
+                  isExpanded
+                    ? "transform translate-y-0"
+                    : "transform -translate-y-2"
+                }
+              `}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-3">
+                {/* Model Selector */}
+                <Popover
+                  open={isModelPopoverOpen}
+                  onOpenChange={setIsModelPopoverOpen}
+                >
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsModelPopoverOpen(!isModelPopoverOpen);
+                      }}
+                      className="h-9 px-3 text-sm bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 
+                               rounded-xl text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 
+                               transition-all duration-200 font-medium border border-gray-200 dark:border-gray-700
+                               hover:scale-[1.02] active:scale-[0.98]"
+                    >
+                      <div className="flex items-center gap-2">
+                        {getModelIcon(selectedModel.speed)}
+                        <div
+                          className={`w-2 h-2 rounded-full transition-all duration-200 ${getModelColorClass(
+                            selectedModel.color
+                          )}`}
+                        />
+                        <span>{selectedModel.name}</span>
+                        <ChevronDown
+                          className={`w-3 h-3 opacity-60 transition-transform duration-200 ${
+                            isModelPopoverOpen ? "rotate-180" : "rotate-0"
+                          }`}
+                        />
+                      </div>
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    className="w-80 p-2 border border-gray-200 dark:border-gray-700 rounded-xl 
+                             bg-white dark:bg-gray-900 shadow-xl backdrop-blur-sm
+                             animate-in slide-in-from-bottom-2 fade-in-0 duration-300"
+                    align={isRTL ? "end" : "start"}
+                    side="top"
+                    sideOffset={8}
+                    onOpenAutoFocus={(e) => e.preventDefault()}
+                    onCloseAutoFocus={(e) => e.preventDefault()}
+                  >
+                    <div
+                      className="space-y-1"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                        {isRTL ? "اختر النموذج" : "Select Model"}
+                      </div>
+                      {models.map((model) => {
+                        const isActive = selectedModel.id === model.id;
                         return (
                           <button
-                            key={context.id}
-                            onClick={() => handleContextToggle(context)}
-                            className={`w-full p-3 text-right rounded-lg border transition-all hover:shadow-sm ${
-                              isSelected
-                                ? getContextColor(context.type)
-                                : "bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-700"
-                            }`}
-                            dir="rtl"
+                            key={model.id}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleModelSelect(model);
+                            }}
+                            className={`
+                              w-full p-3 text-sm rounded-lg font-medium text-left
+                              transition-all duration-200 ease-out
+                              hover:scale-[1.01] active:scale-[0.99]
+                              ${
+                                isActive
+                                  ? "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm"
+                                  : "hover:bg-gray-50 dark:hover:bg-gray-800/50 text-gray-700 dark:text-gray-300"
+                              }
+                            `}
                           >
-                            <div className="flex items-start gap-3">
-                              <div className="mt-0.5">
-                                {getContextIcon(context.type)}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between mb-1">
-                                  <h4 className="text-sm font-medium truncate">
-                                    {context.name}
-                                  </h4>
-                                  {context.size && (
-                                    <span className="text-xs text-gray-500">
-                                      {context.size}
-                                    </span>
-                                  )}
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                {getModelIcon(model.speed)}
+                                <div>
+                                  <div className="font-semibold">
+                                    {model.name}
+                                  </div>
+                                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                                    {model.description}
+                                  </div>
                                 </div>
-                                {context.preview && (
-                                  <p className="text-xs text-gray-600 dark:text-gray-400 text-right truncate">
-                                    {context.preview}
-                                  </p>
-                                )}
                               </div>
+                              <div
+                                className={`w-2 h-2 rounded-full transition-all duration-200 ${getModelColorClass(
+                                  model.color
+                                )}`}
+                              />
                             </div>
                           </button>
                         );
                       })}
                     </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
-
-              {/* Model Selector */}
-              <Popover
-                open={isModelPopoverOpen}
-                onOpenChange={setIsModelPopoverOpen}
-              >
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 px-3 text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800"
-                  >
-                    <div
-                      className={`w-2 h-2 rounded-full bg-${
-                        selectedModel.color || "emerald"
-                      }-500 ml-1`}
-                    />
-                    <span>{selectedModel.name}</span>
-                    <ChevronDown className="w-3 h-3 mr-1" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent
-                  className="w-56 p-2"
-                  align="start"
-                  side="bottom"
-                  sideOffset={8}
-                >
-                  <div className="space-y-1">
-                    {models.map((model) => {
-                      const isActive = selectedModel.id === model.id;
-                      return (
-                        <button
-                          key={model.id}
-                          onClick={() => handleModelSelect(model)}
-                          className={`w-full text-right p-2 text-sm rounded flex items-center justify-between transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 ${
-                            isActive ? "bg-gray-100 dark:bg-gray-800" : ""
-                          }`}
-                          dir="rtl"
-                        >
-                          <span>{model.name}</span>
-                          <div
-                            className={`w-2 h-2 rounded-full bg-${
-                              model.color || "emerald"
-                            }-500`}
-                          />
-                        </button>
-                      );
-                    })}
-                  </div>
-                </PopoverContent>
-              </Popover>
+                  </PopoverContent>
+                </Popover>
+              </div>
             </div>
-
-            {/* Right side - Send button with black styling */}
-            <Button
-              onClick={submit}
-              disabled={!value?.trim()}
-              size="sm"
-              className={`h-8 w-8 rounded-lg transition-all ${
-                value?.trim()
-                  ? "bg-black hover:bg-gray-800 dark:bg-black dark:hover:bg-gray-900 text-white shadow-lg hover:shadow-xl"
-                  : "bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed"
-              }`}
-            >
-              <ArrowUp className="w-4 h-4" />
-            </Button>
           </div>
         </div>
       </div>

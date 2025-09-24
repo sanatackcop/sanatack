@@ -1,5 +1,7 @@
 {
   "common": {
+    "creating": "Creating",
+    "deleting": "Deleting",
     "save": "Save",
     "calendar": "Calendar",
     "cancel": "Cancel",
@@ -302,5 +304,47 @@
       "recordingUploadFailed": "Recording upload failed",
       "connectionFailed": "Unable to connect to server"
     }
+  },
+  "upgradeBanner": {
+    "title": "Upgrade",
+    "description": "Get access to all features",
+    "usagePercentage": "{{percentage}}% used",
+    "upgradeButton": "Upgrade",
+    "close": "Close",
+    "variants": {
+      "warning": {
+        "title": "Upgrade",
+        "description": "Get access to all features and benefits"
+      },
+      "premium": {
+        "title": "Go Premium",
+        "description": "Unlock unlimited access"
+      },
+      "info": {
+        "title": "Free Tier",
+        "description": "Limited daily usage"
+      },
+      "success": {
+        "title": "Pro Plan",
+        "description": "You have unlimited access"
+      }
+    }
+  },
+  "emptyState": {
+    "title": "Add content to get started",
+    "description": "Learn smart and customize your experience with your industry.",
+    "supportedFormats": "Supported formats: PDF, DOCX, article links, and voice notes."
+  },
+  "space": {
+    "empty": {
+      "title": "Add content to this space",
+      "description": "Learn smart and customize your experience with your industry.",
+      "supportedFormats": "Supported formats: PDF, DOCX, article links, and voice notes."
+    }
+  },
+  "actions": {
+    "uploadFile": "Upload File",
+    "pasteLink": "Paste Link",
+    "record": "Record"
   }
 }

@@ -39,7 +39,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
     <div className="min-h-screen">
       {navbar && <div>{navbar}</div>}
 
-      <main className={`p-2 sm:p-4 min-h-screen dark:bg-gray-900 ${className}`}>
+      <main className={`min-h-screen dark:bg-gray-900 ${className}`}>
         {title && <h1 className="text-3xl  pr-10 font-bold mb-4">{title}</h1>}
         <div className="mb-4">{actionButtons}</div>
         <div>{children}</div>

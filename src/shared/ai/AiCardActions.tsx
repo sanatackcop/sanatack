@@ -21,7 +21,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -452,8 +451,6 @@ export default function AiCardActions() {
     });
   }
 
-  const soonFeaturesActive = true;
-
   const [, setCurrentModel] = useState(null);
 
   const models = [
@@ -475,31 +472,16 @@ export default function AiCardActions() {
     <div className="px-24 mt-10 mb-20 transition-colors">
       <CardContent
         className={
-          "p-6 md:p-10 " +
+          "p-6 px-64 py-10 " +
           (builderActive
             ? "border-2 border-zinc-200 bg-[#fbfbfa] dark:border-zinc-800 rounded-3xl"
             : "")
         }
       >
         <header className="mb-2">
-          {soonFeaturesActive && (
-            <div className="flex justify-center mb-8">
-              <Badge
-                variant="secondary"
-                className="rounded-full px-3 py-1 text-sm"
-              >
-                {t("aiActions.featuresComingSoon")}
-              </Badge>
-            </div>
-          )}
-          <h1
-            className={`text-center text-3xl md:text-[44px] font-extrabold mb-2`}
-          >
+          <h1 className={`text-center text-xl md:text-[34px] font-medium mb-2`}>
             {t("aiActions.mainTitle")}
           </h1>
-          <p className={`mb-6 text-center text-gray-600 dark:text-gray-300`}>
-            {t("aiActions.subtitle")}
-          </p>
         </header>
 
         {(builderActive || isGenerating) && (
@@ -519,45 +501,31 @@ export default function AiCardActions() {
         {!builderActive && !isGenerating && (
           <>
             <div
-              className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-8 text-center mt-10 ${getTextAlignment()}`}
+              className={[
+                "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8 mb-2",
+                getTextAlignment(),
+              ].join(" ")}
             >
               <ActionTile
                 title={t("aiActions.upload.title")}
                 subtitle={t("aiActions.upload.subtitle")}
                 onClick={() => setActiveModal("upload")}
-                icon={
-                  <UploadCloud
-                    className={`h-6 w-6 ${isRTL ? "ml-2" : "mr-2"}`}
-                  />
-                }
+                Icon={UploadCloud}
               />
 
               <ActionTile
                 title={t("aiActions.paste.title")}
                 subtitle={t("aiActions.paste.subtitle")}
                 onClick={() => setActiveModal("paste")}
-                icon={
-                  <Link2 className={`h-6 w-6 ${isRTL ? "ml-2" : "mr-2"}`} />
-                }
+                Icon={Link2}
               />
 
-              <SoonTile
-                title={t("aiActions.record.title")}
-                subtitle={t("aiActions.record.subtitle")}
-                tooltip=""
-                icon={<Mic className={`h-6 w-6 ${isRTL ? "ml-2" : "mr-2"}`} />}
-              />
-
-              <SoonTile
+              <ActionTile
                 title={t("aiActions.createCourse.title")}
                 subtitle={t("aiActions.createCourse.subtitle")}
-                tooltip=""
-                icon={
-                  <BookOpen className={`h-6 w-6 ${isRTL ? "ml-2" : "mr-2"}`} />
-                }
+                Icon={BookOpen}
               />
             </div>
-
             <ChatInput
               value={query}
               onChange={setQuery}
@@ -1281,87 +1249,48 @@ function ActionTile({
   title,
   subtitle,
   onClick,
-  icon,
+  Icon,
 }: {
   title: string;
   subtitle: string;
   onClick?: () => void;
-  icon: React.ReactNode;
+  Icon: any;
 }) {
   const { i18n } = useTranslation();
   const isRTL = i18n.language === "ar";
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`relative h-[88px] w-full rounded-2xl border shadow-sm flex items-center gap-3 px-6 transition-all dark:bg-gray-900 dark:border-gray-800 bg-white border-gray-200 hover:shadow-md hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-        isRTL ? "justify-end text-right" : "justify-start text-left"
-      }`}
-    >
-      <div className={`flex flex-col ${isRTL ? "items-end" : "items-start"}`}>
-        <div className="text-base font-semibold">{title}</div>
-        <div className="text-sm text-gray-500">{subtitle}</div>
-      </div>
-      {icon}
-    </button>
-  );
-}
-
-function SoonTile({
-  title,
-  subtitle,
-  tooltip,
-  icon,
-  children,
-}: {
-  title: string;
-  subtitle: string;
-  tooltip: string;
-  icon: React.ReactNode;
-  children?: React.ReactNode;
-}) {
-  const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === "ar";
-
-  return (
-    <TooltipProvider delayDuration={150}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className="relative">
-            <button
-              type="button"
-              disabled
-              aria-disabled
-              className={`h-[88px] w-full rounded-2xl border shadow-sm flex items-center gap-3 px-6 transition-all bg-gray-50 dark:bg-gray-800 border-dashed border-gray-300 dark:border-gray-700 select-none ${
-                isRTL ? "justify-end text-right" : "justify-start text-left"
+    <>
+      <div>
+        <div
+          onClick={onClick}
+          className={`group relative px-5 p-4 w-full sm:h-[112px] flex flex-col sm:flex-col items-start justify-center gap-y-1 rounded-2xl border shadow-sm 
+            cursor-pointer transition-all dark:bg-gray-900 dark:border-gray-800 bg-white border-gray-200
+            hover:shadow-md hover:border-gray-300 dark:hover:border-gray-700
+            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+              isRTL ? "justify-end text-right" : "justify-start text-left"
+            }`}
+        >
+          <div
+            className={`flex items-center gap-x-3 sm:block space-y-2 ${
+              isRTL ? "items-end" : "items-start"
+            }`}
+          >
+            <Icon
+              className={`h-[24px] w-[24px] text-gray-500 opacity-85 group-hover:text-gray-800 group-hover:opacity-100 dark:text-gray-400 dark:group-hover:text-gray-200 transition-all duration-200 ${
+                isRTL ? "ml-2" : "mr-2"
               }`}
-            >
-              <div
-                className={`flex flex-col opacity-70 ${
-                  isRTL ? "items-end" : "items-start"
-                }`}
-              >
-                <div className="text-base font-semibold">{title}</div>
-                <div className="text-sm text-gray-500">{subtitle}</div>
-              </div>
-              {icon}
-              <Badge
-                className={`absolute -top-2 rounded-full ${
-                  isRTL ? "-right-2" : "-left-2"
-                }`}
-              >
-                {t("aiActions.comingSoon")}
-              </Badge>
-            </button>
-            {children}
+            />
+            <h3 className="font-medium text-sm sm:text-base text-left text-gray-600 opacity-90 group-hover:text-gray-900 group-hover:opacity-100 dark:text-gray-300 dark:group-hover:text-gray-100 transition-all duration-200">
+              {title}
+            </h3>
+            <div className="text-sm text-gray-500 opacity-85 group-hover:text-gray-800 group-hover:opacity-100 dark:text-gray-400 dark:group-hover:text-gray-200 transition-all duration-200">
+              {subtitle}
+            </div>
           </div>
-        </TooltipTrigger>
-        <TooltipContent side="top" align="center">
-          <p>{tooltip}</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+        </div>
+      </div>
+    </>
   );
 }
 

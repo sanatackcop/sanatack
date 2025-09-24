@@ -1,5 +1,7 @@
 {
   "common": {
+    "creating": "جارٍ الإنشاء…",
+    "deleting": "جاري المسح",
     "calendar": "التقويم",
     "save": "حفظ",
     "cancel": "إلغاء",
@@ -303,5 +305,48 @@
       "recordingUploadFailed": "فشل في رفع التسجيل",
       "connectionFailed": "تعذر الاتصال بالخادم"
     }
+  },
+  "upgradeBanner": {
+    "title": "ترقية",
+    "description": "احصل على جميع المميزات",
+    "usagePercentage": "تم استخدام {{percentage}}%",
+    "upgradeButton": "ترقية",
+    "close": "إغلاق",
+    "variants": {
+      "warning": {
+        "title": "ترقية",
+        "description": "احصل على جميع المميزات والفوائد"
+      },
+      "premium": {
+        "title": "اشتراك مميز",
+        "description": "فتح وصول غير محدود"
+      },
+      "info": {
+        "title": "الخطة المجانية",
+        "description": "استخدام يومي محدود"
+      },
+      "success": {
+        "title": "الخطة الاحترافية",
+        "description": "لديك وصول غير محدود"
+      }
+    }
+  },
+
+  "emptyState": {
+    "title": "أضف محتوى للبدء",
+    "description": "تعلّم بذكاء وخصِّص تجربتك مع صناعتك.",
+    "supportedFormats": "الصيغ المدعومة: PDF, DOCX, روابط المقالات، والملاحظات الصوتية."
+  },
+  "space": {
+    "empty": {
+      "title": "أضف محتوى إلى هذه المساحة",
+      "description": "تعلّم بذكاء وخصِّص تجربتك مع صناعتك.",
+      "supportedFormats": "الصيغ المدعومة: PDF, DOCX, روابط المقالات، والملاحظات الصوتية."
+    }
+  },
+  "actions": {
+    "uploadFile": "رفع ملف",
+    "pasteLink": "لصق رابط",
+    "record": "تسجيل"
   }
 }
