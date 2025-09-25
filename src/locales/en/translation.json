@@ -28,7 +28,9 @@
     "share": "Share",
     "copy": "Copy",
     "paste": "Paste",
-    "cut": "Cut"
+    "cut": "Cut",
+    "comingSoon": "Soon",
+    "tabContent": "{{tab}} content will appear here"
   },
   "theme": {
     "light": "Light",
@@ -123,7 +125,10 @@
     "forbidden": "Forbidden",
     "notFound": "Not Found",
     "validationError": "Validation Error",
-    "unknownError": "Unknown Error"
+    "unknownError": "Unknown Error",
+    "youtubePlayerError": "YouTube Player Error:",
+    "loadingHighlights": "Error loading highlights",
+    "savingHighlights": "Error saving highlights"
   },
   "user": {
     "userName": "Osama Zaid",
@@ -345,6 +350,43 @@
   "actions": {
     "uploadFile": "Upload File",
     "pasteLink": "Paste Link",
-    "record": "Record"
+    "record": "Record",
+    "explainText": "Please explain the following selected text:\n\n\"{{text}}\"\n\n",
+    "addToChat": "Add to chat",
+    "highlight": "Highlight",
+    "nextPage": "Next page",
+    "previousPage": "Previous page",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "resetZoom": "Reset zoom"
+  },
+  "tabs": {
+    "transcript": "Chat",
+    "explanation": "Cards",
+    "chat": "Chat",
+    "flashcards": "Flashcards",
+    "quizzes": "Quizzes",
+    "summary": "Summary",
+    "notes": "Notes",
+    "charts": "Charts",
+    "mindmaps": "Mind Maps",
+    "audio": "Audio Generation"
+  },
+  "loading": {
+    "video": "Loading video..."
+  },
+  "player": {
+    "controls": {
+      "play": "Play",
+      "pause": "Pause",
+      "volume": "Volume",
+      "fullscreen": "Fullscreen",
+      "settings": "Settings"
+    },
+    "states": {
+      "buffering": "Buffering...",
+      "error": "Error loading video",
+      "ready": "Ready to play"
+    }
   }
 }

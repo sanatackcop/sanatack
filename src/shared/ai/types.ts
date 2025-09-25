@@ -71,4 +71,5 @@ export type Action =
   | { type: "ADD_TO_CHAT"; text: string }
   | { type: "SET_YOUTUBE_VIDEO"; videoId: string }
   | { type: "SET_YOUTUBE_TIME"; currentTime: number; duration: number }
-  | { type: "SET_YOUTUBE_PLAYING"; isPlaying: boolean };
+  | { type: "SET_YOUTUBE_PLAYING"; isPlaying: boolean }
+  | { type: "REORDER_TABS"; newOrder: string[] }; // <-- Add this line

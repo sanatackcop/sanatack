@@ -28,7 +28,9 @@
     "share": "مشاركة",
     "copy": "نسخ",
     "paste": "لصق",
-    "cut": "قص"
+    "cut": "قص",
+    "comingSoon": "قريباً",
+    "tabContent": "محتوى {{tab}} سيظهر هنا"
   },
   "theme": {
     "light": "فاتح",
@@ -124,7 +126,8 @@
     "forbidden": "ممنوع",
     "notFound": "غير موجود",
     "validationError": "خطأ في التحقق",
-    "unknownError": "خطأ غير معروف"
+    "unknownError": "خطأ غير معروف",
+    "youtubePlayerError": "خطأ في مشغل يوتيوب:"
   },
   "user": {
     "userName": "أسامة زيد",
@@ -303,7 +306,9 @@
       "processingFailed": "فشل في معالجة المحتوى",
       "microphoneAccess": "فشل في الوصول للميكروفون",
       "recordingUploadFailed": "فشل في رفع التسجيل",
-      "connectionFailed": "تعذر الاتصال بالخادم"
+      "connectionFailed": "تعذر الاتصال بالخادم",
+      "loadingHighlights": "خطأ في تحميل التمييزات",
+      "savingHighlights": "خطأ في حفظ التمييزات"
     }
   },
   "upgradeBanner": {
@@ -347,6 +352,43 @@
   "actions": {
     "uploadFile": "رفع ملف",
     "pasteLink": "لصق رابط",
-    "record": "تسجيل"
+    "record": "تسجيل",
+    "explainText": "يرجى شرح النص المحدد التالي:\n\n\"{{text}}\"\n\n",
+    "addToChat": "إضافة للدردشة",
+    "highlight": "تمييز",
+    "nextPage": "الصفحة التالية",
+    "previousPage": "الصفحة السابقة",
+    "zoomIn": "تكبير",
+    "zoomOut": "تصغير",
+    "resetZoom": "إعادة تعيين التكبير"
+  },
+  "tabs": {
+    "transcript": "دردشة",
+    "explanation": "بطاقات",
+    "chat": "دردشة",
+    "flashcards": "بطاقات",
+    "quizzes": "اختبارات",
+    "summary": "ملخص",
+    "notes": "ملاحظات",
+    "charts": "الرسوم البيانية",
+    "mindmaps": "الخرائط الذهنية",
+    "audio": "توليد الصوت"
+  },
+  "loading": {
+    "video": "جارِ تحميل الفيديو..."
+  },
+  "player": {
+    "controls": {
+      "play": "تشغيل",
+      "pause": "إيقاف مؤقت",
+      "volume": "مستوى الصوت",
+      "fullscreen": "ملء الشاشة",
+      "settings": "الإعدادات"
+    },
+    "states": {
+      "buffering": "جارِ التحميل...",
+      "error": "خطأ في تحميل الفيديو",
+      "ready": "جاهز للتشغيل"
+    }
   }
 }
