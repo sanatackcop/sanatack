@@ -186,7 +186,7 @@
     },
     "paste": {
       "title": "Paste",
-      "subtitle": "YouTube, website, text"
+      "subtitle": "YouTube, Website Video"
     },
     "record": {
       "title": "Record",
@@ -361,8 +361,8 @@
     "resetZoom": "Reset zoom"
   },
   "tabs": {
-    "transcript": "Chat",
-    "explanation": "Cards",
+    "transcript": "Transcript",
+    "explanation": "Deep explain",
     "chat": "Chat",
     "flashcards": "Flashcards",
     "quizzes": "Quizzes",

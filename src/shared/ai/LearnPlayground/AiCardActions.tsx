@@ -53,7 +53,12 @@ import {
   Globe,
 } from "lucide-react";
 import { aiCourseGenerator } from "@/utils/_apis/courses-apis";
-import ChatInput from "./chatInput";
+import CircularProgress from "@mui/material/CircularProgress";
+import {
+  createNewWorkSpace,
+  youtubeUrlPastApi,
+} from "@/utils/_apis/learnPlayground-api";
+import ChatInput from "./chat/chatInput";
 
 type Level = "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
 type Pace = "EASY" | "BALANCED" | "INTENSE";
@@ -262,18 +267,25 @@ export default function AiCardActions() {
     }
   }
 
-  // Paste handlers
   async function handlePasteSubmit() {
     if (!pasteState.url && !pasteState.text) return;
 
     setPasteState((prev) => ({ ...prev, isProcessing: true, error: null }));
 
     try {
-      // Replace with actual processing API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // We take the input and see if we can process it or not
+      const getYoutubeVIdeo: any = await youtubeUrlPastApi({
+        url: pasteState.url,
+      });
 
-      // Navigate to learning playground after success
-      navigate("/learning-playground");
+      console.log({ getYoutubeVIdeo });
+
+      // we create a new workspace for the new content learn
+      const workSpace: any = await createNewWorkSpace({
+        youtubeVideoId: getYoutubeVIdeo.id,
+        workspaceName: getYoutubeVIdeo.info.title,
+      });
+      navigate(`/dashboard/learn/workspace/${workSpace.workspace.id}`);
     } catch (error: any) {
       setPasteState((prev) => ({
         ...prev,
@@ -430,7 +442,6 @@ export default function AiCardActions() {
   function closeModal() {
     setActiveModal(null);
     setBuilderActive(false);
-    // Reset all states
     setUploadState({
       files: [],
       isUploading: false,
@@ -469,10 +480,10 @@ export default function AiCardActions() {
   };
 
   return (
-    <div className="px-24 mt-10 mb-20 transition-colors">
+    <div className="px-14 mt-10 transition-colors">
       <CardContent
         className={
-          "p-6 px-64 py-10 " +
+          "p-6 px-96 py-10 " +
           (builderActive
             ? "border-2 border-zinc-200 bg-[#fbfbfa] dark:border-zinc-800 rounded-3xl"
             : "")
@@ -694,36 +705,8 @@ export default function AiCardActions() {
                     className={`absolute top-1/2 -translate-y-1/2 flex gap-1 ${
                       isRTL ? "right-3" : "left-3"
                     }`}
-                  >
-                    <Youtube className="h-4 w-4 text-gray-400" />
-                    <Globe className="h-4 w-4 text-gray-400" />
-                  </div>
+                  ></div>
                 </div>
-              </div>
-
-              <div
-                className={`text-center text-gray-500 ${getTextAlignment()}`}
-              >
-                {t("aiActions.dialogs.paste.or")}
-              </div>
-
-              <div>
-                <Label
-                  htmlFor="text"
-                  className={`block mb-2 ${getTextAlignment()}`}
-                >
-                  {t("aiActions.dialogs.paste.textLabel")}
-                </Label>
-                <Textarea
-                  id="text"
-                  placeholder={t("aiActions.dialogs.paste.textPlaceholder")}
-                  value={pasteState.text}
-                  onChange={(e) =>
-                    setPasteState((prev) => ({ ...prev, text: e.target.value }))
-                  }
-                  className={`min-h-[120px] ${getTextAlignment()}`}
-                  dir={isRTL ? "rtl" : "ltr"}
-                />
               </div>
 
               {pasteState.error && (
@@ -750,6 +733,11 @@ export default function AiCardActions() {
                   pasteState.isProcessing
                 }
               >
+                {pasteState.isProcessing && (
+                  <div>
+                    <CircularProgress />
+                  </div>
+                )}
                 {pasteState.isProcessing
                   ? t("aiActions.dialogs.paste.processing")
                   : t("aiActions.dialogs.paste.processContent")}

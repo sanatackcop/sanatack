@@ -17,12 +17,16 @@ import {
   MessageCircle,
   ChevronRight,
   ChevronLeft,
-  HomeIcon,
   MapIcon,
   Globe,
   Monitor,
   BoxIcon,
   CalendarDaysIcon,
+  FileText,
+  Play,
+  Clock,
+  PlaySquare,
+  PlaySquareIcon,
 } from "lucide-react";
 import LogoLight from "@/assets/logo.svg";
 import LogoDark from "@/assets/dark_logo.svg";
@@ -48,6 +52,7 @@ import {
 } from "@/components/ui/tooltip";
 import { createSpacesApi, getAllSpacesApi } from "@/utils/_apis/courses-apis";
 import { useSettings } from "@/context/SettingsContexts";
+import { getAllWorkSpace } from "@/utils/_apis/learnPlayground-api";
 
 interface MenuItem {
   title: string;
@@ -57,6 +62,19 @@ interface MenuItem {
   isNew?: boolean;
   isPremium?: boolean;
   isSoon?: boolean;
+}
+
+interface Workspace {
+  id: string;
+  title?: string;
+  youtubeUrl?: string;
+  contentType: "youtube" | "pdf";
+  pdfUrl?: string;
+  createdAt: string;
+  updatedAt: string;
+  thumbnail?: string;
+  duration?: string;
+  progress?: number;
 }
 
 type RawSpace = { id: string; name: string; description?: string | null };
@@ -73,8 +91,12 @@ export function AppSidebar() {
   const [creating, setCreating] = useState<boolean>(false);
   const [openCreate, setOpenCreate] = useState(false);
   const [newName, setNewName] = useState("");
-  const [recents] = useState<MenuItem[]>([]);
   const [showAllSpaces, setShowAllSpaces] = useState(false);
+
+  // Recent workspaces state
+  const [workspaces, setWorkspaces] = useState<Workspace[] | null>(null);
+  const [loadingRecent, setLoadingRecent] = useState<boolean>(true);
+  const [showAllRecent, setShowAllRecent] = useState(false);
 
   const [isCollapsed, setIsCollapsed] = useState<boolean>(() => {
     try {
@@ -86,6 +108,7 @@ export function AppSidebar() {
   const [isHovering, setIsHovering] = useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   const isRTL = i18n.language === "ar";
 
@@ -145,9 +168,9 @@ export function AppSidebar() {
   const topItems = useMemo(
     (): MenuItem[] => [
       {
-        title: t("sidebar.home"),
+        title: "Add Content",
         url: "/dashboard/overview",
-        icon: HomeIcon,
+        icon: Plus,
         isPremium: false,
       },
       {
@@ -258,6 +281,49 @@ export function AppSidebar() {
     }
   };
 
+  // Fetch recent workspaces
+  const fetchRecent = async () => {
+    try {
+      setLoadingRecent(true);
+
+      const { workspaces: fetchedWorkspaces } = await getAllWorkSpace();
+
+      // Sort by updatedAt to show most recent first
+      const sortedWorkspaces =
+        fetchedWorkspaces?.sort(
+          (a: Workspace, b: Workspace) =>
+            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+        ) || [];
+
+      setWorkspaces(sortedWorkspaces);
+    } catch (err) {
+      console.error("Failed to fetch workspaces:", err);
+      setWorkspaces([]);
+    } finally {
+      setLoadingRecent(false);
+    }
+  };
+
+  // Fetch recent workspaces on mount
+  useEffect(() => {
+    fetchRecent();
+  }, []);
+
+  // Helper function to get workspace display title
+  const getWorkspaceTitle = (workspace: Workspace) => {
+    if (workspace.workspaceName) return workspace.workspaceName;
+  };
+
+  // Helper function to get workspace icon
+  const getWorkspaceIcon = (workspace: Workspace) => {
+    return workspace.contentType === "youtube" ? Play : Play;
+  };
+
+  // Helper function to check if workspace is active
+  const isWorkspaceActive = (workspaceId: string) => {
+    return location.pathname === `/dashboard/learn/workspace/${workspaceId}`;
+  };
+
   const Badges = ({ item }: { item: MenuItem }) => (
     <div
       className={clsx("flex items-center gap-1", isRTL ? "mr-auto" : "ml-auto")}
@@ -321,7 +387,7 @@ export function AppSidebar() {
         </TooltipProvider>
       );
     }
-    const location = useLocation();
+
     const currentPathname = location.pathname;
 
     return (
@@ -358,6 +424,86 @@ export function AppSidebar() {
               className="rounded-xl"
             >
               <span className="text-xs">{item.title}</span>
+            </TooltipContent>
+          )}
+        </Tooltip>
+      </TooltipProvider>
+    );
+  };
+
+  // Recent workspace entry component
+  const RecentWorkspaceEntry = ({ workspace }: { workspace: Workspace }) => {
+    const WorkspaceIcon = getWorkspaceIcon(workspace);
+    const isActive = isWorkspaceActive(workspace.id);
+    const workspaceUrl = `/dashboard/learn/workspace/${workspace.id}`;
+
+    return (
+      <TooltipProvider delayDuration={100}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <NavLink
+              to={workspaceUrl}
+              className={clsx(
+                "w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-300 transform hover:scale-[1.01] relative group",
+                isActive
+                  ? "bg-gray-100 dark:bg-gray-900/30 text-gray-800 dark:text-gray-200 shadow-sm"
+                  : "hover:bg-gray-100/70 dark:hover:bg-gray-800/40 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:shadow-sm",
+                isCollapsed && "justify-center px-2"
+              )}
+            >
+              <div className="relative flex-shrink-0">
+                {isActive ? (
+                  <div className="absolute -top-1 -right-1 w-2 h-2 bg-gradient-to-r from-green-400 to-green-500 rounded-full" />
+                ) : (
+                  <WorkspaceIcon
+                    size={14}
+                    className={clsx(
+                      workspace.contentType === "youtube"
+                        ? "text-red-500"
+                        : "text-gray-500"
+                    )}
+                  />
+                )}
+              </div>
+
+              {!isCollapsed && (
+                <span
+                  className={clsx(
+                    "text-xs font-medium flex-1 truncate",
+                    getTextAlignment()
+                  )}
+                >
+                  {getWorkspaceTitle(workspace)}
+                </span>
+              )}
+
+              {/* Progress indicator */}
+              {!isCollapsed &&
+                workspace.progress !== undefined &&
+                workspace.progress > 0 && (
+                  <div className="w-8 h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-blue-400 to-blue-500 rounded-full transition-all duration-300"
+                      style={{ width: `${workspace.progress}%` }}
+                    />
+                  </div>
+                )}
+            </NavLink>
+          </TooltipTrigger>
+          {isCollapsed && (
+            <TooltipContent
+              side={isRTL ? "left" : "right"}
+              className="rounded-xl"
+            >
+              <div className="text-xs">
+                <div className="font-medium">
+                  {getWorkspaceTitle(workspace)}
+                </div>
+                <div className="text-gray-500 text-[10px] flex items-center gap-1">
+                  <Clock size={10} />
+                  {new Date(workspace.updatedAt).toLocaleDateString()}
+                </div>
+              </div>
             </TooltipContent>
           )}
         </Tooltip>
@@ -454,74 +600,96 @@ export function AppSidebar() {
             >
               <style>{`.flex-1::-webkit-scrollbar { display: none; }`}</style>
 
-              {/* Recent items */}
-              {!!recents.length && !isCollapsed && (
+              {/* Recent workspaces */}
+              {!isCollapsed && (
                 <div className="mb-4">
-                  <h3
-                    className={clsx(
-                      "text-xs font-bold text-gray-800 dark:text-gray-200 px-3 mb-2 flex items-center gap-2",
-                      getFlexDirection()
+                  <div className="px-3 mb-2 flex items-center justify-between">
+                    <h3
+                      className={clsx(
+                        "text-xs font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2",
+                        getFlexDirection()
+                      )}
+                    >
+                      <div className="w-1.5 h-1.5 bg-gradient-to-r from-green-400 to-green-500 rounded-full"></div>
+                      <span>{t("sidebar.recent")}</span>
+                    </h3>
+                    {workspaces && workspaces.length > 0 && (
+                      <span className="text-[10px] text-gray-500">
+                        {workspaces.length}
+                      </span>
                     )}
-                  >
-                    <div className="w-1.5 h-1.5 bg-gradient-to-r from-green-400 to-gray-500 rounded-full"></div>
-                    <span>{t("sidebar.recent")}</span>
-                  </h3>
+                  </div>
+
+                  {/* Recent workspaces list */}
                   <div className="flex flex-col space-y-1">
-                    {recents.map((item) => {
-                      const ItemIcon = item.icon ?? History;
-                      const isAddContent =
-                        item.url === "/dashboard/add-content";
-                      const isSpace = item.url.startsWith("/dashboard/spaces/");
-                      const canClick = isAddContent || isSpace;
-
-                      if (!canClick) {
-                        const annotated: MenuItem = { ...item, isSoon: true };
-                        return (
+                    {loadingRecent ? (
+                      <>
+                        {Array.from({ length: 4 }).map((_, i) => (
                           <div
-                            key={item.url}
-                            className="w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-300 opacity-60 cursor-not-allowed select-none text-gray-500 dark:text-gray-500"
-                            aria-disabled
-                            title={t("sidebar.soon")}
-                          >
-                            <ItemIcon size={16} className="flex-shrink-0" />
-                            <span
-                              className={clsx(
-                                "text-xs font-medium flex-1",
-                                getTextAlignment()
-                              )}
-                            >
-                              {item.title}
-                            </span>
-                            <Badges item={annotated} />
-                          </div>
-                        );
-                      }
-
-                      return (
-                        <NavLink
-                          key={item.url}
-                          to={item.url}
-                          className={({ isActive }) =>
-                            clsx(
-                              "w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-300 transform hover:scale-[1.01]",
-                              isActive
-                                ? "bg-gray-100 dark:bg-gray-900/30 text-gray-800 dark:text-gray-200 shadow-sm"
-                                : "hover:bg-gray-100/70 dark:hover:bg-gray-800/40 text-gray-700 dark:text-gray-300"
-                            )
-                          }
-                        >
-                          <ItemIcon size={16} className="flex-shrink-0" />
-                          <span
+                            key={i}
                             className={clsx(
-                              "text-xs font-medium flex-1",
+                              "flex items-center gap-3 px-3 py-2",
+                              getFlexDirection()
+                            )}
+                          >
+                            <Skeleton className="h-4 w-4 rounded-full" />
+                            <Skeleton className="h-3 w-32 rounded-lg" />
+                          </div>
+                        ))}
+                      </>
+                    ) : !workspaces || workspaces.length === 0 ? (
+                      <div
+                        className={clsx(
+                          "px-3 py-2 text-xs text-muted-foreground",
+                          getTextAlignment()
+                        )}
+                      >
+                        {t(
+                          "sidebar.noRecentWorkspaces",
+                          "No recent workspaces"
+                        )}
+                      </div>
+                    ) : (
+                      <>
+                        {(showAllRecent
+                          ? workspaces
+                          : workspaces.slice(0, 5)
+                        ).map((workspace) => (
+                          <RecentWorkspaceEntry
+                            key={workspace.id}
+                            workspace={workspace}
+                          />
+                        ))}
+
+                        {workspaces.length > 5 && (
+                          <button
+                            onClick={() => setShowAllRecent((prev) => !prev)}
+                            className={clsx(
+                              "w-full text-[10px] text-gray-600 dark:text-gray-400 py-2 hover:underline transition-colors rounded-xl hover:bg-gray-50 dark:hover:bg-gray-900/20",
                               getTextAlignment()
                             )}
                           >
-                            {item.title}
-                          </span>
-                        </NavLink>
-                      );
-                    })}
+                            {showAllRecent
+                              ? t("sidebar.showLess")
+                              : t("sidebar.showMore")}
+                          </button>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Recent workspaces for collapsed state */}
+              {isCollapsed && workspaces && workspaces.length > 0 && (
+                <div className="mb-4">
+                  <div className="flex flex-col space-y-1">
+                    {workspaces.slice(0, 3).map((workspace) => (
+                      <RecentWorkspaceEntry
+                        key={workspace.id}
+                        workspace={workspace}
+                      />
+                    ))}
                   </div>
                 </div>
               )}
@@ -536,7 +704,7 @@ export function AppSidebar() {
                         getFlexDirection()
                       )}
                     >
-                      <div className="w-1.5 h-1.5 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full"></div>
+                      <div className="w-1.5 h-1.5 bg-gradient-to-r from-green-400 to-pink-500 rounded-full"></div>
                       <span>{t("sidebar.spaces")}</span>
                     </h3>
 
@@ -725,6 +893,7 @@ export function AppSidebar() {
               </div>
             </div>
 
+            {/* Rest of the component remains the same... */}
             <div className="p-3 mt-auto relative">
               {!isCollapsed && (
                 <div

@@ -3,9 +3,9 @@ import { useTranslation } from "react-i18next";
 import { CoursesContext } from "@/utils/types";
 import { getAllCoursesApi } from "@/utils/_apis/courses-apis";
 import AppLayout from "@/components/layout/Applayout";
-import AiCardActions from "@/shared/ai/AiCardActions";
 import Recent from "@/components/Recent";
 import Spaces from "@/components/Spaces";
+import AiCardActions from "@/shared/ai/LearnPlayground/AiCardActions";
 
 export default function LearningDashboard() {
   const { t, i18n } = useTranslation();
@@ -32,7 +32,7 @@ export default function LearningDashboard() {
   }, []);
 
   return (
-    <AppLayout>
+    <AppLayout className="mx-20">
       <AiCardActions />
       <Recent isRTL={isRTL} />
       <Spaces isRTL={isRTL} />

@@ -9,7 +9,7 @@ import CareerView from "./CareerPath/View";
 import UserProfile from "./userProfile/Index";
 import SpaceView from "./ai/spaces/View";
 import CoursePlayground from "./courseProduct/Index";
-import LearnPlayGround from "@/shared/ai/learnPlayground";
+import LearnPlayGround from "@/shared/ai/LearnPlayground/Index";
 
 const Placeholder = ({ title }: { title: string }) => (
   <div className="p-6">
@@ -45,7 +45,7 @@ export default function MainDashboard() {
           path="create-space"
           element={<Placeholder title="إنشاء مساحة" />}
         />
-        <Route path="learn/conent/:id" element={<LearnPlayGround />} />
+        <Route path="learn/workspace/:id" element={<LearnPlayGround />} />
         <Route
           path="*"
           element={<h1 className="text-xl">المسار غير موجود</h1>}

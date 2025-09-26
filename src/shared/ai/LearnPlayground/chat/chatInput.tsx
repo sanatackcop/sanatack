@@ -48,6 +48,7 @@ export interface ChatInputProps {
   contexts?: Context[];
   onContextsChange?: (contexts: Context[]) => void;
   className?: string;
+  expandSection?: boolean;
 }
 
 const ChatInput: React.FC<ChatInputProps> = ({
@@ -55,6 +56,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   onChange,
   onSubmit,
   placeholder,
+  expandSection,
   models = [
     {
       id: "gemini-2.5-flash",
@@ -309,7 +311,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
             transition-all duration-300 ease-out
             ${
               isFocused
-                ? "border-gray-300 dark:border-gray-500/50 shadow-lg shadow-gray-200/50 dark:shadow-gray-800/50"
+                ? "border-gray-300 dark:border-gray-500/50 shadow-sm shadow-gray-200/50 dark:shadow-gray-800/50"
                 : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 shadow-sm hover:shadow-md"
             }
             bg-white dark:bg-gray-900
@@ -342,7 +344,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
               rows={1}
             />
 
-            {/* Send Button */}
             <div
               className={`absolute top-1/2 -translate-y-1/2 ${
                 isRTL ? "left-4" : "right-4"
@@ -371,15 +372,16 @@ const ChatInput: React.FC<ChatInputProps> = ({
           </div>
 
           {/* Expanded Section - Fixed Animation */}
-          <div
-            className={`
+          {expandSection && (
+            <div
+              className={`
               overflow-hidden transition-all duration-500 ease-out
               ${isExpanded ? "max-h-32 opacity-100" : "max-h-0 opacity-0"}
             `}
-          >
-            <div
-              ref={expandedContentRef}
-              className={`
+            >
+              <div
+                ref={expandedContentRef}
+                className={`
                 flex items-center justify-between px-4 py-3 border-t border-gray-100 dark:border-gray-800
                 bg-gray-50/50 dark:bg-gray-800/30 backdrop-blur-sm
                 transition-all duration-300 ease-out
@@ -389,70 +391,70 @@ const ChatInput: React.FC<ChatInputProps> = ({
                     : "transform -translate-y-2"
                 }
               `}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center gap-3">
-                {/* Model Selector */}
-                <Popover
-                  open={isModelPopoverOpen}
-                  onOpenChange={setIsModelPopoverOpen}
-                >
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsModelPopoverOpen(!isModelPopoverOpen);
-                      }}
-                      className="h-9 px-3 text-sm bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center gap-3">
+                  {/* Model Selector */}
+                  <Popover
+                    open={isModelPopoverOpen}
+                    onOpenChange={setIsModelPopoverOpen}
+                  >
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsModelPopoverOpen(!isModelPopoverOpen);
+                        }}
+                        className="h-9 px-3 text-sm bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 
                                rounded-xl text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 
                                transition-all duration-200 font-medium border border-gray-200 dark:border-gray-700
                                hover:scale-[1.02] active:scale-[0.98]"
-                    >
-                      <div className="flex items-center gap-2">
-                        {getModelIcon(selectedModel.speed)}
-                        <div
-                          className={`w-2 h-2 rounded-full transition-all duration-200 ${getModelColorClass(
-                            selectedModel.color
-                          )}`}
-                        />
-                        <span>{selectedModel.name}</span>
-                        <ChevronDown
-                          className={`w-3 h-3 opacity-60 transition-transform duration-200 ${
-                            isModelPopoverOpen ? "rotate-180" : "rotate-0"
-                          }`}
-                        />
-                      </div>
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent
-                    className="w-80 p-2 border border-gray-200 dark:border-gray-700 rounded-xl 
+                      >
+                        <div className="flex items-center gap-2">
+                          {getModelIcon(selectedModel.speed)}
+                          <div
+                            className={`w-2 h-2 rounded-full transition-all duration-200 ${getModelColorClass(
+                              selectedModel.color
+                            )}`}
+                          />
+                          <span>{selectedModel.name}</span>
+                          <ChevronDown
+                            className={`w-3 h-3 opacity-60 transition-transform duration-200 ${
+                              isModelPopoverOpen ? "rotate-180" : "rotate-0"
+                            }`}
+                          />
+                        </div>
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      className="w-80 p-2 border border-gray-200 dark:border-gray-700 rounded-xl 
                              bg-white dark:bg-gray-900 shadow-xl backdrop-blur-sm
                              animate-in slide-in-from-bottom-2 fade-in-0 duration-300"
-                    align={isRTL ? "end" : "start"}
-                    side="top"
-                    sideOffset={8}
-                    onOpenAutoFocus={(e) => e.preventDefault()}
-                    onCloseAutoFocus={(e) => e.preventDefault()}
-                  >
-                    <div
-                      className="space-y-1"
-                      onClick={(e) => e.stopPropagation()}
+                      align={isRTL ? "end" : "start"}
+                      side="top"
+                      sideOffset={8}
+                      onOpenAutoFocus={(e) => e.preventDefault()}
+                      onCloseAutoFocus={(e) => e.preventDefault()}
                     >
-                      <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-                        {isRTL ? "اختر النموذج" : "Select Model"}
-                      </div>
-                      {models.map((model) => {
-                        const isActive = selectedModel.id === model.id;
-                        return (
-                          <button
-                            key={model.id}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleModelSelect(model);
-                            }}
-                            className={`
+                      <div
+                        className="space-y-1"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                          {isRTL ? "اختر النموذج" : "Select Model"}
+                        </div>
+                        {models.map((model) => {
+                          const isActive = selectedModel.id === model.id;
+                          return (
+                            <button
+                              key={model.id}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleModelSelect(model);
+                              }}
+                              className={`
                               w-full p-3 text-sm rounded-lg font-medium text-left
                               transition-all duration-200 ease-out
                               hover:scale-[1.01] active:scale-[0.99]
@@ -462,34 +464,35 @@ const ChatInput: React.FC<ChatInputProps> = ({
                                   : "hover:bg-gray-50 dark:hover:bg-gray-800/50 text-gray-700 dark:text-gray-300"
                               }
                             `}
-                          >
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                {getModelIcon(model.speed)}
-                                <div>
-                                  <div className="font-semibold">
-                                    {model.name}
-                                  </div>
-                                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                                    {model.description}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  {getModelIcon(model.speed)}
+                                  <div>
+                                    <div className="font-semibold">
+                                      {model.name}
+                                    </div>
+                                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                                      {model.description}
+                                    </div>
                                   </div>
                                 </div>
+                                <div
+                                  className={`w-2 h-2 rounded-full transition-all duration-200 ${getModelColorClass(
+                                    model.color
+                                  )}`}
+                                />
                               </div>
-                              <div
-                                className={`w-2 h-2 rounded-full transition-all duration-200 ${getModelColorClass(
-                                  model.color
-                                )}`}
-                              />
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </PopoverContent>
-                </Popover>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
