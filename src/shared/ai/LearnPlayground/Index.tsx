@@ -11,7 +11,7 @@ import {
   MessageCircle,
   Loader2,
 } from "lucide-react";
-import { TabKey, State, Action, ChatMessage } from "./types";
+import { TabKey, ChatMessage } from "./types";
 import { useRef } from "react";
 import PdfReader from "./PdfReader";
 import YouTubeReader from "./YoutubeReader";
@@ -24,6 +24,9 @@ import {
 } from "@/utils/_apis/learnPlayground-api";
 import { useParams } from "react-router-dom";
 import ChatMessages from "./chat/ChatMessage";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { ChatSkeleton, ContentSkeleton, reducer, TabsSkeleton } from "./utils";
+import { initialState } from "./consts";
 
 const TABS_CONFIG = [
   { id: "chat", labelKey: "tabs.chat", icon: MessageCircle },
@@ -32,235 +35,7 @@ const TABS_CONFIG = [
   { id: "summary", labelKey: "tabs.summary", icon: BookOpen },
 ] as const;
 
-// Enhanced reducer to handle chat messages, streaming, and workspace data
-const reducer = (state: State, action: Action): State => {
-  switch (action.type) {
-    case "SET_TAB":
-      return { ...state, tab: action.tab };
-    case "SET_CONTENT":
-      return {
-        ...state,
-        contentType: action.contentType,
-        status: { kind: "loading", for: action.contentType },
-      };
-    case "SET_SRC":
-      return { ...state, src: action.src };
-    case "SET_PAGE":
-      return { ...state, page: Math.max(1, action.page) };
-    case "SET_PAGE_COUNT":
-      return { ...state, pageCount: action.pageCount };
-    case "NEXT_PAGE":
-      return {
-        ...state,
-        page: state.pageCount
-          ? Math.min(state.pageCount, state.page + 1)
-          : state.page + 1,
-      };
-    case "PREV_PAGE":
-      return { ...state, page: Math.max(1, state.page - 1) };
-    case "SET_STATUS":
-      return { ...state, status: action.status };
-    case "SET_PROMPT":
-      return { ...state, prompt: action.prompt };
-    case "SET_NOTES":
-      return { ...state, notes: action.notes };
-    case "ZOOM_IN":
-      return { ...state, zoom: Math.min(3.0, +(state.zoom + 0.2).toFixed(2)) };
-    case "ZOOM_OUT":
-      return { ...state, zoom: Math.max(0.4, +(state.zoom - 0.2).toFixed(2)) };
-    case "RESET_ZOOM":
-      return { ...state, zoom: 1 };
-    case "TOGGLE_SIDEBAR":
-      return { ...state, sidebarOpen: !state.sidebarOpen };
-    case "ADD_HIGHLIGHT":
-      return {
-        ...state,
-        highlights: [...(state.highlights || []), action.highlight],
-      };
-    case "REMOVE_HIGHLIGHT":
-      return {
-        ...state,
-        highlights: (state.highlights || []).filter((h) => h.id !== action.id),
-      };
-    case "SET_HIGHLIGHTS":
-      return { ...state, highlights: action.highlights || [] };
-    case "SET_SELECTED_TEXT":
-      return { ...state, selectedText: action.text };
-    case "ADD_TO_CHAT":
-      return {
-        ...state,
-        tab: "chat",
-        prompt: action.text,
-      };
-    case "SET_YOUTUBE_VIDEO":
-      return { ...state, youtubeVideoId: action.videoId };
-    case "SET_YOUTUBE_TIME":
-      return {
-        ...state,
-        youtubeCurrentTime: action.currentTime,
-        youtubeDuration: action.duration,
-      };
-    case "SET_YOUTUBE_PLAYING":
-      return { ...state, youtubeIsPlaying: action.isPlaying };
-    case "ADD_CHAT_MESSAGE":
-      return {
-        ...state,
-        chatMessages: [...(state.chatMessages || []), action.message],
-        prompt: "",
-      };
-    case "SET_CHAT_INPUT":
-      return { ...state, chatInput: action.input };
-    case "CLEAR_CHAT":
-      return { ...state, chatMessages: [] };
-    case "SET_CHAT_LOADING":
-      return { ...state, chatLoading: action.loading };
-    case "SET_STREAMING_MESSAGE":
-      return { ...state, streamingMessage: action.content };
-    case "ADD_STREAMING_CHUNK":
-      return {
-        ...state,
-        streamingMessage: (state.streamingMessage || "") + action.chunk,
-      };
-    case "COMPLETE_STREAMING_MESSAGE":
-      const completedMessage: ChatMessage = {
-        id: Date.now().toString(),
-        type: "assistant",
-        content: state.streamingMessage || action.content,
-        timestamp: new Date(),
-        isComplete: true,
-      };
-      return {
-        ...state,
-        chatMessages: [...(state.chatMessages || []), completedMessage],
-        streamingMessage: "",
-        chatLoading: false,
-      };
-    // Fixed workspace action - matches the dispatch call
-    case "SET_WORKSPACE":
-      return {
-        ...state,
-        workspace: action.workspace,
-        title:
-          action.workspace?.workspaceName || action.workspace?.title || null,
-        youtubeVideoId: action.workspace?.youtubeUrl
-          ? extractYouTubeId(action.workspace.youtubeUrl)
-          : state.youtubeVideoId,
-        contentType: action.workspace?.contentType || state.contentType,
-        src: action.workspace?.pdfUrl || state.src,
-        transcript: action.workspace?.transcript || null,
-      };
-    case "SET_TITLE":
-      return { ...state, title: action.title };
-    case "SET_TRANSCRIPT":
-      return { ...state, transcript: action.transcript };
-    case "SET_TRANSCRIPT_LOADING":
-      return { ...state, transcriptLoading: action.loading };
-    default:
-      return state;
-  }
-};
-
-// Helper function to extract YouTube video ID from URL
-const extractYouTubeId = (url: string): string => {
-  const regExp =
-    /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-  const match = url.match(regExp);
-  return match && match[2].length === 11 ? match[2] : "";
-};
-
-// Fixed initial state with all required properties including streaming
-const initialState: State = {
-  tab: "chat",
-  contentType: "youtube",
-  src: "https://arxiv.org/pdf/1706.03762",
-  page: 1,
-  pageCount: null,
-  zoom: 1,
-  status: { kind: "idle" },
-  prompt: "",
-  notes: "",
-  sidebarOpen: true,
-  highlights: [],
-  selectedText: "",
-  youtubeVideoId: "dQw4w9WgXcQ",
-  youtubeCurrentTime: 0,
-  youtubeDuration: 0,
-  youtubeIsPlaying: false,
-  chatMessages: [],
-  chatInput: "",
-  chatLoading: false,
-  streamingMessage: "",
-  workspace: null,
-  title: null,
-  transcript: null,
-  transcriptLoading: false,
-};
-
-// Skeleton Components
-const ContentSkeleton = () => (
-  <div className="w-full h-full flex flex-col space-y-4 p-4">
-    <Skeleton className="h-8 w-3/4" />
-    <div className="flex-1 bg-gray-100 rounded-lg animate-pulse" />
-    <div className="flex space-x-2">
-      <Skeleton className="h-10 w-20" />
-      <Skeleton className="h-10 w-20" />
-      <Skeleton className="h-10 w-20" />
-    </div>
-  </div>
-);
-
-const TabsSkeleton = () => (
-  <div className="h-full flex flex-col">
-    <div className="p-2 pt-0 flex-shrink-0">
-      <div className="flex space-x-2 rounded-2xl bg-gray-100 p-1 w-fit mx-auto">
-        {[1, 2, 3, 4].map((i) => (
-          <Skeleton key={i} className="h-12 w-24 rounded-xl" />
-        ))}
-      </div>
-    </div>
-    <div className="flex-1 p-4">
-      <div className="space-y-4">
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-3/4" />
-        <Skeleton className="h-4 w-1/2" />
-        <div className="space-y-2 mt-8">
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-const ChatSkeleton = () => (
-  <div className="flex-1 flex flex-col p-4 space-y-4">
-    <div className="space-y-3">
-      {[1, 2, 3].map((i) => (
-        <div
-          key={i}
-          className={`flex ${i % 2 === 0 ? "justify-end" : "justify-start"}`}
-        >
-          <div
-            className={`flex space-x-2 max-w-xs ${
-              i % 2 === 0 ? "flex-row-reverse space-x-reverse" : ""
-            }`}
-          >
-            <Skeleton className="h-8 w-8 rounded-full flex-shrink-0" />
-            <div className="space-y-1">
-              <Skeleton className="h-4 w-32" />
-              <Skeleton className="h-4 w-24" />
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-    <div className="mt-auto">
-      <Skeleton className="h-12 w-full rounded-xl" />
-    </div>
-  </div>
-);
-
-const LearnPlaygroundRoot: React.FC = () => {
+const LearnPlayGround: React.FC = () => {
   const { t, i18n } = useTranslation();
   const { id } = useParams();
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -533,7 +308,6 @@ const LearnPlaygroundRoot: React.FC = () => {
     setIsDragging(false);
   };
 
-  // Fixed getDisplayTitle function with null checks
   const getDisplayTitle = () => {
     return (
       state.workspace?.workspaceName ||
@@ -804,14 +578,17 @@ const LearnPlaygroundRoot: React.FC = () => {
                       <ChatSkeleton />
                     ) : (
                       <>
-                        <div className="w-full flex-1 flex flex-col">
-                          <ChatMessages
-                            messages={state.chatMessages || []}
-                            isLoading={state.chatLoading}
-                            streamingMessage={state.streamingMessage}
-                            onSendMessage={handleSendMessage}
-                          />
+                        <div className="w-full flex-1 flex flex-col overflow-y-auto border">
+                          <ScrollArea>
+                            <ChatMessages
+                              messages={state.chatMessages || []}
+                              isLoading={state.chatLoading}
+                              streamingMessage={state.streamingMessage}
+                              onSendMessage={handleSendMessage}
+                            />
+                          </ScrollArea>
                         </div>
+
                         <ChatInput
                           className="flex-shrink-0 p-2 pb-2"
                           value={state.prompt}
@@ -846,47 +623,6 @@ const LearnPlaygroundRoot: React.FC = () => {
                       </div>
                     )}
                   </TabsContent>
-
-                  <TabsContent value="quizzes" className="m-0 h-full">
-                    {isLoading ? (
-                      <div className="p-4 space-y-6">
-                        {[1, 2, 3].map((i) => (
-                          <div key={i} className="space-y-3">
-                            <Skeleton className="h-6 w-3/4" />
-                            <div className="space-y-2">
-                              <Skeleton className="h-4 w-full" />
-                              <Skeleton className="h-4 w-full" />
-                              <Skeleton className="h-4 w-2/3" />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="p-4 text-center text-gray-500">
-                        {t("quizzes.coming_soon", "Quizzes coming soon...")}
-                      </div>
-                    )}
-                  </TabsContent>
-
-                  <TabsContent value="summary" className="m-0 h-full">
-                    {isLoading ? (
-                      <div className="p-4 space-y-4">
-                        <Skeleton className="h-8 w-1/2" />
-                        <Skeleton className="h-4 w-full" />
-                        <Skeleton className="h-4 w-full" />
-                        <Skeleton className="h-4 w-3/4" />
-                        <div className="mt-6 space-y-2">
-                          <Skeleton className="h-4 w-full" />
-                          <Skeleton className="h-4 w-full" />
-                          <Skeleton className="h-4 w-2/3" />
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="p-4 text-center text-gray-500">
-                        {t("summary.coming_soon", "Summary coming soon...")}
-                      </div>
-                    )}
-                  </TabsContent>
                 </div>
               </Tabs>
             )}
@@ -897,6 +633,4 @@ const LearnPlaygroundRoot: React.FC = () => {
   );
 };
 
-export default function LearnPlayGround() {
-  return <LearnPlaygroundRoot />;
-}
+export default LearnPlayGround;
