@@ -170,7 +170,6 @@ export const getWorkSpaceChatHistory = async (id: string) => {
 
 export const createFlashcard = async (workspaceId: string) => {
   try {
-    // workspaces/:id/generate/flashcards
     const response = await Api({
       method: API_METHODS.POST,
       data: {
@@ -178,6 +177,24 @@ export const createFlashcard = async (workspaceId: string) => {
         language: "en",
       },
       url: `study-ai/workspaces/${workspaceId}/generate/flashcards`,
+    });
+
+    return response.data as unknown;
+  } catch (e: any) {
+    console.error("enrollCoursesApi error:", e.message);
+    throw e;
+  }
+};
+
+export const createQuiz = async (workspaceId: string) => {
+  try {
+    const response = await Api({
+      method: API_METHODS.POST,
+      data: {
+        youtubeUrl: "https://www.youtube.com/watch?v=jPPzvuDIr1w",
+        language: "en",
+      },
+      url: `study-ai/workspaces/${workspaceId}/generate/quiz`,
     });
 
     return response.data as unknown;
