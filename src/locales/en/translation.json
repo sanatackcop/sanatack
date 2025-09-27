@@ -30,7 +30,9 @@
     "paste": "Paste",
     "cut": "Cut",
     "comingSoon": "Soon",
-    "tabContent": "{{tab}} content will appear here"
+    "tabContent": "{{tab}} content will appear here",
+    "generate": "Generate",
+    "createFlashCard": "Create Flashcard"
   },
   "theme": {
     "light": "Light",

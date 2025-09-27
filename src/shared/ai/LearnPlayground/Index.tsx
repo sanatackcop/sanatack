@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useReducer, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useReducer,
+  useState,
+  useRef,
+} from "react";
 import { ResizablePanelGroup } from "@/components/ui/resizable";
 import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,8 +17,7 @@ import {
   MessageCircle,
   Loader2,
 } from "lucide-react";
-import { TabKey, ChatMessage } from "./types";
-import { useRef } from "react";
+import { TabKey, ChatMessage, Workspace } from "./types";
 import PdfReader from "./PdfReader";
 import YouTubeReader from "./YoutubeReader";
 import { useTranslation } from "react-i18next";
@@ -27,6 +32,7 @@ import ChatMessages from "./chat/ChatMessage";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChatSkeleton, ContentSkeleton, reducer, TabsSkeleton } from "./utils";
 import { initialState } from "./consts";
+import FlashCards from "./flashcards/Index";
 
 const TABS_CONFIG = [
   { id: "chat", labelKey: "tabs.chat", icon: MessageCircle },
@@ -53,32 +59,28 @@ const LearnPlayGround: React.FC = () => {
     width: 0,
     right: 0,
   });
+  const [workspace, setWorkspace] = useState<Workspace | undefined>();
 
   const isRTL = i18n.language === "ar";
 
-  // Fixed workspace fetching function
   const fetchTheWorkSpace = async () => {
     if (!id) {
       setWorkspaceLoading(false);
       return;
     }
-
     try {
       setWorkspaceLoading(true);
       setContentLoading(true);
 
       const response: any = await getWorkSpace(id);
-
-      // Handle both nested and flat response structures
       const workspaceData = response.workspace || response;
 
-      // Dispatch with the correct action type
       dispatch({
         type: "SET_WORKSPACE",
         workspace: workspaceData,
       });
+      setWorkspace(workspaceData);
 
-      // Handle YouTube content
       if (workspaceData.youtubeVideo?.youtubeUrl || workspaceData.youtubeUrl) {
         const youtubeUrl =
           workspaceData.youtubeVideo?.youtubeUrl || workspaceData.youtubeUrl;
@@ -99,7 +101,6 @@ const LearnPlayGround: React.FC = () => {
           });
         }
 
-        // Load transcript if available
         if (workspaceData.transcript) {
           dispatch({
             type: "SET_TRANSCRIPT",
@@ -108,7 +109,6 @@ const LearnPlayGround: React.FC = () => {
         }
       }
 
-      // Handle PDF content
       if (workspaceData.contentType === "pdf" && workspaceData.pdfUrl) {
         dispatch({
           type: "SET_CONTENT",
@@ -135,7 +135,6 @@ const LearnPlayGround: React.FC = () => {
     fetchTheWorkSpace();
   }, [id]);
 
-  // Updated handleSendMessage with streaming support
   const handleSendMessage = useCallback(
     async (message: string) => {
       if (!message.trim() || !id) return;
@@ -152,25 +151,21 @@ const LearnPlayGround: React.FC = () => {
       dispatch({ type: "SET_STREAMING_MESSAGE", content: "" });
 
       try {
-        console.log("HHHHHH");
         await sendWorkspaceChatMessage(
           id,
           message.trim(),
           i18n.language as "en" | "ar",
           undefined, // model
           (chunk) => {
-            console.log({ chunk });
             if (chunk.chunk) {
               dispatch({ type: "ADD_STREAMING_CHUNK", chunk: chunk.chunk });
             }
-
             if (chunk.isComplete) {
               dispatch({
                 type: "COMPLETE_STREAMING_MESSAGE",
                 content: chunk.chunk || "",
               });
             }
-
             if (chunk.metadata?.error) {
               const errorMessage: ChatMessage = {
                 id: Date.now().toString(),
@@ -187,7 +182,6 @@ const LearnPlayGround: React.FC = () => {
         );
       } catch (error) {
         console.error("Failed to send message:", error);
-
         const errorMessage: ChatMessage = {
           id: Date.now().toString(),
           type: "assistant",
@@ -198,7 +192,6 @@ const LearnPlayGround: React.FC = () => {
           timestamp: new Date(),
           metadata: { error: "Network error" },
         };
-
         dispatch({ type: "ADD_CHAT_MESSAGE", message: errorMessage });
         dispatch({ type: "SET_CHAT_LOADING", loading: false });
         dispatch({ type: "SET_STREAMING_MESSAGE", content: "" });
@@ -268,7 +261,6 @@ const LearnPlayGround: React.FC = () => {
     return () => clearTimeout(timeoutId);
   }, [state.tab, updateIndicatorPosition]);
 
-  // Touch and mouse handlers for tab scrolling
   const handleTouchStart = (e: React.TouchEvent) => {
     if (scrollContainerRef.current) {
       setIsDragging(true);
@@ -447,7 +439,7 @@ const LearnPlayGround: React.FC = () => {
             initial={{ x: 20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ type: "spring", stiffness: 260, damping: 30 }}
-            className="h-full"
+            className="h-full flex flex-col"
           >
             {workspaceLoading ? (
               <TabsSkeleton />
@@ -508,11 +500,9 @@ const LearnPlayGround: React.FC = () => {
                           damping: 35,
                         }}
                       />
-
                       {TABS_CONFIG.map((tab) => {
                         const IconComponent = tab.icon;
                         const isActive = state.tab === tab.id;
-
                         return (
                           <TabsTrigger
                             key={tab.id}
@@ -530,6 +520,11 @@ const LearnPlayGround: React.FC = () => {
                               margin: "0 1px",
                             }}
                           >
+                            {isActive ? (
+                              <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full shadow-sm flex-shrink-0" />
+                            ) : (
+                              <IconComponent className="w-3 h-3 flex-shrink-0 text-gray-600" />
+                            )}
                             <span
                               className={`text-xs sm:text-sm transition-colors duration-150 whitespace-nowrap ${
                                 isActive
@@ -539,11 +534,6 @@ const LearnPlayGround: React.FC = () => {
                             >
                               {t(tab.labelKey)}
                             </span>
-                            {isActive ? (
-                              <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full shadow-sm flex-shrink-0" />
-                            ) : (
-                              <IconComponent className="w-3 h-3 flex-shrink-0 text-gray-600" />
-                            )}
                           </TabsTrigger>
                         );
                       })}
@@ -565,64 +555,78 @@ const LearnPlayGround: React.FC = () => {
                   )}
                 </div>
 
-                <div className="flex-1 overflow-hidden">
-                  <TabsContent
-                    value="chat"
-                    style={{
-                      maxHeight: "calc(100vh - 9rem)",
-                      minHeight: "calc(100vh - 9rem)",
-                    }}
-                    className="m-0 flex flex-1 flex-col relative items-end justify-end"
-                  >
-                    {isLoading ? (
-                      <ChatSkeleton />
-                    ) : (
-                      <>
-                        <div className="w-full flex-1 flex flex-col overflow-y-auto border">
-                          <ScrollArea>
+                <div className="flex-1 overflow-hidden relative">
+                  {state.tab === "chat" && (
+                    <TabsContent
+                      value="chat"
+                      style={{
+                        maxHeight: "calc(100vh - 9rem)",
+                        minHeight: "calc(100vh - 9rem)",
+                      }}
+                      className="m-0 flex flex-1 flex-col relative items-end justify-end"
+                    >
+                      {isLoading ? (
+                        <ChatSkeleton />
+                      ) : (
+                        <>
+                          <div className="w-full flex-1 flex flex-col overflow-y-auto h-full">
                             <ChatMessages
                               messages={state.chatMessages || []}
                               isLoading={state.chatLoading}
                               streamingMessage={state.streamingMessage}
                               onSendMessage={handleSendMessage}
                             />
-                          </ScrollArea>
-                        </div>
+                          </div>
+                          <ChatInput
+                            className="flex-shrink-0 p-2 pb-2"
+                            value={state.prompt}
+                            expandSection={true}
+                            onChange={(value: string) =>
+                              dispatch({ type: "SET_PROMPT", prompt: value })
+                            }
+                            onSubmit={handleSendMessage}
+                            placeholder={t(
+                              "chat.placeholder",
+                              "Type your message..."
+                            )}
+                          />
+                        </>
+                      )}
+                    </TabsContent>
+                  )}
 
-                        <ChatInput
-                          className="flex-shrink-0 p-2 pb-2"
-                          value={state.prompt}
-                          expandSection={false}
-                          disabled={state.chatLoading}
-                          onChange={(value: string) =>
-                            dispatch({ type: "SET_PROMPT", prompt: value })
-                          }
-                          onSubmit={handleSendMessage}
-                          placeholder={t(
-                            "chat.placeholder",
-                            "Type your message..."
-                          )}
-                        />
-                      </>
-                    )}
-                  </TabsContent>
+                  {state.tab === "flashcards" && workspace && (
+                    <TabsContent
+                      value="flashcards"
+                      className="m-0 h-full"
+                      style={{
+                        maxHeight: "calc(100vh - 9rem)",
+                        minHeight: "calc(100vh - 9rem)",
+                      }}
+                    >
+                      <FlashCards workspaceId={workspace.id} />
+                    </TabsContent>
+                  )}
 
-                  <TabsContent value="flashcards" className="m-0 h-full">
-                    {isLoading ? (
-                      <div className="p-4 space-y-4">
-                        <Skeleton className="h-32 w-full rounded-lg" />
-                        <Skeleton className="h-32 w-full rounded-lg" />
-                        <Skeleton className="h-32 w-full rounded-lg" />
-                      </div>
-                    ) : (
-                      <div className="p-4 text-center text-gray-500">
-                        {t(
-                          "flashcards.coming_soon",
-                          "Flashcards coming soon..."
-                        )}
-                      </div>
-                    )}
-                  </TabsContent>
+                  {state.tab === "quizzes" && (
+                    <TabsContent
+                      value="quizzes"
+                      className="m-0 h-full p-4 text-gray-500"
+                    >
+                      {/* Replace below with your quizzes content component */}
+                      Quizzes content goes here
+                    </TabsContent>
+                  )}
+
+                  {state.tab === "summary" && (
+                    <TabsContent
+                      value="summary"
+                      className="m-0 h-full p-4 text-gray-500"
+                    >
+                      {/* Replace below with your summary content component */}
+                      Summary content goes here
+                    </TabsContent>
+                  )}
                 </div>
               </Tabs>
             )}

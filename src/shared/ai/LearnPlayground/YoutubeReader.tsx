@@ -365,7 +365,7 @@ const YouTubeReader: React.FC<YouTubePlayerProps> = ({
           >
             {/* Tab Headers */}
             <div className="flex-shrink-0 mb-3">
-              <TabsList className="rounded-2xl w-fit border">
+              <TabsList className="rounded-2xl w-fit border py-5">
                 {TABS_CONFIG.map((tab) => {
                   const IconComponent = tab.icon;
                   const isActive = activeTab === tab.id;
@@ -374,9 +374,9 @@ const YouTubeReader: React.FC<YouTubePlayerProps> = ({
                     <TabsTrigger
                       key={tab.id}
                       value={tab.id}
-                      className={`relative flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 transition-all duration-200 font-medium ${
+                      className={`relative flex items-center justify-center gap-2 rounded-xl  py-2 transition-all duration-200 font-medium ${
                         isActive
-                          ? "bg-green-50 text-green-700 shadow-sm"
+                          ? "bg-gray-50 text-green-700"
                           : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
                       }`}
                     >
@@ -401,58 +401,19 @@ const YouTubeReader: React.FC<YouTubePlayerProps> = ({
               </TabsList>
             </div>
 
-            {/* Tab Content */}
             <div className="flex-1 min-h-0">
-              {/* Transcript Tab */}
               <TabsContent
                 value="transcript"
                 className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col"
               >
-                <div className="flex flex-col h-full border border-gray-200 rounded-xl overflow-hidden bg-white">
-                  {/* Header */}
-                  <div className="flex-shrink-0 px-4 py-3 bg-gray-50 border-b border-gray-100">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-semibold text-sm text-gray-800">
-                        {t("transcript.title", "Video Transcript")}
-                      </h3>
-                      {transcript && (
-                        <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                          {transcript.segments} segments
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Scrollable Content */}
+                <div className="flex flex-col h-full  rounded-xl overflow-hidden">
                   <div className="flex-1 min-h-0">
                     {transcriptSections && transcriptSections.length > 0 ? (
                       <ScrollArea className="h-full">
-                        <div className="p-4" ref={transcriptRef}>
-                          <div className="space-y-6">
+                        <div ref={transcriptRef}>
+                          <div>
                             {transcriptSections.map((section, sectionIndex) => (
                               <div key={sectionIndex} className="space-y-3">
-                                {/* Section Title */}
-                                <div
-                                  className="sticky top-0 bg-white/95 backdrop-blur-sm py-2 border-b border-gray-100 cursor-pointer hover:bg-gray-50 rounded-lg px-3 transition-colors"
-                                  onClick={() =>
-                                    handleSectionTitleClick(section.startTime)
-                                  }
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <Play
-                                      size={14}
-                                      className="text-green-600"
-                                    />
-                                    <h4 className="font-semibold text-base text-gray-900">
-                                      {section.title}
-                                    </h4>
-                                    <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                                      {formatTime(section.startTime)}
-                                    </span>
-                                  </div>
-                                </div>
-
-                                {/* Section Segments */}
                                 <div className="space-y-2 ml-4">
                                   {section.segments.map(
                                     (segment, segmentIndex) => {
@@ -465,20 +426,20 @@ const YouTubeReader: React.FC<YouTubePlayerProps> = ({
                                           key={segmentIndex}
                                           className={`group cursor-pointer p-3 rounded-xl shadow-none border-none hover:bg-gray-50 transition-all duration-200 border hover:border-gray-200 ${
                                             activeSegmentIndex === globalIndex
-                                              ? "bg-blue-50 border-blue-200"
+                                              ? "bg-gray-50 border-gray-200"
                                               : ""
                                           }`}
                                           onClick={() =>
                                             handleTranscriptClick(segment)
                                           }
                                         >
-                                          <div className="flex items-start gap-3">
+                                          <div className="flex flex-col items-start gap-3">
                                             <div className="flex-shrink-0 flex items-center gap-2">
                                               <span
                                                 className={`text-xs font-mono px-2.5 py-1 rounded-lg transition-colors ${
                                                   activeSegmentIndex ===
                                                   globalIndex
-                                                    ? "bg-blue-100 text-blue-700"
+                                                    ? "bg-gray-100 text-gray-700"
                                                     : "bg-gray-100 text-gray-600"
                                                 }`}
                                               >
@@ -487,10 +448,10 @@ const YouTubeReader: React.FC<YouTubePlayerProps> = ({
                                               </span>
                                             </div>
                                             <p
-                                              className={`text-base leading-relaxed flex-1 transition-colors ${
+                                              className={`text-lg leading-relaxed flex-1 transition-colors ${
                                                 activeSegmentIndex ===
                                                 globalIndex
-                                                  ? "text-blue-900 font-medium"
+                                                  ? "text-gray-900"
                                                   : "text-gray-700"
                                               }`}
                                             >
@@ -529,7 +490,6 @@ const YouTubeReader: React.FC<YouTubePlayerProps> = ({
                 </div>
               </TabsContent>
 
-              {/* Explanation Tab */}
               <TabsContent
                 value="explanation"
                 className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col"

@@ -17,6 +17,9 @@ import {
   Sparkles,
   Zap,
   Brain,
+  Paperclip,
+  Mic,
+  AudioWaveform,
 } from "lucide-react";
 import i18n from "@/i18n";
 
@@ -96,9 +99,9 @@ const ChatInput: React.FC<ChatInputProps> = ({
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const expandedContentRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const currentLanguage = i18n.language || "ar";
-  const isRTL = i18n.dir() === "rtl" || currentLanguage === "ar";
+  const isRTL = i18n.dir() === "rtl";
 
   const defaultPlaceholder = isRTL
     ? "اسأل الذكاء الاصطناعي أي شيء..."
@@ -239,15 +242,75 @@ const ChatInput: React.FC<ChatInputProps> = ({
     }
   };
 
-  const getModelIcon = (speed?: string) => {
-    switch (speed) {
-      case "fast":
-        return <Zap className="w-3.5 h-3.5" />;
-      case "precise":
-        return <Brain className="w-3.5 h-3.5" />;
-      default:
-        return <Sparkles className="w-3.5 h-3.5" />;
+  const handleAttachClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
     }
+  };
+
+  const handleRecordClick = () => {
+    alert(
+      isRTL
+        ? "تسجيل الصوت غير مدعوم حاليا"
+        : "Audio recording not supported yet"
+    );
+  };
+
+  const handleTalkClick = () => {
+    alert(
+      isRTL
+        ? "تحدث مع الذكاء الاصطناعي غير مدعوم حاليا"
+        : "Talk to AI not supported yet"
+    );
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    const newContexts = [...selectedContexts];
+    Array.from(files).forEach((file) => {
+      newContexts.push({
+        id: file.name + "-" + Date.now(),
+        name: file.name,
+        content: "",
+        type: "file",
+        size: (file.size / 1024).toFixed(2) + " KB",
+      });
+    });
+    setSelectedContexts(newContexts);
+    onContextsChange?.(newContexts);
+  };
+
+  // Drag and Drop support
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDropFiles = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const droppedFiles = e.dataTransfer.files;
+    if (!droppedFiles) return;
+    const newContexts = [...selectedContexts];
+    Array.from(droppedFiles).forEach((file) => {
+      newContexts.push({
+        id: file.name + "-" + Date.now(),
+        name: file.name,
+        content: "",
+        type: "file",
+        size: (file.size / 1024).toFixed(2) + " KB",
+      });
+    });
+    setSelectedContexts(newContexts);
+    onContextsChange?.(newContexts);
   };
 
   return (
@@ -255,7 +318,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
       className={`relative w-full mx-auto ${className}`}
       dir={isRTL ? "rtl" : "ltr"}
     >
-      {/* Context Pills - Better Animation */}
+      {/* Context Pills */}
       <div
         className={`transition-all duration-300 ease-out overflow-hidden ${
           selectedContexts.length > 0
@@ -299,12 +362,24 @@ const ChatInput: React.FC<ChatInputProps> = ({
         </div>
       </div>
 
-      {/* Main Input Container */}
+      {/* Main Input Container with drag & drop */}
       <div
         ref={containerRef}
-        className="relative"
+        className={`relative ${isDragging ? "border-2 border-blue-400" : ""}`}
         onClick={handleContainerClick}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDropFiles}
       >
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          hidden
+          onChange={handleFileChange}
+          aria-label={isRTL ? "اختر ملف" : "Choose file"}
+        />
+
         <div
           className={`
             relative rounded-3xl border overflow-hidden
@@ -318,7 +393,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
           `}
         >
           {/* Input Area */}
-          <div className="relative flex items-center min-h-[56px]">
+          <div className="relative flex items-center min-h-[56px] px-3">
             <textarea
               ref={textAreaRef}
               value={value}
@@ -371,30 +446,35 @@ const ChatInput: React.FC<ChatInputProps> = ({
             </div>
           </div>
 
-          {/* Expanded Section - Fixed Animation */}
+          {/* Expanded Section with buttons on right or left based on language */}
           {expandSection && (
             <div
               className={`
               overflow-hidden transition-all duration-500 ease-out
-              ${isExpanded ? "max-h-32 opacity-100" : "max-h-0 opacity-0"}
+              ${
+                isExpanded || expandSection
+                  ? "max-h-32 opacity-100"
+                  : "max-h-0 opacity-0"
+              }
             `}
             >
               <div
                 ref={expandedContentRef}
                 className={`
-                flex items-center justify-between px-4 py-3 border-t border-gray-100 dark:border-gray-800
-                bg-gray-50/50 dark:bg-gray-800/30 backdrop-blur-sm
+                flex items-center justify-between px-4 py-3 border-t rounded-3xl  
+                  border-none
                 transition-all duration-300 ease-out
                 ${
-                  isExpanded
+                  isExpanded || expandSection
                     ? "transform translate-y-0"
                     : "transform -translate-y-2"
                 }
+                ${isRTL ? "flex-row-reverse" : "flex-row"}
               `}
                 onClick={(e) => e.stopPropagation()}
               >
+                {/* Left side: Model Selector */}
                 <div className="flex items-center gap-3">
-                  {/* Model Selector */}
                   <Popover
                     open={isModelPopoverOpen}
                     onOpenChange={setIsModelPopoverOpen}
@@ -407,13 +487,9 @@ const ChatInput: React.FC<ChatInputProps> = ({
                           e.stopPropagation();
                           setIsModelPopoverOpen(!isModelPopoverOpen);
                         }}
-                        className="h-9 px-3 text-sm bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 
-                               rounded-xl text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 
-                               transition-all duration-200 font-medium border border-gray-200 dark:border-gray-700
-                               hover:scale-[1.02] active:scale-[0.98]"
+                        className="h-9 px-3 text-sm bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-xl text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-all duration-200 font-medium border border-gray-200 dark:border-gray-700 hover:scale-[1.02] active:scale-[0.98]"
                       >
                         <div className="flex items-center gap-2">
-                          {getModelIcon(selectedModel.speed)}
                           <div
                             className={`w-2 h-2 rounded-full transition-all duration-200 ${getModelColorClass(
                               selectedModel.color
@@ -429,9 +505,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent
-                      className="w-80 p-2 border border-gray-200 dark:border-gray-700 rounded-xl 
-                             bg-white dark:bg-gray-900 shadow-xl backdrop-blur-sm
-                             animate-in slide-in-from-bottom-2 fade-in-0 duration-300"
+                      className="w-80 p-2 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900 shadow-xl backdrop-blur-sm animate-in slide-in-from-bottom-2 fade-in-0 duration-300"
                       align={isRTL ? "end" : "start"}
                       side="top"
                       sideOffset={8}
@@ -467,7 +541,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
                             >
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                  {getModelIcon(model.speed)}
                                   <div>
                                     <div className="font-semibold">
                                       {model.name}
@@ -489,6 +562,43 @@ const ChatInput: React.FC<ChatInputProps> = ({
                       </div>
                     </PopoverContent>
                   </Popover>
+                </div>
+
+                {/* Right side: Action buttons according to LTR / RTL */}
+                <div
+                  className={`flex items-center gap-3 ${
+                    isRTL ? "flex-row-reverse" : "flex-row"
+                  }`}
+                >
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label={isRTL ? "إرفاق ملف" : "Attach File"}
+                    className="rounded-full p-2"
+                    onClick={handleAttachClick}
+                  >
+                    <Paperclip className="w-6 h-6 text-gray-400" />
+                  </Button>
+
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label={isRTL ? "تسجيل الصوت" : "Record Audio"}
+                    className="rounded-full p-2"
+                    onClick={handleRecordClick}
+                  >
+                    <Mic className="w-6 h-6 text-gray-400" />
+                  </Button>
+
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label={isRTL ? "تحدث مع الذكاء" : "Talk to AI"}
+                    className="rounded-full p-2 bg-zinc-700"
+                    onClick={handleTalkClick}
+                  >
+                    <AudioWaveform className="w-6 h-6 text-white" />
+                  </Button>
                 </div>
               </div>
             </div>
