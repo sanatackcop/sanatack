@@ -170,7 +170,6 @@ export const getWorkSpaceChatHistory = async (id: string) => {
 
 export const createFlashcard = async (workspaceId: string) => {
   try {
-    // workspaces/:id/generate/flashcards
     const response = await Api({
       method: API_METHODS.POST,
       data: {
