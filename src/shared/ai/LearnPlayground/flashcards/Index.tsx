@@ -862,13 +862,6 @@ export function FlashCardHome({
           <h2 className="text-[18px] text-zinc-900 font-medium">
             Flashcards <span className="text-sm">({totalCards})</span>
           </h2>
-          <Button
-            variant={"outline"}
-            className="rounded-3xl border-dashed border-2 border-gray-300/50 text-sm shadow-none font-medium"
-          >
-            <Plus />
-            Add Cards
-          </Button>
         </div>
 
         {activeSet.flashcards.map((flashcard, idx) => (
