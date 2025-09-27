@@ -33,6 +33,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChatSkeleton, ContentSkeleton, reducer, TabsSkeleton } from "./utils";
 import { initialState } from "./consts";
 import FlashCards from "./flashcards/Index";
+import QuizModal from "./quiz/QuizModal";
 
 const TABS_CONFIG = [
   { id: "chat", labelKey: "tabs.chat", icon: MessageCircle },
@@ -608,13 +609,26 @@ const LearnPlayGround: React.FC = () => {
                     </TabsContent>
                   )}
 
-                  {state.tab === "quizzes" && (
+                  {state.tab === "quizzes" && workspace && (
                     <TabsContent
                       value="quizzes"
                       className="m-0 h-full p-4 text-gray-500"
                     >
-                      {/* Replace below with your quizzes content component */}
-                      Quizzes content goes here
+                      {/* 
+                       4 Types of Quizes
+                        1: MOC
+                        2: True/False
+                        3: Fill in the blanks
+                        4: Q/A
+
+                        // Additional Features
+                        - Quiz Timer
+                        - Per Question Score
+                        - Overall Score
+                        - Hint, walk me through the question
+
+                       */}
+                      <QuizModal workspaceId={workspace.id} />
                     </TabsContent>
                   )}
 

@@ -186,6 +186,24 @@ export const createFlashcard = async (workspaceId: string) => {
   }
 };
 
+export const createQuiz = async (workspaceId: string) => {
+  try {
+    const response = await Api({
+      method: API_METHODS.POST,
+      data: {
+        youtubeUrl: "https://www.youtube.com/watch?v=jPPzvuDIr1w",
+        language: "en",
+      },
+      url: `study-ai/workspaces/${workspaceId}/generate/quiz`,
+    });
+
+    return response.data as unknown;
+  } catch (e: any) {
+    console.error("enrollCoursesApi error:", e.message);
+    throw e;
+  }
+};
+
 export const getWorkSpaceFlashcards = async (workspaceId: string) => {
   try {
     const response = await Api({
