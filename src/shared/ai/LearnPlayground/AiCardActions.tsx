@@ -21,7 +21,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import {
   Tooltip,
@@ -49,8 +48,6 @@ import {
   Music,
   Play,
   Square,
-  Youtube,
-  Globe,
 } from "lucide-react";
 import { aiCourseGenerator } from "@/utils/_apis/courses-apis";
 import CircularProgress from "@mui/material/CircularProgress";

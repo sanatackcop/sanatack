@@ -1,4 +1,4 @@
-import { User, TextIcon, Play } from "lucide-react";
+import { User, TextIcon } from "lucide-react";
 import React, {
   useCallback,
   useRef,
@@ -76,7 +76,6 @@ const YouTubeReader: React.FC<YouTubePlayerProps> = ({
   onPlay,
   onPause,
   onReady,
-  onTranscriptLoad,
   transcript,
   className = "",
 }) => {
@@ -253,13 +252,6 @@ const YouTubeReader: React.FC<YouTubePlayerProps> = ({
     if (playerRef.current && playerRef.current.seekTo) {
       playerRef.current.seekTo(segment.start, true);
       setPlayerState((prev) => ({ ...prev, currentTime: segment.start }));
-    }
-  }, []);
-
-  const handleSectionTitleClick = useCallback((startTime: number) => {
-    if (playerRef.current && playerRef.current.seekTo) {
-      playerRef.current.seekTo(startTime, true);
-      setPlayerState((prev) => ({ ...prev, currentTime: startTime }));
     }
   }, []);
 

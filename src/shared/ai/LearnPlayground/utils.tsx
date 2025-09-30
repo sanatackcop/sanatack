@@ -1,5 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { Action, ChatMessage, State } from "./types";
+// import { State } from "./types";
 
 export const ContentSkeleton = () => (
   <div className="w-full h-full flex flex-col space-y-4 p-4">
@@ -64,7 +64,7 @@ export const ChatSkeleton = () => (
   </div>
 );
 
-export const reducer = (state: State, action: Action): State => {
+export const reducer = (state: any, action: any): any => {
   switch (action.type) {
     case "SET_TAB":
       return { ...state, tab: action.tab };
@@ -111,7 +111,9 @@ export const reducer = (state: State, action: Action): State => {
     case "REMOVE_HIGHLIGHT":
       return {
         ...state,
-        highlights: (state.highlights || []).filter((h) => h.id !== action.id),
+        highlights: (state.highlights || []).filter(
+          (h: any) => h.id !== action.id
+        ),
       };
     case "SET_HIGHLIGHTS":
       return { ...state, highlights: action.highlights || [] };
@@ -153,7 +155,7 @@ export const reducer = (state: State, action: Action): State => {
         streamingMessage: (state.streamingMessage || "") + action.chunk,
       };
     case "COMPLETE_STREAMING_MESSAGE":
-      const completedMessage: ChatMessage = {
+      const completedMessage: any = {
         id: Date.now().toString(),
         type: "assistant",
         content: state.streamingMessage || action.content,

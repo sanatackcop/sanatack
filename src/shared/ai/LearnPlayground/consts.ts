@@ -1,6 +1,6 @@
-import { State } from "./types";
+// import { State } from "./types";
 
-export const initialState: State = {
+export const initialState: any = {
   tab: "chat",
   contentType: "youtube",
   src: "https://arxiv.org/pdf/1706.03762",

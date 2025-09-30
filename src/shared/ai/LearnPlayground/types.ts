@@ -89,7 +89,7 @@ export interface State {
   chatInput: string;
 
   // Workspace related (fixed naming)
-  workspace: Workspace | null;
+  workspace: any | null;
   title: string | null;
 
   // Transcript related

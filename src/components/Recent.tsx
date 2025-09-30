@@ -49,7 +49,7 @@ const WorkspaceItem = ({
   onClick,
   isRTL,
 }: {
-  workspace: Workspace;
+  workspace: any;
   onClick: () => void;
   isRTL: boolean;
 }) => {
@@ -186,7 +186,7 @@ export default function Recent({ isRTL }: { isRTL: boolean }) {
       setLoading(true);
       setError(null);
 
-      const { workspaces: fetchedWorkspaces } = await getAllWorkSpace();
+      const { workspaces: fetchedWorkspaces }: any = await getAllWorkSpace();
 
       // Sort by updatedAt to show most recent first
       const sortedWorkspaces =
@@ -306,7 +306,7 @@ export default function Recent({ isRTL }: { isRTL: boolean }) {
       </div>
 
       <div className="overflow-y-auto scrollbar-hide grid grid-cols-4 items-center gap-2">
-        {workspaces.map((workspace, index) => (
+        {workspaces.map((workspace) => (
           <WorkspaceItem
             key={workspace.id}
             workspace={workspace}

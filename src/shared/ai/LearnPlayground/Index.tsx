@@ -29,7 +29,6 @@ import {
 } from "@/utils/_apis/learnPlayground-api";
 import { useParams } from "react-router-dom";
 import ChatMessages from "./chat/ChatMessage";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChatSkeleton, ContentSkeleton, reducer, TabsSkeleton } from "./utils";
 import { initialState } from "./consts";
 import FlashCards from "./flashcards/Index";
@@ -167,7 +166,7 @@ const LearnPlayGround: React.FC = () => {
               });
             }
             if (chunk.metadata?.error) {
-              const errorMessage: ChatMessage = {
+              const errorMessage: any = {
                 id: Date.now().toString(),
                 type: "assistant",
                 content: chunk.metadata.error,
@@ -182,7 +181,7 @@ const LearnPlayGround: React.FC = () => {
         );
       } catch (error) {
         console.error("Failed to send message:", error);
-        const errorMessage: ChatMessage = {
+        const errorMessage: any = {
           id: Date.now().toString(),
           type: "assistant",
           content: t(
@@ -571,9 +570,9 @@ const LearnPlayGround: React.FC = () => {
                         <>
                           <div className="w-full flex-1 flex flex-col overflow-y-auto h-full">
                             <ChatMessages
-                              messages={state.chatMessages || []}
-                              isLoading={state.chatLoading}
-                              streamingMessage={state.streamingMessage}
+                              messages={(state.chatMessages as any) || []}
+                              isLoading={state.chatLoading as any}
+                              streamingMessage={state.streamingMessage as any}
                               onSendMessage={handleSendMessage}
                             />
                           </div>

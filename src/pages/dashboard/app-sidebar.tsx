@@ -8,7 +8,6 @@ import {
   Crown,
   Plus,
   Compass,
-  History,
   Chrome,
   ChevronDown,
   ThumbsUp,
@@ -22,11 +21,8 @@ import {
   Monitor,
   BoxIcon,
   CalendarDaysIcon,
-  FileText,
   Play,
   Clock,
-  PlaySquare,
-  PlaySquareIcon,
 } from "lucide-react";
 import LogoLight from "@/assets/logo.svg";
 import LogoDark from "@/assets/dark_logo.svg";
@@ -286,7 +282,7 @@ export function AppSidebar() {
     try {
       setLoadingRecent(true);
 
-      const { workspaces: fetchedWorkspaces } = await getAllWorkSpace();
+      const { workspaces: fetchedWorkspaces }: any = await getAllWorkSpace();
 
       // Sort by updatedAt to show most recent first
       const sortedWorkspaces =
@@ -310,7 +306,7 @@ export function AppSidebar() {
   }, []);
 
   // Helper function to get workspace display title
-  const getWorkspaceTitle = (workspace: Workspace) => {
+  const getWorkspaceTitle = (workspace: any) => {
     if (workspace.workspaceName) return workspace.workspaceName;
   };
 
