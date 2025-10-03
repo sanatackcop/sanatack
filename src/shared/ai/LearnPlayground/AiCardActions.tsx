@@ -55,7 +55,6 @@ import {
   createNewWorkSpace,
   youtubeUrlPastApi,
 } from "@/utils/_apis/learnPlayground-api";
-import ChatInput from "./chat/chatInput";
 
 type Level = "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
 type Pace = "EASY" | "BALANCED" | "INTENSE";
@@ -110,7 +109,6 @@ export default function AiCardActions() {
   const navigate = useNavigate();
   const isRTL = i18n.language === "ar";
 
-  const [query, setQuery] = useState("");
   const uploadRef = useRef<HTMLInputElement | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordingTimerRef = useRef<any>(null);
@@ -459,39 +457,16 @@ export default function AiCardActions() {
     });
   }
 
-  const [, setCurrentModel] = useState(null);
-
-  const models = [
-    { id: "gemini-2.5-flash", name: "Gemini 2.5 Flash", isActive: true },
-    { id: "gpt-4o", name: "GPT-4o", isActive: false },
-    { id: "claude-3.5", name: "Claude 3.5 Sonnet", isActive: false },
-  ];
-
-  const handleSubmit = () => {
-    navigate("/dashboard/learn/conent/23");
-  };
-
-  const handleModelChange = (model: any) => {
-    setCurrentModel(model);
-    console.log("Model changed to:", model);
-  };
-
   return (
     <div className="px-14 mt-10 transition-colors">
       <CardContent
         className={
-          "p-6 px-96 py-10 " +
+          "p-6 px-24 py-10 " +
           (builderActive
             ? "border-2 border-zinc-200 bg-[#fbfbfa] dark:border-zinc-800 rounded-3xl"
             : "")
         }
       >
-        <header className="mb-2">
-          <h1 className={`text-center text-xl md:text-[34px] font-medium mb-2`}>
-            {t("aiActions.mainTitle")}
-          </h1>
-        </header>
-
         {(builderActive || isGenerating) && (
           <div className="mt-6 flex items-center justify-center gap-3 text-sm">
             <Step
@@ -534,14 +509,6 @@ export default function AiCardActions() {
                 Icon={BookOpen}
               />
             </div>
-            <ChatInput
-              value={query}
-              onChange={setQuery}
-              onSubmit={handleSubmit}
-              onModelChange={handleModelChange}
-              placeholder={t("aiActions.chatPlaceholder")}
-              models={models}
-            />
           </>
         )}
 

@@ -112,7 +112,7 @@ export default function Spaces({ isRTL }: { isRTL: boolean }) {
               isRTL ? "text-right" : "text-left"
             }`}
           >
-            {t("dashboard.spaces.title")}
+            Your Spaces
           </h2>
         </div>
 
@@ -285,7 +285,7 @@ export default function Spaces({ isRTL }: { isRTL: boolean }) {
 function SpaceItemSkeleton({ isRTL }: { isRTL: boolean }) {
   return (
     <div
-      className={`h-[88px] rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 flex items-center shadow-sm ${
+      className={`h-[88px] rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 flex items-center${
         isRTL ? "pr-5 pl-4" : "pl-5 pr-4"
       }`}
     >
@@ -336,7 +336,7 @@ function SpaceItem({
           onOpen(id);
         }
       }}
-      className={`group relative flex h-[88px] items-center rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm transition-all duration-200 hover:shadow-md hover:border-gray-200 dark:hover:border-gray-700 hover:-translate-y-0.5 cursor-pointer focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 ${
+      className={`group relative flex h-[88px] items-center rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800  transition-all duration-200 hover:border-gray-200 dark:hover:border-gray-700 hover:-translate-y-0.5 cursor-pointer focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 ${
         isRTL ? "pr-5 pl-4" : "pl-5 pr-4"
       }`}
     >
