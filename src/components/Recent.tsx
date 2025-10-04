@@ -1,5 +1,4 @@
 import { useTranslation } from "react-i18next";
-import EmptyState from "./EmptyState";
 import { useEffect, useState } from "react";
 import { getAllWorkSpace } from "@/utils/_apis/learnPlayground-api";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -357,34 +356,19 @@ export default function Recent({ isRTL }: { isRTL: boolean }) {
       </section>
     );
   }
-
-  if (!workspaces || workspaces.length === 0) {
-    return (
-      <section>
-        <div className="flex items-center justify-between mb-3">
-          <h2
-            className={`text-lg font-semibold ${
-              isRTL ? "text-right" : "text-left"
-            }`}
-          >
-            {t("sidebar.recent")}
-          </h2>
-        </div>
-        <EmptyState />
-      </section>
-    );
-  }
+  if (!workspaces) return;
   return (
     <section>
       <div className="flex gap-4 flex-wrap">
-        {workspaces.map((workspace) => (
-          <WorkspaceFolderItem
-            key={workspace.id}
-            workspace={workspace}
-            onClick={() => handleWorkspaceClick(workspace.id)}
-            isRTL={isRTL}
-          />
-        ))}
+        {workspaces.length !== 0 &&
+          workspaces.map((workspace) => (
+            <WorkspaceFolderItem
+              key={workspace.id}
+              workspace={workspace}
+              onClick={() => handleWorkspaceClick(workspace.id)}
+              isRTL={isRTL}
+            />
+          ))}
 
         <Card
           onClick={() => setOpen(true)}

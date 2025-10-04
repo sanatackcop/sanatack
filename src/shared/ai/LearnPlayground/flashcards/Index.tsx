@@ -1,7 +1,7 @@
 // @ts-nocheck
 import React, { useEffect, useState, useCallback } from "react";
 import { Progress } from "@/components/ui/progress";
-import { getWorkSpaceFlashcards } from "@/utils/_apis/learnPlayground-api";
+import { getWorkSpaceContent } from "@/utils/_apis/learnPlayground-api";
 import { ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import FlashcardModal from "./FlashcardModal";
@@ -76,10 +76,11 @@ const useFlashcards = (workspaceId: string) => {
   const fetchFlashCards = useCallback(async () => {
     try {
       setLoading(true);
-      const response: FlashcardSet[] = await getWorkSpaceFlashcards(
-        workspaceId
+      const response: FlashcardSet[] = await getWorkSpaceContent(workspaceId);
+      const cleanedResponse = response.flashcards.filter(
+        (item): item is FlashcardSet => item != null
       );
-      setFlashcardSets(response);
+      setFlashcardSets(cleanedResponse);
       setError(null);
       setLoading(false);
     } catch (err) {
@@ -348,7 +349,7 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
           <div className="flex-1 min-h-0">
             <ScrollArea className="h-full">
               <FlashcardsList
-                sets={flashcardSets.flashcards || []}
+                sets={flashcardSets || []}
                 onSelectSet={handleSetSelect}
                 onCreateNew={() => setModalOpen(true)}
               />

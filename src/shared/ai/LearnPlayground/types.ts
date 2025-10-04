@@ -33,9 +33,10 @@ export interface Highlight {
 // Chat Message Interface
 export interface ChatMessage {
   id: string;
-  type: "user" | "bot";
+  type: "user" | "bot" | any;
   content: string;
   timestamp: Date;
+  metadata?: any;
 }
 
 // Transcript Interface

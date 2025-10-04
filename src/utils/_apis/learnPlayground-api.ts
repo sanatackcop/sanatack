@@ -18,7 +18,6 @@ export const youtubeUrlPastApi = async ({ url }: { url: string }) => {
   }
 };
 
-// Recent
 export const createNewWorkSpace = async ({
   workspaceName,
   youtubeVideoId,
@@ -33,6 +32,57 @@ export const createNewWorkSpace = async ({
       data: {
         workspaceName,
         youtubeVideoId,
+      },
+    });
+
+    return response.data as unknown;
+  } catch (e: any) {
+    console.error("enrollCoursesApi error:", e.message);
+    throw e;
+  }
+};
+
+export const createNewQuiz = async ({ id }: { id: string }) => {
+  try {
+    const response = await Api({
+      method: API_METHODS.POST,
+      url: `study-ai/workspaces/${id}/generate/quiz`,
+      data: {
+        language: "en",
+      },
+    });
+
+    return response.data as unknown;
+  } catch (e: any) {
+    console.error("enrollCoursesApi error:", e.message);
+    throw e;
+  }
+};
+
+export const createNewDeepExplanationApi = async ({ id }: { id: string }) => {
+  try {
+    const response = await Api({
+      method: API_METHODS.POST,
+      url: `study-ai/workspaces/${id}/generate/explanation`,
+      data: {
+        language: "en",
+      },
+    });
+
+    return response.data as unknown;
+  } catch (e: any) {
+    console.error("enrollCoursesApi error:", e.message);
+    throw e;
+  }
+};
+
+export const createNewSummaryApi = async ({ id }: { id: string }) => {
+  try {
+    const response = await Api({
+      method: API_METHODS.POST,
+      url: `study-ai/workspaces/${id}/generate/summary`,
+      data: {
+        language: "en",
       },
     });
 
@@ -186,7 +236,7 @@ export const createFlashcard = async (workspaceId: string) => {
   }
 };
 
-export const getWorkSpaceFlashcards = async (workspaceId: string) => {
+export const getWorkSpaceContent = async (workspaceId: string) => {
   try {
     const response = await Api({
       method: API_METHODS.GET,

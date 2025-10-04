@@ -5,10 +5,13 @@ import React, {
   useState,
   useRef,
 } from "react";
-import { ResizablePanelGroup } from "@/components/ui/resizable";
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from "@/components/ui/resizable";
 import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ResizableHandle, ResizablePanel } from "@/components/ui/resizable";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   NotebookPen,
@@ -16,6 +19,7 @@ import {
   Copy,
   MessageCircle,
   Loader2,
+  Workflow,
 } from "lucide-react";
 import { TabKey, ChatMessage, Workspace } from "./types";
 import PdfReader from "./PdfReader";
@@ -32,37 +36,44 @@ import ChatMessages from "./chat/ChatMessage";
 import { ChatSkeleton, ContentSkeleton, reducer, TabsSkeleton } from "./utils";
 import { initialState } from "./consts";
 import FlashCards from "./flashcards/Index";
+import { QuizList } from "./quizzes/Quiz";
+import { SummaryList } from "./summary/Summary";
+import MindMap from "./mindMap/MindMap";
 
 const TABS_CONFIG = [
   { id: "chat", labelKey: "tabs.chat", icon: MessageCircle },
   { id: "flashcards", labelKey: "tabs.flashcards", icon: Copy },
   { id: "quizzes", labelKey: "tabs.quizzes", icon: NotebookPen },
   { id: "summary", labelKey: "tabs.summary", icon: BookOpen },
+  { id: "mind_map", labelKey: "Mind Map", icon: Workflow },
 ] as const;
 
 const LearnPlayGround: React.FC = () => {
   const { t, i18n } = useTranslation();
   const { id } = useParams();
   const [state, dispatch] = useReducer(reducer, initialState);
-  const [isLoading] = useState(false);
   const [workspaceLoading, setWorkspaceLoading] = useState(true);
   const [contentLoading, setContentLoading] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const tabsListRef = useRef<HTMLDivElement>(null);
+
+  // Scroll related states for tab overflow
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
-  const [indicatorStyle, setIndicatorStyle] = useState({
-    width: 0,
-    right: 0,
-  });
-  const [workspace, setWorkspace] = useState<Workspace | undefined>();
+  const [indicatorStyle, setIndicatorStyle] = useState({ width: 0, right: 0 });
 
+  // Resizing drag and hover state for the resize handle
+  const [isResizing, setIsResizing] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+
+  const [workspace, setWorkspace] = useState<Workspace | undefined>();
   const isRTL = i18n.language === "ar";
 
-  const fetchTheWorkSpace = async () => {
+  // Fetch workspace data
+  const fetchTheWorkSpace = useCallback(async () => {
     if (!id) {
       setWorkspaceLoading(false);
       return;
@@ -70,36 +81,21 @@ const LearnPlayGround: React.FC = () => {
     try {
       setWorkspaceLoading(true);
       setContentLoading(true);
-
       const response: any = await getWorkSpace(id);
       const workspaceData = response.workspace || response;
-
-      dispatch({
-        type: "SET_WORKSPACE",
-        workspace: workspaceData,
-      });
+      dispatch({ type: "SET_WORKSPACE", workspace: workspaceData });
       setWorkspace(workspaceData);
 
       if (workspaceData.youtubeVideo?.youtubeUrl || workspaceData.youtubeUrl) {
         const youtubeUrl =
           workspaceData.youtubeVideo?.youtubeUrl || workspaceData.youtubeUrl;
-
-        dispatch({
-          type: "SET_CONTENT",
-          contentType: "youtube",
-        });
-
+        dispatch({ type: "SET_CONTENT", contentType: "youtube" });
         const vdID = youtubeUrl.includes("youtu.be/")
           ? youtubeUrl.split("/").pop()?.split("?")[0]
           : youtubeUrl.split("v=")[1]?.split("&")[0];
-
         if (vdID) {
-          dispatch({
-            type: "SET_YOUTUBE_VIDEO",
-            videoId: vdID,
-          });
+          dispatch({ type: "SET_YOUTUBE_VIDEO", videoId: vdID });
         }
-
         if (workspaceData.transcript) {
           dispatch({
             type: "SET_TRANSCRIPT",
@@ -109,14 +105,8 @@ const LearnPlayGround: React.FC = () => {
       }
 
       if (workspaceData.contentType === "pdf" && workspaceData.pdfUrl) {
-        dispatch({
-          type: "SET_CONTENT",
-          contentType: "pdf",
-        });
-        dispatch({
-          type: "SET_SRC",
-          src: workspaceData.pdfUrl,
-        });
+        dispatch({ type: "SET_CONTENT", contentType: "pdf" });
+        dispatch({ type: "SET_SRC", src: workspaceData.pdfUrl });
       }
     } catch (error) {
       console.error("Failed to fetch workspace:", error);
@@ -128,23 +118,22 @@ const LearnPlayGround: React.FC = () => {
       setWorkspaceLoading(false);
       setTimeout(() => setContentLoading(false), 1000);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     fetchTheWorkSpace();
-  }, [id]);
+  }, [fetchTheWorkSpace]);
 
+  // Send chat message handler
   const handleSendMessage = useCallback(
     async (message: string) => {
       if (!message.trim() || !id) return;
-
       const userMessage: ChatMessage = {
         id: Date.now().toString(),
         type: "user",
         content: message.trim(),
         timestamp: new Date(),
       };
-
       dispatch({ type: "ADD_CHAT_MESSAGE", message: userMessage });
       dispatch({ type: "SET_CHAT_LOADING", loading: true });
       dispatch({ type: "SET_STREAMING_MESSAGE", content: "" });
@@ -154,7 +143,7 @@ const LearnPlayGround: React.FC = () => {
           id,
           message.trim(),
           i18n.language as "en" | "ar",
-          undefined, // model
+          undefined,
           (chunk) => {
             if (chunk.chunk) {
               dispatch({ type: "ADD_STREAMING_CHUNK", chunk: chunk.chunk });
@@ -166,7 +155,7 @@ const LearnPlayGround: React.FC = () => {
               });
             }
             if (chunk.metadata?.error) {
-              const errorMessage: any = {
+              const errorMessage: ChatMessage = {
                 id: Date.now().toString(),
                 type: "assistant",
                 content: chunk.metadata.error,
@@ -181,7 +170,7 @@ const LearnPlayGround: React.FC = () => {
         );
       } catch (error) {
         console.error("Failed to send message:", error);
-        const errorMessage: any = {
+        const errorMessage: ChatMessage = {
           id: Date.now().toString(),
           type: "assistant",
           content: t(
@@ -199,6 +188,7 @@ const LearnPlayGround: React.FC = () => {
     [id, i18n.language, t]
   );
 
+  // Scroll control for tabs overflow
   const checkScrollability = useCallback(() => {
     if (scrollContainerRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } =
@@ -208,9 +198,9 @@ const LearnPlayGround: React.FC = () => {
     }
   }, []);
 
+  // Update active tab indicator position
   const updateIndicatorPosition = useCallback(() => {
     if (!tabsListRef.current) return;
-
     const activeTabIndex = TABS_CONFIG.findIndex((tab) => tab.id === state.tab);
     const tabElements = tabsListRef.current.querySelectorAll('[role="tab"]');
     const activeTabElement = tabElements[activeTabIndex] as HTMLElement;
@@ -229,30 +219,30 @@ const LearnPlayGround: React.FC = () => {
     }
   }, [state.tab]);
 
+  // Scroll and indicator handlers bind/unbind
   useEffect(() => {
     checkScrollability();
     updateIndicatorPosition();
-
     const container = scrollContainerRef.current;
-    if (container) {
-      const handleScroll = () => {
-        checkScrollability();
-        updateIndicatorPosition();
-      };
+    if (!container) return;
 
-      const handleResize = () => {
-        checkScrollability();
-        setTimeout(updateIndicatorPosition, 100);
-      };
+    const handleScroll = () => {
+      checkScrollability();
+      updateIndicatorPosition();
+    };
 
-      container.addEventListener("scroll", handleScroll);
-      window.addEventListener("resize", handleResize);
+    const handleResize = () => {
+      checkScrollability();
+      setTimeout(updateIndicatorPosition, 100);
+    };
 
-      return () => {
-        container.removeEventListener("scroll", handleScroll);
-        window.removeEventListener("resize", handleResize);
-      };
-    }
+    container.addEventListener("scroll", handleScroll);
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleResize);
+    };
   }, [checkScrollability, updateIndicatorPosition]);
 
   useEffect(() => {
@@ -260,12 +250,12 @@ const LearnPlayGround: React.FC = () => {
     return () => clearTimeout(timeoutId);
   }, [state.tab, updateIndicatorPosition]);
 
+  // Drag scrolling for tabs
   const handleTouchStart = (e: React.TouchEvent) => {
-    if (scrollContainerRef.current) {
-      setIsDragging(true);
-      setStartX(e.touches[0].pageX - scrollContainerRef.current.offsetLeft);
-      setScrollLeft(scrollContainerRef.current.scrollLeft);
-    }
+    if (!scrollContainerRef.current) return;
+    setIsDragging(true);
+    setStartX(e.touches[0].pageX - scrollContainerRef.current.offsetLeft);
+    setScrollLeft(scrollContainerRef.current.scrollLeft);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
@@ -275,16 +265,13 @@ const LearnPlayGround: React.FC = () => {
     scrollContainerRef.current.scrollLeft = scrollLeft - walk;
   };
 
-  const handleTouchEnd = () => {
-    setIsDragging(false);
-  };
+  const handleTouchEnd = () => setIsDragging(false);
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (scrollContainerRef.current) {
-      setIsDragging(true);
-      setStartX(e.pageX - scrollContainerRef.current.offsetLeft);
-      setScrollLeft(scrollContainerRef.current.scrollLeft);
-    }
+    if (!scrollContainerRef.current) return;
+    setIsDragging(true);
+    setStartX(e.pageX - scrollContainerRef.current.offsetLeft);
+    setScrollLeft(scrollContainerRef.current.scrollLeft);
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
@@ -295,19 +282,16 @@ const LearnPlayGround: React.FC = () => {
     scrollContainerRef.current.scrollLeft = scrollLeft - walk;
   };
 
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
+  const handleMouseUp = () => setIsDragging(false);
 
-  const getDisplayTitle = () => {
-    return (
-      state.workspace?.workspaceName ||
-      state.workspace?.title ||
-      state.title ||
-      "Untitled Workspace"
-    );
-  };
+  // Workspace title display
+  const getDisplayTitle = () =>
+    state.workspace?.workspaceName ||
+    state.workspace?.title ||
+    state.title ||
+    "Untitled Workspace";
 
+  // Loading state
   if (workspaceLoading) {
     return (
       <section
@@ -327,16 +311,16 @@ const LearnPlayGround: React.FC = () => {
       </section>
     );
   }
-
   return (
     <section
       style={{
-        maxHeight: "calc(100vh - 3rem)",
-        minHeight: "calc(100vh - 3rem)",
+        height: "calc(100vh - 3rem)",
       }}
       dir={isRTL ? "rtl" : "ltr"}
+      className="flex flex-col"
     >
-      <div className="p-2 flex items-center justify-between">
+      {/* Workspace title */}
+      <div className="p-2 flex items-center justify-between flex-shrink-0">
         <div className="max-w-[34rem] flex-grow relative">
           {workspaceLoading ? (
             <Skeleton className="h-10 w-full rounded-2xl" />
@@ -355,13 +339,19 @@ const LearnPlayGround: React.FC = () => {
         </div>
       </div>
 
-      <ResizablePanelGroup direction="horizontal">
-        <ResizablePanel defaultSize={50} minSize={30} className="mt-2">
+      {/* Panels section - horizontally resizable */}
+      <ResizablePanelGroup direction="horizontal" className="flex-1 min-h-0">
+        {/* Left panel content */}
+        <ResizablePanel
+          defaultSize={50}
+          minSize={30}
+          className="mt-2 min-h-0 flex flex-col"
+        >
           <motion.div
             initial={{ x: 20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ type: "spring", stiffness: 260, damping: 30 }}
-            className="h-full p-4 pt-0"
+            className="h-full p-4 pt-0 flex flex-col min-h-0"
           >
             {contentLoading ? (
               <ContentSkeleton />
@@ -374,10 +364,7 @@ const LearnPlayGround: React.FC = () => {
                 selectedText={state.selectedText}
                 onLoaded={(pageCount) => {
                   dispatch({ type: "SET_PAGE_COUNT", pageCount });
-                  dispatch({
-                    type: "SET_STATUS",
-                    status: { kind: "idle" },
-                  });
+                  dispatch({ type: "SET_STATUS", status: { kind: "idle" } });
                   setContentLoading(false);
                 }}
                 onError={(message) => {
@@ -409,11 +396,7 @@ const LearnPlayGround: React.FC = () => {
                   dispatch({ type: "SET_YOUTUBE_VIDEO", videoId })
                 }
                 onTimeUpdate={(currentTime, duration) =>
-                  dispatch({
-                    type: "SET_YOUTUBE_TIME",
-                    currentTime,
-                    duration,
-                  })
+                  dispatch({ type: "SET_YOUTUBE_TIME", currentTime, duration })
                 }
                 onPlay={() =>
                   dispatch({ type: "SET_YOUTUBE_PLAYING", isPlaying: true })
@@ -425,20 +408,38 @@ const LearnPlayGround: React.FC = () => {
                 onTranscriptLoad={(transcript) =>
                   dispatch({ type: "SET_TRANSCRIPT", transcript })
                 }
-                className="w-full h-full"
+                className="w-full h-full flex-grow"
               />
             ) : null}
           </motion.div>
         </ResizablePanel>
 
-        <ResizableHandle />
+        {/* Always render ResizableHandle; visible on hover or dragging */}
+        <ResizableHandle
+          onPointerDown={() => setIsResizing(true)}
+          onPointerUp={() => setIsResizing(false)}
+          onPointerCancel={() => setIsResizing(false)}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          style={{
+            opacity: isResizing || isHovered ? 1 : 0,
+            transition: "opacity 0.3s ease",
+            cursor: "col-resize",
+            pointerEvents: "auto",
+          }}
+        />
 
-        <ResizablePanel defaultSize={50} minSize={30} className="mt-2">
+        {/* Right panel with Tabs */}
+        <ResizablePanel
+          defaultSize={50}
+          minSize={30}
+          className="mt-2 min-h-0 flex flex-col"
+        >
           <motion.div
             initial={{ x: 20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ type: "spring", stiffness: 260, damping: 30 }}
-            className="h-full flex flex-col"
+            className="h-full flex flex-col min-h-0"
           >
             {workspaceLoading ? (
               <TabsSkeleton />
@@ -448,8 +449,9 @@ const LearnPlayGround: React.FC = () => {
                 onValueChange={(v) =>
                   dispatch({ type: "SET_TAB", tab: v as TabKey })
                 }
-                className="h-full flex flex-col"
+                className="h-full flex flex-col min-h-0"
               >
+                {/* Tabs header with scroll */}
                 <div className="relative p-2 pt-0 flex-shrink-0">
                   {canScrollLeft && (
                     <div
@@ -482,13 +484,12 @@ const LearnPlayGround: React.FC = () => {
                   >
                     <TabsList
                       ref={tabsListRef}
-                      className="relative !space-x-0 !p-1 flex items-center gap-4 h-12
-                       min-w-max rounded-2xl sm:rounded-3xl border w-fit shadow-sm"
+                      className="relative !space-x-0 !p-1 flex items-center gap-4 h-12 min-w-max rounded-2xl sm:rounded-3xl border w-fit shadow-sm"
                       style={{ direction: isRTL ? "rtl" : "ltr" }}
                     >
+                      {/* Active tab highlight */}
                       <motion.div
-                        className="absolute top-[4px] sm:top-[6px] bottom-[4px] sm:bottom-[6px]
-                         bg-gradient-to-b from-white to-gray-50 ring-1 ring-black/5 rounded-3xl z-10"
+                        className="absolute top-[4px] sm:top-[6px] bottom-[4px] sm:bottom-[6px] bg-gradient-to-b from-white to-gray-50 ring-1 ring-black/5 rounded-3xl z-10"
                         animate={{
                           width: indicatorStyle.width,
                           right: indicatorStyle.right,
@@ -499,6 +500,7 @@ const LearnPlayGround: React.FC = () => {
                           damping: 35,
                         }}
                       />
+
                       {TABS_CONFIG.map((tab) => {
                         const IconComponent = tab.icon;
                         const isActive = state.tab === tab.id;
@@ -506,13 +508,7 @@ const LearnPlayGround: React.FC = () => {
                           <TabsTrigger
                             key={tab.id}
                             value={tab.id}
-                            className="px-2 sm:px-3 py-1.5 sm:py-2 relative z-20 flex-shrink-0
-                                transition-all duration-150 
-                                bg-transparent hover:bg-transparent data-[state=active]:bg-transparent
-                                rounded-lg sm:rounded-lg h-7 sm:h-9
-                                flex flex-row items-center justify-center
-                                hover:scale-[1.02] active:scale-[0.98]
-                                select-none cursor-pointer gap-1.5"
+                            className="px-2 sm:px-3 py-1.5 sm:py-2 relative z-20 flex-shrink-0 transition-all duration-150 bg-transparent hover:bg-transparent data-[state=active]:bg-transparent rounded-lg sm:rounded-lg h-7 sm:h-9 flex flex-row items-center justify-center select-none cursor-pointer gap-1.5"
                             style={{
                               minWidth: "fit-content",
                               padding: "0 8px",
@@ -531,7 +527,7 @@ const LearnPlayGround: React.FC = () => {
                                   : "text-gray-700"
                               }`}
                             >
-                              {t(tab.labelKey)}
+                              {t(tab.labelKey as any)}
                             </span>
                           </TabsTrigger>
                         );
@@ -554,21 +550,21 @@ const LearnPlayGround: React.FC = () => {
                   )}
                 </div>
 
-                <div className="flex-1 overflow-hidden relative">
+                {/* Tabs content */}
+                <div className="flex-1 overflow-hidden flex flex-col min-h-0">
                   {state.tab === "chat" && (
                     <TabsContent
                       value="chat"
-                      style={{
-                        maxHeight: "calc(100vh - 9rem)",
-                        minHeight: "calc(100vh - 9rem)",
-                      }}
-                      className="m-0 flex flex-1 flex-col relative items-end justify-end"
+                      className="m-0 flex-1 flex flex-col relative items-end justify-end min-h-0"
+                      style={{ maxHeight: "100%" }}
                     >
-                      {isLoading ? (
-                        <ChatSkeleton />
+                      {state.isLoading ? (
+                        <div className="w-full flex-1">
+                          <ChatSkeleton />
+                        </div>
                       ) : (
                         <>
-                          <div className="w-full flex-1 flex flex-col overflow-y-auto h-full">
+                          <div className="w-full flex-1 flex flex-col justify-end items-center overflow-y-auto min-h-0">
                             <ChatMessages
                               messages={(state.chatMessages as any) || []}
                               isLoading={state.chatLoading as any}
@@ -597,11 +593,8 @@ const LearnPlayGround: React.FC = () => {
                   {state.tab === "flashcards" && workspace && (
                     <TabsContent
                       value="flashcards"
-                      className="m-0 h-full"
-                      style={{
-                        maxHeight: "calc(100vh - 9rem)",
-                        minHeight: "calc(100vh - 9rem)",
-                      }}
+                      className="m-0 h-full flex flex-col"
+                      style={{ maxHeight: "100%" }}
                     >
                       <FlashCards workspaceId={workspace.id} />
                     </TabsContent>
@@ -610,20 +603,35 @@ const LearnPlayGround: React.FC = () => {
                   {state.tab === "quizzes" && (
                     <TabsContent
                       value="quizzes"
-                      className="m-0 h-full p-4 text-gray-500"
+                      className="m-0 h-full p-4 text-gray-500 flex flex-col"
                     >
-                      {/* Replace below with your quizzes content component */}
-                      Quizzes content goes here
+                      <QuizList
+                        workspaceId={(workspace && workspace.id) || ""}
+                      />
                     </TabsContent>
                   )}
 
                   {state.tab === "summary" && (
                     <TabsContent
                       value="summary"
-                      className="m-0 h-full p-4 text-gray-500"
+                      className="m-0 h-full p-4 text-gray-500 flex flex-col"
+                      style={{ maxHeight: "100%" }}
                     >
-                      {/* Replace below with your summary content component */}
-                      Summary content goes here
+                      <SummaryList
+                        worksapceId={(workspace && workspace.id) || ""}
+                      />
+                    </TabsContent>
+                  )}
+
+                  {state.tab === "mind_map" && (
+                    <TabsContent
+                      value="mind_map"
+                      className="m-0 h-full p-4 text-gray-500 flex flex-col"
+                      style={{ maxHeight: "100%" }}
+                    >
+                      <MindMap
+                        workspaceId={(workspace && workspace.id) || ""}
+                      />
                     </TabsContent>
                   )}
                 </div>

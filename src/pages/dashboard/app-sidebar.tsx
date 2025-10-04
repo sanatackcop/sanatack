@@ -16,6 +16,7 @@ import {
   ChevronDown,
   LogOut,
   Globe,
+  Boxes,
 } from "lucide-react";
 import clsx from "clsx";
 import {
@@ -103,7 +104,7 @@ export function AppSidebar() {
       {
         groupTitle: "Learning",
         menuItems: [
-          { title: "Add Content", url: "/dashboard/overview", icon: Plus },
+          { title: "My Workspaces", url: "/dashboard/overview", icon: Boxes },
           {
             title: t("sidebar.createMap"),
             url: "/dashboard/learn/map",
