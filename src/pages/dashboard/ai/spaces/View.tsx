@@ -16,9 +16,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { FileText, Grid2x2, List, PencilLine } from "lucide-react";
 import AppLayout from "@/components/layout/Applayout";
 import { useParams } from "react-router-dom";
-import AiCardActions from "@/shared/ai/AiCardActions";
 import { getSingleSpaceApi, updateSpaceApi } from "@/utils/_apis/courses-apis";
 import EmptySpaceCTA from "@/components/EmptyState";
+import AiCardActions from "@/shared/ai/LearnPlayground/AiCardActions";
 
 type Space = {
   id: string;

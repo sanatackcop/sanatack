@@ -1,7 +1,7 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import Storage from "@/lib/Storage";
 
-let baseURL = import.meta.env.VITE_REACT_APP_BASEURL;
+export let baseURL = import.meta.env.VITE_REACT_APP_BASEURL;
 
 export interface CustomError {
   error: {
@@ -83,3 +83,8 @@ export const Api = async <T = unknown>(
 };
 
 export default Api;
+
+export enum API_METHODS {
+  POST = "post",
+  GET = "get",
+}

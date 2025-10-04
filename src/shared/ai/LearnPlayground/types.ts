@@ -1,4 +1,5 @@
 export type ContentType = "pdf" | "youtube";
+
 export type Status =
   | { kind: "idle" }
   | { kind: "loading"; for: ContentType }
@@ -29,6 +30,41 @@ export interface Highlight {
   zoom: number;
 }
 
+// Chat Message Interface
+export interface ChatMessage {
+  id: string;
+  type: "user" | "bot" | any;
+  content: string;
+  timestamp: Date;
+  metadata?: any;
+}
+
+// Transcript Interface
+export interface TranscriptSegment {
+  text: string;
+  start: number;
+  duration: number;
+}
+
+export interface YouTubeTranscript {
+  segments: TranscriptSegment[];
+  language?: string;
+  isGenerated?: boolean;
+}
+
+// Fixed Workspace interface (flattened)
+export interface Workspace {
+  id: string;
+  workspaceName?: string;
+  title?: string;
+  youtubeUrl?: string;
+  contentType: "youtube" | "pdf";
+  pdfUrl?: string;
+  createdAt: string;
+  updatedAt: string;
+  transcript?: YouTubeTranscript;
+}
+
 export interface State {
   tab: TabKey;
   contentType: ContentType;
@@ -43,10 +79,23 @@ export interface State {
   highlights: Highlight[];
   selectedText: string;
 
+  // YouTube related
   youtubeVideoId: string;
   youtubeCurrentTime: number;
   youtubeDuration: number;
   youtubeIsPlaying: boolean;
+
+  // Chat related
+  chatMessages: ChatMessage[];
+  chatInput: string;
+
+  // Workspace related (fixed naming)
+  workspace: any | null;
+  title: string | null;
+
+  // Transcript related
+  transcript: YouTubeTranscript | null;
+  transcriptLoading: boolean;
 }
 
 export type Action =
@@ -72,4 +121,11 @@ export type Action =
   | { type: "SET_YOUTUBE_VIDEO"; videoId: string }
   | { type: "SET_YOUTUBE_TIME"; currentTime: number; duration: number }
   | { type: "SET_YOUTUBE_PLAYING"; isPlaying: boolean }
-  | { type: "REORDER_TABS"; newOrder: string[] }; // <-- Add this line
+  | { type: "ADD_CHAT_MESSAGE"; message: ChatMessage }
+  | { type: "SET_CHAT_INPUT"; input: string }
+  | { type: "CLEAR_CHAT" }
+  | { type: "SET_WORKSPACE"; workspace: Workspace }
+  | { type: "SET_TITLE"; title: string }
+  | { type: "SET_TRANSCRIPT"; transcript: YouTubeTranscript }
+  | { type: "SET_TRANSCRIPT_LOADING"; loading: boolean }
+  | { type: "REORDER_TABS"; newOrder: string[] };

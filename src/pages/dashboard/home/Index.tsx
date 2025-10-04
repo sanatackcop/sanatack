@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CoursesContext } from "@/utils/types";
 import { getAllCoursesApi } from "@/utils/_apis/courses-apis";
-import AppLayout from "@/components/layout/Applayout";
-import AiCardActions from "@/shared/ai/AiCardActions";
 import Recent from "@/components/Recent";
 import Spaces from "@/components/Spaces";
 
@@ -32,11 +30,16 @@ export default function LearningDashboard() {
   }, []);
 
   return (
-    <AppLayout>
-      <AiCardActions />
-      <Recent isRTL={isRTL} />
-      <Spaces isRTL={isRTL} />
-      {/* <Explore /> */}
-    </AppLayout>
+    <>
+      <section className="px-32  py-4">
+        <header className="mb-2">
+          <h1 className={`text-left text-xl md:text-[24px] font-medium my-5`}>
+            Hello Osama Your Recent Learning Playgrounds 👋
+          </h1>
+        </header>
+        <Recent isRTL={isRTL} />
+        <Spaces isRTL={isRTL} />
+      </section>
+    </>
   );
 }

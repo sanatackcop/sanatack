@@ -55,8 +55,8 @@ import {
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import { Document, Page, pdfjs } from "react-pdf";
-import { Status } from "./types";
 import { Card } from "@/components/ui/card";
+import { Status } from "./types";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.mjs",

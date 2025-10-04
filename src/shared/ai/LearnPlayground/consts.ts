@@ -1,0 +1,28 @@
+// import { State } from "./types";
+
+export const initialState: any = {
+  tab: "chat",
+  contentType: "youtube",
+  src: "https://arxiv.org/pdf/1706.03762",
+  page: 1,
+  pageCount: null,
+  zoom: 1,
+  status: { kind: "idle" },
+  prompt: "",
+  notes: "",
+  sidebarOpen: true,
+  highlights: [],
+  selectedText: "",
+  youtubeVideoId: "dQw4w9WgXcQ",
+  youtubeCurrentTime: 0,
+  youtubeDuration: 0,
+  youtubeIsPlaying: false,
+  chatMessages: [],
+  chatInput: "",
+  chatLoading: false,
+  streamingMessage: "",
+  workspace: null,
+  title: null,
+  transcript: null,
+  transcriptLoading: false,
+};

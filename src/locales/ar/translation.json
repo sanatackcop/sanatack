@@ -30,7 +30,9 @@
     "paste": "لصق",
     "cut": "قص",
     "comingSoon": "قريباً",
-    "tabContent": "محتوى {{tab}} سيظهر هنا"
+    "tabContent": "محتوى {{tab}} سيظهر هنا",
+    "generate": "أنشئ",
+    "createFlashCard": "إنشاء بطاقة تعليمية"
   },
   "theme": {
     "light": "فاتح",
