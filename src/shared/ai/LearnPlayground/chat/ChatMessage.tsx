@@ -1,15 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import {
-  Bot,
-  MessageCircle,
-  Copy,
-  Volume2,
-  Check,
-  ThumbsUp,
-  ThumbsDown,
-} from "lucide-react";
+import { Bot, MessageCircle } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -37,80 +29,80 @@ interface ChatMessagesProps {
   onSendMessage: (message: string) => Promise<void>;
 }
 
-const MessageActions: React.FC<{ content: string; isRtl?: boolean }> = ({
-  content,
-  isRtl,
-}) => {
-  const { t } = useTranslation();
-  const [copied, setCopied] = useState(false);
+// const MessageActions: React.FC<{ content: string; isRtl?: boolean }> = ({
+//   content,
+//   isRtl,
+// }) => {
+//   const { t } = useTranslation();
+//   const [copied, setCopied] = useState(false);
 
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(content);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error("Failed to copy text: ", err);
-    }
-  };
+//   const handleCopy = async () => {
+//     try {
+//       await navigator.clipboard.writeText(content);
+//       setCopied(true);
+//       setTimeout(() => setCopied(false), 2000);
+//     } catch (err) {
+//       console.error("Failed to copy text: ", err);
+//     }
+//   };
 
-  const handleAudio = () => {
-    // Placeholder for audio functionality - you can implement text-to-speech here
-    console.log("Audio feature not implemented yet");
-    // Future implementation:
-    // const utterance = new SpeechSynthesisUtterance(content);
-    // utterance.lang = isRtl ? 'ar-SA' : 'en-US';
-    // speechSynthesis.speak(utterance);
-  };
+//   const handleAudio = () => {
+//     // Placeholder for audio functionality - you can implement text-to-speech here
+//     console.log("Audio feature not implemented yet");
+//     // Future implementation:
+//     // const utterance = new SpeechSynthesisUtterance(content);
+//     // utterance.lang = isRtl ? 'ar-SA' : 'en-US';
+//     // speechSynthesis.speak(utterance);
+//   };
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.2 }}
-      className={`flex items-center mt-3 pt-2 border-t border-gray-100 ${
-        isRtl ? "flex-row-reverse" : ""
-      }`}
-    >
-      <button
-        onClick={handleAudio}
-        className="flex items-center gap-1.5 px-3 py-2 text-xs text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-md transition-all duration-200 hover:shadow-sm"
-        title={t("chat.audio", "Read aloud")}
-      >
-        <ThumbsUp size={14} />
-      </button>
+//   return (
+//     <motion.div
+//       initial={{ opacity: 0, y: 10 }}
+//       animate={{ opacity: 1, y: 0 }}
+//       transition={{ delay: 0.2 }}
+//       className={`flex items-center mt-3 pt-2 border-t border-gray-100 ${
+//         isRtl ? "flex-row-reverse" : ""
+//       }`}
+//     >
+//       <button
+//         onClick={handleAudio}
+//         className="flex items-center gap-1.5 px-3 py-2 text-xs text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-md transition-all duration-200 hover:shadow-sm"
+//         title={t("chat.audio", "Read aloud")}
+//       >
+//         <ThumbsUp size={14} />
+//       </button>
 
-      <button
-        onClick={handleAudio}
-        className="flex items-center gap-1.5 px-3 py-2 text-xs text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-md transition-all duration-200 hover:shadow-sm"
-        title={t("chat.audio", "Read aloud")}
-      >
-        <ThumbsDown size={14} />
-      </button>
+//       <button
+//         onClick={handleAudio}
+//         className="flex items-center gap-1.5 px-3 py-2 text-xs text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-md transition-all duration-200 hover:shadow-sm"
+//         title={t("chat.audio", "Read aloud")}
+//       >
+//         <ThumbsDown size={14} />
+//       </button>
 
-      <button
-        onClick={handleCopy}
-        className="flex items-center gap-1.5 px-3 py-2 text-xs text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-md transition-all duration-200 hover:shadow-sm"
-        title={t("chat.copy", "Copy message")}
-      >
-        {copied ? (
-          <Check size={14} className="text-green-600" />
-        ) : (
-          <Copy size={14} />
-        )}
-        <span></span>
-      </button>
+//       <button
+//         onClick={handleCopy}
+//         className="flex items-center gap-1.5 px-3 py-2 text-xs text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-md transition-all duration-200 hover:shadow-sm"
+//         title={t("chat.copy", "Copy message")}
+//       >
+//         {copied ? (
+//           <Check size={14} className="text-green-600" />
+//         ) : (
+//           <Copy size={14} />
+//         )}
+//         <span></span>
+//       </button>
 
-      <button
-        onClick={handleAudio}
-        className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-md transition-all duration-200 hover:shadow-sm"
-        title={t("chat.audio", "Read aloud")}
-      >
-        <Volume2 size={12} />
-      </button>
-    </motion.div>
-  );
-};
+//       <button
+//         onClick={handleAudio}
+//         className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-md transition-all duration-200 hover:shadow-sm"
+//         title={t("chat.audio", "Read aloud")}
+//       >
+//         <Volume2 size={12} />
+//       </button>
+//     </motion.div>
+//   );
+// };
 
 const CodeBlock: React.FC<{
   className?: string;

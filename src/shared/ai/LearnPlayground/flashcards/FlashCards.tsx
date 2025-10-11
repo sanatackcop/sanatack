@@ -1,6 +1,5 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trash2 } from "lucide-react";
 import { FlashcardEditForm } from "./FlashcardsList";
 import { ProgressIndicator } from "./consts";
 

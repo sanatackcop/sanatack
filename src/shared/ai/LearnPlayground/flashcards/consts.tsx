@@ -129,7 +129,7 @@ export const ProgressIndicator: React.FC<{
   reviewed: number;
   total: number;
   onStartStudy: () => void;
-}> = ({ reviewed, total, onStartStudy }) => {
+}> = ({ /* reviewed, */ total, onStartStudy }) => {
   // const toReview = total - reviewed;
 
   return (
