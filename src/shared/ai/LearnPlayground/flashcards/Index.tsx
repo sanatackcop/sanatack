@@ -214,22 +214,25 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
     if (!currentCard) return;
 
     const cardId = currentCard.id;
+    const hasBeenRevealed = flippedCards.has(cardId);
 
-    // @ts-ignore
-    if (flippedCards.has(cardId)) {
-      const attempts = flipAttempts[cardId] || 0;
-      setFlipAttempts((prev) => ({ ...prev, [cardId]: attempts + 1 }));
-      console.log(
-        "Card already flipped! Think more before revealing the answer."
-      );
+    // If we've already revealed this card at least once in this session,
+    // just toggle the side without tracking again.
+    if (hasBeenRevealed) {
+      setFlipped((prev) => !prev);
+      setFlipAttempts((prev) => ({
+        ...prev,
+        [cardId]: (prev[cardId] || 0) + 1,
+      }));
       return;
     }
 
+    // First-time reveal: track + mark as revealed
     try {
       await trackCardFlip(cardId, activeSet.id);
 
-      setFlipped(true);
-      setFlippedCards((prev) => new Set([...prev, cardId]));
+      setFlipped(true); // show the answer
+      setFlippedCards((prev) => new Set(prev).add(cardId));
 
       await handleCardUpdate(studyIndex, {
         flippedInSession: true,
@@ -237,8 +240,9 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
       });
     } catch (error) {
       console.error("Failed to flip card:", error);
+      // Even if tracking fails, still allow the flip and mark as revealed
       setFlipped(true);
-      setFlippedCards((prev) => new Set([...prev, cardId]));
+      setFlippedCards((prev) => new Set(prev).add(cardId));
     }
   }, [activeSet, studyIndex, flippedCards, flipAttempts, handleCardUpdate]);
 
@@ -280,23 +284,6 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
             {studyMode && totalCards > 0 && (
               <div className="flex-1 px-6">
                 <div className="flex items-center justify-between px-16 my-2">
-                  <div className="flex items-center gap-2">
-                    {currentCard && (
-                      <div className="text-xs text-gray-500">
-                        {flippedCards.has(currentCard.id) ? (
-                          <span className="text-green-600 font-medium">
-                            ✓ Revealed
-                          </span>
-                        ) : (
-                          <span className="text-blue-600">
-                            {hasAttemptedFlip
-                              ? "Think more before revealing"
-                              : "Click to reveal answer"}
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </div>
                   <div className="text-center w-full flex items-center gap-2">
                     <span>{studyIndex + 1}</span>
                     <Progress

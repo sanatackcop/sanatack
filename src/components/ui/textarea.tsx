@@ -24,6 +24,8 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={ref}
           required={required}
           aria-label={label}
+          readOnly
+          // tabIndex={-1}
           {...props}
         />
       </div>

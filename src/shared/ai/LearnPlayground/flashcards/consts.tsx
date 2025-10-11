@@ -130,18 +130,18 @@ export const ProgressIndicator: React.FC<{
   total: number;
   onStartStudy: () => void;
 }> = ({ reviewed, total, onStartStudy }) => {
-  const toReview = total - reviewed;
+  // const toReview = total - reviewed;
 
   return (
     <div className="flex flex-col items-center space-y-6 py-8">
-      <CircularProgress
+      {/* <CircularProgress
         reviewed={reviewed}
         total={total}
         size={140}
         strokeWidth={12}
-      />
+      /> */}
 
-      <div className="grid grid-cols-2 gap-4 w-full max-w-sm">
+      {/* <div className="grid grid-cols-2 gap-4 w-full max-w-sm">
         <Card className="text-center flex flex-col items-center justify-center p-4 bg-muted/30">
           <div className="text-2xl font-bold text-muted-foreground mb-1">
             {toReview}
@@ -159,7 +159,7 @@ export const ProgressIndicator: React.FC<{
             To Review
           </div>
         </Card>
-      </div>
+      </div> */}
 
       <div className="w-full max-w-sm">
         <Button
@@ -195,9 +195,9 @@ export const FlashCardsInputs = [
     optional: false,
   },
   {
-    key: "explanation",
-    label: "Explanation",
-    getValue: (f: Flashcard) => f.explanation || f.examples?.[0] || "",
+    key: "example",
+    label: "Example",
+    getValue: (f: Flashcard) => f.examples || f.examples?.[0] || "",
     onChange: (val: string) => ({ explanation: val, examples: [val] }),
     placeholder: "Add context or example...",
     optional: true,

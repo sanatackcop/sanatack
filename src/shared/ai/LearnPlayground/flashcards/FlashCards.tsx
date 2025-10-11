@@ -46,9 +46,9 @@ export function FlashCardHome({
                     </Badge>
                   </span>
                 </div>
-                <div className="py-2 px-2 cursor-pointer hover:bg-red-200/50 rounded-xl group">
+                {/* <div className="py-2 px-2 cursor-pointer hover:bg-red-200/50 rounded-xl group">
                   <Trash2 className="w-4 h-4 group-hover:text-red-600" />
-                </div>
+                </div> */}
               </div>
 
               <FlashcardEditForm
