@@ -18,6 +18,7 @@ import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 export interface ChatMessage {
   id: string;
   type: "user" | "assistant" | "system";
+  role: "user" | "assistant" | "system";
   content: string;
   timestamp: Date;
   isComplete?: boolean;
@@ -151,8 +152,11 @@ const MessageBubble: React.FC<{
   isRtl = false,
 }) => {
   const { t } = useTranslation();
-  const isUser = message.type === "user";
-  const isAssistant = message.type === "assistant";
+  const who = (message.type ?? message.role) as
+    | "user"
+    | "assistant"
+    | undefined;
+  const isUser = who === "user";
   const isError = message.metadata?.error;
 
   const displayContent = isStreaming ? streamingContent : message.content;
@@ -168,7 +172,7 @@ const MessageBubble: React.FC<{
         damping: 25,
         duration: 0.3,
       }}
-      className={`flex ${
+      className={`flex  ${
         isUser
           ? isRtl
             ? "justify-start"
@@ -190,14 +194,32 @@ const MessageBubble: React.FC<{
         } items-start gap-3`}
       >
         <div
-          className={`relative group rounded-2xl px-4 py-3 transition-all duration-200 ${
+          className={`relative group overflow-hidden rounded-2xl px-4 py-3 transition-all duration-200 ${
             isUser
-              ? "bg-gray-50 text-gray-900 border"
+              ? "bg-white/80 text-gray-900 border border-gray-200 dark:bg-neutral-900/70 dark:border-white/10"
               : isError
               ? "bg-red-50 border border-red-200 text-red-800"
-              : "text-gray-900"
+              : "bg-white/80 text-gray-900 border border-gray-200 dark:bg-neutral-900/70 dark:border-white/10"
           }`}
         >
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 -z-10 opacity-60
+              [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]
+              [background:radial-gradient(1px_1px_at_18px_18px,rgba(0,0,0,.06)_1px,transparent_1px)]
+              [background-size:22px_22px]
+              dark:opacity-50
+              dark:[background:radial-gradient(1px_1px_at_18px_18px,rgba(255,255,255,.07)_1px,transparent_1px)]"
+          />
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute -z-10 size-40 blur-2xl opacity-20
+              rounded-full
+              bg-gradient-to-br from-blue-500/30 via-transparent to-transparent
+              -top-10 -left-10
+              dark:from-blue-400/20"
+          />
+
           {isError && (
             <div className="mb-2 text-sm font-medium text-red-600">
               {t("chat.error", "خطأ")}
@@ -220,7 +242,7 @@ const MessageBubble: React.FC<{
                 components={{
                   code: CodeBlock,
                   h1: ({ children }) => (
-                    <h1 className="text-lg font-bold mb-3 text-gray-900 border-b border-gray-200 pb-1">
+                    <h1 className="text-lg font-bold mb-3 text-gray-900 border-b border-gray-200 dark:border-white/10 pb-1">
                       {children}
                     </h1>
                   ),
@@ -324,20 +346,20 @@ const MessageBubble: React.FC<{
             )}
           </div>
 
-          {isAssistant && !isStreaming && !isError && (
+          {/* {isAssistant && !isStreaming && !isError && (
             <MessageActions content={displayContent} isRtl={isRtl} />
-          )}
+          )} */}
         </div>
       </div>
     </motion.div>
   );
 };
 
-const ChatMessages: React.FC<ChatMessagesProps> = ({
+export default function ChatMessages({
   messages,
   isLoading = false,
   streamingMessage,
-}) => {
+}: ChatMessagesProps) {
   const { t, i18n } = useTranslation();
   const [isRtl, setIsRtl] = useState(false);
 
@@ -347,16 +369,16 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
 
   return (
     <div
-      className={`flex-1 h-full p-4 space-y-2 ${isRtl ? "rtl" : "ltr"}`}
+      className={`flex1  w-10/12 h-full p-4 space-y-2 ${isRtl ? "rtl" : "ltr"}`}
       dir={isRtl ? "rtl" : "ltr"}
     >
       {messages.length === 0 && !isLoading ? (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="flex-1 flex items-center justify-center text-center"
+          className="flex items-center justify-center text-center h-full"
         >
-          <div className="space-y-4">
+          <div className="space-y-4 ">
             <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-gray-500 to-gray-600 flex items-center justify-center shadow-lg">
               <MessageCircle className="w-8 h-8 text-white" />
             </div>
@@ -389,6 +411,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
               message={{
                 id: "streaming",
                 type: "assistant",
+                role: "assistant",
                 content: "",
                 timestamp: new Date(),
               }}
@@ -447,6 +470,4 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
       )}
     </div>
   );
-};
-
-export default ChatMessages;
+}
