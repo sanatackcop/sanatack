@@ -26,7 +26,7 @@ import { AddContantModal } from "@/shared/ai/LearnPlayground/modal/AddContantMod
 export interface Workspace {
   id: string;
   workspaceName?: string;
-  youtubeVideo: { youtubeUrl?: string };
+  youtubeVideo: any;
   contentType: "youtube" | "pdf" | "chat";
   pdfUrl?: string;
   createdAt: string;
@@ -79,8 +79,8 @@ export const WorkspaceFolderItem = ({
   const contentType = "youtube";
 
   function renderBanner() {
-    if (contentType === "youtube" && youtubeVideo.youtubeUrl) {
-      const videoID = getYouTubeVideoID(youtubeVideo.youtubeUrl);
+    if (contentType === "youtube" && youtubeVideo.transcribe.data.url) {
+      const videoID = getYouTubeVideoID(youtubeVideo.transcribe.data.url);
       console.log({ videoID });
       if (videoID) {
         const thumbnailUrl = `https://img.youtube.com/vi/${videoID}/hqdefault.jpg`;

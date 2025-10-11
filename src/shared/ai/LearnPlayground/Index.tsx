@@ -19,7 +19,7 @@ import {
   Copy,
   MessageCircle,
   Loader2,
-  Workflow,
+  BrainCog,
 } from "lucide-react";
 import { TabKey, ChatMessage, Workspace } from "./types";
 import PdfReader from "./PdfReader";
@@ -45,7 +45,7 @@ const TABS_CONFIG = [
   { id: "flashcards", labelKey: "tabs.flashcards", icon: Copy },
   { id: "quizzes", labelKey: "tabs.quizzes", icon: NotebookPen },
   { id: "summary", labelKey: "tabs.summary", icon: BookOpen },
-  { id: "mind_map", labelKey: "Mind Map", icon: Workflow },
+  { id: "Deep Explamtionm", labelKey: "Deep explanation", icon: BrainCog },
 ] as const;
 
 const LearnPlayGround: React.FC = () => {
@@ -85,10 +85,8 @@ const LearnPlayGround: React.FC = () => {
       const workspaceData = response.workspace || response;
       dispatch({ type: "SET_WORKSPACE", workspace: workspaceData });
       setWorkspace(workspaceData);
-
-      if (workspaceData.youtubeVideo?.youtubeUrl || workspaceData.youtubeUrl) {
-        const youtubeUrl =
-          workspaceData.youtubeVideo?.youtubeUrl || workspaceData.youtubeUrl;
+      const youtubeUrl = workspaceData.youtubeVideo.transcribe.data.url;
+      if (youtubeUrl) {
         dispatch({ type: "SET_CONTENT", contentType: "youtube" });
         const vdID = youtubeUrl.includes("youtu.be/")
           ? youtubeUrl.split("/").pop()?.split("?")[0]
@@ -319,7 +317,6 @@ const LearnPlayGround: React.FC = () => {
       dir={isRTL ? "rtl" : "ltr"}
       className="flex flex-col"
     >
-      {/* Workspace title */}
       <div className="p-2 flex items-center justify-between flex-shrink-0">
         <div className="max-w-[34rem] flex-grow relative">
           {workspaceLoading ? (
@@ -623,9 +620,9 @@ const LearnPlayGround: React.FC = () => {
                     </TabsContent>
                   )}
 
-                  {state.tab === "mind_map" && (
+                  {state.tab === "Deep Explamtionm" && (
                     <TabsContent
-                      value="mind_map"
+                      value="Deep Explamtionm"
                       className="m-0 h-full p-4 text-gray-500 flex flex-col"
                       style={{ maxHeight: "100%" }}
                     >

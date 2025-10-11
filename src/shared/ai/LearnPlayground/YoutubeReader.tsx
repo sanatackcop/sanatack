@@ -1,4 +1,4 @@
-import { User, TextIcon } from "lucide-react";
+import { TextIcon } from "lucide-react";
 import React, {
   useCallback,
   useRef,
@@ -71,7 +71,7 @@ interface YouTubePlayerState {
 }
 
 const YouTubeReader: React.FC<YouTubePlayerProps> = ({
-  videoId = "dQw4w9WgXcQ",
+  videoId,
   onTimeUpdate,
   onPlay,
   onPause,
@@ -316,7 +316,6 @@ const YouTubeReader: React.FC<YouTubePlayerProps> = ({
 
   const TABS_CONFIG = [
     { id: "transcript", labelKey: "tabs.transcript", icon: TextIcon },
-    { id: "explanation", labelKey: "tabs.explanation", icon: User },
   ] as const;
 
   return (
@@ -366,9 +365,9 @@ const YouTubeReader: React.FC<YouTubePlayerProps> = ({
                     <TabsTrigger
                       key={tab.id}
                       value={tab.id}
-                      className={`relative flex items-center justify-center gap-2 rounded-xl  py-2 transition-all duration-200 font-medium ${
+                      className={`relative flex items-center justify-center gap-2 rounded-lg  py-1.5 px-2 transition-all duration-200  font-normal ${
                         isActive
-                          ? "bg-gray-50 text-green-700"
+                          ? "text-green-700"
                           : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
                       }`}
                     >
@@ -478,38 +477,6 @@ const YouTubeReader: React.FC<YouTubePlayerProps> = ({
                         </div>
                       </div>
                     )}
-                  </div>
-                </div>
-              </TabsContent>
-
-              <TabsContent
-                value="explanation"
-                className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col"
-              >
-                <div className="flex flex-col h-full border border-gray-200 rounded-xl overflow-hidden bg-white">
-                  <div className="flex-shrink-0 px-4 py-3 bg-gray-50 border-b border-gray-100">
-                    <h3 className="font-semibold text-sm text-gray-800">
-                      {t("explanation.title", "AI Explanation")}
-                    </h3>
-                  </div>
-                  <div className="flex-1 flex items-center justify-center text-gray-500">
-                    <div className="text-center py-8">
-                      <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                        <User size={24} className="text-gray-400" />
-                      </div>
-                      <h4 className="text-sm font-medium text-gray-700 mb-1">
-                        {t(
-                          "explanation.comingSoon",
-                          "AI explanation coming soon"
-                        )}
-                      </h4>
-                      <p className="text-xs text-gray-500 max-w-xs mx-auto">
-                        {t(
-                          "explanation.description",
-                          "Get AI-powered explanations and insights"
-                        )}
-                      </p>
-                    </div>
                   </div>
                 </div>
               </TabsContent>

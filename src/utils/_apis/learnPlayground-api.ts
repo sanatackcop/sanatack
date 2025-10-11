@@ -42,13 +42,28 @@ export const createNewWorkSpace = async ({
   }
 };
 
-export const createNewQuiz = async ({ id }: { id: string }) => {
+export const createNewQuizApi = async ({
+  id,
+  language = "en",
+  questionTypes,
+  numberOfQuestions,
+  difficulty,
+}: {
+  id: string;
+  language?: "en" | "ar";
+  questionTypes?: string[];
+  numberOfQuestions?: number;
+  difficulty?: string;
+}) => {
   try {
     const response = await Api({
       method: API_METHODS.POST,
       url: `study-ai/workspaces/${id}/generate/quiz`,
       data: {
-        language: "en",
+        language,
+        questionTypes,
+        numberOfQuestions,
+        difficulty,
       },
     });
 
@@ -246,6 +261,54 @@ export const getWorkSpaceContent = async (workspaceId: string) => {
     return response.data as any;
   } catch (e: any) {
     console.error("enrollCoursesApi error:", e.message);
+    throw e;
+  }
+};
+
+export const startWorkspaceQuizAttempt = async (
+  workspaceId: string,
+  quizId: string,
+  payload?: { restart?: boolean }
+) => {
+  try {
+    const response = await Api({
+      method: API_METHODS.POST,
+      url: `study-ai/workspaces/${workspaceId}/quizzes/${quizId}/attempts`,
+      data: payload ?? {},
+    });
+    return response.data as any;
+  } catch (e: any) {
+    console.error("startWorkspaceQuizAttempt error:", e.message);
+    throw e;
+  }
+};
+
+export const answerWorkspaceQuizQuestion = async (
+  attemptId: string,
+  payload: { questionId: string; selectedOption?: string | null }
+) => {
+  try {
+    const response = await Api({
+      method: API_METHODS.POST,
+      url: `study-ai/quizzes/attempts/${attemptId}/answer`,
+      data: payload,
+    });
+    return response.data as any;
+  } catch (e: any) {
+    console.error("answerWorkspaceQuizQuestion error:", e.message);
+    throw e;
+  }
+};
+
+export const submitWorkspaceQuizAttempt = async (attemptId: string) => {
+  try {
+    const response = await Api({
+      method: API_METHODS.POST,
+      url: `study-ai/quizzes/attempts/${attemptId}/submit`,
+    });
+    return response.data as any;
+  } catch (e: any) {
+    console.error("submitWorkspaceQuizAttempt error:", e.message);
     throw e;
   }
 };

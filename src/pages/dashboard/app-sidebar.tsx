@@ -4,25 +4,13 @@ import { useTranslation } from "react-i18next";
 import {
   Crown,
   Plus,
-  MapIcon,
-  CalendarDaysIcon,
-  CheckCircle,
-  Clock10,
-  Brain,
-  ChevronsUpDown,
   Box,
   Play,
   BoxIcon,
   ChevronDown,
   LogOut,
-  Globe,
-  Boxes,
 } from "lucide-react";
 import clsx from "clsx";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Tooltip,
   TooltipProvider,
@@ -43,6 +31,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import LogoLight from "@/assets/logo.svg";
 
 interface MenuItem {
   title: string;
@@ -77,10 +66,6 @@ export function AppSidebar() {
   const [newName, setNewName] = useState("");
   const [showAllSpaces, setShowAllSpaces] = useState(false);
 
-  const [currentWorkspace] = useState({
-    name: "Working Towards A Plan 2025",
-  });
-
   const [workspaces, setWorkspaces] = useState<Workspace[] | null>(null);
   const [loadingRecent, setLoadingRecent] = useState<boolean>(true);
   const [showAllRecent, setShowAllRecent] = useState(false);
@@ -104,52 +89,51 @@ export function AppSidebar() {
       {
         groupTitle: "Learning",
         menuItems: [
-          { title: "My Workspaces", url: "/dashboard/overview", icon: Boxes },
-          {
-            title: t("sidebar.createMap"),
-            url: "/dashboard/learn/map",
-            icon: MapIcon,
-          },
-          { title: "Your Brain", url: "/dashboard/learn/brain", icon: Brain },
-          { title: "Discover", url: "/dashboard/learn/ds", icon: Globe },
+          { title: "My Learning", url: "/dashboard/overview", icon: Box },
+          // {
+          //   title: t("sidebar.createMap"),
+          //   url: "/dashboard/learn/map",
+          //   icon: MapIcon,
+          // },
+          // { title: "Your Brain", url: "/dashboard/learn/brain", icon: Brain },
+          // { title: "Discover", url: "/dashboard/learn/ds", icon: Globe },
         ],
       },
-      {
-        groupTitle: "Task Management",
-        menuItems: [
-          { title: "Tasks", url: "/dashboard/learn/tasks", icon: CheckCircle },
-          { title: "Promodo", url: "/dashboard/learn/promodo", icon: Clock10 },
-          {
-            title: t("common.calendar"),
-            url: "/dashboard/learn/calendar",
-            icon: CalendarDaysIcon,
-          },
-        ],
-      },
+      // {
+      //   groupTitle: "Task Management",
+      //   menuItems: [
+      //     { title: "Tasks", url: "/dashboard/learn/tasks", icon: CheckCircle },
+      //     { title: "Promodo", url: "/dashboard/learn/promodo", icon: Clock10 },
+      //     {
+      //       title: t("common.calendar"),
+      //       url: "/dashboard/learn/calendar",
+      //       icon: CalendarDaysIcon,
+      //     },
+      //   ],
+      // },
     ],
     [t]
   );
 
-  // New Help And Tools Group
-  const helpAndToolsGroup: MenuGroup = {
-    groupTitle: "Help And Tools",
-    menuItems: [
-      {
-        title: "Discord",
-        url: "https://discord.com",
-        icon: Globe,
-      },
-      {
-        title: "Chrome Extension",
-        url: "https://chrome.google.com/webstore/category/extensions",
-        icon: BoxIcon,
-      },
-    ],
-  };
+  // const helpAndToolsGroup: MenuGroup = {
+  //   groupTitle: "Help And Tools",
+  //   menuItems: [
+  //     {
+  //       title: "Discord",
+  //       url: "https://discord.com",
+  //       icon: Globe,
+  //     },
+  //     {
+  //       title: "Chrome Extension",
+  //       url: "https://chrome.google.com/webstore/category/extensions",
+  //       icon: BoxIcon,
+  //     },
+  //   ],
+  // };
 
   // Combine all groups including the new HelpAndTools group
   const allItemGroups = useMemo(() => {
-    return [...topItemGroups, helpAndToolsGroup];
+    return [...topItemGroups];
   }, [topItemGroups]);
 
   useEffect(() => {
@@ -342,24 +326,24 @@ export function AppSidebar() {
     >
       <div className="flex flex-col h-full py-2 pl-3 pr-2">
         {/* Workspace Selector */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <div className="group flex items-center gap-3 px-2 py-3 cursor-pointer rounded-xl bg-gray-200/50 transition-colors">
-              <div
-                className={clsx(
-                  "flex flex-1 min-w-0 gap-2 items-center",
-                  isRTL ? "flex-row-reverse" : "flex-row"
-                )}
-              >
-                <Box className="text-zinc-600 w-4 h-4" />
-                <span className="text-xs font-medium text-zinc-600 dark:text-gray-100 truncate">
-                  {currentWorkspace.name}
-                </span>
-              </div>
-              <ChevronsUpDown className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
-            </div>
-          </DropdownMenuTrigger>
-        </DropdownMenu>
+
+        <div className="flex items-center justify-between">
+          <div
+            className={clsx(
+              "h-[60px] flex items-center overflow-hidden w-full justify-start"
+            )}
+          >
+            <img
+              src={String(LogoLight)}
+              alt="logo"
+              className={`h-full w-auto transition-all object-contain scale-[2.5] ${
+                i18n.dir() === "rtl" ? "pr-6" : "pl-5"
+              }`}
+            />
+          </div>
+        </div>
+
+        <hr className="my-4 mt-1 -mx-4" />
 
         {/* Top Menu Groups including Help And Tools */}
         <div className="flex-shrink-0 flex flex-col space-y-2">
