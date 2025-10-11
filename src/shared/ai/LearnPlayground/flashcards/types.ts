@@ -4,7 +4,6 @@ export interface Flashcard {
   front?: string;
   definition?: string;
   back?: string;
-  explanation?: string;
   examples?: string[];
   memory_aids?: string[];
   reviewed?: boolean;

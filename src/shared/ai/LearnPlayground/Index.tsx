@@ -29,6 +29,7 @@ import ChatInput from "./chat/chatInput";
 import { Input } from "@/components/ui/input";
 import {
   getWorkSpace,
+  getWorkSpaceChatHistory,
   sendWorkspaceChatMessage,
 } from "@/utils/_apis/learnPlayground-api";
 import { useParams } from "react-router-dom";
@@ -82,7 +83,10 @@ const LearnPlayGround: React.FC = () => {
       setWorkspaceLoading(true);
       setContentLoading(true);
       const response: any = await getWorkSpace(id);
+      const history = await getWorkSpaceChatHistory(id);
+
       const workspaceData = response.workspace || response;
+      workspaceData.chatMessages = history;
       dispatch({ type: "SET_WORKSPACE", workspace: workspaceData });
       setWorkspace(workspaceData);
       const youtubeUrl = workspaceData.youtubeVideo.transcribe.data.url;
@@ -309,6 +313,7 @@ const LearnPlayGround: React.FC = () => {
       </section>
     );
   }
+
   return (
     <section
       style={{
@@ -563,9 +568,9 @@ const LearnPlayGround: React.FC = () => {
                         <>
                           <div className="w-full flex-1 flex flex-col justify-end items-center overflow-y-auto min-h-0">
                             <ChatMessages
-                              messages={(state.chatMessages as any) || []}
-                              isLoading={state.chatLoading as any}
-                              streamingMessage={state.streamingMessage as any}
+                              messages={state.chatMessages || []}
+                              isLoading={state.chatLoading}
+                              streamingMessage={state.streamingMessage}
                               onSendMessage={handleSendMessage}
                             />
                           </div>
