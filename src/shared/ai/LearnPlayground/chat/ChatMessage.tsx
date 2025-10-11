@@ -143,6 +143,7 @@ const MessageBubble: React.FC<{
   streamingContent = "",
   isRtl = false,
 }) => {
+  if (!message) return;
   const { t } = useTranslation();
   const who = (message.type ?? message.role) as
     | "user"
@@ -391,7 +392,7 @@ export default function ChatMessages({
         <>
           {messages.map((message) => (
             <MessageBubble
-              key={message.id}
+              key={message?.id}
               message={message}
               isStreaming={false}
               isRtl={isRtl}
