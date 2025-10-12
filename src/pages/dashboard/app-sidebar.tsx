@@ -343,17 +343,17 @@ export function AppSidebar() {
           </div>
         </div>
 
-        <hr className="my-4 mt-1 -mx-4" />
+        <hr className="my-2 mt-1 -mx-4" />
 
         {/* Top Menu Groups including Help And Tools */}
-        <div className="flex-shrink-0 flex flex-col space-y-2">
+        <div className="flex-shrink-0 flex flex-col space-y-2 mb-2">
           {allItemGroups.map((group) => (
             <MenuGroupEntry key={group.groupTitle} group={group} />
           ))}
           <hr className="-mx-5" />
         </div>
 
-        <div className="flex-1 overflow-y-auto min-h-0 px-2 py-3 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+        <div className="flex-1 overflow-y-auto min-h-0 px-2 py-3  scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
           {/* Recent Workspaces */}
           <div className="mb-4">
             <div className="mb-2 flex items-center justify-between">

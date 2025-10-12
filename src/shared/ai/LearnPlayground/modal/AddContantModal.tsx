@@ -516,7 +516,7 @@ function ContentTypeCard({
       className="group relative p-6 w-full flex flex-col items-start justify-center gap-y-2 rounded-2xl border shadow-sm 
         cursor-pointer transition-all dark:bg-gray-900 dark:border-gray-800 bg-white border-gray-200
         hover:shadow-md hover:border-gray-300 dark:hover:border-gray-700
-        focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        focus:outline-none"
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
