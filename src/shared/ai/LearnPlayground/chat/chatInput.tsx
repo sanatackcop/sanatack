@@ -383,13 +383,12 @@ const ChatInput: React.FC<ChatInputProps> = ({
             transition-all duration-300 ease-out
             ${
               isFocused
-                ? "border-gray-300 dark:border-gray-500/50 shadow-sm shadow-gray-200/50 dark:shadow-gray-800/50"
-                : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 shadow-sm hover:shadow-md"
+                ? "border-gray-300 dark:border-gray-500/50  shadow-gray-200/50 dark:shadow-gray-800/50"
+                : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
             }
             bg-white dark:bg-gray-900
           `}
         >
-          {/* Input Area */}
           <div className="relative flex items-center min-h-[56px] px-3">
             <textarea
               ref={textAreaRef}
@@ -401,13 +400,15 @@ const ChatInput: React.FC<ChatInputProps> = ({
               placeholder={actualPlaceholder}
               dir={isRTL ? "rtl" : "ltr"}
               className={`
-                flex-1 text-base bg-transparent border-0 resize-none focus:outline-none 
-                ${isRTL ? "text-right pr-6 pl-16" : "text-left pl-6 pr-16"}
-                placeholder:text-gray-400 dark:placeholder:text-gray-500
-                text-gray-900 dark:text-gray-100
-                leading-relaxed transition-all duration-200
-                py-4
-              `}
+  flex-1 text-base bg-transparent border-0 resize-none
+  outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus:border-transparent
+  rounded-full
+  ${isRTL ? "text-right pr-6 pl-16" : "text-left pl-2 pr-16"}
+  placeholder:text-gray-400 dark:placeholder:text-gray-500
+  text-gray-900 dark:text-gray-100
+  leading-relaxed transition-all duration-200
+  py-4
+`}
               style={{
                 minHeight: "56px",
                 maxHeight: "160px",
@@ -429,12 +430,12 @@ const ChatInput: React.FC<ChatInputProps> = ({
                 disabled={!value?.trim()}
                 size="sm"
                 className={`
-                  h-8 w-8 rounded-xl font-medium
+                  size-8 rounded-xl font-medium
                   transition-all duration-300 ease-out
                   ${
                     value?.trim()
-                      ? "bg-zinc-600 hover:bg-zinc-700 dark:bg-zinc-600 dark:hover:bg-zinc-700 text-white hover:scale-105 active:scale-95"
-                      : "bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed"
+                      ? "bg-zinc-700 hover:bg-zinc-700 dark:bg-zinc-600 dark:hover:bg-zinc-700 text-white hover:scale-105 active:scale-95"
+                      : "bg-gray-200 dark:bg-gray-900 text-gray-700 cursor-not-allowed"
                   }
                 `}
               >
@@ -443,7 +444,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
             </div>
           </div>
 
-          {/* Expanded Section with buttons on right or left based on language */}
           {expandSection && (
             <div
               className={`

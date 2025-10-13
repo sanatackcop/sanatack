@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import { Bot, MessageCircle } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -192,7 +192,7 @@ const MessageBubble: React.FC<{
               ? "bg-white/80 text-gray-900 border border-gray-200 dark:bg-neutral-900/70 dark:border-white/10"
               : isError
               ? "bg-red-50 border border-red-200 text-red-800"
-              : "bg-white/80 text-gray-900 border border-gray-200 dark:bg-neutral-900/70 dark:border-white/10"
+              : "bg-white/80 text-gray-900 dark:bg-neutral-900/70 dark:border-white/10"
           }`}
         >
           <span
@@ -338,10 +338,6 @@ const MessageBubble: React.FC<{
               />
             )}
           </div>
-
-          {/* {isAssistant && !isStreaming && !isError && (
-            <MessageActions content={displayContent} isRtl={isRtl} />
-          )} */}
         </div>
       </div>
     </motion.div>
@@ -426,9 +422,6 @@ export default function ChatMessages({
                   isRtl ? "flex-row-reverse" : ""
                 }`}
               >
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                  <Bot size={16} className="text-white" />
-                </div>
                 <div className="bg-white border border-gray-200 rounded-2xl px-4 py-3 shadow-sm">
                   <div className="flex space-x-1">
                     <motion.div

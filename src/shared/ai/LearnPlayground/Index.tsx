@@ -14,12 +14,13 @@ import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  NotebookPen,
   BookOpen,
   Copy,
   MessageCircle,
   Loader2,
   BrainCog,
+  Scan,
+  TestTube2,
 } from "lucide-react";
 import { TabKey, ChatMessage, Workspace } from "./types";
 import PdfReader from "./PdfReader";
@@ -40,11 +41,12 @@ import FlashCards from "./flashcards/Index";
 import { QuizList } from "./quizzes/Quiz";
 import { SummaryList } from "./summary/Summary";
 import MindMap from "./mindMap/MindMap";
+import Tooltip from "@mui/material/Tooltip";
 
 const TABS_CONFIG = [
   { id: "chat", labelKey: "tabs.chat", icon: MessageCircle },
   { id: "flashcards", labelKey: "tabs.flashcards", icon: Copy },
-  { id: "quizzes", labelKey: "tabs.quizzes", icon: NotebookPen },
+  { id: "quizzes", labelKey: "tabs.quizzes", icon: TestTube2 },
   { id: "summary", labelKey: "tabs.summary", icon: BookOpen },
   { id: "Deep Explamtionm", labelKey: "Deep explanation", icon: BrainCog },
 ] as const;
@@ -60,11 +62,11 @@ const LearnPlayGround: React.FC = () => {
 
   // Scroll related states for tab overflow
   const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
+  const [, setCanScrollRight] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
-  const [indicatorStyle, setIndicatorStyle] = useState({ width: 0, right: 0 });
+  const [, setIndicatorStyle] = useState({ width: 0, right: 0 });
 
   // Resizing drag and hover state for the resize handle
   const [isResizing, setIsResizing] = useState(false);
@@ -322,7 +324,7 @@ const LearnPlayGround: React.FC = () => {
       dir={isRTL ? "rtl" : "ltr"}
       className="flex flex-col"
     >
-      <div className="p-2 flex items-center justify-between flex-shrink-0">
+      <div className="p-2 pb-0 pl-12 flex items-center justify-between flex-shrink-0">
         <div className="max-w-[34rem] flex-grow relative">
           {workspaceLoading ? (
             <Skeleton className="h-10 w-full rounded-2xl" />
@@ -341,9 +343,7 @@ const LearnPlayGround: React.FC = () => {
         </div>
       </div>
 
-      {/* Panels section - horizontally resizable */}
       <ResizablePanelGroup direction="horizontal" className="flex-1 min-h-0">
-        {/* Left panel content */}
         <ResizablePanel
           defaultSize={50}
           minSize={30}
@@ -416,7 +416,6 @@ const LearnPlayGround: React.FC = () => {
           </motion.div>
         </ResizablePanel>
 
-        {/* Always render ResizableHandle; visible on hover or dragging */}
         <ResizableHandle
           onPointerDown={() => setIsResizing(true)}
           onPointerUp={() => setIsResizing(false)}
@@ -431,7 +430,6 @@ const LearnPlayGround: React.FC = () => {
           }}
         />
 
-        {/* Right panel with Tabs */}
         <ResizablePanel
           defaultSize={50}
           minSize={30}
@@ -453,7 +451,6 @@ const LearnPlayGround: React.FC = () => {
                 }
                 className="h-full flex flex-col min-h-0"
               >
-                {/* Tabs header with scroll */}
                 <div className="relative p-2 pt-0 flex-shrink-0">
                   {canScrollLeft && (
                     <div
@@ -471,7 +468,7 @@ const LearnPlayGround: React.FC = () => {
 
                   <div
                     ref={scrollContainerRef}
-                    className="overflow-x-auto scrollbar-hide flex w-full items-center justify-center relative touch-pan-x"
+                    className="overflow-x-auto scrollbar-hide flex w-full items-center gap-2 justify-center relative touch-pan-x"
                     onMouseDown={handleMouseDown}
                     onMouseMove={handleMouseMove}
                     onMouseUp={handleMouseUp}
@@ -486,23 +483,9 @@ const LearnPlayGround: React.FC = () => {
                   >
                     <TabsList
                       ref={tabsListRef}
-                      className="relative !space-x-0 !p-1 flex items-center gap-4 h-12 min-w-max rounded-2xl sm:rounded-3xl border w-fit shadow-sm"
+                      className="relative !space-x-0 !p-1 flex items-center gap-4 h-11 min-w-max  rounded-2xl border w-fit"
                       style={{ direction: isRTL ? "rtl" : "ltr" }}
                     >
-                      {/* Active tab highlight */}
-                      <motion.div
-                        className="absolute top-[4px] sm:top-[6px] bottom-[4px] sm:bottom-[6px] bg-gradient-to-b from-white to-gray-50 ring-1 ring-black/5 rounded-3xl z-10"
-                        animate={{
-                          width: indicatorStyle.width,
-                          right: indicatorStyle.right,
-                        }}
-                        transition={{
-                          type: "spring",
-                          stiffness: 400,
-                          damping: 35,
-                        }}
-                      />
-
                       {TABS_CONFIG.map((tab) => {
                         const IconComponent = tab.icon;
                         const isActive = state.tab === tab.id;
@@ -510,7 +493,9 @@ const LearnPlayGround: React.FC = () => {
                           <TabsTrigger
                             key={tab.id}
                             value={tab.id}
-                            className="px-2 sm:px-3 py-1.5 sm:py-2 relative z-20 flex-shrink-0 transition-all duration-150 bg-transparent hover:bg-transparent data-[state=active]:bg-transparent rounded-lg sm:rounded-lg h-7 sm:h-9 flex flex-row items-center justify-center select-none cursor-pointer gap-1.5"
+                            className={`px-2 sm:px-3 py-1.5 sm:py-2 relative z-20 flex-shrink-0 transition-all duration-150 
+                            hover:bg-transparent data-[state=active]:bg-gray-50 rounded-xl h-7 sm:h-9 flex flex-row items-center 
+                            justify-center select-none cursor-pointer gap-1.5`}
                             style={{
                               minWidth: "fit-content",
                               padding: "0 8px",
@@ -518,15 +503,13 @@ const LearnPlayGround: React.FC = () => {
                             }}
                           >
                             {isActive ? (
-                              <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full shadow-sm flex-shrink-0" />
+                              <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full  flex-shrink-0" />
                             ) : (
-                              <IconComponent className="w-3 h-3 flex-shrink-0 text-gray-600" />
+                              <IconComponent className="size-4 flex-shrink-0 text-gray-600" />
                             )}
                             <span
-                              className={`text-xs sm:text-sm transition-colors duration-150 whitespace-nowrap ${
-                                isActive
-                                  ? "text-gray-900 font-medium"
-                                  : "text-gray-700"
+                              className={`text-xs font-normal sm:text-sm transition-colors duration-150 whitespace-nowrap ${
+                                isActive ? "text-gray-900" : "text-gray-700"
                               }`}
                             >
                               {t(tab.labelKey as any)}
@@ -535,24 +518,13 @@ const LearnPlayGround: React.FC = () => {
                         );
                       })}
                     </TabsList>
-                  </div>
 
-                  {canScrollRight && (
-                    <div
-                      className={`absolute ${
-                        isRTL ? "left-2 sm:left-4" : "right-2 sm:right-4"
-                      } top-2 sm:top-4 bottom-2 sm:bottom-4 w-6 sm:w-12 z-20 pointer-events-none`}
-                      style={{
-                        background: `linear-gradient(to ${
-                          isRTL ? "right" : "left"
-                        }, rgba(255,255,255,0.8), transparent)`,
-                        backdropFilter: "blur(1px)",
-                      }}
-                    />
-                  )}
+                    <Tooltip title={"Full Screen"} className="cursor-pointer">
+                      <Scan className="opacity-50 group-hover:opacity-100 transition-all ease-linear duration-200 size-5" />
+                    </Tooltip>
+                  </div>
                 </div>
 
-                {/* Tabs content */}
                 <div className="flex-1 overflow-hidden flex flex-col min-h-0">
                   {state.tab === "chat" && (
                     <TabsContent
@@ -566,7 +538,7 @@ const LearnPlayGround: React.FC = () => {
                         </div>
                       ) : (
                         <>
-                          <div className="w-full flex-1 flex flex-col justify-end items-center overflow-y-auto min-h-0">
+                          <div className="w-full  flex-1 flex flex-col justify-end items-center overflow-y-auto min-h-0">
                             <ChatMessages
                               messages={state.chatMessages || []}
                               isLoading={state.chatLoading}
@@ -575,16 +547,16 @@ const LearnPlayGround: React.FC = () => {
                             />
                           </div>
                           <ChatInput
-                            className="flex-shrink-0 p-2 pb-2"
+                            className="flex-shrink-0 p-2 px-20 pb-2"
                             value={state.prompt}
-                            expandSection={true}
+                            expandSection={false}
                             onChange={(value: string) =>
                               dispatch({ type: "SET_PROMPT", prompt: value })
                             }
                             onSubmit={handleSendMessage}
                             placeholder={t(
                               "chat.placeholder",
-                              "Type your message..."
+                              `Ask Any Think About ${getDisplayTitle()}...`
                             )}
                           />
                         </>

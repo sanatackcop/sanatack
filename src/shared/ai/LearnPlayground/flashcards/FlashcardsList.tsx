@@ -31,11 +31,6 @@ export const FlashcardsList: React.FC<{
     setToDelete: null,
   });
 
-  const handleDeleteClick = (e: React.MouseEvent, set: FlashcardSet) => {
-    e.stopPropagation();
-    setDeleteModal({ isOpen: true, setToDelete: set });
-  };
-
   const handleConfirmDelete = () => {
     if (deleteModal.setToDelete && onDeleteSet) {
       onDeleteSet(deleteModal.setToDelete.id);
@@ -104,7 +99,7 @@ export const FlashcardsList: React.FC<{
                           )}
                         </div>
                       </div>
-
+                      {/* 
                       <motion.button
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
@@ -116,7 +111,7 @@ export const FlashcardsList: React.FC<{
                           text-gray-400 transition-all duration-200 absolute top-4 right-4"
                       >
                         <Trash2 className="h-4 w-4" />
-                      </motion.button>
+                      </motion.button> */}
                     </div>
                   </Card>
                 ))}

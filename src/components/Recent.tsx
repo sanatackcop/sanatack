@@ -55,13 +55,6 @@ const WorkspaceItemSkeleton = () => (
   </Card>
 );
 
-// Utility to get YouTube video ID from URL
-function getYouTubeVideoID(url: string) {
-  const regex = /(?:\?v=|\/embed\/|\.be\/)([a-zA-Z0-9_-]{11})/;
-  const match = url.match(regex);
-  return match ? match[1] : null;
-}
-
 type WorkspaceFolderItemProps = {
   workspace: Workspace;
   onClick: () => void;
@@ -80,16 +73,26 @@ export const WorkspaceFolderItem = ({
 
   function renderBanner() {
     if (contentType === "youtube" && youtubeVideo.transcribe.data.url) {
-      const videoID = getYouTubeVideoID(youtubeVideo.transcribe.data.url);
-      console.log({ videoID });
-      if (videoID) {
-        const thumbnailUrl = `https://img.youtube.com/vi/${videoID}/hqdefault.jpg`;
-        return (
+      if (contentType === "youtube" && youtubeVideo?.transcribe?.data?.url) {
+        const url = youtubeVideo.transcribe.data.url;
+        const match = url.match(
+          /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|embed)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/
+        );
+        const videoID = match ? match[1] : null;
+        const thumbnailUrl = videoID
+          ? `https://img.youtube.com/vi/${videoID}/hqdefault.jpg`
+          : null;
+
+        return videoID ? (
           <img
-            src={thumbnailUrl}
+            src={String(thumbnailUrl)}
             alt="YouTube thumbnail"
             className="w-full h-28 object-cover rounded-t-2xl"
           />
+        ) : (
+          <div className="flex items-center justify-center min-h-28 rounded-t-2xl bg-gray-100 border-b border-zinc-200">
+            <PlayIcon className="h-12 w-12 text-zinc-400" />
+          </div>
         );
       } else {
         return (

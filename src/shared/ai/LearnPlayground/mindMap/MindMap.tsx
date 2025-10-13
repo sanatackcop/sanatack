@@ -18,6 +18,7 @@ import {
   createNewDeepExplanationApi,
   getWorkSpaceContent,
 } from "@/utils/_apis/learnPlayground-api";
+import { motion } from "framer-motion";
 
 interface MindMapNodeDto {
   id: string;
@@ -401,35 +402,44 @@ export default function MindMap({ workspaceId }: MindMapProps) {
   }
 
   return (
-    <div className="space-y-6">
-      <ExplanationHeader onGenerate={handleGenerate} loading={generating} />
-
-      <div className="px-6">
-        <div className="flex-1 min-h-0">
-          <ScrollArea className="h-full">
-            <ExplanationSections explanation={explanation} />
-          </ScrollArea>
-        </div>
-      </div>
-
-      {nodes.length > 0 && (
-        <Card className="mx-6 p-4 h-[32rem] border border-gray-200">
-          <ReactFlowProvider>
-            <ReactFlow
-              nodes={nodes}
-              edges={edges}
-              fitView
-              minZoom={0.25}
-              nodeTypes={{}}
-              edgeTypes={{}}
-            >
-              <MiniMap />
-              <Controls />
-              <Background gap={16} color="#f3f4f6" />
-            </ReactFlow>
-          </ReactFlowProvider>
-        </Card>
-      )}
+    <div className="flex-1 min-h-0">
+      <ScrollArea className="h-full">
+        <motion.div
+          key="list"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 20 }}
+          transition={{ duration: 0.25 }}
+          className="px-6 mb-4 flex flex-col rounded-3xl justify-between space-y-3"
+        >
+          <div className="px-6">
+            <div className="flex-1 min-h-0">
+              <ScrollArea className="h-full">
+                <ExplanationSections explanation={explanation} />
+              </ScrollArea>
+            </div>
+          </div>
+          {nodes.length > 0 && (
+            <Card className="mx-6 p-4 h-[32rem] border border-gray-200">
+              <ReactFlowProvider>
+                <ReactFlow
+                  nodes={nodes}
+                  edges={edges}
+                  fitView
+                  minZoom={0.25}
+                  nodeTypes={{}}
+                  edgeTypes={{}}
+                >
+                  <MiniMap />
+                  <Controls />
+                  <Background gap={16} color="#f3f4f6" />
+                </ReactFlow>
+              </ReactFlowProvider>
+            </Card>
+          )}
+          <ExplanationHeader onGenerate={handleGenerate} loading={generating} />
+        </motion.div>
+      </ScrollArea>
     </div>
   );
 }

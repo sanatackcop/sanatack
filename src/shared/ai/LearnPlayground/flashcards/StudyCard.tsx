@@ -125,7 +125,7 @@ export const StudyCard: React.FC<{
         >
           {/* FRONT */}
           <Card
-            className="absolute inset-0 w-full h-full flex items-center justify-center border bg-white"
+            className="absolute inset-0 w-full h-full flex items-center justify-center border"
             style={{ backfaceVisibility: "hidden", transform: "rotateY(0deg)" }}
           >
             <CardContent className="flex items-center justify-center h-full p-8 relative w-full">
@@ -190,7 +190,7 @@ export const StudyCard: React.FC<{
 
           {/* BACK */}
           <Card
-            className="absolute inset-0 w-full h-full flex items-center justify-center border bg-gray-50/50"
+            className="absolute inset-0 w-full h-full flex items-center justify-center border"
             style={{
               backfaceVisibility: "hidden",
               transform: "rotateY(180deg)",
@@ -204,7 +204,7 @@ export const StudyCard: React.FC<{
                     onClick={(e) => e.stopPropagation()}
                   >
                     {showExplanation && (
-                      <div className="mt-4 rounded-xl border bg-white p-4 text-sm text-gray-700 leading-relaxed shadow-sm">
+                      <div className="mt-4 rounded-xl border  p-4 text-sm text-gray-700 leading-relaxed shadow-sm">
                         {flashcard.examples}
                       </div>
                     )}
@@ -220,7 +220,6 @@ export const StudyCard: React.FC<{
         </motion.div>
       </motion.div>
 
-      {/* Subtle helper text */}
       <div className="text-xs text-muted-foreground">
         {!isFlipped
           ? allHints.length != revealedHintCount
@@ -307,58 +306,28 @@ export const StudyNavigation: React.FC<{
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="w-full max-w-2xl mx-auto"
+      className="w-full max-w-2xl flex items-center mx-auto"
     >
-      <div
-        //  className="grid grid-cols-2 lg:grid-cols-4 gap-3 p-4"
-        className="w-full flex justify-center"
-      >
-        {/* {difficultyOptions.map((option) => (
-          <motion.button
-            key={option.key}
-            onClick={() => onDifficultySelect(option.key, option.apiLabel)}
-            className={cn(
-              "flex flex-col items-center justify-center p-4 rounded-xl font-medium transition-all duration-200 shadow-sm hover:shadow-md relative group",
-              option.color
-            )}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <div className="text-lg mb-1">{option.label}</div>
-          </motion.button>
-        ))} */}
-
+      <div className="w-full flex justify-center">
         <motion.button
           onClick={() => onDifficultySelect(2, "good")}
-          className="bg-white text-gray-900 border mx-auto  border-gray-300 rounded-xl px-4 py-2 font-medium shadow-sm hover:bg-gray-50 transition-colors"
+          className=" text-gray-900 border mx-auto  border-gray-300 rounded-xl px-4 py-2 font-medium shadow-sm hover:bg-gray-50 transition-colors"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >
           Next
         </motion.button>
-      </div>
-
-      {isLast && (
-        <div className="flex justify-center mt-4">
+        {isLast && (
           <Button
             onClick={onFinish}
             variant="outline"
-            className="rounded-xl px-6"
+            className=" text-gray-900 border mx-auto  border-gray-300 rounded-xl px-4 py-2 font-medium shadow-sm hover:bg-gray-50 transition-colors"
           >
             <RotateCcw className="w-4 h-4 mr-2" />
             {t("study.finishSession", "Finish Session")}
           </Button>
-        </div>
-      )}
-
-      {/* <div className="text-center mt-4">
-        <p className="text-xs text-muted-foreground">
-          {t(
-            "study.keyboardHint",
-            "Use keyboard shortcuts 1-4 or click the buttons"
-          )}
-        </p>
-      </div> */}
+        )}
+      </div>
     </motion.div>
   );
 };

@@ -1,4 +1,4 @@
-import { TextIcon } from "lucide-react";
+import { ChevronsLeftRight, TextIcon } from "lucide-react";
 import React, {
   useCallback,
   useRef,
@@ -10,6 +10,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useTranslation } from "react-i18next";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 declare global {
   interface Window {
@@ -28,7 +29,6 @@ declare global {
   }
 }
 
-// Updated interfaces
 interface TranscriptSegment {
   text: string;
   start: number;
@@ -319,171 +319,194 @@ const YouTubeReader: React.FC<YouTubePlayerProps> = ({
   ] as const;
 
   return (
-    <div className={`flex flex-col w-full h-full ${className}`}>
-      {/* YouTube Player */}
-      <div className="w-full flex-shrink-0 mb-4">
-        <div className="bg-white border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-md rounded-3xl">
-          <div
-            className="relative rounded-3xl bg-black w-full"
-            style={{ aspectRatio: "16/9" }}
-          >
-            {playerState.isLoading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-900 z-10 transition-opacity duration-300 rounded-3xl">
-                <div className="flex flex-col items-center text-white">
-                  <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin mb-3"></div>
-                  <span className="text-sm animate-pulse">
-                    {t("loading.video", "Loading video...")}
-                  </span>
+    <div className="flex-1 min-h-0">
+      <ScrollArea className="h-full">
+        <div className={`w-full h-full grid grid-cols-1  ${className}`}>
+          <div className="w-full flex-shrink-0 mb-4">
+            <div className="bg-white border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-md rounded-3xl">
+              <div
+                className="relative rounded-3xl bg-black w-full"
+                style={{ aspectRatio: "16/9" }}
+              >
+                {playerState.isLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-gray-900 z-10 transition-opacity duration-300 rounded-3xl">
+                    <div className="flex flex-col items-center text-white">
+                      <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin mb-3"></div>
+                      <span className="text-sm animate-pulse">
+                        {t("loading.video", "Loading video...")}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                <div ref={containerRef} className="w-full h-full rounded-3xl">
+                  <div
+                    id="youtube-player"
+                    className="w-full h-full rounded-3xl"
+                  />
                 </div>
               </div>
-            )}
+            </div>
+          </div>
 
-            <div ref={containerRef} className="w-full h-full rounded-3xl">
-              <div id="youtube-player" className="w-full h-full rounded-3xl" />
+          <div className="flex-1  min-h-0 w-full px-2">
+            <div className="h-full max-h-[400px] sm:max-h-[450px] md:max-h-[350px] lg:max-h-[300px] xl:max-h-[350px]">
+              <Tabs
+                defaultValue="transcript"
+                value={activeTab}
+                onValueChange={setActiveTab}
+                className="flex flex-col h-full"
+              >
+                {/* Tab Headers */}
+                <div className="flex-shrink-0 flex items-center justify-between mb-3">
+                  <TabsList className="rounded-2xl w-fit border py-5">
+                    {TABS_CONFIG.map((tab) => {
+                      const IconComponent = tab.icon;
+                      const isActive = activeTab === tab.id;
+
+                      return (
+                        <TabsTrigger
+                          key={tab.id}
+                          value={tab.id}
+                          className={`relative flex items-center justify-center gap-2 rounded-lg  py-1.5 px-2 transition-all duration-200  font-normal ${
+                            isActive
+                              ? "text-green-700"
+                              : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            {isActive ? (
+                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            ) : (
+                              <IconComponent size={16} />
+                            )}
+                            <span>
+                              {t(
+                                tab.labelKey,
+                                tab.id === "transcript"
+                                  ? "Transcript"
+                                  : "Explanation"
+                              )}
+                            </span>
+                          </div>
+                        </TabsTrigger>
+                      );
+                    })}
+                  </TabsList>
+
+                  <Button
+                    className={`relative flex items-center justify-center gap-2 rounded-2xl bg-transparent shadow-none text-black font-normal border py-5`}
+                  >
+                    <ChevronsLeftRight />
+                    Auto Scroll
+                  </Button>
+                </div>
+
+                <div className="flex-1 min-h-0">
+                  <TabsContent
+                    value="transcript"
+                    className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col"
+                  >
+                    <div className="flex flex-col h-full  rounded-xl overflow-hidden">
+                      <div className="flex-1 min-h-0">
+                        {transcriptSections && transcriptSections.length > 0 ? (
+                          <ScrollArea className="h-full">
+                            <div ref={transcriptRef}>
+                              <div>
+                                {transcriptSections.map(
+                                  (section, sectionIndex) => (
+                                    <div
+                                      key={sectionIndex}
+                                      className="space-y-3"
+                                    >
+                                      <div className="space-y-2 ml-4">
+                                        {section.segments.map(
+                                          (segment, segmentIndex) => {
+                                            const globalIndex =
+                                              transcript?.transcriptSegments.indexOf(
+                                                segment
+                                              ) ?? -1;
+                                            return (
+                                              <Card
+                                                key={segmentIndex}
+                                                className={`group cursor-pointer p-3 rounded-xl shadow-none border-none hover:bg-gray-50 transition-all duration-200 border hover:border-gray-200 ${
+                                                  activeSegmentIndex ===
+                                                  globalIndex
+                                                    ? "bg-gray-50 border-gray-200"
+                                                    : ""
+                                                }`}
+                                                onClick={() =>
+                                                  handleTranscriptClick(segment)
+                                                }
+                                              >
+                                                <div className="flex flex-col items-start gap-3">
+                                                  <div className="flex-shrink-0 flex items-center gap-2">
+                                                    <span
+                                                      className={`text-xs font-mono px-2.5 py-1 rounded-lg transition-colors ${
+                                                        activeSegmentIndex ===
+                                                        globalIndex
+                                                          ? "bg-gray-100 text-gray-700"
+                                                          : "bg-gray-100 text-gray-600"
+                                                      }`}
+                                                    >
+                                                      {segment.timestamp ||
+                                                        formatTime(
+                                                          segment.start
+                                                        )}
+                                                    </span>
+                                                  </div>
+                                                  <p
+                                                    className={`text-lg leading-relaxed flex-1 transition-colors ${
+                                                      activeSegmentIndex ===
+                                                      globalIndex
+                                                        ? "text-gray-900"
+                                                        : "text-gray-700"
+                                                    }`}
+                                                  >
+                                                    {segment.text}
+                                                  </p>
+                                                </div>
+                                              </Card>
+                                            );
+                                          }
+                                        )}
+                                      </div>
+                                    </div>
+                                  )
+                                )}
+                              </div>
+                            </div>
+                          </ScrollArea>
+                        ) : (
+                          <div className="h-full flex items-center justify-center text-gray-500">
+                            <div className="text-center py-8">
+                              <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                                <TextIcon size={24} className="text-gray-400" />
+                              </div>
+                              <h4 className="text-sm font-medium text-gray-700 mb-1">
+                                {t(
+                                  "transcript.noData",
+                                  "No transcript available"
+                                )}
+                              </h4>
+                              <p className="text-xs text-gray-500 max-w-xs mx-auto">
+                                {t(
+                                  "transcript.willAppear",
+                                  "Transcript will appear here when available"
+                                )}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </TabsContent>
+                </div>
+              </Tabs>
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Tabs Section with proper height constraints */}
-      <div className="flex-1 min-h-0 w-full">
-        <div className="h-full max-h-[400px] sm:max-h-[450px] md:max-h-[350px] lg:max-h-[300px] xl:max-h-[350px]">
-          <Tabs
-            defaultValue="transcript"
-            value={activeTab}
-            onValueChange={setActiveTab}
-            className="flex flex-col h-full"
-          >
-            {/* Tab Headers */}
-            <div className="flex-shrink-0 mb-3">
-              <TabsList className="rounded-2xl w-fit border py-5">
-                {TABS_CONFIG.map((tab) => {
-                  const IconComponent = tab.icon;
-                  const isActive = activeTab === tab.id;
-
-                  return (
-                    <TabsTrigger
-                      key={tab.id}
-                      value={tab.id}
-                      className={`relative flex items-center justify-center gap-2 rounded-lg  py-1.5 px-2 transition-all duration-200  font-normal ${
-                        isActive
-                          ? "text-green-700"
-                          : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        {isActive ? (
-                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        ) : (
-                          <IconComponent size={16} />
-                        )}
-                        <span>
-                          {t(
-                            tab.labelKey,
-                            tab.id === "transcript"
-                              ? "Transcript"
-                              : "Explanation"
-                          )}
-                        </span>
-                      </div>
-                    </TabsTrigger>
-                  );
-                })}
-              </TabsList>
-            </div>
-
-            <div className="flex-1 min-h-0">
-              <TabsContent
-                value="transcript"
-                className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col"
-              >
-                <div className="flex flex-col h-full  rounded-xl overflow-hidden">
-                  <div className="flex-1 min-h-0">
-                    {transcriptSections && transcriptSections.length > 0 ? (
-                      <ScrollArea className="h-full">
-                        <div ref={transcriptRef}>
-                          <div>
-                            {transcriptSections.map((section, sectionIndex) => (
-                              <div key={sectionIndex} className="space-y-3">
-                                <div className="space-y-2 ml-4">
-                                  {section.segments.map(
-                                    (segment, segmentIndex) => {
-                                      const globalIndex =
-                                        transcript?.transcriptSegments.indexOf(
-                                          segment
-                                        ) ?? -1;
-                                      return (
-                                        <Card
-                                          key={segmentIndex}
-                                          className={`group cursor-pointer p-3 rounded-xl shadow-none border-none hover:bg-gray-50 transition-all duration-200 border hover:border-gray-200 ${
-                                            activeSegmentIndex === globalIndex
-                                              ? "bg-gray-50 border-gray-200"
-                                              : ""
-                                          }`}
-                                          onClick={() =>
-                                            handleTranscriptClick(segment)
-                                          }
-                                        >
-                                          <div className="flex flex-col items-start gap-3">
-                                            <div className="flex-shrink-0 flex items-center gap-2">
-                                              <span
-                                                className={`text-xs font-mono px-2.5 py-1 rounded-lg transition-colors ${
-                                                  activeSegmentIndex ===
-                                                  globalIndex
-                                                    ? "bg-gray-100 text-gray-700"
-                                                    : "bg-gray-100 text-gray-600"
-                                                }`}
-                                              >
-                                                {segment.timestamp ||
-                                                  formatTime(segment.start)}
-                                              </span>
-                                            </div>
-                                            <p
-                                              className={`text-lg leading-relaxed flex-1 transition-colors ${
-                                                activeSegmentIndex ===
-                                                globalIndex
-                                                  ? "text-gray-900"
-                                                  : "text-gray-700"
-                                              }`}
-                                            >
-                                              {segment.text}
-                                            </p>
-                                          </div>
-                                        </Card>
-                                      );
-                                    }
-                                  )}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </ScrollArea>
-                    ) : (
-                      <div className="h-full flex items-center justify-center text-gray-500">
-                        <div className="text-center py-8">
-                          <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                            <TextIcon size={24} className="text-gray-400" />
-                          </div>
-                          <h4 className="text-sm font-medium text-gray-700 mb-1">
-                            {t("transcript.noData", "No transcript available")}
-                          </h4>
-                          <p className="text-xs text-gray-500 max-w-xs mx-auto">
-                            {t(
-                              "transcript.willAppear",
-                              "Transcript will appear here when available"
-                            )}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </TabsContent>
-            </div>
-          </Tabs>
-        </div>
-      </div>
+      </ScrollArea>
     </div>
   );
 };

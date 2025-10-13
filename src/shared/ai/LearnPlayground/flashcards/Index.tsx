@@ -260,7 +260,7 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
     : false;
 
   return (
-    <div className="h-full flex flex-col bg-gray-50/30">
+    <div className="h-full flex flex-col">
       <AnimatePresence mode="wait">
         {activeSet ? (
           <motion.div
@@ -271,7 +271,7 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
             exit="exit"
             className="h-full flex flex-col w-full"
           >
-            <div className="flex items-center gap-4 px-14 py-4 flex-shrink-0 bg-white">
+            <div className="flex items-center gap-4 px-14 py-4 flex-shrink-0 ">
               <div
                 className="flex group items-center text-gray-400/50 cursor-pointer hover:bg-gray-50/50 drop-shadow-sm hover:text-zinc-700 rounded-2xl py-2 px-3 transition-all ease-linear duration-100"
                 onClick={() => setActiveSet(null)}

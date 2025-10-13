@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { Check, ChevronLeft, RotateCcw } from "lucide-react";
+import { ArrowLeft, Check, RotateCcw } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   answerWorkspaceQuizQuestion,
@@ -18,21 +18,235 @@ interface QuizViewProps {
   onAttemptUpdate?: (attempt: QuizAttemptSummary | null) => void;
 }
 
+// Loading Component
+const LoadingCard: React.FC<{ message?: string }> = ({
+  message = "Loading...",
+}) => (
+  <div className="max-w-4xl mx-auto px-6 py-16">
+    <Card className="p-8 text-center bg-white border border-gray-200 shadow-sm">
+      <div className="flex items-center justify-center gap-3">
+        <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+        <p className="text-sm text-gray-500">{message}</p>
+      </div>
+    </Card>
+  </div>
+);
+
+const ErrorAlert: React.FC<{ message: string }> = ({ message }) => (
+  <Card className="p-4 mb-4 border border-red-200 bg-red-50 text-red-700 text-sm">
+    {message}
+  </Card>
+);
+
+const ProgressBar: React.FC<{
+  statusLabel: string;
+  currentIndex: number;
+  totalQuestions: number;
+  attemptProgress: number;
+  answeredCount: number;
+  scoreEarned: number;
+  totalPoints: number;
+}> = ({
+  statusLabel,
+  currentIndex,
+  totalQuestions,
+  attemptProgress,
+  answeredCount,
+  scoreEarned,
+  totalPoints,
+}) => (
+  <div className="max-w-4xl mx-auto px-6 mb-4">
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
+      <div className="px-6 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-3 text-sm text-gray-600">
+          <span className="capitalize">{statusLabel}</span>
+          <span className="text-gray-300">•</span>
+          <span>
+            {Math.min(currentIndex + 1, totalQuestions)} / {totalQuestions}
+          </span>
+        </div>
+      </div>
+
+      <div className="h-2 bg-gray-100 overflow-hidden">
+        <motion.div
+          className="h-full bg-green-500"
+          initial={{ width: 0 }}
+          animate={{ width: `${attemptProgress}%` }}
+          transition={{ duration: 0.3 }}
+        />
+      </div>
+
+      <div className="px-6 py-3 flex flex-wrap items-center gap-4 text-xs text-gray-500">
+        <span>Progress: {Math.round(attemptProgress)}%</span>
+        <span>
+          Answered: {answeredCount}/{totalQuestions}
+        </span>
+        <span>
+          Score: {scoreEarned}/{totalPoints} pts
+        </span>
+      </div>
+    </div>
+  </div>
+);
+
+// Feedback Component
+const FeedbackPanel: React.FC<{
+  answer: AnswerEntry;
+  correctAnswer: string;
+  explanation?: string;
+}> = ({ answer, correctAnswer, explanation }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    className={`mt-6 p-5 rounded-xl border-2 ${
+      answer.is_correct
+        ? "bg-green-50 border-green-300"
+        : "bg-red-50 border-red-300"
+    }`}
+  >
+    <div className="flex items-start gap-3">
+      <div className="flex-shrink-0">
+        {answer.is_correct ? (
+          <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
+            <Check className="h-5 w-5 text-white" />
+          </div>
+        ) : (
+          <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center">
+            <span className="text-white font-bold text-lg">✗</span>
+          </div>
+        )}
+      </div>
+      <div className="flex-1">
+        <h4
+          className={`font-semibold mb-2 text-base ${
+            answer.is_correct ? "text-green-900" : "text-red-900"
+          }`}
+        >
+          {answer.is_correct ? "Correct!" : "Incorrect"}
+        </h4>
+        {!answer.is_correct && (
+          <p className="text-sm text-red-800 mb-2">
+            The correct answer is:{" "}
+            <span className="font-semibold">{correctAnswer}</span>
+          </p>
+        )}
+        {explanation && (
+          <p className="text-sm text-gray-700 mt-2">
+            <span className="font-medium">Explanation:</span> {explanation}
+          </p>
+        )}
+      </div>
+    </div>
+  </motion.div>
+);
+
+// Results Component
+const ResultsView: React.FC<{
+  scoreEarned: number;
+  totalPoints: number;
+  accuracyPct: number;
+  passingScore: number | null;
+  hasPassed: boolean | null;
+  onRestart: () => void;
+  onClose: () => void;
+  isLoading: boolean;
+}> = ({
+  scoreEarned,
+  totalPoints,
+  accuracyPct,
+  passingScore,
+  hasPassed,
+  onRestart,
+  onClose,
+  isLoading,
+}) => {
+  const gradeClass =
+    hasPassed === null
+      ? "text-gray-600"
+      : hasPassed
+      ? "text-green-600"
+      : "text-red-600";
+
+  return (
+    <div className="max-w-2xl mx-auto px-6 py-16">
+      <Card className="p-12 text-center bg-white rounded-2xl shadow-sm border border-gray-200">
+        <div className="mb-6">
+          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Check className="h-10 w-10 text-green-600" />
+          </div>
+          <h3 className="text-3xl font-bold text-gray-900 mb-2">
+            Quiz Complete!
+          </h3>
+          <p className="text-gray-600">Thanks for taking the quiz.</p>
+        </div>
+
+        <div className="my-8 p-6 bg-gray-50 rounded-xl">
+          <p className="text-gray-600 text-sm mb-2">Your Score</p>
+          <p className="text-5xl font-bold text-gray-900 mb-2">
+            {scoreEarned}
+            <span className="text-2xl text-gray-400">/{totalPoints}</span>
+          </p>
+          <p className="text-sm text-gray-500">{accuracyPct}% Correct</p>
+        </div>
+
+        {passingScore !== null && (
+          <p className={`text-lg font-semibold mb-6 ${gradeClass}`}>
+            {hasPassed ? "✓ Passed" : "✗ Failed"}
+            <span className="text-gray-500 font-normal">
+              {" "}
+              (Passing Score: {passingScore})
+            </span>
+          </p>
+        )}
+
+        <div className="flex gap-4 justify-center">
+          <Button
+            onClick={onRestart}
+            variant="outline"
+            className="rounded-xl px-6 py-3 border-2"
+            disabled={isLoading}
+          >
+            <RotateCcw className="mr-2 h-4 w-4" />
+            Retake Quiz
+          </Button>
+          <Button onClick={onClose} className="rounded-xl px-6 py-3">
+            Back to Quizzes
+          </Button>
+        </div>
+      </Card>
+    </div>
+  );
+};
+
 const deriveNextIndex = (
   attempt: QuizAttemptSummary | null,
-  totalQuestions: number
+  questions: Question[]
 ) => {
+  const totalQuestions = questions.length;
   if (!attempt || totalQuestions === 0) return 0;
   if (attempt.status === "graded") return Math.max(totalQuestions - 1, 0);
 
-  const candidate =
-    typeof attempt.lastQuestionPos === "number" && attempt.lastQuestionPos > 0
-      ? attempt.lastQuestionPos
-      : attempt.answeredCount;
+  if (attempt.lastQuestionId) {
+    const lastQuestionIdx = questions.findIndex(
+      (q) => q.id === attempt.lastQuestionId
+    );
+    if (lastQuestionIdx >= 0) {
+      return Math.min(lastQuestionIdx + 1, totalQuestions - 1);
+    }
+  }
+
+  const hasLastPos =
+    typeof attempt.lastQuestionPos === "number" && attempt.lastQuestionPos > 0;
+  const candidate = hasLastPos
+    ? attempt.lastQuestionPos
+    : typeof attempt.answeredCount === "number"
+    ? attempt.answeredCount
+    : 0;
 
   if (!Number.isFinite(candidate)) return 0;
-  if (candidate >= totalQuestions) return Math.max(totalQuestions - 1, 0);
-  return candidate;
+  const normalised = Math.max(0, Math.floor(candidate));
+  if (normalised >= totalQuestions) return Math.max(totalQuestions - 1, 0);
+  return normalised;
 };
 
 const normaliseStatusLabel = (attempt: QuizAttemptSummary | null) => {
@@ -56,35 +270,16 @@ export const QuizView: React.FC<QuizViewProps> = ({
     quiz.latestAttempt ?? null
   );
   const [currentIndex, setCurrentIndex] = useState(() =>
-    deriveNextIndex(quiz.latestAttempt ?? null, quiz.questions.length)
+    deriveNextIndex(quiz.latestAttempt ?? null, quiz.questions ?? [])
   );
   const [showResults, setShowResults] = useState(
     quiz.latestAttempt?.status === "graded"
   );
-  const [showFeedback, setShowFeedback] = useState(false);
   const [loadingAttempt, setLoadingAttempt] = useState(false);
   const [savingAnswer, setSavingAnswer] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [initialised, setInitialised] = useState(false);
-
-  useEffect(() => {
-    const initialAttempt = quiz.latestAttempt ?? null;
-    const nextIndex = deriveNextIndex(initialAttempt, quiz.questions.length);
-    setQuizData(quiz);
-    setAttempt(initialAttempt);
-    setShowResults(initialAttempt?.status === "graded");
-    setCurrentIndex(nextIndex);
-    setShowFeedback(
-      !!(
-        initialAttempt &&
-        quiz.questions[nextIndex] &&
-        initialAttempt.answers?.some(
-          (entry) => entry.question_id === quiz.questions[nextIndex].id
-        )
-      )
-    );
-  }, [quiz]);
 
   const answersMap = useMemo(() => {
     const map: Record<string, AnswerEntry> = {};
@@ -94,34 +289,26 @@ export const QuizView: React.FC<QuizViewProps> = ({
     return map;
   }, [attempt]);
 
-  const applyAttemptToState = useCallback(
-    (att: QuizAttemptSummary | null, serverQuiz?: Quiz) => {
-      setAttempt(att);
-      setQuizData((prev) => {
-        const baseQuiz = serverQuiz ?? prev;
-        const mergedQuiz: Quiz = {
-          ...baseQuiz,
-          latestAttempt: att ?? baseQuiz.latestAttempt ?? null,
-        };
-        const questions = mergedQuiz.questions ?? [];
-        const nextIndex = deriveNextIndex(att, questions.length);
-        setCurrentIndex(nextIndex);
-        const nextQuestionId = questions[nextIndex]?.id;
-        const hasAnsweredCurrent =
-          !!att &&
-          !!att.answers?.some((entry) => entry.question_id === nextQuestionId);
-        setShowFeedback(hasAnsweredCurrent);
-        return mergedQuiz;
-      });
-      setShowResults(att?.status === "graded");
-      onAttemptUpdate?.(att ?? null);
-    },
-    [onAttemptUpdate]
-  );
+  const applyAttemptToState = (
+    att: QuizAttemptSummary | null,
+    serverQuiz?: Quiz
+  ) => {
+    setAttempt(att);
+    setQuizData((prev) => {
+      const baseQuiz = serverQuiz ?? prev;
+      return {
+        ...baseQuiz,
+        latestAttempt: att ?? baseQuiz.latestAttempt ?? null,
+      };
+    });
+    setShowResults(att?.status === "graded");
+    onAttemptUpdate?.(att ?? null);
+  };
 
   const fetchAttempt = useCallback(
     async (payload?: { restart?: boolean }) => {
       setLoadingAttempt(true);
+      setError(null);
       try {
         const data = await startWorkspaceQuizAttempt(
           workspaceId,
@@ -131,7 +318,13 @@ export const QuizView: React.FC<QuizViewProps> = ({
         const att = (data?.attempt ?? null) as QuizAttemptSummary | null;
         const serverQuiz = data?.quiz as Quiz | undefined;
         applyAttemptToState(att, serverQuiz);
-        setError(null);
+
+        const questions = (serverQuiz?.questions ??
+          quiz.questions ??
+          []) as Question[];
+        const nextIndex = deriveNextIndex(att, questions);
+        setCurrentIndex(nextIndex);
+
         return att;
       } catch (e: any) {
         setError(e?.error?.body || "Failed to load quiz attempt.");
@@ -141,12 +334,27 @@ export const QuizView: React.FC<QuizViewProps> = ({
         setInitialised(true);
       }
     },
-    [workspaceId, quiz.id, applyAttemptToState]
+    [workspaceId, quiz.id]
   );
 
   useEffect(() => {
-    fetchAttempt();
-  }, [fetchAttempt]);
+    if (!initialised) {
+      fetchAttempt();
+    }
+  }, [initialised, fetchAttempt]);
+
+  useEffect(() => {
+    setQuizData(quiz);
+    setAttempt(quiz.latestAttempt ?? null);
+    setCurrentIndex(
+      deriveNextIndex(quiz.latestAttempt ?? null, quiz.questions ?? [])
+    );
+    setShowResults(quiz.latestAttempt?.status === "graded");
+    setError(null);
+    setSavingAnswer(false);
+    setSubmitting(false);
+    setInitialised(false);
+  }, [quiz.id]);
 
   const ensureAttempt = useCallback(async () => {
     if (attempt?.id) return attempt;
@@ -160,36 +368,62 @@ export const QuizView: React.FC<QuizViewProps> = ({
     ? answersMap[currentQuestion.id]
     : undefined;
 
-  useEffect(() => {
-    if (!currentQuestion) {
-      setShowFeedback(false);
-      return;
-    }
-    setShowFeedback(Boolean(currentAnswer));
-  }, [currentQuestion, currentAnswer]);
+  const answeredCount =
+    attempt?.answers?.length ??
+    (typeof attempt?.answeredCount === "number" ? attempt.answeredCount : 0);
 
-  const answeredCount = attempt?.answeredCount ?? 0;
-  const attemptProgress = totalQuestions
-    ? Math.min(100, Math.max(0, (answeredCount / totalQuestions) * 100))
-    : 0;
+  const attemptProgress = (() => {
+    const raw =
+      attempt && attempt.progressPct !== undefined
+        ? Number(attempt.progressPct)
+        : null;
+    if (raw !== null && Number.isFinite(raw)) {
+      return Math.min(100, Math.max(0, raw));
+    }
+    if (!totalQuestions) return 0;
+    return Math.min(
+      100,
+      Math.max(0, (answeredCount / totalQuestions) * 100)
+    );
+  })();
   const statusLabel = normaliseStatusLabel(attempt);
-  const scoreEarned = attempt?.scoreEarned ?? 0;
-  const totalPoints =
-    attempt?.scoreTotal ?? questions.reduce((acc, q) => acc + q.points, 0);
+  const scoreEarnedValue =
+    attempt && attempt.scoreEarned !== undefined
+      ? Number(attempt.scoreEarned)
+      : NaN;
+  const scoreEarned = Number.isFinite(scoreEarnedValue)
+    ? scoreEarnedValue
+    : 0;
+
+  const totalPointsValue =
+    attempt && attempt.scoreTotal !== undefined
+      ? Number(attempt.scoreTotal)
+      : NaN;
+  const fallbackTotalPoints = questions.reduce((acc, q) => {
+    const pts = Number.isFinite(Number(q.points)) ? Number(q.points) : 0;
+    return acc + pts;
+  }, 0);
+  const totalPoints = Number.isFinite(totalPointsValue)
+    ? totalPointsValue
+    : fallbackTotalPoints;
   const isLastQuestion = currentIndex >= totalQuestions - 1;
 
   const handleSelectAnswer = async (
     questionId: string,
     option: string | null
   ) => {
-    if (savingAnswer || showResults) return;
+    if (answersMap[questionId]) return;
+    if (savingAnswer || showResults || loadingAttempt) return;
+
     const activeAttempt = await ensureAttempt();
     if (!activeAttempt) {
       setError("Unable to start quiz attempt. Please try again.");
       return;
     }
+
     setSavingAnswer(true);
     setError(null);
+
     try {
       const response = await answerWorkspaceQuizQuestion(activeAttempt.id, {
         questionId,
@@ -197,7 +431,6 @@ export const QuizView: React.FC<QuizViewProps> = ({
       });
       const updated = response?.attempt as QuizAttemptSummary;
       applyAttemptToState(updated);
-      setShowFeedback(true);
     } catch (e: any) {
       setError(e?.error?.body || "Unable to save answer.");
     } finally {
@@ -225,8 +458,6 @@ export const QuizView: React.FC<QuizViewProps> = ({
     if (!isLastQuestion) {
       const nextIndex = Math.min(currentIndex + 1, totalQuestions - 1);
       setCurrentIndex(nextIndex);
-      const nextQuestionId = questions[nextIndex]?.id;
-      setShowFeedback(Boolean(nextQuestionId && answersMap[nextQuestionId]));
       return;
     }
 
@@ -243,7 +474,6 @@ export const QuizView: React.FC<QuizViewProps> = ({
       applyAttemptToState(updated);
       setShowResults(true);
       setCurrentIndex(Math.max(totalQuestions - 1, 0));
-      setShowFeedback(false);
     } catch (e: any) {
       setError(e?.error?.body || "Unable to submit quiz.");
     } finally {
@@ -253,22 +483,24 @@ export const QuizView: React.FC<QuizViewProps> = ({
 
   const restartQuiz = async () => {
     setShowResults(false);
-    setShowFeedback(false);
     setCurrentIndex(0);
     await fetchAttempt({ restart: true });
   };
 
   const renderOptions = (question: Question) => {
-    const isAnswered = !!currentAnswer;
+    const hasAnswered = !!currentAnswer;
+    const isDisabled =
+      savingAnswer || loadingAttempt || showResults || hasAnswered;
 
     if (question.type === "multiple_choice" || question.type === "scenario") {
       return question.options.map((opt, idx) => {
         const isSelected = currentAnswer?.selected_option === opt;
         const isCorrect = opt === question.correct_answer;
-        const showCorrectness = showFeedback && isAnswered;
+        const showCorrectness = hasAnswered;
 
         let optClass =
           "cursor-pointer rounded-xl border-2 px-5 py-4 mb-3 inline-block w-full text-left transition-all duration-200 text-base ";
+
         if (showCorrectness) {
           if (isCorrect) {
             optClass +=
@@ -285,11 +517,15 @@ export const QuizView: React.FC<QuizViewProps> = ({
             "bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300";
         }
 
+        if (isDisabled) {
+          optClass += " opacity-60 cursor-not-allowed";
+        }
+
         return (
           <button
             key={idx}
-            onClick={() => handleSelectAnswer(question.id, opt)}
-            // disabled={savingAnswer || loadingAttempt || showResults} // Temporarily disabled for debugging click issue
+            onClick={() => !isDisabled && handleSelectAnswer(question.id, opt)}
+            disabled={isDisabled}
             className={optClass}
             type="button"
           >
@@ -308,10 +544,11 @@ export const QuizView: React.FC<QuizViewProps> = ({
       return ["True", "False"].map((val, idx) => {
         const isSelected = currentAnswer?.selected_option === val;
         const isCorrect = val === question.correct_answer;
-        const showCorrectness = showFeedback && isAnswered;
+        const showCorrectness = hasAnswered;
 
         let btnClass =
           "cursor-pointer rounded-xl border-2 px-8 py-4 mr-4 text-center min-w-[120px] transition-all duration-200 text-base ";
+
         if (showCorrectness) {
           if (isCorrect) {
             btnClass +=
@@ -328,11 +565,15 @@ export const QuizView: React.FC<QuizViewProps> = ({
             "bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300";
         }
 
+        if (isDisabled) {
+          btnClass += " opacity-60 cursor-not-allowed";
+        }
+
         return (
           <button
             key={idx}
-            onClick={() => handleSelectAnswer(question.id, val)}
-            // disabled={savingAnswer || loadingAttempt || showResults} // Temporarily disabled for debugging click issue
+            onClick={() => !isDisabled && handleSelectAnswer(question.id, val)}
+            disabled={isDisabled}
             className={btnClass}
             type="button"
           >
@@ -350,81 +591,71 @@ export const QuizView: React.FC<QuizViewProps> = ({
     return null;
   };
 
-  const accuracyPct = totalPoints
-    ? Math.round((scoreEarned / totalPoints) * 100)
-    : 0;
-  const passingScore = quizData.passing_score ?? null;
+  const accuracyPct =
+    totalPoints > 0
+      ? Math.min(
+          100,
+          Math.max(0, Math.round((scoreEarned / totalPoints) * 100))
+        )
+      : 0;
+  const passingScoreValue =
+    quizData.passing_score === undefined || quizData.passing_score === null
+      ? null
+      : Number(quizData.passing_score);
+  const passingScore =
+    passingScoreValue === null || Number.isNaN(passingScoreValue)
+      ? null
+      : passingScoreValue;
   const hasPassed =
     passingScore !== null
       ? scoreEarned >= passingScore
       : attempt?.passed ?? null;
-  const gradeClass =
-    hasPassed === null
-      ? "text-gray-600"
-      : hasPassed
-      ? "text-green-600"
-      : "text-red-600";
 
   const continueDisabled =
     loadingAttempt ||
     submitting ||
     savingAnswer ||
-    (!showResults && (!showFeedback || !currentAnswer));
+    (!showResults && !currentAnswer);
 
   const isLoadingInitial = !initialised && loadingAttempt;
 
   return (
     <ScrollArea>
-      <div className="min-h-screen py-6">
+      <div className="flex items-center gap-4 px-14 py-4 flex-shrink-0">
+        <div
+          className="flex group items-center text-gray-400/50 cursor-pointer hover:bg-gray-50/50 drop-shadow-sm hover:text-zinc-700 rounded-2xl py-2 px-3 transition-all ease-linear duration-100"
+          onClick={onClose}
+        >
+          <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-all ease-out duration-200" />
+          <span className="text-sm">Back</span>
+        </div>
+      </div>
+
+      <div className="min-h-screen py-6 pt-0">
         {isLoadingInitial ? (
-          <div className="max-w-4xl mx-auto px-6 py-16">
-            <Card className="p-8 text-center bg-white border border-gray-200 shadow-sm">
-              <p className="text-sm text-gray-500">Preparing quiz...</p>
-            </Card>
-          </div>
-        ) : !showResults ? (
+          <LoadingCard message="Preparing quiz..." />
+        ) : showResults ? (
+          <ResultsView
+            scoreEarned={scoreEarned}
+            totalPoints={totalPoints}
+            accuracyPct={accuracyPct}
+            passingScore={passingScore}
+            hasPassed={hasPassed}
+            onRestart={restartQuiz}
+            onClose={onClose}
+            isLoading={loadingAttempt}
+          />
+        ) : (
           <>
-            <div className="max-w-4xl mx-auto px-6 mb-4">
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
-                <div className="px-6 py-4 flex items-center justify-between">
-                  <button
-                    onClick={onClose}
-                    className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-                  >
-                    <ChevronLeft className="h-5 w-5" />
-                    <span className="font-medium">Back</span>
-                  </button>
-
-                  <div className="flex items-center gap-3 text-sm text-gray-600">
-                    <span className="capitalize">{statusLabel}</span>
-                    <span className="text-gray-300">•</span>
-                    <span>
-                      {Math.min(currentIndex + 1, totalQuestions)} /{" "}
-                      {totalQuestions}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="h-2 bg-gray-100 overflow-hidden">
-                  <motion.div
-                    className="h-full bg-green-500"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${attemptProgress}%` }}
-                    transition={{ duration: 0.3 }}
-                  />
-                </div>
-
-                <div className="px-6 py-3 flex flex-wrap items-center gap-4 text-xs text-gray-500">
-                  <span>Progress: {Math.round(attemptProgress)}%</span>
-                  <span>
-                    Answered: {answeredCount}/{totalQuestions}
-                  </span>
-                  <span>
-                    Score: {scoreEarned}/{totalPoints} pts
-                  </span>
-                </div>
-              </div>
-            </div>
+            <ProgressBar
+              statusLabel={statusLabel}
+              currentIndex={currentIndex}
+              totalQuestions={totalQuestions}
+              attemptProgress={attemptProgress}
+              answeredCount={answeredCount}
+              scoreEarned={scoreEarned}
+              totalPoints={totalPoints}
+            />
 
             <div className="max-w-4xl mx-auto px-6">
               <motion.div
@@ -433,15 +664,11 @@ export const QuizView: React.FC<QuizViewProps> = ({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                {error && (
-                  <Card className="p-4 mb-4 border border-red-200 bg-red-50 text-red-700 text-sm">
-                    {error}
-                  </Card>
-                )}
+                {error && <ErrorAlert message={error} />}
 
                 <Card className="p-8 mb-6 bg-white rounded-2xl shadow-sm border border-gray-200">
                   {loadingAttempt && !currentQuestion ? (
-                    <p className="text-sm text-gray-500">Loading quiz…</p>
+                    <LoadingCard message="Loading question..." />
                   ) : currentQuestion ? (
                     <>
                       <p className="text-xl font-medium text-gray-900 leading-relaxed mb-8">
@@ -449,61 +676,12 @@ export const QuizView: React.FC<QuizViewProps> = ({
                       </p>
                       <div>{renderOptions(currentQuestion)}</div>
 
-                      {showFeedback && currentAnswer && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className={`mt-6 p-5 rounded-xl border-2 ${
-                            currentAnswer.is_correct
-                              ? "bg-green-50 border-green-300"
-                              : "bg-red-50 border-red-300"
-                          }`}
-                        >
-                          <div className="flex items-start gap-3">
-                            <div className="flex-shrink-0">
-                              {currentAnswer.is_correct ? (
-                                <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
-                                  <Check className="h-5 w-5 text-white" />
-                                </div>
-                              ) : (
-                                <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center">
-                                  <span className="text-white font-bold text-lg">
-                                    ✗
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                            <div className="flex-1">
-                              <h4
-                                className={`font-semibold mb-2 text-base ${
-                                  currentAnswer.is_correct
-                                    ? "text-green-900"
-                                    : "text-red-900"
-                                }`}
-                              >
-                                {currentAnswer.is_correct
-                                  ? "Correct!"
-                                  : "Incorrect"}
-                              </h4>
-                              {!currentAnswer.is_correct && (
-                                <p className="text-sm text-red-800 mb-2">
-                                  The correct answer is:{" "}
-                                  <span className="font-semibold">
-                                    {currentQuestion.correct_answer}
-                                  </span>
-                                </p>
-                              )}
-                              {currentQuestion.explanation && (
-                                <p className="text-sm text-gray-700 mt-2">
-                                  <span className="font-medium">
-                                    Explanation:
-                                  </span>{" "}
-                                  {currentQuestion.explanation}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        </motion.div>
+                      {currentAnswer && (
+                        <FeedbackPanel
+                          answer={currentAnswer}
+                          correctAnswer={currentQuestion.correct_answer}
+                          explanation={currentQuestion.explanation}
+                        />
                       )}
                     </>
                   ) : (
@@ -521,11 +699,12 @@ export const QuizView: React.FC<QuizViewProps> = ({
                         !currentQuestion ||
                         showResults ||
                         loadingAttempt ||
-                        savingAnswer
+                        savingAnswer ||
+                        !!currentAnswer
                       }
                       className="px-6 py-3 rounded-xl border-2 border-gray-300 bg-white text-gray-700 font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
-                      Don't know
+                      {savingAnswer ? "Saving..." : "Don't know"}
                     </button>
 
                     <button
@@ -545,11 +724,7 @@ export const QuizView: React.FC<QuizViewProps> = ({
                     {isLastQuestion ? (
                       <>
                         <Check className="h-5 w-5" />
-                        {submitting
-                          ? "Submitting..."
-                          : showResults
-                          ? "Close"
-                          : "Submit quiz"}
+                        {submitting ? "Submitting..." : "Submit quiz"}
                       </>
                     ) : (
                       <>Continue</>
@@ -559,54 +734,6 @@ export const QuizView: React.FC<QuizViewProps> = ({
               </motion.div>
             </div>
           </>
-        ) : (
-          <div className="max-w-2xl mx-auto px-6 py-16">
-            <Card className="p-12 text-center bg-white rounded-2xl shadow-sm border border-gray-200">
-              <div className="mb-6">
-                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Check className="h-10 w-10 text-green-600" />
-                </div>
-                <h3 className="text-3xl font-bold text-gray-900 mb-2">
-                  Quiz Complete!
-                </h3>
-                <p className="text-gray-600">Thanks for taking the quiz.</p>
-              </div>
-
-              <div className="my-8 p-6 bg-gray-50 rounded-xl">
-                <p className="text-gray-600 text-sm mb-2">Your Score</p>
-                <p className="text-5xl font-bold text-gray-900 mb-2">
-                  {scoreEarned}
-                  <span className="text-2xl text-gray-400">/{totalPoints}</span>
-                </p>
-                <p className="text-sm text-gray-500">{accuracyPct}% Correct</p>
-              </div>
-
-              {passingScore !== null && (
-                <p className={`text-lg font-semibold mb-6 ${gradeClass}`}>
-                  {hasPassed ? "✓ Passed" : "✗ Failed"}
-                  <span className="text-gray-500 font-normal">
-                    {" "}
-                    (Passing Score: {passingScore})
-                  </span>
-                </p>
-              )}
-
-              <div className="flex gap-4 justify-center">
-                <Button
-                  onClick={restartQuiz}
-                  variant="outline"
-                  className="rounded-xl px-6 py-3 border-2"
-                  disabled={loadingAttempt}
-                >
-                  <RotateCcw className="mr-2 h-4 w-4" />
-                  Retake Quiz
-                </Button>
-                <Button onClick={onClose} className="rounded-xl px-6 py-3">
-                  Back to Quizzes
-                </Button>
-              </div>
-            </Card>
-          </div>
         )}
       </div>
     </ScrollArea>

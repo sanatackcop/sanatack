@@ -8,7 +8,7 @@ import {
   createNewQuizApi,
   getWorkSpaceContent,
 } from "@/utils/_apis/learnPlayground-api";
-import { Settings2, Trash2 } from "lucide-react";
+import { Settings2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -19,37 +19,17 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { QuizView } from "./QuizView";
-import {
-  QuizListProps,
-  Quiz,
-  QuizType,
-  QuizAttemptSummary,
-} from "./types";
+import { QuizListProps, Quiz, QuizType, QuizAttemptSummary } from "./types";
 
 export const QuizList: React.FC<QuizListProps> = ({ workspaceId }) => {
   const [loading, setLoading] = useState(true);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
-  // Modal state and option state
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Multi-select question types state
-  const allQuestionTypes: QuizType[] = [
-    "true_false",
-    "multiple_choice",
-    "scenario",
-  ];
   const [selectedTypes, setSelectedTypes] = useState<QuizType[]>([]);
 
-  const toggleType = (type: QuizType) => {
-    if (selectedTypes.includes(type)) {
-      setSelectedTypes(selectedTypes.filter((t) => t !== type));
-    } else {
-      setSelectedTypes([...selectedTypes, type]);
-    }
-  };
-
-  const [quizOptions, setQuizOptions] = useState<{
+  const [quizOptions, ,] = useState<{
     numberOfQuestions: number;
     difficulty: string;
   }>({
@@ -105,15 +85,6 @@ export const QuizList: React.FC<QuizListProps> = ({ workspaceId }) => {
     []
   );
 
-  const renderDuration = (quiz: Quiz) => {
-    if (!quiz.duration && quiz.duration !== 0) return null;
-    return (
-      <Badge variant="secondary" className="text-sm">
-        {quiz.duration} min
-      </Badge>
-    );
-  };
-
   if (selectedQuiz) {
     return (
       <QuizView
@@ -135,11 +106,11 @@ export const QuizList: React.FC<QuizListProps> = ({ workspaceId }) => {
       <div className="flex-1 min-h-0">
         <ScrollArea className="h-full">
           <motion.div
-            key="quizlist"
+            key="list"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.25 }}
             className="px-6 mb-4 flex flex-col rounded-3xl justify-between space-y-3"
           >
             <h3 className="px-2 text-sm font-medium text-gray-700">
@@ -206,55 +177,29 @@ export const QuizList: React.FC<QuizListProps> = ({ workspaceId }) => {
                       key={quiz.id}
                       onClick={() => setSelectedQuiz(quiz)}
                       className="group relative px-6 py-5 flex flex-col rounded-2xl justify-center hover:bg-gradient-to-r hover:from-gray-50 ease-in
-                       hover:to-gray-100/80 cursor-pointer shadow-sm border border-gray-200/60 hover:border-gray-300/80 transition-all duration-200"
+                       hover:to-gray-100/80 cursor-transition-all duration-200"
                     >
-                      <div className="flex justify-between items-start mb-3">
-                        <div className="flex-1">
-                          <h3 className="font-medium text-lg text-gray-900 mb-2">
+                      <div className="flex justify-between items-center">
+                        <div className="flex-1 flex items-center justify-between">
+                          <h3 className="font-medium text-lg text-gray-900">
                             {quiz.title}
                           </h3>
-                          <p className="mt-2 text-sm text-gray-500">
-                            {quiz.questions.length} Questions
-                          </p>
-                          {quiz.description && (
-                            <p className="text-gray-600 text-sm line-clamp-2">
-                              {quiz.description}
-                            </p>
-                          )}
-                          <div className="flex flex-wrap items-center gap-2 mt-2">
-                            {renderDuration(quiz)}
-                            <Badge
-                              variant={statusVariant}
-                              className="text-xs capitalize"
-                            >
-                              {statusLabel}
-                            </Badge>
-                            {totalPoints > 0 && (
-                              <Badge variant="outline" className="text-xs">
-                                {scoreEarned}/{totalPoints} pts
+                          <div className="flex items-center gap-2">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <Badge
+                                variant={statusVariant}
+                                className="text-xs capitalize"
+                              >
+                                {statusLabel}
                               </Badge>
-                            )}
+                              <p className="text-sm text-gray-500">
+                                {quiz.questions.length} Questions
+                              </p>
+                            </div>
                           </div>
                         </div>
-
-                        <motion.button
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.8 }}
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            // Add delete logic here if needed
-                          }}
-                          className="opacity-0 group-hover:opacity-100 p-2 rounded-full hover:bg-red-100 hover:text-red-600 
-                            text-gray-400 transition-all duration-200"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </motion.button>
                       </div>
 
-                      {/* Progress Bar */}
                       <div className="mt-3">
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-xs font-medium text-gray-500">
@@ -279,7 +224,7 @@ export const QuizList: React.FC<QuizListProps> = ({ workspaceId }) => {
             )}
           </motion.div>
 
-          <Card className="relative z-0 mx-5 px-4 py-2 h-[25rem] flex flex-col justify-between overflow-hidden bg-gradient-to-br from-white to-gray-50/50 border-2 border-dashed border-gray-200 hover:border-gray-300 transition-colors duration-200">
+          <Card className="relative z-0 mx-5 px-4 py-2  flex flex-col justify-between overflow-hidden bg-gradient-to-br from-white to-gray-50/50 border-2 border-dashed border-gray-200 hover:border-gray-300 transition-colors duration-200">
             <div className="relative z-10 flex items-start justify-between mx-2 px-4 py-6">
               <div className="max-w-[65%]">
                 <h2 className="text-2xl font-bold tracking-tight text-gray-900 mb-2">
@@ -310,59 +255,6 @@ export const QuizList: React.FC<QuizListProps> = ({ workspaceId }) => {
             <DialogTitle>Create Quiz Options</DialogTitle>
             <DialogDescription>Set options for the new quiz.</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            {/* Multi-select Question Types */}
-            <div>
-              <label className="block mb-1 font-medium">Question Types</label>
-              <div className="border p-2 rounded min-h-[3rem] flex flex-wrap gap-2 cursor-text">
-                {selectedTypes.map((type) => (
-                  <Badge
-                    key={type}
-                    variant="secondary"
-                    className="cursor-pointer"
-                    onClick={() => toggleType(type)}
-                  >
-                    {type.replace("_", " ")}
-                    <span className="ml-1 font-bold">&times;</span>
-                  </Badge>
-                ))}
-                {selectedTypes.length === 0 && (
-                  <span className="text-gray-400 select-none pointer-events-none">
-                    Select question types...
-                  </span>
-                )}
-              </div>
-              <div className="mt-2 space-x-2">
-                {allQuestionTypes.map((type) => (
-                  <Button
-                    key={type}
-                    variant={
-                      selectedTypes.includes(type) ? "default" : "outline"
-                    }
-                    size="sm"
-                    onClick={() => toggleType(type)}
-                  >
-                    {type.replace("_", " ")}
-                  </Button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className="block mb-1 font-medium">Difficulty</label>
-              <select
-                className="w-full p-2 border rounded"
-                value={quizOptions.difficulty}
-                onChange={(e) =>
-                  setQuizOptions({ ...quizOptions, difficulty: e.target.value })
-                }
-              >
-                <option value="easy">Easy</option>
-                <option value="medium">Medium</option>
-                <option value="hard">Hard</option>
-              </select>
-            </div>
-          </div>
           <DialogFooter>
             <Button
               onClick={() =>
