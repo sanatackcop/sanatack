@@ -17,14 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Grid2x2, PencilLine } from "lucide-react";
 import { useParams } from "react-router-dom";
 import { getSingleSpaceApi, updateSpaceApi } from "@/utils/_apis/courses-apis";
-import Recent from "@/components/Recent";
-
-type Space = {
-  id: string;
-  name: string;
-  description?: string | null;
-  items?: Array<unknown> | null;
-};
+import { Space } from "@/types/courses";
 
 export default function SpaceView() {
   const { t, i18n } = useTranslation();
@@ -35,7 +28,7 @@ export default function SpaceView() {
   const language = i18n.language; // current language code like 'ar' or 'en'
 
   const [layout, setLayout] = useState<"grid" | "list">("grid");
-  const [space, setSpace] = useState<any | null>(null);
+  const [space, setSpace] = useState<Space | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,7 +37,7 @@ export default function SpaceView() {
   const [editDescription, setEditDescription] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const itemCount = space?.items?.length ?? 0;
+  const itemCount = space?.workspaces?.length ?? 0;
   const formatNum = useMemo(
     () => new Intl.NumberFormat(language === "ar" ? "ar" : "en"),
     [language]
@@ -201,7 +194,6 @@ export default function SpaceView() {
         </div>
       </div>
 
-      {/* Toolbar */}
       <div className="flex items-center justify-between mt-6 mb-4">
         <div className="flex items-center gap-2">
           <Button
@@ -227,10 +219,6 @@ export default function SpaceView() {
           )}
         </div>
       </div>
-
-      {/* Content */}
-
-      <Recent isRTL={false} />
     </section>
   );
 }

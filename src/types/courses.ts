@@ -1,3 +1,4 @@
+import { Workspace } from "@/components/Recent";
 import { CoursesContext } from "@/utils/types";
 import { MaterialType } from "@/utils/types/adminTypes";
 
@@ -226,4 +227,13 @@ export interface CodeCheckResponse {
   }[];
 }
 
-export type Space = { id: string; name: string; contents: number };
+export type Space = {
+  id: string;
+  name: string;
+  description?: string | null;
+  userId: string;
+  created_at: string;
+  updated_at: string;
+  deletedAt?: Date | null;
+  workspaces: Workspace[];
+};
