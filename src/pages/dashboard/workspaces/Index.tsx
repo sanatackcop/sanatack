@@ -12,7 +12,6 @@ import {
   Trash2,
   Move,
   Plus,
-  Folder,
   Boxes,
   FileQuestionIcon,
   FileTextIcon,

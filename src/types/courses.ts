@@ -1,4 +1,4 @@
-import { Workspace } from "@/components/Recent";
+import { Workspace } from "@/lib/types";
 import { CoursesContext } from "@/utils/types";
 import { MaterialType } from "@/utils/types/adminTypes";
 

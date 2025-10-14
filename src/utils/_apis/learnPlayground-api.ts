@@ -1,7 +1,12 @@
+import { FlashcardSet } from "@/lib/flashcards/types";
 import Api, { API_METHODS, baseURL } from "./api";
 
 export type DocumentStatus = "pending" | "uploading" | "uploaded" | "failed";
-export type GenerationStatus = "pending" | "processing" | "completed" | "failed";
+export type GenerationStatus =
+  | "pending"
+  | "processing"
+  | "completed"
+  | "failed";
 
 export interface GenerationJobResponse {
   jobId: string;
@@ -424,7 +429,14 @@ export const createFlashcard = async (
   }
 };
 
-export const getWorkSpaceContent = async (workspaceId: string) => {
+export const getWorkSpaceContent = async (
+  workspaceId: string
+): Promise<{
+  flashcards: FlashcardSet[];
+  quizzes: any;
+  explanations: any;
+  summaries: any;
+}> => {
   try {
     const response = await Api({
       method: API_METHODS.GET,

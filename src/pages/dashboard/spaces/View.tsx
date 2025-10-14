@@ -18,7 +18,6 @@ import { Grid2x2, PencilLine } from "lucide-react";
 import { useParams } from "react-router-dom";
 import { getSingleSpaceApi, updateSpaceApi } from "@/utils/_apis/courses-apis";
 import { Space } from "@/types/courses";
-import Recent from "@/pages/dashboard/workspaces/Index";
 
 export default function SpaceView() {
   const { t, i18n } = useTranslation();
