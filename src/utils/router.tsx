@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HomePAGE, LoginPage, SingupPage } from "./index";
 import Storage from "@/lib/Storage";
 import { DASHBOARDTYPE as DASHBOARD_TYPE } from "./types/platfrom";
-import MainDashboard from "@/pages/dashboard/MainDashboard";
+import MainDashboard from "@/components/layout/MainDashboard";
 import ModulesPage from "@/admin/pages/modules.page";
 import CoursePage from "@/admin/pages/course.page";
 import AdminDashboard from "@/admin/Index";

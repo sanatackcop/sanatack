@@ -9,6 +9,7 @@ import {
   BoxIcon,
   ChevronDown,
   LogOut,
+  FileIcon,
 } from "lucide-react";
 import clsx from "clsx";
 import {
@@ -48,7 +49,7 @@ interface Workspace {
   id: string;
   title?: string;
   workspaceName?: string;
-  contentType: "youtube" | "pdf";
+  workspaceType: "youtube" | "docuemnt";
   updatedAt: string;
 }
 
@@ -303,7 +304,13 @@ export function AppSidebar() {
           {isActive ? (
             <div className="w-2 h-2 bg-gradient-to-r from-green-400 to-green-500 rounded-full" />
           ) : (
-            <Play className="h-4 w-4" />
+            <>
+              {workspace.workspaceType === "youtube" ? (
+                <Play className="h-4 w-4" />
+              ) : (
+                <FileIcon className="h-4 w-4" />
+              )}
+            </>
           )}
         </div>
         <span
@@ -417,7 +424,6 @@ export function AppSidebar() {
             </div>
           </div>
 
-          {/* Spaces */}
           <div>
             <div className="mb-2 flex items-center justify-between">
               <h3

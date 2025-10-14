@@ -1,15 +1,15 @@
 import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 import DashboardLayout from "./layout";
-import CardList from "./courses/Index";
-import CourseView from "./courses/View";
-import DashboardHome from "./home/Index";
-import Roadmap from "./RoadMap";
-import CareerPaths from "./CareerPath/Index";
-import CareerView from "./CareerPath/View";
-import UserProfile from "./userProfile/Index";
-import SpaceView from "./ai/spaces/View";
-import CoursePlayground from "./courseProduct/Index";
-import LearnPlayGround from "@/shared/ai/LearnPlayground/Index";
+import CardList from "../../pages/unused/courses/Index";
+import CourseView from "../../pages/unused/courses/View";
+import DashboardHome from "../../pages/dashboard/home/Index";
+import Roadmap from "../../pages/unused/RoadMap";
+import CareerPaths from "../../pages/unused/CareerPath/Index";
+import CareerView from "../../pages/unused/CareerPath/View";
+import UserProfile from "../../pages/unused/userProfile/Index";
+import SpaceView from "../../pages/dashboard/spaces/View";
+import CoursePlayground from "../../pages/unused/courseProduct/Index";
+import LearnPlayGround from "../../pages/dashboard/workspaces/View";
 
 const Placeholder = ({ title }: { title: string }) => (
   <div className="p-6">

@@ -17,7 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Grid2x2, PencilLine } from "lucide-react";
 import { useParams } from "react-router-dom";
 import { getSingleSpaceApi, updateSpaceApi } from "@/utils/_apis/courses-apis";
-import Recent from "@/components/Recent";
+import Recent from "@/pages/dashboard/workspaces/Index";
 
 type Space = {
   id: string;

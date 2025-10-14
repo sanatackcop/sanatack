@@ -1,21 +1,20 @@
-// @ts-nocheck
 import React, { useEffect, useState, useCallback } from "react";
 import { Progress } from "@/components/ui/progress";
 import { getWorkSpaceContent } from "@/utils/_apis/learnPlayground-api";
 import { ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import FlashcardModal from "./FlashcardModal";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Flashcard, FlashcardSet } from "./types";
 import {
-  CARD_VARIANTS,
-  LoadingSkeleton,
   updateFlashcardData,
   updateFlashcardDifficulty,
+  LoadingSkeleton,
+  CARD_VARIANTS,
 } from "./consts";
-import { StudyCard, StudyNavigation } from "./StudyCard";
-import { FlashCardHome } from "./FlashCards";
+import FlashcardModal from "./FlashcardModal";
 import { FlashcardsList } from "./FlashcardsList";
+import { StudyCard, StudyNavigation } from "./StudyCard";
+import { FlashcardSet, Flashcard } from "./types";
+import { FlashCardHome } from "./FlashCardsHome";
 
 // API functions
 const trackCardFlip = async (cardId: string, setId: string) => {

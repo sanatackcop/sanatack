@@ -1,8 +1,6 @@
-// import { State } from "./types";
-
 export const initialState: any = {
   tab: "chat",
-  contentType: "youtube",
+  workspaceType: "youtube",
   src: "https://arxiv.org/pdf/1706.03762",
   page: 1,
   pageCount: null,

@@ -33,7 +33,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import CodePlayground from "@/pages/dashboard/courseProduct/_CodeEditorView";
+import CodePlayground from "@/pages/unused/courseProduct/_CodeEditorView";
 import { MaterialType } from "@/utils/types/adminTypes";
 
 interface BasicInfo {

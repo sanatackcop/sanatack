@@ -1,7 +1,7 @@
 import { Space } from "@/types/courses";
 import { useTranslation } from "react-i18next";
-import { Button } from "./ui/button";
-import { Skeleton } from "./ui/skeleton";
+import { Button } from "../../../components/ui/button";
+import { Skeleton } from "../../../components/ui/skeleton";
 import { Boxes, Plus, Trash2, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import {

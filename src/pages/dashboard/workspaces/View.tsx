@@ -15,18 +15,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   BookOpen,
-  Copy,
   MessageCircle,
   Loader2,
   BrainCog,
   Scan,
   TestTube2,
+  Code,
+  GalleryVerticalEnd,
 } from "lucide-react";
-import { TabKey, ChatMessage, Workspace } from "./types";
-import PdfReader from "./PdfReader";
-import YouTubeReader from "./YoutubeReader";
 import { useTranslation } from "react-i18next";
-import ChatInput from "./chat/chatInput";
 import { Input } from "@/components/ui/input";
 import {
   getWorkSpace,
@@ -34,71 +31,86 @@ import {
   sendWorkspaceChatMessage,
 } from "@/utils/_apis/learnPlayground-api";
 import { useParams } from "react-router-dom";
-import ChatMessages from "./chat/ChatMessage";
-import { ChatSkeleton, ContentSkeleton, reducer, TabsSkeleton } from "./utils";
-import { initialState } from "./consts";
-import FlashCards from "./flashcards/Index";
-import { QuizList } from "./quizzes/Quiz";
-import { SummaryList } from "./summary/Summary";
-import MindMap from "./mindMap/MindMap";
+import FlashCards from "../../../lib/flashcards/FlashCards";
 import Tooltip from "@mui/material/Tooltip";
+import ChatInput from "@/lib/chat/chatInput";
+import ChatMessages from "@/lib/chat/ChatMessage";
+import { initialState } from "@/lib/consts";
+import MindMap from "@/lib/mindMap/MindMap";
+import PdfReader from "@/lib/PdfReader";
+import { QuizList } from "@/lib/quizzes/Quiz";
+import { SummaryList } from "@/lib/summary/Summary";
+import { ChatMessage, TabKey } from "@/lib/types";
+import YouTubeReader from "@/lib/YoutubeReader";
+import { Workspace } from "./Index";
+import { ChatSkeleton, ContentSkeleton, reducer, TabsSkeleton } from "../utils";
 
 const TABS_CONFIG = [
   { id: "chat", labelKey: "tabs.chat", icon: MessageCircle },
-  { id: "flashcards", labelKey: "tabs.flashcards", icon: Copy },
+  { id: "flashcards", labelKey: "tabs.flashcards", icon: GalleryVerticalEnd },
   { id: "quizzes", labelKey: "tabs.quizzes", icon: TestTube2 },
   { id: "summary", labelKey: "tabs.summary", icon: BookOpen },
-  { id: "Deep Explamtionm", labelKey: "Deep explanation", icon: BrainCog },
+  { id: "deepExplanation", labelKey: "Deep Explantion", icon: BrainCog },
+  { id: "code", labelKey: "Code", icon: Code },
 ] as const;
 
-const LearnPlayGround: React.FC = () => {
+const LearnPlayground: React.FC = () => {
   const { t, i18n } = useTranslation();
   const { id } = useParams();
   const [state, dispatch] = useReducer(reducer, initialState);
   const [workspaceLoading, setWorkspaceLoading] = useState(true);
   const [contentLoading, setContentLoading] = useState(false);
+  const [workspace, setWorkspace] = useState<Workspace | undefined>();
+
+  const [fullScreen, setFullScreen] = useState(false);
+
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const tabsListRef = useRef<HTMLDivElement>(null);
 
-  // Scroll related states for tab overflow
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [, setCanScrollRight] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
-  const [, setIndicatorStyle] = useState({ width: 0, right: 0 });
 
-  // Resizing drag and hover state for the resize handle
   const [isResizing, setIsResizing] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
-  const [workspace, setWorkspace] = useState<Workspace | undefined>();
   const isRTL = i18n.language === "ar";
 
-  // Fetch workspace data
-  const fetchTheWorkSpace = useCallback(async () => {
+  const extractVideoId = useCallback((url: string): string | null => {
+    if (url.includes("youtu.be/")) {
+      return url.split("/").pop()?.split("?")[0] || null;
+    }
+    return url.split("v=")[1]?.split("&")[0] || null;
+  }, []);
+
+  const fetchWorkspace = useCallback(async () => {
     if (!id) {
       setWorkspaceLoading(false);
       return;
     }
+
     try {
       setWorkspaceLoading(true);
       setContentLoading(true);
-      const response: any = await getWorkSpace(id);
-      const history = await getWorkSpaceChatHistory(id);
 
-      const workspaceData = response.workspace || response;
+      const [response, history] = await Promise.all([
+        getWorkSpace(id),
+        getWorkSpaceChatHistory(id),
+      ]);
+      const workspaceData = response.workspace;
       workspaceData.chatMessages = history;
+
       dispatch({ type: "SET_WORKSPACE", workspace: workspaceData });
       setWorkspace(workspaceData);
-      const youtubeUrl = workspaceData.youtubeVideo.transcribe.data.url;
+
+      const youtubeUrl = workspaceData.youtubeVideo?.transcribe?.data?.url;
       if (youtubeUrl) {
-        dispatch({ type: "SET_CONTENT", contentType: "youtube" });
-        const vdID = youtubeUrl.includes("youtu.be/")
-          ? youtubeUrl.split("/").pop()?.split("?")[0]
-          : youtubeUrl.split("v=")[1]?.split("&")[0];
-        if (vdID) {
-          dispatch({ type: "SET_YOUTUBE_VIDEO", videoId: vdID });
+        dispatch({ type: "SET_WORKSPACE_TYPE", workspaceType: "youtube" });
+        const videoId = extractVideoId(youtubeUrl);
+        if (videoId) {
+          dispatch({ type: "SET_YOUTUBE_VIDEO", videoId });
         }
         if (workspaceData.transcript) {
           dispatch({
@@ -107,10 +119,13 @@ const LearnPlayGround: React.FC = () => {
           });
         }
       }
-
-      if (workspaceData.contentType === "pdf" && workspaceData.pdfUrl) {
-        dispatch({ type: "SET_CONTENT", contentType: "pdf" });
-        dispatch({ type: "SET_SRC", src: workspaceData.pdfUrl });
+      console.log({ workspaceData });
+      if (
+        workspaceData.workspaceType === "document" &&
+        workspaceData.documentUrl
+      ) {
+        dispatch({ type: "SET_WORKSPACE_TYPE", workspaceType: "document" });
+        dispatch({ type: "SET_SRC", src: workspaceData.documentUrl });
       }
     } catch (error) {
       console.error("Failed to fetch workspace:", error);
@@ -122,22 +137,23 @@ const LearnPlayGround: React.FC = () => {
       setWorkspaceLoading(false);
       setTimeout(() => setContentLoading(false), 1000);
     }
-  }, [id]);
+  }, [id, extractVideoId]);
 
   useEffect(() => {
-    fetchTheWorkSpace();
-  }, [fetchTheWorkSpace]);
+    fetchWorkspace();
+  }, [fetchWorkspace]);
 
-  // Send chat message handler
   const handleSendMessage = useCallback(
     async (message: string) => {
       if (!message.trim() || !id) return;
+
       const userMessage: ChatMessage = {
         id: Date.now().toString(),
         type: "user",
         content: message.trim(),
         timestamp: new Date(),
       };
+
       dispatch({ type: "ADD_CHAT_MESSAGE", message: userMessage });
       dispatch({ type: "SET_CHAT_LOADING", loading: true });
       dispatch({ type: "SET_STREAMING_MESSAGE", content: "" });
@@ -192,7 +208,6 @@ const LearnPlayGround: React.FC = () => {
     [id, i18n.language, t]
   );
 
-  // Scroll control for tabs overflow
   const checkScrollability = useCallback(() => {
     if (scrollContainerRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } =
@@ -202,43 +217,13 @@ const LearnPlayGround: React.FC = () => {
     }
   }, []);
 
-  // Update active tab indicator position
-  const updateIndicatorPosition = useCallback(() => {
-    if (!tabsListRef.current) return;
-    const activeTabIndex = TABS_CONFIG.findIndex((tab) => tab.id === state.tab);
-    const tabElements = tabsListRef.current.querySelectorAll('[role="tab"]');
-    const activeTabElement = tabElements[activeTabIndex] as HTMLElement;
-
-    if (activeTabElement && tabsListRef.current) {
-      const tabsListRect = tabsListRef.current.getBoundingClientRect();
-      const activeTabRect = activeTabElement.getBoundingClientRect();
-      const relativeLeft = activeTabRect.left - tabsListRect.left;
-      const tabWidth = activeTabRect.width;
-      const rightPosition = tabsListRect.width - relativeLeft - tabWidth;
-
-      setIndicatorStyle({
-        width: Math.max(0, tabWidth - 2),
-        right: Math.max(0, rightPosition - 2),
-      });
-    }
-  }, [state.tab]);
-
-  // Scroll and indicator handlers bind/unbind
   useEffect(() => {
     checkScrollability();
-    updateIndicatorPosition();
     const container = scrollContainerRef.current;
     if (!container) return;
 
-    const handleScroll = () => {
-      checkScrollability();
-      updateIndicatorPosition();
-    };
-
-    const handleResize = () => {
-      checkScrollability();
-      setTimeout(updateIndicatorPosition, 100);
-    };
+    const handleScroll = () => checkScrollability();
+    const handleResize = () => checkScrollability();
 
     container.addEventListener("scroll", handleScroll);
     window.addEventListener("resize", handleResize);
@@ -247,53 +232,113 @@ const LearnPlayGround: React.FC = () => {
       container.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleResize);
     };
-  }, [checkScrollability, updateIndicatorPosition]);
+  }, [checkScrollability]);
 
-  useEffect(() => {
-    const timeoutId = setTimeout(updateIndicatorPosition, 100);
-    return () => clearTimeout(timeoutId);
-  }, [state.tab, updateIndicatorPosition]);
-
-  // Drag scrolling for tabs
-  const handleTouchStart = (e: React.TouchEvent) => {
+  const handleDragStart = useCallback((clientX: number) => {
     if (!scrollContainerRef.current) return;
     setIsDragging(true);
-    setStartX(e.touches[0].pageX - scrollContainerRef.current.offsetLeft);
+    setStartX(clientX - scrollContainerRef.current.offsetLeft);
     setScrollLeft(scrollContainerRef.current.scrollLeft);
-  };
+  }, []);
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging || !scrollContainerRef.current) return;
-    const x = e.touches[0].pageX - scrollContainerRef.current.offsetLeft;
-    const walk = (x - startX) * 1.5;
-    scrollContainerRef.current.scrollLeft = scrollLeft - walk;
-  };
+  const handleDragMove = useCallback(
+    (clientX: number) => {
+      if (!isDragging || !scrollContainerRef.current) return;
+      const x = clientX - scrollContainerRef.current.offsetLeft;
+      const walk = (x - startX) * 2;
+      scrollContainerRef.current.scrollLeft = scrollLeft - walk;
+    },
+    [isDragging, startX, scrollLeft]
+  );
 
-  const handleTouchEnd = () => setIsDragging(false);
+  const handleDragEnd = useCallback(() => {
+    setIsDragging(false);
+  }, []);
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (!scrollContainerRef.current) return;
-    setIsDragging(true);
-    setStartX(e.pageX - scrollContainerRef.current.offsetLeft);
-    setScrollLeft(scrollContainerRef.current.scrollLeft);
-  };
-
+  const handleMouseDown = (e: React.MouseEvent) => handleDragStart(e.pageX);
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging || !scrollContainerRef.current) return;
-    e.preventDefault();
-    const x = e.pageX - scrollContainerRef.current.offsetLeft;
-    const walk = (x - startX) * 2;
-    scrollContainerRef.current.scrollLeft = scrollLeft - walk;
+    if (isDragging) e.preventDefault();
+    handleDragMove(e.pageX);
   };
+  const handleTouchStart = (e: React.TouchEvent) =>
+    handleDragStart(e.touches[0].pageX);
+  const handleTouchMove = (e: React.TouchEvent) =>
+    handleDragMove(e.touches[0].pageX);
 
-  const handleMouseUp = () => setIsDragging(false);
+  const getDisplayTitle = useCallback(() => {
+    return (
+      state.workspace?.workspaceName ||
+      state.workspace?.title ||
+      state.title ||
+      "Untitled Workspace"
+    );
+  }, [state.workspace, state.title]);
 
-  // Workspace title display
-  const getDisplayTitle = () =>
-    state.workspace?.workspaceName ||
-    state.workspace?.title ||
-    state.title ||
-    "Untitled Workspace";
+  const renderContent = () => {
+    if (contentLoading) {
+      return <ContentSkeleton />;
+    }
+    if (state.workspaceType === "document") {
+      return (
+        <PdfReader
+          src={state.src}
+          page={state.page}
+          zoom={state.zoom}
+          status={state.status}
+          selectedText={state.selectedText}
+          onLoaded={(pageCount) => {
+            dispatch({ type: "SET_PAGE_COUNT", pageCount });
+            dispatch({ type: "SET_STATUS", status: { kind: "idle" } });
+            setContentLoading(false);
+          }}
+          onError={(message) => {
+            dispatch({
+              type: "SET_STATUS",
+              status: { kind: "error", message },
+            });
+            setContentLoading(false);
+          }}
+          onNext={() => dispatch({ type: "NEXT_PAGE" })}
+          onPrev={() => dispatch({ type: "PREV_PAGE" })}
+          onGoto={(p) => dispatch({ type: "SET_PAGE", page: p })}
+          onZoomIn={() => dispatch({ type: "ZOOM_IN" })}
+          onZoomOut={() => dispatch({ type: "ZOOM_OUT" })}
+          onResetZoom={() => dispatch({ type: "RESET_ZOOM" })}
+          onTextSelect={(text) => dispatch({ type: "SET_SELECTED_TEXT", text })}
+          onAddToChat={(text) => dispatch({ type: "ADD_TO_CHAT", text })}
+          pageCount={state.pageCount}
+        />
+      );
+    }
+
+    if (state.workspaceType === "youtube") {
+      return (
+        <YouTubeReader
+          videoId={state.youtubeVideoId}
+          transcript={state.workspace?.youtubeVideo?.transcribe?.data as any}
+          onVideoSelect={(videoId) =>
+            dispatch({ type: "SET_YOUTUBE_VIDEO", videoId })
+          }
+          onTimeUpdate={(currentTime, duration) =>
+            dispatch({ type: "SET_YOUTUBE_TIME", currentTime, duration })
+          }
+          onPlay={() =>
+            dispatch({ type: "SET_YOUTUBE_PLAYING", isPlaying: true })
+          }
+          onPause={() =>
+            dispatch({ type: "SET_YOUTUBE_PLAYING", isPlaying: false })
+          }
+          onReady={() => setContentLoading(false)}
+          onTranscriptLoad={(transcript) =>
+            dispatch({ type: "SET_TRANSCRIPT", transcript })
+          }
+          className="w-full h-full flex-grow"
+        />
+      );
+    }
+
+    return null;
+  };
 
   // Loading state
   if (workspaceLoading) {
@@ -315,12 +360,9 @@ const LearnPlayGround: React.FC = () => {
       </section>
     );
   }
-
   return (
     <section
-      style={{
-        height: "calc(100vh - 3rem)",
-      }}
+      style={{ height: "calc(100vh - 3rem)" }}
       dir={isRTL ? "rtl" : "ltr"}
       className="flex flex-col"
     >
@@ -344,77 +386,22 @@ const LearnPlayGround: React.FC = () => {
       </div>
 
       <ResizablePanelGroup direction="horizontal" className="flex-1 min-h-0">
-        <ResizablePanel
-          defaultSize={50}
-          minSize={30}
-          className="mt-2 min-h-0 flex flex-col"
-        >
-          <motion.div
-            initial={{ x: 20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ type: "spring", stiffness: 260, damping: 30 }}
-            className="h-full p-4 pt-0 flex flex-col min-h-0"
+        {!fullScreen && (
+          <ResizablePanel
+            defaultSize={50}
+            minSize={30}
+            className="mt-2 min-h-0 flex flex-col"
           >
-            {contentLoading ? (
-              <ContentSkeleton />
-            ) : state.contentType === "pdf" ? (
-              <PdfReader
-                src={state.src}
-                page={state.page}
-                zoom={state.zoom}
-                status={state.status}
-                selectedText={state.selectedText}
-                onLoaded={(pageCount) => {
-                  dispatch({ type: "SET_PAGE_COUNT", pageCount });
-                  dispatch({ type: "SET_STATUS", status: { kind: "idle" } });
-                  setContentLoading(false);
-                }}
-                onError={(message) => {
-                  dispatch({
-                    type: "SET_STATUS",
-                    status: { kind: "error", message },
-                  });
-                  setContentLoading(false);
-                }}
-                onNext={() => dispatch({ type: "NEXT_PAGE" })}
-                onPrev={() => dispatch({ type: "PREV_PAGE" })}
-                onGoto={(p) => dispatch({ type: "SET_PAGE", page: p })}
-                onZoomIn={() => dispatch({ type: "ZOOM_IN" })}
-                onZoomOut={() => dispatch({ type: "ZOOM_OUT" })}
-                onResetZoom={() => dispatch({ type: "RESET_ZOOM" })}
-                onTextSelect={(text) =>
-                  dispatch({ type: "SET_SELECTED_TEXT", text })
-                }
-                onAddToChat={(text) => dispatch({ type: "ADD_TO_CHAT", text })}
-                pageCount={state.pageCount}
-              />
-            ) : state.contentType === "youtube" ? (
-              <YouTubeReader
-                videoId={state.youtubeVideoId}
-                transcript={
-                  state.workspace?.youtubeVideo?.transcribe?.data as any
-                }
-                onVideoSelect={(videoId) =>
-                  dispatch({ type: "SET_YOUTUBE_VIDEO", videoId })
-                }
-                onTimeUpdate={(currentTime, duration) =>
-                  dispatch({ type: "SET_YOUTUBE_TIME", currentTime, duration })
-                }
-                onPlay={() =>
-                  dispatch({ type: "SET_YOUTUBE_PLAYING", isPlaying: true })
-                }
-                onPause={() =>
-                  dispatch({ type: "SET_YOUTUBE_PLAYING", isPlaying: false })
-                }
-                onReady={() => setContentLoading(false)}
-                onTranscriptLoad={(transcript) =>
-                  dispatch({ type: "SET_TRANSCRIPT", transcript })
-                }
-                className="w-full h-full flex-grow"
-              />
-            ) : null}
-          </motion.div>
-        </ResizablePanel>
+            <motion.div
+              initial={{ x: 20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 260, damping: 30 }}
+              className="h-full p-4 pt-0 flex flex-col min-h-0"
+            >
+              {renderContent()}
+            </motion.div>
+          </ResizablePanel>
+        )}
 
         <ResizableHandle
           onPointerDown={() => setIsResizing(true)}
@@ -451,6 +438,7 @@ const LearnPlayGround: React.FC = () => {
                 }
                 className="h-full flex flex-col min-h-0"
               >
+                {/* Tabs Header */}
                 <div className="relative p-2 pt-0 flex-shrink-0">
                   {canScrollLeft && (
                     <div
@@ -471,11 +459,11 @@ const LearnPlayGround: React.FC = () => {
                     className="overflow-x-auto scrollbar-hide flex w-full items-center gap-2 justify-center relative touch-pan-x"
                     onMouseDown={handleMouseDown}
                     onMouseMove={handleMouseMove}
-                    onMouseUp={handleMouseUp}
-                    onMouseLeave={handleMouseUp}
+                    onMouseUp={handleDragEnd}
+                    onMouseLeave={handleDragEnd}
                     onTouchStart={handleTouchStart}
                     onTouchMove={handleTouchMove}
-                    onTouchEnd={handleTouchEnd}
+                    onTouchEnd={handleDragEnd}
                     style={{
                       cursor: isDragging ? "grabbing" : "grab",
                       WebkitOverflowScrolling: "touch",
@@ -483,7 +471,7 @@ const LearnPlayGround: React.FC = () => {
                   >
                     <TabsList
                       ref={tabsListRef}
-                      className="relative !space-x-0 !p-1 flex items-center gap-4 h-11 min-w-max  rounded-2xl border w-fit"
+                      className="relative !space-x-0 !p-1 flex items-center gap-4 h-11 min-w-max rounded-2xl border w-fit"
                       style={{ direction: isRTL ? "rtl" : "ltr" }}
                     >
                       {TABS_CONFIG.map((tab) => {
@@ -503,7 +491,7 @@ const LearnPlayGround: React.FC = () => {
                             }}
                           >
                             {isActive ? (
-                              <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full  flex-shrink-0" />
+                              <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full flex-shrink-0" />
                             ) : (
                               <IconComponent className="size-4 flex-shrink-0 text-gray-600" />
                             )}
@@ -519,8 +507,13 @@ const LearnPlayGround: React.FC = () => {
                       })}
                     </TabsList>
 
-                    <Tooltip title={"Full Screen"} className="cursor-pointer">
-                      <Scan className="opacity-50 group-hover:opacity-100 transition-all ease-linear duration-200 size-5" />
+                    <Tooltip title="Full Screen" className="cursor-pointer">
+                      <Scan
+                        className="opacity-50 hover:opacity-100 transition-all ease-linear duration-200 size-5"
+                        onClick={() => {
+                          setFullScreen(!fullScreen);
+                        }}
+                      />
                     </Tooltip>
                   </div>
                 </div>
@@ -556,7 +549,7 @@ const LearnPlayGround: React.FC = () => {
                             onSubmit={handleSendMessage}
                             placeholder={t(
                               "chat.placeholder",
-                              `Ask Any Think About ${getDisplayTitle()}...`
+                              `Ask anything about ${getDisplayTitle()}...`
                             )}
                           />
                         </>
@@ -618,4 +611,4 @@ const LearnPlayGround: React.FC = () => {
   );
 };
 
-export default LearnPlayGround;
+export default LearnPlayground;

@@ -12,6 +12,9 @@ import {
   Trash2,
   Move,
   Plus,
+  FileQuestionIcon,
+  FileTextIcon,
+  Loader2Icon,
 } from "lucide-react";
 import Button from "@mui/material/Button";
 import {
@@ -19,15 +22,17 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@radix-ui/react-dropdown-menu";
-import { DropdownMenuItem } from "./ui/dropdown-menu";
-import { formatRelativeDate } from "./utiles";
-import { AddContantModal } from "@/shared/ai/LearnPlayground/modal/AddContantModal";
+import { DropdownMenuItem } from "../../../components/ui/dropdown-menu";
+import { formatRelativeDate } from "../../../components/utiles";
+import { Document, Page } from "react-pdf";
+import { AddContantModal } from "@/lib/modal/AddContantModal";
 
 export interface Workspace {
   id: string;
   workspaceName?: string;
   youtubeVideo: any;
-  contentType: "youtube" | "pdf" | "chat";
+  documentUrl?: string;
+  workspaceType: "youtube" | "document" | "chat";
   pdfUrl?: string;
   createdAt: string;
   updatedAt: string;
@@ -68,12 +73,12 @@ export const WorkspaceFolderItem = ({
 }: WorkspaceFolderItemProps) => {
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const { youtubeVideo, workspaceName, createdAt } = workspace;
-  const contentType = "youtube";
+  const { youtubeVideo, workspaceName, createdAt, workspaceType, documentUrl } =
+    workspace;
 
   function renderBanner() {
-    if (contentType === "youtube" && youtubeVideo.transcribe.data.url) {
-      if (contentType === "youtube" && youtubeVideo?.transcribe?.data?.url) {
+    if (workspaceType === "youtube" && youtubeVideo?.transcribe.data.url) {
+      if (workspaceType === "youtube" && youtubeVideo?.transcribe?.data?.url) {
         const url = youtubeVideo.transcribe.data.url;
         const match = url.match(
           /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|embed)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/
@@ -103,30 +108,24 @@ export const WorkspaceFolderItem = ({
       }
     }
 
-    // if (contentType === "chat") {
-    //   return (
-    //     <div className="flex items-center justify-center min-h-28 rounded-t-2xl border-b border-zinc-200 bg-gray-50">
-    //       <MessageCircleIcon className="h-12 w-12 text-zinc-400" />
-    //     </div>
-    //   );
-    // }
+    if (workspaceType === "document" && documentUrl) {
+      return (
+        <div className="w-full h-28 overflow-hidden rounded-t-2xl border-b border-zinc-200 flex items-center justify-center bg-gray-50">
+          <Document file={documentUrl} loading={<Loader2Icon />}>
+            <Page
+              pageNumber={1}
+              scale={0.5}
+              renderAnnotationLayer={false}
+              renderTextLayer={false}
+            />
+          </Document>
+        </div>
+      );
+    }
 
-    // if (contentType === "pdf" && pdfUrl) {
-    //   // Display first page preview of PDF - Using embed with height restriction
-    //   return (
-    //     <embed
-    //       src={`${pdfUrl}#page=1&zoom=100`}
-    //       type="application/pdf"
-    //       className="w-full h-28 rounded-t-2xl border-b border-zinc-200"
-    //       aria-label="PDF preview"
-    //     />
-    //   );
-    // }
-
-    // default fallback visual
     return (
       <div className="flex items-center justify-center min-h-28 rounded-t-2xl border-b border-zinc-200 bg-gray-50">
-        <PlayIcon className="h-12 w-12 text-zinc-400" />
+        <FileQuestionIcon className="h-12 w-12 text-zinc-400" />
       </div>
     );
   }
@@ -153,15 +152,12 @@ export const WorkspaceFolderItem = ({
 
         <CardContent className="flex flex-1 items-center justify-start gap-4 p-5 pb-4">
           <div className="flex items-center justify-center w-6 h-6">
-            {contentType === "youtube" && (
+            {workspaceType === "youtube" && (
               <PlayIcon className="h-4 w-4 text-zinc-700" />
             )}
-            {/* {contentType === "chat" && (
-              <MessageCircleIcon className="h-4 w-4 text-zinc-700" />
-            )}
-            {contentType === "pdf" && (
+            {workspaceType === "document" && (
               <FileTextIcon className="h-4 w-4 text-zinc-700" />
-            )} */}
+            )}
           </div>
 
           <div className={`min-w-0 ${isRTL ? "text-right" : "text-left"}`}>
