@@ -1,4 +1,4 @@
-export type ContentType = "pdf" | "youtube";
+export type ContentType = "document" | "youtube";
 
 export type Status =
   | { kind: "idle" }
@@ -58,7 +58,7 @@ export interface Workspace {
   workspaceName?: string;
   title?: string;
   youtubeUrl?: string;
-  contentType: "youtube" | "pdf";
+  workspaceType: "youtube" | "document";
   pdfUrl?: string;
   createdAt: string;
   updatedAt: string;
@@ -67,7 +67,7 @@ export interface Workspace {
 
 export interface State {
   tab: TabKey;
-  contentType: ContentType;
+  workspaceType: ContentType;
   src: string;
   page: number;
   pageCount: number | null;

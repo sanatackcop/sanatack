@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Dialog,
@@ -25,6 +25,9 @@ import {
 } from "lucide-react";
 import {
   createNewWorkSpace,
+  uploadDocumentApi,
+  getDocumentApi,
+  DocumentStatus,
   youtubeUrlPastApi,
 } from "@/utils/_apis/learnPlayground-api";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -46,6 +49,9 @@ interface UploadState {
   isUploading: boolean;
   uploadProgress: number;
   error: string | null;
+  documentId: string | null;
+  status: DocumentStatus | null;
+  downloadUrl: string | null;
 }
 
 interface PasteState {
@@ -64,6 +70,9 @@ export function AddContantModal({ open, onClose }: AddContantModalProps) {
     isUploading: false,
     uploadProgress: 0,
     error: null,
+    documentId: null,
+    status: null,
+    downloadUrl: null,
   });
 
   const [pasteState, setPasteState] = useState<PasteState>({
@@ -76,6 +85,117 @@ export function AddContantModal({ open, onClose }: AddContantModalProps) {
   const [isDragActive, setIsDragActive] = useState(false);
 
   const uploadRef = useRef<HTMLInputElement | null>(null);
+  const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      clearPolling();
+    };
+  }, []);
+
+  function clearPolling() {
+    if (pollIntervalRef.current) {
+      clearInterval(pollIntervalRef.current);
+      pollIntervalRef.current = null;
+    }
+  }
+
+  function statusToProgress(status: DocumentStatus | null): number {
+    switch (status) {
+      case "pending":
+        return 10;
+      case "uploading":
+        return 70;
+      case "uploaded":
+        return 100;
+      case "failed":
+        return 100;
+      default:
+        return 0;
+    }
+  }
+
+  function processSelectedFiles(files: File[]) {
+    if (!files.length) return;
+
+    const file = files[0];
+    const mimeType = (file.type || "").toLowerCase();
+    const isPdf =
+      mimeType === "application/pdf" ||
+      file.name.toLowerCase().endsWith(".pdf");
+
+    if (!isPdf) {
+      clearPolling();
+      setUploadState((prev) => ({
+        ...prev,
+        files: [],
+        error: "Only PDF files are supported.",
+        isUploading: false,
+        uploadProgress: 0,
+        status: null,
+        documentId: null,
+        downloadUrl: null,
+      }));
+      return;
+    }
+
+    clearPolling();
+    setUploadState((prev) => ({
+      ...prev,
+      files: [file],
+      error: null,
+      isUploading: false,
+      uploadProgress: 0,
+      status: null,
+      documentId: null,
+      downloadUrl: null,
+    }));
+  }
+
+  function startPolling(documentId: string) {
+    if (!documentId) return;
+    clearPolling();
+
+    const poll = async () => {
+      try {
+        const documentData = await getDocumentApi(documentId);
+        const docStatus = documentData.status;
+
+        setUploadState((prev) => ({
+          ...prev,
+          status: docStatus,
+          documentId,
+          uploadProgress: statusToProgress(docStatus),
+          isUploading: docStatus !== "uploaded" && docStatus !== "failed",
+          downloadUrl:
+            docStatus === "uploaded"
+              ? documentData.url ?? prev.downloadUrl
+              : docStatus === "failed"
+              ? null
+              : prev.downloadUrl,
+          error:
+            docStatus === "failed"
+              ? documentData.failureReason || "Upload failed"
+              : null,
+        }));
+
+        if (docStatus === "uploaded" || docStatus === "failed") {
+          clearPolling();
+        }
+      } catch (error: any) {
+        clearPolling();
+        setUploadState((prev) => ({
+          ...prev,
+          isUploading: false,
+          error:
+            error?.message || "Unable to retrieve document status right now.",
+        }));
+      }
+    };
+
+    poll();
+    pollIntervalRef.current = setInterval(poll, 5000);
+  }
 
   // Drag hover handlers for upload area
   function handleDragEnter(e: React.DragEvent<HTMLDivElement>) {
@@ -107,23 +227,16 @@ export function AddContantModal({ open, onClose }: AddContantModalProps) {
     e.stopPropagation();
     setIsDragActive(false);
     const droppedFiles = Array.from(e.dataTransfer.files);
-    if (droppedFiles.length > 0) {
-      setUploadState((prev) => ({
-        ...prev,
-        files: droppedFiles,
-        error: null,
-      }));
-    }
+    processSelectedFiles(droppedFiles);
   }
 
   // Upload handlers
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const selectedFiles = Array.from(e.target.files || []);
-    setUploadState((prev) => ({
-      ...prev,
-      files: selectedFiles,
-      error: null,
-    }));
+    processSelectedFiles(selectedFiles);
+    if (e.target) {
+      e.target.value = "";
+    }
   }
 
   function handleDragOver(e: React.DragEvent<HTMLDivElement>) {
@@ -133,42 +246,58 @@ export function AddContantModal({ open, onClose }: AddContantModalProps) {
   async function handleFileUpload() {
     if (uploadState.files.length === 0) return;
 
+    clearPolling();
     setUploadState((prev) => ({
       ...prev,
       isUploading: true,
-      uploadProgress: 0,
+      status: "pending",
+      uploadProgress: statusToProgress("pending"),
+      error: null,
+      documentId: null,
+      downloadUrl: null,
     }));
 
     try {
-      const formData = new FormData();
-      uploadState.files.forEach((file, index) => {
-        formData.append(`file${index}`, file);
+      const upload = await uploadDocumentApi({ file: uploadState.files[0] });
+      await createNewWorkSpace({
+        documentId: upload.documentId!,
+        workspaceName: uploadState.files[0].name,
       });
+      if (!upload.documentId) {
+        throw new Error("Upload response is missing a document id.");
+      }
 
-      // Simulate upload progress
-      const uploadInterval = setInterval(() => {
-        setUploadState((prev) => ({
-          ...prev,
-          uploadProgress: Math.min(prev.uploadProgress + 10, 90),
-        }));
-      }, 200);
+      const initialStatus = upload.status ?? "pending";
 
-      // Replace with actual upload API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      clearInterval(uploadInterval);
-      setUploadState((prev) => ({ ...prev, uploadProgress: 100 }));
-
-      // Navigate to learning playground after upload success
-      setTimeout(() => {
-        navigate("/learning-playground");
-        handleClose();
-      }, 1000);
-    } catch (error: any) {
       setUploadState((prev) => ({
         ...prev,
-        error: error.message || "Upload failed",
+        status: initialStatus,
+        documentId: upload.documentId,
+        isUploading: initialStatus !== "uploaded" && initialStatus !== "failed",
+        uploadProgress: statusToProgress(initialStatus),
+        error: null,
+        downloadUrl: null,
+      }));
+
+      if (initialStatus === "uploaded" || initialStatus === "failed") {
+        clearPolling();
+        return;
+      }
+
+      startPolling(upload.documentId);
+    } catch (error: any) {
+      clearPolling();
+      setUploadState((prev) => ({
+        ...prev,
+        error:
+          error?.error?.body ||
+          error?.message ||
+          "Upload failed. Please try again.",
         isUploading: false,
+        status: null,
+        uploadProgress: 0,
+        documentId: null,
+        downloadUrl: null,
       }));
     }
   }
@@ -200,12 +329,17 @@ export function AddContantModal({ open, onClose }: AddContantModalProps) {
 
   function handleClose() {
     onClose();
+    clearPolling();
     setActiveModal("selection");
+    setIsDragActive(false);
     setUploadState({
       files: [],
       isUploading: false,
       uploadProgress: 0,
       error: null,
+      documentId: null,
+      status: null,
+      downloadUrl: null,
     });
     setPasteState({
       url: "",
@@ -229,8 +363,8 @@ export function AddContantModal({ open, onClose }: AddContantModalProps) {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-4">
               <ContentTypeCard
-                title="Upload Files"
-                subtitle="Upload documents, videos, or audio"
+                title="Upload PDF"
+                subtitle="Upload a PDF document"
                 Icon={UploadCloud}
                 onClick={() => setActiveModal("upload")}
               />
@@ -267,9 +401,9 @@ export function AddContantModal({ open, onClose }: AddContantModalProps) {
         {activeModal === "upload" && (
           <>
             <DialogHeader>
-              <DialogTitle>Upload Files</DialogTitle>
+              <DialogTitle>Upload PDF</DialogTitle>
               <DialogDescription>
-                Drag and drop files here or choose files to upload.
+                Drag and drop your PDF or choose one to upload.
               </DialogDescription>
             </DialogHeader>
 
@@ -306,7 +440,7 @@ export function AddContantModal({ open, onClose }: AddContantModalProps) {
                       : "text-gray-700 dark:text-gray-200"
                   }`}
                 >
-                  {isDragActive ? "Drop files here" : "Drag & Drop files here"}
+                  {isDragActive ? "Drop your PDF here" : "Drag & Drop your PDF"}
                 </div>
                 <div className="text-sm text-gray-500 mb-6 dark:text-gray-400">
                   or click to browse from your computer
@@ -316,26 +450,24 @@ export function AddContantModal({ open, onClose }: AddContantModalProps) {
                   size="default"
                   className="pointer-events-none"
                 >
-                  Choose Files
+                  Choose PDF
                 </Button>
                 <input
                   ref={uploadRef}
                   type="file"
-                  multiple
-                  accept=".pdf,.doc,.docx,.txt,.mp3,.mp4,.avi,.mov,.jpg,.png"
+                  accept="application/pdf,.pdf"
                   onChange={handleFileSelect}
                   className="hidden"
                 />
                 <div className="text-xs text-gray-400 mt-4 dark:text-gray-500">
-                  Supported formats: PDF, DOC, DOCX, TXT, MP3, MP4, AVI, MOV,
-                  JPG, PNG
+                  Supported format: PDF
                 </div>
               </div>
 
               {uploadState.files.length > 0 && (
                 <div className="space-y-3">
                   <div className="font-medium text-sm text-gray-700 dark:text-gray-300">
-                    Selected files ({uploadState.files.length}):
+                    Selected file:
                   </div>
                   <div className="max-h-48 overflow-y-auto space-y-2">
                     {uploadState.files.map((file, index) => (
@@ -358,16 +490,45 @@ export function AddContantModal({ open, onClose }: AddContantModalProps) {
                 </div>
               )}
 
-              {uploadState.isUploading && (
+              {uploadState.status && (
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span>Uploading...</span>
+                    <span
+                      className={
+                        uploadState.status === "failed"
+                          ? "text-red-600"
+                          : uploadState.status === "uploaded"
+                          ? "text-green-600 dark:text-green-400"
+                          : "text-gray-600 dark:text-gray-300"
+                      }
+                    >
+                      {uploadState.status === "uploaded"
+                        ? "Upload complete"
+                        : uploadState.status === "failed"
+                        ? "Upload failed"
+                        : uploadState.status === "uploading"
+                        ? "Uploading to storage..."
+                        : "Preparing upload..."}
+                    </span>
                     <span>{uploadState.uploadProgress}%</span>
                   </div>
                   <Progress
                     value={uploadState.uploadProgress}
                     className="h-2"
                   />
+                  {uploadState.status === "uploaded" &&
+                    uploadState.downloadUrl && (
+                      <div className="text-sm text-center text-green-600 dark:text-green-400">
+                        <a
+                          href={uploadState.downloadUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline"
+                        >
+                          View document
+                        </a>
+                      </div>
+                    )}
                 </div>
               )}
 
@@ -391,7 +552,7 @@ export function AddContantModal({ open, onClose }: AddContantModalProps) {
                   uploadState.files.length === 0 || uploadState.isUploading
                 }
               >
-                {uploadState.isUploading ? "Uploading..." : "Upload Files"}
+                {uploadState.isUploading ? "Uploading..." : "Upload PDF"}
               </Button>
             </DialogFooter>
           </>

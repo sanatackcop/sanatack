@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CoursesContext } from "@/utils/types";
 import { getAllCoursesApi } from "@/utils/_apis/courses-apis";
-import Recent from "@/components/Recent";
-import Spaces from "@/components/Spaces";
+import Recent from "@/pages/dashboard/workspaces/Index";
+import Spaces from "@/pages/dashboard/spaces/Index";
 
 export default function LearningDashboard() {
   const { t, i18n } = useTranslation();

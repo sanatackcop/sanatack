@@ -1,2 +1,0 @@
-// Generic compont 
-// headers

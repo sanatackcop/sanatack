@@ -1,5 +1,4 @@
 import { Skeleton } from "@/components/ui/skeleton";
-// import { State } from "./types";
 
 export const ContentSkeleton = () => (
   <div className="w-full h-full flex flex-col space-y-4 p-4">
@@ -71,8 +70,8 @@ export const reducer = (state: any, action: any): any => {
     case "SET_CONTENT":
       return {
         ...state,
-        contentType: action.contentType,
-        status: { kind: "loading", for: action.contentType },
+        workspaceType: action.workspaceType,
+        status: { kind: "loading", for: action.workspaceType },
       };
     case "SET_SRC":
       return { ...state, src: action.src };
@@ -179,7 +178,7 @@ export const reducer = (state: any, action: any): any => {
         youtubeVideoId: action.workspace?.youtubeUrl
           ? extractYouTubeId(action.workspace.youtubeUrl)
           : state.youtubeVideoId,
-        contentType: action.workspace?.contentType || state.contentType,
+        workspaceType: action.workspace?.workspaceType || state.workspaceType,
         src: action.workspace?.pdfUrl || state.src,
         transcript: action.workspace?.transcript || null,
       };
