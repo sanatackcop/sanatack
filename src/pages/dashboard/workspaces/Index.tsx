@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { getAllWorkSpace } from "@/utils/_apis/learnPlayground-api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
-import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Loader2,
@@ -11,7 +10,6 @@ import {
   EllipsisVertical,
   Trash2,
   Move,
-  Plus,
   Boxes,
   FileQuestionIcon,
   FileTextIcon,
@@ -30,24 +28,15 @@ import {
   DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Space } from "@/types/courses";
-import { getAllSpaces, linkWorkspaceToSpace } from "@/utils/_apis/courses-apis";
+import {
+  getAllSpaces,
+  linkWorkspaceToSpace,
+  unlinkWorkspaceFromSpace,
+} from "@/utils/_apis/courses-apis";
 import { formatRelativeDate } from "../../../components/utiles";
 import { Document, Page } from "react-pdf";
-import { AddContantModal } from "@/lib/modal/AddContantModal";
-
-export interface Workspace {
-  id: string;
-  workspaceName?: string;
-  youtubeVideo: any;
-  documentUrl?: string;
-  workspaceType: "youtube" | "document" | "chat";
-  pdfUrl?: string;
-  createdAt: string;
-  updatedAt: string;
-  thumbnail?: string;
-  duration?: string;
-  progress?: number;
-}
+import { Workspace } from "@/lib/types";
+import WorkspacesList from "./WorkspacesList.";
 
 const WorkspaceItemSkeleton = () => (
   <Card className="p-4 border border-zinc-300 rounded-2xl bg-zinc-50">
@@ -68,7 +57,7 @@ const WorkspaceItemSkeleton = () => (
   </Card>
 );
 
-type WorkspaceFolderItemProps = {
+export type WorkspaceFolderItemProps = {
   workspace: Workspace;
   onClick: () => void;
   isRTL: boolean;
@@ -143,7 +132,6 @@ export const WorkspaceFolderItem = ({
   const fetchAllCourses = async () => {
     try {
       const spaces = await getAllSpaces();
-      console.log({ spaces });
       setSpaces(spaces);
     } catch (err) {
       // setError(t("dashboard.errors.loadCourses"));
@@ -157,6 +145,17 @@ export const WorkspaceFolderItem = ({
   ) => {
     try {
       await linkWorkspaceToSpace(space_id, workspace_id);
+    } catch (err) {
+      // setError(t("dashboard.errors.loadCourses"));
+      console.error("Error fetching courses:", err);
+    } finally {
+      setMenuOpen(false);
+    }
+  };
+
+  const handleUnlinkWorkspacefromSpace = async (workspace_id: string) => {
+    try {
+      await unlinkWorkspaceFromSpace(workspace_id);
     } catch (err) {
       // setError(t("dashboard.errors.loadCourses"));
       console.error("Error fetching courses:", err);
@@ -269,31 +268,55 @@ export const WorkspaceFolderItem = ({
                   className="w-64 p-0"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <div className="max-h-64 overflow-y-auto py-1">
+                  <div className="max-h-64 overflow-y-auto py-1 [&>*]:m-2">
                     {spaces.length === 0 ? (
                       <div className="px-3 py-2 text-xs text-zinc-500">
                         No spaces available. Create a space first.
                       </div>
                     ) : (
-                      spaces.map((space) => (
-                        <DropdownMenuItem
-                          key={space.id}
-                          className="
+                      spaces.map((space) => {
+                        return space.id != workspace.spaceId ? (
+                          <DropdownMenuItem
+                            key={space.id}
+                            className="
                   flex items-center gap-2
                   px-3 py-2 rounded-md
                   text-sm text-zinc-700
                   hover:bg-zinc-100 hover:text-zinc-900
                   cursor-pointer
                 "
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleLinkWorkspaceToSpace(space.id, workspace.id);
-                          }}
-                        >
-                          <Boxes className="h-4 w-4 text-zinc-700" />
-                          <span className="truncate">{space.name}</span>
-                        </DropdownMenuItem>
-                      ))
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleLinkWorkspaceToSpace(
+                                space.id,
+                                workspace.id
+                              );
+                            }}
+                          >
+                            <Boxes className="h-4 w-4 text-zinc-700" />
+                            <span className="truncate">{space.name}</span>
+                          </DropdownMenuItem>
+                        ) : (
+                          <DropdownMenuItem
+                            key={space.id}
+                            className="
+                  flex items-center gap-2
+                  px-3 py-2 rounded-md
+                  text-sm text-zinc-700
+                  opacity-70 bg-slate-200
+                  hover:bg-zinc-100 hover:text-zinc-900
+                  cursor-pointer
+                "
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleUnlinkWorkspacefromSpace(workspace.id);
+                            }}
+                          >
+                            <Boxes className="h-4 w-4 text-zinc-700" />
+                            <span className="truncate">{space.name}</span>
+                          </DropdownMenuItem>
+                        );
+                      })
                     )}
                   </div>
                 </DropdownMenuSubContent>
@@ -325,14 +348,9 @@ export const WorkspaceFolderItem = ({
 
 export default function Recent({ isRTL }: { isRTL: boolean }) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const [workspaces, setWorkspaces] = useState<Workspace[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const [open, setOpen] = useState(false);
-  const [, setActiveStep] = useState(0);
-  const [, setSelectedCard] = useState<string | null>(null);
 
   const fetchRecent = async () => {
     try {
@@ -355,16 +373,6 @@ export default function Recent({ isRTL }: { isRTL: boolean }) {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleWorkspaceClick = (workspaceId: string) => {
-    navigate(`/dashboard/learn/workspace/${workspaceId}`);
-  };
-
-  const handleReset = () => {
-    setSelectedCard(null);
-    setActiveStep(0);
-    setOpen(false);
   };
 
   useEffect(() => {
@@ -428,69 +436,5 @@ export default function Recent({ isRTL }: { isRTL: boolean }) {
   }
 
   if (!workspaces) return;
-  return (
-    <section>
-      <div className="flex gap-4 flex-wrap">
-        {workspaces.length !== 0 &&
-          workspaces.map((workspace) => (
-            <WorkspaceFolderItem
-              key={workspace.id}
-              workspace={workspace}
-              onClick={() => handleWorkspaceClick(workspace.id)}
-              isRTL={isRTL}
-            />
-          ))}
-
-        <Card
-          onClick={() => setOpen(true)}
-          className="
-            relative flex flex-col justify-center items-center group rounded-2xl w-[20em]
-            border-2 border-dashed border-zinc-300 cursor-pointer h-48
-            bg-gradient-to-br from-zinc-50 to-transparent
-            hover:border-zinc-400 
-            transition-all duration-300 ease-out
-            hover:shadow-lg hover:shadow-zinc-100/50
-          "
-          role="button"
-          tabIndex={0}
-          aria-label="Add New Workspace"
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") setOpen(true);
-          }}
-        >
-          <div className="flex flex-col justify-center items-center gap-3 text-zinc-400 group-hover:text-zinc-600 transition-colors duration-300">
-            <div
-              className="
-              relative flex items-center justify-center
-              w-12 h-12 rounded-full 
-              bg-zinc-100 group-hover:bg-zinc-200
-              transition-all duration-300
-              group-hover:scale-110
-            "
-            >
-              <Plus className="h-6 w-6 transition-transform duration-300 group-hover:rotate-90" />
-            </div>
-            <span className="text-sm font-medium select-none">
-              Add New Content
-            </span>
-          </div>
-        </Card>
-      </div>
-
-      {workspaces.length > 5 && (
-        <div className="mt-4 text-center">
-          <Button
-            variant="text"
-            size="small"
-            onClick={() => navigate("/workspaces")}
-            className="text-zinc-600 hover:text-zinc-900"
-          >
-            {t("actions.viewAll", "View All Workspaces")}
-          </Button>
-        </div>
-      )}
-
-      <AddContantModal open={open} onClose={handleReset} />
-    </section>
-  );
+  return <WorkspacesList workspaces={workspaces} isRTL={isRTL} />;
 }

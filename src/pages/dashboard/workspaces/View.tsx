@@ -40,9 +40,8 @@ import MindMap from "@/lib/mindMap/MindMap";
 import PdfReader from "@/lib/PdfReader";
 import { QuizList } from "@/lib/quizzes/Quiz";
 import { SummaryList } from "@/lib/summary/Summary";
-import { ChatMessage, TabKey } from "@/lib/types";
+import { ChatMessage, TabKey, Workspace } from "@/lib/types";
 import YouTubeReader from "@/lib/YoutubeReader";
-import { Workspace } from "./Index";
 import { ChatSkeleton, ContentSkeleton, reducer, TabsSkeleton } from "../utils";
 
 const TABS_CONFIG = [

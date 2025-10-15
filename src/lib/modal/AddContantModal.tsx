@@ -32,7 +32,7 @@ import {
 } from "@/utils/_apis/learnPlayground-api";
 import CircularProgress from "@mui/material/CircularProgress";
 
-interface AddContantModalProps {
+interface AddContentModalProps {
   open: boolean;
   onClose: () => void;
 }
@@ -61,7 +61,7 @@ interface PasteState {
   error: string | null;
 }
 
-export function AddContantModal({ open, onClose }: AddContantModalProps) {
+export function AddContentModal({ open, onClose }: AddContentModalProps) {
   const navigate = useNavigate();
   const [activeModal, setActiveModal] = useState<ModalType>("selection");
 

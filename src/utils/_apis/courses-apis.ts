@@ -361,15 +361,12 @@ export const updateSpaceApi = async (id: string, dto: any): Promise<any> => {
   }
 };
 
-export const getAllSpaces = async (workspace_id?: string): Promise<Space[]> => {
+export const getAllSpaces = async (): Promise<Space[]> => {
   try {
     const response = await trackPromise(
       Api({
         method: "get",
         url: "spaces",
-        data: {
-          workspace_id,
-        },
       })
     );
     return (response.data as any)?.data as Space[];
@@ -390,6 +387,26 @@ export const linkWorkspaceToSpace = async (
         url: `study-ai/workspaces/${workspace_id}`,
         data: {
           space: { id: space_id },
+        },
+      })
+    );
+    return (response.data as any)?.data as Space[];
+  } catch (e: any) {
+    console.error("getAllCoursesApi error:", e);
+    throw e;
+  }
+};
+
+export const unlinkWorkspaceFromSpace = async (
+  workspace_id: string
+): Promise<Space[]> => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "put",
+        url: `study-ai/workspaces/${workspace_id}`,
+        data: {
+          space: { id: null },
         },
       })
     );

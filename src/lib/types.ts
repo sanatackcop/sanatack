@@ -1,3 +1,5 @@
+import { Space } from "@/types/courses";
+
 export type ContentType = "document" | "youtube";
 
 export type Status =
@@ -56,13 +58,17 @@ export interface YouTubeTranscript {
 export interface Workspace {
   id: string;
   workspaceName?: string;
-  title?: string;
-  youtubeUrl?: string;
-  workspaceType: "youtube" | "document";
+  youtubeVideo: any;
+  documentUrl?: string;
+  workspaceType: "youtube" | "document" | "chat";
   pdfUrl?: string;
   createdAt: string;
   updatedAt: string;
-  transcript?: YouTubeTranscript;
+  thumbnail?: string;
+  duration?: string;
+  progress?: number;
+  spaceId: string | null;
+  space?: Space;
 }
 
 export interface State {
