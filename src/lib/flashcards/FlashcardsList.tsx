@@ -227,6 +227,7 @@ export const FlashcardEditForm: React.FC<{
         onChange={(e) => onUpdate(field.onChange(e.target.value))}
         draggable={field.key === "term"}
         rows={3}
+        readOnly
         className="h-24 resize-none overflow-y-auto justify-start shadow-sm rounded-xl"
         placeholder={field.placeholder}
       />
