@@ -416,3 +416,20 @@ export const unlinkWorkspaceFromSpace = async (
     throw e;
   }
 };
+
+export const deleteWorkspace = async (
+  workspace_id: string
+): Promise<Space[]> => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "delete",
+        url: `study-ai/workspaces/${workspace_id}`,
+      })
+    );
+    return (response.data as any)?.data as Space[];
+  } catch (e: any) {
+    console.error("getAllCoursesApi error:", e);
+    throw e;
+  }
+};

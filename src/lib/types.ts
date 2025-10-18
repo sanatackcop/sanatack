@@ -57,10 +57,12 @@ export interface YouTubeTranscript {
 // Fixed Workspace interface (flattened)
 export interface Workspace {
   id: string;
-  workspaceName?: string;
-  youtubeVideo: any;
+  workspaceName: string;
+  youtubeVideo?: {
+    transcribe?: { data?: { url?: string } };
+  };
   documentUrl?: string;
-  workspaceType: "youtube" | "document" | "chat";
+  workspaceType: "youtube" | "document" | "chat" | "other";
   pdfUrl?: string;
   createdAt: string;
   updatedAt: string;
