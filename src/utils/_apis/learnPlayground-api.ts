@@ -43,6 +43,7 @@ export interface SummaryStatusResponse {
   workspaceId: string | null;
   videoId: string | null;
   videoMaterialId: string | null;
+  documentId?: string | null;
   createdAt: string;
   updatedAt: string;
 }

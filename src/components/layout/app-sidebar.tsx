@@ -10,6 +10,15 @@ import {
   ChevronDown,
   LogOut,
   FileIcon,
+  Brain,
+  CalendarDaysIcon,
+  CheckCircle,
+  Clock10,
+  Globe,
+  MapIcon,
+  Moon,
+  Sun,
+  Languages,
 } from "lucide-react";
 import clsx from "clsx";
 import {
@@ -38,6 +47,7 @@ interface MenuItem {
   title: string;
   url: string;
   icon: any;
+  comingSoon?: boolean;
 }
 
 interface MenuGroup {
@@ -66,6 +76,13 @@ export function AppSidebar() {
   const [openCreate, setOpenCreate] = useState(false);
   const [newName, setNewName] = useState("");
   const [showAllSpaces, setShowAllSpaces] = useState(false);
+  const [darkMode, setDarkMode] = useState<boolean>(() => {
+    const saved = localStorage.getItem("theme");
+    return (
+      saved === "dark" ||
+      (!saved && window.matchMedia("(prefers-color-scheme: dark)").matches)
+    );
+  });
 
   const [workspaces, setWorkspaces] = useState<Workspace[] | null>(null);
   const [loadingRecent, setLoadingRecent] = useState<boolean>(true);
@@ -85,56 +102,97 @@ export function AppSidebar() {
     setNewName(t("sidebar.newSpace"));
   }, [i18n.language, t]);
 
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  }, [darkMode]);
+
+  const toggleTheme = () => {
+    setDarkMode((prev) => !prev);
+  };
+
+  const toggleLanguage = () => {
+    const newLang = i18n.language === "ar" ? "en" : "ar";
+    i18n.changeLanguage(newLang);
+  };
+
   const topItemGroups: MenuGroup[] = useMemo(
     () => [
       {
         groupTitle: "Learning",
         menuItems: [
           { title: "My Learning", url: "/dashboard/overview", icon: Box },
-          // {
-          //   title: t("sidebar.createMap"),
-          //   url: "/dashboard/learn/map",
-          //   icon: MapIcon,
-          // },
-          // { title: "Your Brain", url: "/dashboard/learn/brain", icon: Brain },
-          // { title: "Discover", url: "/dashboard/learn/ds", icon: Globe },
+          {
+            title: t("sidebar.createMap"),
+            url: "/dashboard/learn/map",
+            icon: MapIcon,
+            comingSoon: true,
+          },
+          {
+            title: "Your Brain",
+            url: "/dashboard/learn/brain",
+            icon: Brain,
+            comingSoon: true,
+          },
+          {
+            title: "Discover",
+            url: "/dashboard/learn/ds",
+            icon: Globe,
+            comingSoon: true,
+          },
         ],
       },
-      // {
-      //   groupTitle: "Task Management",
-      //   menuItems: [
-      //     { title: "Tasks", url: "/dashboard/learn/tasks", icon: CheckCircle },
-      //     { title: "Promodo", url: "/dashboard/learn/promodo", icon: Clock10 },
-      //     {
-      //       title: t("common.calendar"),
-      //       url: "/dashboard/learn/calendar",
-      //       icon: CalendarDaysIcon,
-      //     },
-      //   ],
-      // },
+      {
+        groupTitle: "Task Management",
+        menuItems: [
+          {
+            title: "Tasks",
+            url: "/dashboard/learn/tasks",
+            icon: CheckCircle,
+            comingSoon: true,
+          },
+          {
+            title: "Promodo",
+            url: "/dashboard/learn/promodo",
+            icon: Clock10,
+            comingSoon: true,
+          },
+          {
+            title: t("common.calendar"),
+            url: "/dashboard/learn/calendar",
+            icon: CalendarDaysIcon,
+            comingSoon: true,
+          },
+        ],
+      },
+      {
+        groupTitle: "Help And Tools",
+        menuItems: [
+          {
+            title: "Discord",
+            url: "https://discord.com",
+            icon: Globe,
+            comingSoon: true,
+          },
+          {
+            title: "Chrome Extension",
+            url: "https://chrome.google.com/webstore/category/extensions",
+            icon: BoxIcon,
+            comingSoon: true,
+          },
+        ],
+      },
     ],
     [t]
   );
 
-  // const helpAndToolsGroup: MenuGroup = {
-  //   groupTitle: "Help And Tools",
-  //   menuItems: [
-  //     {
-  //       title: "Discord",
-  //       url: "https://discord.com",
-  //       icon: Globe,
-  //     },
-  //     {
-  //       title: "Chrome Extension",
-  //       url: "https://chrome.google.com/webstore/category/extensions",
-  //       icon: BoxIcon,
-  //     },
-  //   ],
-  // };
-
-  // Combine all groups including the new HelpAndTools group
   const allItemGroups = useMemo(() => {
-    return [...topItemGroups];
+    return topItemGroups;
   }, [topItemGroups]);
 
   useEffect(() => {
@@ -224,43 +282,57 @@ export function AppSidebar() {
   const MenuEntry = ({ item }: { item: MenuItem }) => {
     const ItemIcon = item.icon;
     const currentPathname = location.pathname;
+    const isActive = item.url === currentPathname;
+
+    const content = (
+      <NavLink
+        to={item.comingSoon ? "#" : item.url}
+        onClick={(e) => item.comingSoon && e.preventDefault()}
+        className={clsx(
+          "w-full flex items-center gap-2.5 px-2 py-1.5 rounded-md transition-colors duration-150 group relative",
+          item.comingSoon && "opacity-60",
+          !item.comingSoon &&
+            (isActive
+              ? "bg-sidebar-accent text-sidebar-accent-foreground"
+              : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground")
+        )}
+        target={
+          !item.comingSoon && item.url.startsWith("http") ? "_blank" : undefined
+        }
+        rel={
+          !item.comingSoon && item.url.startsWith("http")
+            ? "noopener noreferrer"
+            : undefined
+        }
+      >
+        <ItemIcon
+          size={16}
+          strokeWidth={1.75}
+          className={clsx(
+            "flex-shrink-0 transition-colors",
+            !item.comingSoon &&
+              (isActive
+                ? "text-sidebar-accent-foreground"
+                : "text-sidebar-foreground/60 group-hover:text-sidebar-accent-foreground")
+          )}
+        />
+        <span
+          className={clsx("text-[13px] font-normal flex-1", getTextAlignment())}
+        >
+          {item.title}
+        </span>
+        {item.comingSoon && (
+          <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 font-medium border border-amber-200 dark:border-amber-800/50">
+            Soon
+          </span>
+        )}
+      </NavLink>
+    );
 
     return (
       <TooltipProvider delayDuration={100}>
         <Tooltip>
-          <TooltipTrigger asChild>
-            <NavLink
-              to={item.url}
-              className={clsx(
-                "w-full flex items-center gap-2 px-3 py-2 transition-all duration-300 transform relative group rounded-xl",
-                item.url === currentPathname
-                  ? "bg-gray-100/70 text-zinc-900"
-                  : "hover:bg-gray-100/70 text-zinc-400/80 hover:text-gray-900"
-              )}
-              target={item.url.startsWith("http") ? "_blank" : undefined}
-              rel={
-                item.url.startsWith("http") ? "noopener noreferrer" : undefined
-              }
-            >
-              <ItemIcon
-                size={14}
-                className={clsx(
-                  "flex-shrink-0",
-                  item.url === currentPathname
-                    ? "text-zinc-900"
-                    : "text-zinc-400/80 group-hover:text-zinc-900"
-                )}
-              />
-              <span
-                className={clsx(
-                  "text-xs font-medium flex-1",
-                  getTextAlignment()
-                )}
-              >
-                {item.title}
-              </span>
-            </NavLink>
-          </TooltipTrigger>
+          <TooltipTrigger asChild>{content}</TooltipTrigger>
         </Tooltip>
       </TooltipProvider>
     );
@@ -268,16 +340,17 @@ export function AppSidebar() {
 
   const MenuGroupEntry = ({ group }: { group: MenuGroup }) => {
     return (
-      <div>
+      <div className="space-y-0.5">
         <div
           className={clsx(
-            "flex items-center justify-between w-full px-2 py-2 text-xs text-[#60605d] font-normal select-none rounded-md",
+            `flex items-center px-2 py-1.5 text-[11px] text-sidebar-foreground/50 
+           capitalize tracking-wider select-none`,
             getFlexDirection()
           )}
         >
           <span>{group.groupTitle}</span>
         </div>
-        <div className="ml-1 space-y-1">
+        <div className="space-y-0.5">
           {group.menuItems.map((item) => (
             <MenuEntry key={item.url} item={item} />
           ))}
@@ -294,28 +367,34 @@ export function AppSidebar() {
       <NavLink
         to={workspaceUrl}
         className={clsx(
-          "w-full flex items-center py-2 rounded-xl transition-all duration-300",
+          "w-full flex items-center gap-2 px-2 py-1.5 rounded-md transition-colors duration-150 group",
           isActive
-            ? "bg-gray-100 dark:bg-gray-900/30 text-gray-800 dark:text-gray-200"
-            : "hover:bg-gray-100/70 dark:hover:bg-gray-800/40 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100"
+            ? "bg-sidebar-accent text-sidebar-accent-foreground"
+            : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
         )}
       >
-        <div className="relative flex-shrink-0 px-2">
+        <div className="relative flex-shrink-0">
           {isActive ? (
-            <div className="w-2 h-2 bg-gradient-to-r from-green-400 to-green-500 rounded-full" />
+            <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
           ) : (
             <>
               {workspace.workspaceType === "youtube" ? (
-                <Play className="h-4 w-4" />
+                <Play
+                  className="h-4 w-4 text-sidebar-foreground/60 group-hover:text-sidebar-accent-foreground"
+                  strokeWidth={1.75}
+                />
               ) : (
-                <FileIcon className="h-4 w-4" />
+                <FileIcon
+                  className="h-4 w-4 text-sidebar-foreground/60 group-hover:text-sidebar-accent-foreground"
+                  strokeWidth={1.75}
+                />
               )}
             </>
           )}
         </div>
         <span
           className={clsx(
-            "text-xs font-medium flex-1 truncate",
+            "text-[13px] font-normal flex-1 truncate",
             getTextAlignment()
           )}
         >
@@ -325,6 +404,26 @@ export function AppSidebar() {
     );
   };
 
+  const SectionHeader = ({
+    title,
+    action,
+  }: {
+    title: string;
+    action?: React.ReactNode;
+  }) => (
+    <div className="flex items-center justify-between px-2 mb-1">
+      <h3
+        className={clsx(
+          "text-[11px] text-sidebar-foreground/50 font-semibold uppercase tracking-wider",
+          getTextAlignment()
+        )}
+      >
+        {title}
+      </h3>
+      {action}
+    </div>
+  );
+
   return (
     <div
       dir={isRTL ? "rtl" : "ltr"}
@@ -332,8 +431,6 @@ export function AppSidebar() {
       className="h-full flex flex-col border-r bg-[#f9f9f6]"
     >
       <div className="flex flex-col h-full py-2 pl-3 pr-2">
-        {/* Workspace Selector */}
-
         <div className="flex items-center justify-between">
           <div
             className={clsx(
@@ -350,9 +447,6 @@ export function AppSidebar() {
           </div>
         </div>
 
-        <hr className="my-2 mt-1 -mx-4" />
-
-        {/* Top Menu Groups including Help And Tools */}
         <div className="flex-shrink-0 flex flex-col space-y-2 mb-2">
           {allItemGroups.map((group) => (
             <MenuGroupEntry key={group.groupTitle} group={group} />
@@ -360,37 +454,53 @@ export function AppSidebar() {
           <hr className="-mx-5" />
         </div>
 
-        <div className="flex-1 overflow-y-auto min-h-0 px-2 py-3  scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
-          {/* Recent Workspaces */}
-          <div className="mb-4">
-            <div className="mb-2 flex items-center justify-between">
-              <h3
-                className={clsx(
-                  "text-xs text-[#60605d] font-normal",
-                  getTextAlignment()
-                )}
-              >
-                {t("sidebar.recent")}
-              </h3>
-            </div>
-            <div className="flex flex-col space-y-1">
+        <div
+          className="flex-1 overflow-y-auto min-h-0 px-3 py-2 space-y-4"
+          style={{
+            scrollbarWidth: "thin",
+            scrollbarColor: darkMode
+              ? "rgb(55 65 81 / 0.5) transparent"
+              : "rgb(209 213 219 / 0.5) transparent",
+          }}
+        >
+          <div>
+            <SectionHeader title={t("sidebar.recent")} />
+            <div className="space-y-0.5">
               {loadingRecent ? (
                 Array.from({ length: 4 }).map((_, i) => (
                   <div
                     key={i}
                     className={clsx(
-                      "flex items-center gap-3 py-2",
+                      "flex items-center gap-2 px-2 py-1.5",
                       getFlexDirection()
                     )}
                   >
-                    <div className="h-4 w-4 bg-gray-300 rounded-full animate-pulse" />
-                    <div className="h-3 w-32 bg-gray-300 rounded-lg animate-pulse" />
+                    <Skeleton
+                      variant="circular"
+                      width={16}
+                      height={16}
+                      sx={{
+                        bgcolor: darkMode
+                          ? "rgb(55 65 81)"
+                          : "rgb(229 231 235)",
+                      }}
+                    />
+                    <Skeleton
+                      variant="rounded"
+                      width={120}
+                      height={12}
+                      sx={{
+                        bgcolor: darkMode
+                          ? "rgb(55 65 81)"
+                          : "rgb(229 231 235)",
+                      }}
+                    />
                   </div>
                 ))
               ) : !workspaces || workspaces.length === 0 ? (
                 <div
                   className={clsx(
-                    "py-2 text-xs text-muted-foreground",
+                    "px-2 py-1.5 text-[13px] text-sidebar-foreground/50",
                     getTextAlignment()
                   )}
                 >
@@ -410,7 +520,7 @@ export function AppSidebar() {
                     <button
                       onClick={() => setShowAllRecent((prev) => !prev)}
                       className={clsx(
-                        "w-full text-[10px] text-gray-600 dark:text-gray-400 py-2 hover:underline transition-colors rounded-xl hover:bg-gray-50 dark:hover:bg-gray-900/20",
+                        "w-full px-2 py-1.5 text-[12px] text-sidebar-foreground/60 hover:text-sidebar-accent-foreground rounded-md hover:bg-sidebar-accent/50 transition-colors font-normal",
                         getTextAlignment()
                       )}
                     >
@@ -424,111 +534,127 @@ export function AppSidebar() {
             </div>
           </div>
 
+          {/* Spaces Section */}
           <div>
-            <div className="mb-2 flex items-center justify-between">
-              <h3
-                className={clsx(
-                  "text-xs  text-[#60605d] font-normal dark:text-gray-200",
-                  getTextAlignment()
-                )}
-              >
-                {t("sidebar.spaces")}
-              </h3>
-
-              <Dialog open={openCreate} onOpenChange={setOpenCreate}>
-                <DialogTrigger asChild>
-                  <button
-                    className={clsx(
-                      "inline-flex items-center gap-1 text-[10px] px-2 py-1 rounded-lg transition-all duration-200 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700",
-                      getFlexDirection()
-                    )}
-                  >
-                    <Plus size={12} />
-                  </button>
-                </DialogTrigger>
-                <DialogContent
-                  dir={isRTL ? "rtl" : "ltr"}
-                  className="rounded-3xl"
-                >
-                  <DialogHeader className={getTextAlignment()}>
-                    <DialogTitle className={getTextAlignment()}>
-                      {t("dialogs.createNewSpace")}
-                    </DialogTitle>
-                    <DialogDescription className={getTextAlignment()}>
-                      {t("dialogs.chooseSpaceName")}
-                    </DialogDescription>
-                  </DialogHeader>
-
-                  <div className="grid gap-2">
-                    <Label htmlFor="space-name" className={getTextAlignment()}>
-                      {t("dialogs.spaceName")}
-                    </Label>
-                    <Input
-                      id="space-name"
-                      value={newName}
-                      onChange={(e) => setNewName(e.target.value)}
-                      placeholder={t("dialogs.spaceNamePlaceholder")}
-                      className="rounded-xl"
-                      dir={isRTL ? "rtl" : "ltr"}
-                      style={{ textAlign: isRTL ? "right" : "left" }}
-                    />
-                  </div>
-
-                  {spacesError && (
-                    <p
+            <SectionHeader
+              title={t("sidebar.spaces")}
+              action={
+                <Dialog open={openCreate} onOpenChange={setOpenCreate}>
+                  <DialogTrigger asChild>
+                    <button
                       className={clsx(
-                        "text-sm text-destructive",
-                        getTextAlignment()
+                        "inline-flex items-center justify-center w-5 h-5 rounded-md transition-colors bg-transparent hover:bg-sidebar-accent text-sidebar-foreground/60 hover:text-sidebar-accent-foreground",
+                        getFlexDirection()
                       )}
                     >
-                      {spacesError}
-                    </p>
-                  )}
-
-                  <DialogFooter
-                    className={clsx(
-                      "gap-2 sm:gap-0",
-                      isRTL ? "flex-row-reverse" : "flex-row"
-                    )}
+                      <Plus size={14} strokeWidth={2} />
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent
+                    dir={isRTL ? "rtl" : "ltr"}
+                    className="rounded-2xl"
                   >
-                    <Button
-                      variant="ghost"
-                      onClick={() => setOpenCreate(false)}
-                      disabled={creating}
-                      className="rounded-xl"
-                    >
-                      {t("common.cancel")}
-                    </Button>
-                    <Button
-                      onClick={doCreateSpace}
-                      disabled={creating || !newName.trim()}
-                      className="rounded-xl"
-                    >
-                      {creating ? t("dialogs.creating") : t("common.save")}
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </div>
+                    <DialogHeader className={getTextAlignment()}>
+                      <DialogTitle className={getTextAlignment()}>
+                        {t("dialogs.createNewSpace")}
+                      </DialogTitle>
+                      <DialogDescription className={getTextAlignment()}>
+                        {t("dialogs.chooseSpaceName")}
+                      </DialogDescription>
+                    </DialogHeader>
 
-            <div className="flex flex-col space-y-1">
+                    <div className="grid gap-3">
+                      <Label
+                        htmlFor="space-name"
+                        className={getTextAlignment()}
+                      >
+                        {t("dialogs.spaceName")}
+                      </Label>
+                      <Input
+                        id="space-name"
+                        value={newName}
+                        onChange={(e) => setNewName(e.target.value)}
+                        placeholder={t("dialogs.spaceNamePlaceholder")}
+                        className="rounded-lg"
+                        dir={isRTL ? "rtl" : "ltr"}
+                        style={{ textAlign: isRTL ? "right" : "left" }}
+                      />
+                    </div>
+
+                    {spacesError && (
+                      <p
+                        className={clsx(
+                          "text-sm text-red-600 dark:text-red-400",
+                          getTextAlignment()
+                        )}
+                      >
+                        {spacesError}
+                      </p>
+                    )}
+
+                    <DialogFooter
+                      className={clsx(
+                        "gap-2 sm:gap-2",
+                        isRTL ? "flex-row-reverse" : "flex-row"
+                      )}
+                    >
+                      <Button
+                        variant="ghost"
+                        onClick={() => setOpenCreate(false)}
+                        disabled={creating}
+                        className="rounded-lg"
+                      >
+                        {t("common.cancel")}
+                      </Button>
+                      <Button
+                        onClick={doCreateSpace}
+                        disabled={creating || !newName.trim()}
+                        className="rounded-lg"
+                      >
+                        {creating ? t("dialogs.creating") : t("common.save")}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              }
+            />
+
+            <div className="space-y-0.5">
               {loadingSpaces ? (
-                Array.from({ length: 6 }).map((_, i) => (
+                Array.from({ length: 4 }).map((_, i) => (
                   <div
                     key={i}
                     className={clsx(
-                      "flex items-center gap-3 px-3 py-2",
+                      "flex items-center gap-2 px-2 py-1.5",
                       getFlexDirection()
                     )}
                   >
-                    <Skeleton className="h-4 w-4 rounded-full" />
-                    <Skeleton className="h-3 w-32 rounded-lg" />
+                    <Skeleton
+                      variant="circular"
+                      width={16}
+                      height={16}
+                      sx={{
+                        bgcolor: darkMode
+                          ? "rgb(55 65 81)"
+                          : "rgb(229 231 235)",
+                      }}
+                    />
+                    <Skeleton
+                      variant="rounded"
+                      width={120}
+                      height={12}
+                      sx={{
+                        bgcolor: darkMode
+                          ? "rgb(55 65 81)"
+                          : "rgb(229 231 235)",
+                      }}
+                    />
                   </div>
                 ))
               ) : spacesError ? (
                 <div
                   className={clsx(
-                    "px-3 py-2 text-xs text-destructive",
+                    "px-2 py-1.5 text-[13px] text-red-600 dark:text-red-400",
                     getTextAlignment()
                   )}
                 >
@@ -537,7 +663,7 @@ export function AppSidebar() {
               ) : spaces.length === 0 ? (
                 <div
                   className={clsx(
-                    "px-3 py-2 text-xs text-muted-foreground",
+                    "px-2 py-1.5 text-[13px] text-sidebar-foreground/50",
                     getTextAlignment()
                   )}
                 >
@@ -551,17 +677,21 @@ export function AppSidebar() {
                       to={item.url}
                       className={({ isActive }) =>
                         clsx(
-                          "w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-300",
+                          "w-full flex items-center gap-2 px-2 py-1.5 rounded-md transition-colors duration-150 group",
                           isActive
-                            ? "bg-gray-100 dark:bg-gray-900/30 text-gray-800 dark:text-gray-200"
-                            : "hover:bg-gray-100/70 dark:hover:bg-gray-800/40 text-gray-700 dark:text-gray-300"
+                            ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                            : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
                         )
                       }
                     >
-                      <BoxIcon size={14} className="flex-shrink-0" />
+                      <BoxIcon
+                        size={16}
+                        strokeWidth={1.75}
+                        className="flex-shrink-0 text-sidebar-foreground/60 group-hover:text-sidebar-accent-foreground"
+                      />
                       <span
                         className={clsx(
-                          "text-xs font-medium flex-1 truncate",
+                          "text-[13px] font-normal flex-1 truncate",
                           getTextAlignment()
                         )}
                       >
@@ -574,7 +704,7 @@ export function AppSidebar() {
                     <button
                       onClick={() => setShowAllSpaces((prev) => !prev)}
                       className={clsx(
-                        "w-full text-[10px] text-gray-600 dark:text-gray-400 py-2 hover:underline transition-colors rounded-xl hover:bg-gray-50 dark:hover:bg-gray-900/20",
+                        "w-full px-2 py-1.5 text-[12px] text-sidebar-foreground/60 hover:text-sidebar-accent-foreground rounded-md hover:bg-sidebar-accent/50 transition-colors font-normal",
                         getTextAlignment()
                       )}
                     >
@@ -589,32 +719,30 @@ export function AppSidebar() {
           </div>
         </div>
 
-        <div className="flex-shrink-0 mt-auto pt-4">
-          <div className="relative">
-            <div
-              className="w-52 absolute -top-6 right-3 z-5 h-8 bg-gradient-to-br from-green-50 to-emerald-50
-             dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200/50 dark:border-green-800/30 rounded-xl shadow-sm flex items-center justify-center"
-            >
-              <span className="text-green-700 dark:text-green-300 text-[10px] font-semibold">
-                {t("sidebar.freePlan")}
-              </span>
-            </div>
-          </div>
-
+        <div className="flex-shrink-0">
           <div className="relative user-dropdown-container bg-white dark:bg-gray-800/60 backdrop-blur-sm rounded-xl border border-zinc-200/50 dark:border-gray-700/30">
             <button
               onClick={() => setShowUserDropdown((s) => !s)}
-              className="w-full flex items-center gap-2 p-3 hover:bg-white dark:hover:bg-gray-700/50 rounded-lg transition-all duration-200"
+              className="w-full flex items-center gap-2 px-2 py-2 rounded-md hover:bg-sidebar-accent/50 transition-colors"
             >
-              <div className={clsx("flex-1", getTextAlignment())}>
-                <p className="text-xs font-bold text-gray-900 dark:text-white">
+              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center flex-shrink-0">
+                <span className="text-white text-xs font-semibold">
+                  {t("user.userName").charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <div className={clsx("flex-1 min-w-0", getTextAlignment())}>
+                <p className="text-[13px] font-medium text-sidebar-foreground truncate">
                   {t("user.userName")}
+                </p>
+                <p className="text-[11px] text-sidebar-foreground/50 font-normal">
+                  {t("sidebar.freePlan")}
                 </p>
               </div>
               <ChevronDown
-                size={14}
+                size={16}
+                strokeWidth={2}
                 className={clsx(
-                  "text-gray-400 transition-transform duration-200",
+                  "text-sidebar-foreground/50 transition-transform duration-200 flex-shrink-0",
                   showUserDropdown && "rotate-180"
                 )}
               />
@@ -623,29 +751,65 @@ export function AppSidebar() {
             {showUserDropdown && (
               <div className="absolute bottom-full left-0 right-0 mb-2 bg-white dark:bg-gray-900/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/30 rounded-2xl p-2 z-50">
                 <button
+                  onClick={toggleTheme}
                   className={clsx(
-                    "w-full flex items-center gap-2 p-2 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 rounded-xl text-xs transition-all duration-200",
+                    "w-full flex items-center gap-2 px-2 py-2 hover:bg-sidebar-accent/50 rounded-md text-[13px] transition-colors text-sidebar-foreground font-normal",
                     getFlexDirection(),
                     getTextAlignment()
                   )}
                 >
-                  <Crown size={14} className="text-yellow-500" />
-                  <span className="flex-1 font-medium">
+                  {darkMode ? (
+                    <Sun size={16} strokeWidth={2} />
+                  ) : (
+                    <Moon size={16} strokeWidth={2} />
+                  )}
+                  <span className="flex-1">
+                    {darkMode ? "Light Mode" : "Dark Mode"}
+                  </span>
+                </button>
+
+                <button
+                  onClick={toggleLanguage}
+                  className={clsx(
+                    "w-full flex items-center gap-2 px-2 py-2 hover:bg-sidebar-accent/50 rounded-md text-[13px] transition-colors text-sidebar-foreground font-normal",
+                    getFlexDirection(),
+                    getTextAlignment()
+                  )}
+                >
+                  <Languages size={16} strokeWidth={2} />
+                  <span className="flex-1">
+                    {i18n.language === "ar" ? "English" : "العربية"}
+                  </span>
+                </button>
+
+                <div className="my-1 border-t border-sidebar-border" />
+
+                <button
+                  className={clsx(
+                    "w-full flex items-center gap-2 px-2 py-2 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 rounded-md text-[13px] transition-colors font-normal",
+                    getFlexDirection(),
+                    getTextAlignment()
+                  )}
+                >
+                  <Crown
+                    size={16}
+                    strokeWidth={2}
+                    className="text-yellow-600 dark:text-yellow-500"
+                  />
+                  <span className="flex-1 text-sidebar-foreground">
                     {t("sidebar.upgrade")}
                   </span>
                 </button>
 
                 <button
                   className={clsx(
-                    "w-full flex items-center gap-2 p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl text-xs text-red-600 dark:text-red-400 transition-all duration-200",
+                    "w-full flex items-center gap-2 px-2 py-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md text-[13px] text-red-600 dark:text-red-400 transition-colors font-normal",
                     getFlexDirection(),
                     getTextAlignment()
                   )}
                 >
-                  <LogOut size={14} />
-                  <span className="flex-1 font-medium">
-                    {t("sidebar.logout")}
-                  </span>
+                  <LogOut size={16} strokeWidth={2} />
+                  <span className="flex-1">{t("sidebar.logout")}</span>
                 </button>
               </div>
             )}
