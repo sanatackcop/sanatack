@@ -51,6 +51,7 @@ import { Textarea } from "@/components/ui/textarea";
 import LogoLight from "@/assets/logo.svg";
 import { submitFeedback } from "@/utils/_apis/feedback-api";
 import { toast } from "sonner";
+import { useUserContext } from "@/context/UserContext";
 
 type MenuItem =
   | {
@@ -103,6 +104,7 @@ export function AppSidebar() {
     );
   });
 
+  const { logout } = useUserContext();
   const [workspaces, setWorkspaces] = useState<Workspace[] | null>(null);
   const [loadingRecent, setLoadingRecent] = useState<boolean>(true);
   const [showAllRecent, setShowAllRecent] = useState(false);
@@ -111,7 +113,6 @@ export function AppSidebar() {
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const [feedbackLoading, setFeedbackLoading] = useState(false);
   const [feedbackError, setFeedbackError] = useState<string | null>(null);
-
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -968,6 +969,7 @@ export function AppSidebar() {
                 </button>
 
                 <button
+                  onClick={() => logout()}
                   className={clsx(
                     "w-full flex items-center gap-2 px-2 py-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md text-[13px] text-red-600 dark:text-red-400 transition-colors font-normal",
                     getFlexDirection(),

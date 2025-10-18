@@ -5,6 +5,7 @@ import {
   Context,
   ReactNode,
   useEffect,
+  useContext,
 } from "react";
 import Storage from "@/lib/Storage";
 interface User {
@@ -157,6 +158,13 @@ export const UserContextProvider: FC<Props> = ({ children }: Props) => {
       {children}
     </UserContext.Provider>
   );
+};
+
+export const useUserContext = () => {
+  const context = useContext(UserContext);
+  if (!context)
+    throw new Error("useSettings must be used within a SettingsProvider");
+  return context;
 };
 
 export default UserContext;
