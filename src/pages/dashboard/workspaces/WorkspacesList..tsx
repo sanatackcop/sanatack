@@ -5,8 +5,6 @@ import { Plus } from "lucide-react";
 import { AddContentModal } from "@/lib/modal/AddContantModal";
 import { Workspace } from "@/lib/types";
 import { WorkspaceFolderItem } from "./Index";
-import { t } from "i18next";
-import Button from "@mui/material/Button";
 
 export default function WorkspacesList({
   workspaces,
@@ -77,19 +75,6 @@ export default function WorkspacesList({
           </div>
         </Card>
       </div>
-
-      {workspaces.length > 5 && (
-        <div className="mt-4 text-center">
-          <Button
-            variant="text"
-            size="small"
-            onClick={() => navigate("/workspaces")}
-            className="text-zinc-600 hover:text-zinc-900"
-          >
-            {t("actions.viewAll", "View All Workspaces")}
-          </Button>
-        </div>
-      )}
 
       <AddContentModal open={open} onClose={handleReset} />
     </section>
