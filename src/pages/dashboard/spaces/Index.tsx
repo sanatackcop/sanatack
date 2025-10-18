@@ -136,10 +136,8 @@ export default function Spaces({ isRTL }: { isRTL: boolean }) {
                 )
                 .map((space) => (
                   <SpaceItem
+                    space={space}
                     key={space.id}
-                    id={space.id}
-                    name={space.name}
-                    count={space.contents || 0}
                     onOpen={openSpace}
                     onDeleteRequest={requestDelete}
                   />
@@ -166,7 +164,6 @@ export default function Spaces({ isRTL }: { isRTL: boolean }) {
         </div>
       </section>
 
-      {/* Create Space Dialog */}
       <Dialog open={openAdd} onOpenChange={setOpenAdd}>
         <DialogContent className="sm:max-w-[480px]" dir={isRTL ? "rtl" : "ltr"}>
           <DialogHeader className={isRTL ? "text-right" : "text-left"}>
@@ -247,7 +244,7 @@ export default function Spaces({ isRTL }: { isRTL: boolean }) {
             </div>
             <div className="text-xs text-red-600 dark:text-red-400 mt-1">
               {t("dashboard.dialogs.deleteSpace.itemCount", {
-                count: spaceToDelete?.contents ?? 0,
+                count: spaceToDelete?.workspaces.length ?? 0,
               })}
             </div>
           </div>
@@ -305,25 +302,18 @@ function SpaceItemSkeleton({ isRTL }: { isRTL: boolean }) {
 }
 
 function SpaceItem({
-  id,
-  name,
-  count,
+  space,
   onOpen,
   onDeleteRequest,
 }: {
-  id: string;
-  name: string;
-  count: number;
+  space: Space;
   onOpen: (id: string) => void;
-  onDeleteRequest: (space: {
-    id: string;
-    name: string;
-    contents: number;
-  }) => void;
+  onDeleteRequest: (space: Space) => void;
 }) {
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === "ar";
-  const space: Space = { id, name, contents: count };
+  const id = space.id;
+  const name = space.name;
 
   return (
     <div
@@ -375,7 +365,7 @@ function SpaceItem({
           {name}
         </div>
         <div className="text-[13px] text-gray-500 dark:text-gray-400">
-          {t("dashboard.spaces.itemCount", { count })}
+          {t("dashboard.spaces.itemCount", { count: space.workspaces.length })}{" "}
         </div>
       </div>
 

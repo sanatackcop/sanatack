@@ -34,7 +34,7 @@ export default function LearningDashboard() {
       <section className="px-32  py-4">
         <header className="mb-2">
           <h1 className={`text-left text-xl md:text-[24px] font-medium my-5`}>
-            Hello Osama Your Recent Learning Playgrounds 👋
+            Recent Learning Playgrounds 🧠
           </h1>
         </header>
         <Recent isRTL={isRTL} />

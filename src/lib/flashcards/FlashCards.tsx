@@ -75,7 +75,7 @@ const useFlashcards = (workspaceId: string) => {
   const fetchFlashCards = useCallback(async () => {
     try {
       setLoading(true);
-      const response: FlashcardSet[] = await getWorkSpaceContent(workspaceId);
+      const response = await getWorkSpaceContent(workspaceId);
       const cleanedResponse = response.flashcards.filter(
         (item): item is FlashcardSet => item != null
       );
@@ -101,7 +101,6 @@ const useFlashcards = (workspaceId: string) => {
 const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
   const { flashcardSets, loading, error } = useFlashcards(workspaceId);
 
-  // ✅ All useState hooks at the top level
   const [modalOpen, setModalOpen] = useState(false);
   const [activeSet, setActiveSet] = useState<FlashcardSet | null>(null);
   const [studyMode, setStudyMode] = useState(false);
@@ -110,7 +109,6 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
   const [flipAttempts, setFlipAttempts] = useState<Record<string, number>>({});
 
-  // ✅ All useCallback hooks at the top level - FIXED ORDER
   const handleSetSelect = useCallback((set: FlashcardSet) => {
     setActiveSet(set);
     setStudyMode(false);
@@ -205,7 +203,6 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
     setActiveSet(updatedSet);
   }, [activeSet, studyIndex]);
 
-  // ✅ MOVED TO TOP LEVEL - This was the problematic hook causing the error
   const onFlip = useCallback(async () => {
     if (!activeSet) return;
 
@@ -213,10 +210,12 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
     if (!currentCard) return;
 
     const cardId = currentCard.id;
+    if (!cardId) {
+      console.error("Card ID is missing, cannot flip the card.");
+      return;
+    }
     const hasBeenRevealed = flippedCards.has(cardId);
 
-    // If we've already revealed this card at least once in this session,
-    // just toggle the side without tracking again.
     if (hasBeenRevealed) {
       setFlipped((prev) => !prev);
       setFlipAttempts((prev) => ({
@@ -226,20 +225,15 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
       return;
     }
 
-    // First-time reveal: track + mark as revealed
     try {
       await trackCardFlip(cardId, activeSet.id);
 
-      setFlipped(true); // show the answer
+      setFlipped(true);
       setFlippedCards((prev) => new Set(prev).add(cardId));
 
-      await handleCardUpdate(studyIndex, {
-        flippedInSession: true,
-        lastFlippedAt: new Date().toISOString(),
-      });
+      await handleCardUpdate(studyIndex, {});
     } catch (error) {
       console.error("Failed to flip card:", error);
-      // Even if tracking fails, still allow the flip and mark as revealed
       setFlipped(true);
       setFlippedCards((prev) => new Set(prev).add(cardId));
     }
@@ -251,12 +245,6 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
   const totalCards = activeSet?.flashcards?.length || 0;
   const reviewedCount =
     activeSet?.flashcards?.filter((fc) => fc.reviewed || fc.due)?.length || 0;
-
-  const currentCard = activeSet?.flashcards[studyIndex];
-  const canFlip = currentCard ? !flippedCards.has(currentCard.id) : false;
-  const hasAttemptedFlip = currentCard
-    ? (flipAttempts[currentCard.id] || 0) > 0
-    : false;
 
   return (
     <div className="h-full flex flex-col">
@@ -300,8 +288,6 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
                   currentIndex={studyIndex}
                   totalCards={totalCards}
                   onStarToggle={handleStarToggle}
-                  canFlip={canFlip}
-                  hasAttemptedFlip={hasAttemptedFlip}
                 />
 
                 <div className="mt-8">
@@ -311,7 +297,6 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
                     isLast={studyIndex === totalCards - 1}
                     isRevealed={flipped}
                     currentCard={activeSet.flashcards[studyIndex]}
-                    canFlip={canFlip}
                   />
                 </div>
               </div>

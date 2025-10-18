@@ -17,25 +17,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Grid2x2, PencilLine } from "lucide-react";
 import { useParams } from "react-router-dom";
 import { getSingleSpaceApi, updateSpaceApi } from "@/utils/_apis/courses-apis";
-import Recent from "@/pages/dashboard/workspaces/Index";
-
-type Space = {
-  id: string;
-  name: string;
-  description?: string | null;
-  items?: Array<unknown> | null;
-};
+import { Space } from "@/types/courses";
+import WorkspacesList from "../workspaces/WorkspacesList.";
 
 export default function SpaceView() {
   const { t, i18n } = useTranslation();
   const { id: routeId } = useParams();
 
-  // Get direction dynamically from i18n
-  const direction = i18n.dir(); // returns 'rtl' or 'ltr'
-  const language = i18n.language; // current language code like 'ar' or 'en'
+  const dir = i18n.dir();
+  const language = i18n.language;
 
   const [layout, setLayout] = useState<"grid" | "list">("grid");
-  const [space, setSpace] = useState<any | null>(null);
+  const [space, setSpace] = useState<Space | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,7 +37,7 @@ export default function SpaceView() {
   const [editDescription, setEditDescription] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const itemCount = space?.items?.length ?? 0;
+  const itemCount = space?.workspaces?.length ?? 0;
   const formatNum = useMemo(
     () => new Intl.NumberFormat(language === "ar" ? "ar" : "en"),
     [language]
@@ -95,11 +88,7 @@ export default function SpaceView() {
   };
 
   return (
-    <section
-      className="px-20 mx-auto w-full mt-10"
-      dir={direction}
-      lang={language}
-    >
+    <section className="px-20 mx-auto w-full mt-10" dir={dir} lang={language}>
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0" style={{ textAlign: "left" }}>
           {loading ? (
@@ -124,7 +113,7 @@ export default function SpaceView() {
 
         <div
           className={`flex items-center gap-2 ${
-            direction === "rtl" ? "flex-row-reverse" : "flex-row"
+            dir === "rtl" ? "flex-row-reverse" : "flex-row"
           }`}
         >
           <Dialog open={openEdit} onOpenChange={setOpenEdit}>
@@ -132,14 +121,14 @@ export default function SpaceView() {
               <Button
                 variant="outline"
                 className={`rounded-full px-4 py-2 flex gap-2 ${
-                  direction === "rtl" ? "flex-row-reverse" : "flex-row"
+                  dir === "rtl" ? "flex-row-reverse" : "flex-row"
                 }`}
               >
                 <PencilLine className="h-4 w-4" />
                 <span>{t("editSpace", "Edit Space")}</span>
               </Button>
             </DialogTrigger>
-            <DialogContent dir={direction}>
+            <DialogContent dir={dir}>
               <DialogHeader>
                 <DialogTitle>
                   {t("editSpaceData", "Edit Space Data")}
@@ -201,7 +190,6 @@ export default function SpaceView() {
         </div>
       </div>
 
-      {/* Toolbar */}
       <div className="flex items-center justify-between mt-6 mb-4">
         <div className="flex items-center gap-2">
           <Button
@@ -228,9 +216,10 @@ export default function SpaceView() {
         </div>
       </div>
 
-      {/* Content */}
-
-      <Recent isRTL={false} />
+      <WorkspacesList
+        workspaces={space?.workspaces ?? []}
+        isRTL={dir == "rtl"}
+      />
     </section>
   );
 }

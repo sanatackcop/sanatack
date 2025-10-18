@@ -280,7 +280,6 @@ export const getAllSpacesApi = async (): Promise<{ data: Space[] }> => {
       Api({
         method: "get",
         url: "spaces/",
-        withCredentials: false,
       }) as Promise<{ data: Space[] }>
     );
     return response.data as any;
@@ -356,6 +355,62 @@ export const updateSpaceApi = async (id: string, dto: any): Promise<any> => {
       }) as Promise<{ data: Space[] }>
     );
     return response.data;
+  } catch (e: any) {
+    console.error("getAllCoursesApi error:", e);
+    throw e;
+  }
+};
+
+export const getAllSpaces = async (): Promise<Space[]> => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "get",
+        url: "spaces",
+      })
+    );
+    return (response.data as any)?.data as Space[];
+  } catch (e: any) {
+    console.error("getAllCoursesApi error:", e);
+    throw e;
+  }
+};
+
+export const linkWorkspaceToSpace = async (
+  space_id: string,
+  workspace_id: string
+): Promise<Space[]> => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "put",
+        url: `study-ai/workspaces/${workspace_id}`,
+        data: {
+          space: { id: space_id },
+        },
+      })
+    );
+    return (response.data as any)?.data as Space[];
+  } catch (e: any) {
+    console.error("getAllCoursesApi error:", e);
+    throw e;
+  }
+};
+
+export const unlinkWorkspaceFromSpace = async (
+  workspace_id: string
+): Promise<Space[]> => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "put",
+        url: `study-ai/workspaces/${workspace_id}`,
+        data: {
+          space: { id: null },
+        },
+      })
+    );
+    return (response.data as any)?.data as Space[];
   } catch (e: any) {
     console.error("getAllCoursesApi error:", e);
     throw e;
