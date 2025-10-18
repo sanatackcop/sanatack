@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, FormEvent } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -19,6 +19,7 @@ import {
   Moon,
   Sun,
   Languages,
+  MessageCircle,
 } from "lucide-react";
 import clsx from "clsx";
 import {
@@ -26,6 +27,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { createSpacesApi, getAllSpacesApi } from "@/utils/_apis/courses-apis";
 import { getAllWorkSpace } from "@/utils/_apis/learnPlayground-api";
 import Skeleton from "@mui/material/Skeleton";
@@ -41,14 +47,27 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import LogoLight from "@/assets/logo.svg";
+import { submitFeedback } from "@/utils/_apis/feedback-api";
+import { toast } from "sonner";
 
-interface MenuItem {
-  title: string;
-  url: string;
-  icon: any;
-  comingSoon?: boolean;
-}
+type MenuItem =
+  | {
+      title: string;
+      icon: any;
+      comingSoon?: boolean;
+      url: string;
+      type?: "link";
+    }
+  | {
+      title: string;
+      icon: any;
+      type: "feedback";
+    };
+
+type LinkMenuItem = Extract<MenuItem, { url: string }>;
+type FeedbackMenuItem = Extract<MenuItem, { type: "feedback" }>;
 
 interface MenuGroup {
   groupTitle: string;
@@ -87,6 +106,11 @@ export function AppSidebar() {
   const [workspaces, setWorkspaces] = useState<Workspace[] | null>(null);
   const [loadingRecent, setLoadingRecent] = useState<boolean>(true);
   const [showAllRecent, setShowAllRecent] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [feedbackSubject, setFeedbackSubject] = useState("");
+  const [feedbackMessage, setFeedbackMessage] = useState("");
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const [feedbackError, setFeedbackError] = useState<string | null>(null);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -119,6 +143,43 @@ export function AppSidebar() {
   const toggleLanguage = () => {
     const newLang = i18n.language === "ar" ? "en" : "ar";
     i18n.changeLanguage(newLang);
+  };
+
+  const handleFeedbackSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const trimmedSubject = feedbackSubject.trim();
+    const trimmedMessage = feedbackMessage.trim();
+
+    if (!trimmedSubject || !trimmedMessage) {
+      setFeedbackError("Please add both a subject and a message.");
+      return;
+    }
+
+    setFeedbackLoading(true);
+    setFeedbackError(null);
+    try {
+      await submitFeedback({
+        subject: trimmedSubject,
+        message: trimmedMessage,
+      });
+      toast.success("Thanks for sharing your feedback!");
+      setFeedbackSubject("");
+      setFeedbackMessage("");
+      setFeedbackOpen(false);
+    } catch (error: any) {
+      const errorMessage =
+        error?.error?.body ??
+        error?.response?.data?.message ??
+        error?.message ??
+        "Failed to send feedback.";
+      toast.error(
+        typeof errorMessage === "string"
+          ? errorMessage
+          : "Failed to send feedback."
+      );
+    } finally {
+      setFeedbackLoading(false);
+    }
   };
 
   const topItemGroups: MenuGroup[] = useMemo(
@@ -173,6 +234,11 @@ export function AppSidebar() {
       {
         groupTitle: "Help And Tools",
         menuItems: [
+          {
+            title: "Feedback",
+            icon: MessageCircle,
+            type: "feedback",
+          },
           {
             title: "Discord",
             url: "https://discord.com",
@@ -279,7 +345,7 @@ export function AppSidebar() {
     return location.pathname === `/dashboard/learn/workspace/${workspaceId}`;
   };
 
-  const MenuEntry = ({ item }: { item: MenuItem }) => {
+  const MenuEntry = ({ item }: { item: LinkMenuItem }) => {
     const ItemIcon = item.icon;
     const currentPathname = location.pathname;
     const isActive = item.url === currentPathname;
@@ -338,6 +404,102 @@ export function AppSidebar() {
     );
   };
 
+  const FeedbackMenuEntry = ({ item }: { item: FeedbackMenuItem }) => {
+    const ItemIcon = item.icon;
+
+    return (
+      <Popover
+        open={feedbackOpen}
+        onOpenChange={(open) => {
+          setFeedbackOpen(open);
+          if (!open) {
+            setFeedbackError(null);
+          }
+        }}
+      >
+        <PopoverTrigger asChild>
+          <button
+            type="button"
+            className={clsx(
+              "w-full flex items-center gap-2.5 px-2 py-1.5 rounded-md transition-colors duration-150 group relative focus:outline-none",
+              "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
+              getFlexDirection()
+            )}
+          >
+            <ItemIcon
+              size={16}
+              strokeWidth={1.75}
+              className="flex-shrink-0 transition-colors text-sidebar-foreground/60 group-hover:text-sidebar-accent-foreground"
+            />
+            <span
+              className={clsx(
+                "text-[13px] font-normal flex-1",
+                getTextAlignment()
+              )}
+            >
+              {item.title}
+            </span>
+          </button>
+        </PopoverTrigger>
+        <PopoverContent
+          side={isRTL ? "left" : "right"}
+          align={isRTL ? "end" : "start"}
+          className="w-80 p-4 space-y-3"
+          dir={isRTL ? "rtl" : "ltr"}
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
+          <form className="space-y-3" onSubmit={handleFeedbackSubmit}>
+            <div className="space-y-1">
+              <Label htmlFor="feedback-subject">Subject</Label>
+              <Input
+                id="feedback-subject"
+                value={feedbackSubject}
+                maxLength={120}
+                placeholder="How can we help?"
+                onChange={(event) => {
+                  setFeedbackSubject(event.target.value);
+                  if (feedbackError) {
+                    setFeedbackError(null);
+                  }
+                }}
+                required
+                autoFocus
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="feedback-message">Message</Label>
+              <Textarea
+                id="feedback-message"
+                value={feedbackMessage}
+                placeholder="Share your thoughts or issues..."
+                onChange={(event) => {
+                  setFeedbackMessage(event.target.value);
+                  if (feedbackError) {
+                    setFeedbackError(null);
+                  }
+                }}
+                required
+                rows={4}
+              />
+            </div>
+            {feedbackError && (
+              <p className="text-xs text-red-500">{feedbackError}</p>
+            )}
+            <div
+              className={clsx(
+                "flex items-center",
+                isRTL ? "justify-start" : "justify-end"
+              )}
+            >
+              <Button type="submit" size="sm" disabled={feedbackLoading}>
+                {feedbackLoading ? "Sending..." : "Send Feedback"}
+              </Button>
+            </div>
+          </form>
+        </PopoverContent>
+      </Popover>
+    );
+  };
   const MenuGroupEntry = ({ group }: { group: MenuGroup }) => {
     return (
       <div className="space-y-0.5">
@@ -351,9 +513,13 @@ export function AppSidebar() {
           <span>{group.groupTitle}</span>
         </div>
         <div className="space-y-0.5">
-          {group.menuItems.map((item) => (
-            <MenuEntry key={item.url} item={item} />
-          ))}
+          {group.menuItems.map((item) =>
+            item.type === "feedback" ? (
+              <FeedbackMenuEntry key={item.title} item={item} />
+            ) : (
+              <MenuEntry key={item.url} item={item} />
+            )
+          )}
         </div>
       </div>
     );
