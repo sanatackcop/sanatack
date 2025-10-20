@@ -127,8 +127,7 @@ export const QuizList: React.FC<QuizListProps> = ({ workspaceId }) => {
                 ))}
               </div>
             ) : quizzes.length === 0 ? (
-              <p className="text-gray-500">No quizzes available.</p>
-            ) : (
+<></>            ) : (
               <div className="space-y-4">
                 {quizzes.map((quiz) => {
                   const attempt = quiz.latestAttempt ?? null;

@@ -15,6 +15,13 @@ export type TabKey =
   | "chapters"
   | "notes";
 
+export enum GenerationStatus {
+  PENDING = "pending",
+  PROCESSING = "processing",
+  COMPLETED = "completed",
+  FAILED = "failed",
+}
+
 export interface HighlightRect {
   left: number;
   top: number;

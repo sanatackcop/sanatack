@@ -13,10 +13,9 @@ import {
 import FlashcardModal from "./FlashcardModal";
 import { FlashcardsList } from "./FlashcardsList";
 import { StudyCard, StudyNavigation } from "./StudyCard";
-import { FlashcardSet, Flashcard } from "./types";
+import { FlashcardDeck, Flashcard } from "./types";
 import { FlashCardHome } from "./FlashCardsHome";
 
-// API functions
 const trackCardFlip = async (cardId: string, setId: string) => {
   try {
     const response = await fetch(`/api/flashcards/${cardId}/flip`, {
@@ -68,7 +67,7 @@ const resetStudySession = async (setId: string) => {
 };
 
 const useFlashcards = (workspaceId: string) => {
-  const [flashcardSets, setFlashcardSets] = useState<FlashcardSet[]>([]);
+  const [flashcardSets, setFlashcardSets] = useState<FlashcardDeck[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -77,7 +76,7 @@ const useFlashcards = (workspaceId: string) => {
       setLoading(true);
       const response = await getWorkSpaceContent(workspaceId);
       const cleanedResponse = response.flashcards.filter(
-        (item): item is FlashcardSet => item != null
+        (item): item is FlashcardDeck => item != null
       );
       setFlashcardSets(cleanedResponse);
       setError(null);
@@ -99,17 +98,16 @@ const useFlashcards = (workspaceId: string) => {
 };
 
 const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
-  const { flashcardSets, loading, error } = useFlashcards(workspaceId);
-
+  const { flashcardSets, loading, error, refetch } = useFlashcards(workspaceId);
   const [modalOpen, setModalOpen] = useState(false);
-  const [activeSet, setActiveSet] = useState<FlashcardSet | null>(null);
+  const [activeSet, setActiveSet] = useState<FlashcardDeck | null>(null);
   const [studyMode, setStudyMode] = useState(false);
   const [studyIndex, setStudyIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
   const [flipAttempts, setFlipAttempts] = useState<Record<string, number>>({});
 
-  const handleSetSelect = useCallback((set: FlashcardSet) => {
+  const handleSetSelect = useCallback((set: FlashcardDeck) => {
     setActiveSet(set);
     setStudyMode(false);
     setStudyIndex(0);
@@ -239,6 +237,15 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
     }
   }, [activeSet, studyIndex, flippedCards, flipAttempts, handleCardUpdate]);
 
+  const handleCreatingNewFlashcard = useCallback(() => {
+    setModalOpen(true);
+  }, []);
+
+  function handleClosingFlashcardModal(created?: boolean) {
+    setModalOpen(false);
+    if (created) refetch();
+  }
+
   if (loading) return <LoadingSkeleton />;
   if (error) return <div className="text-center text-destructive">{error}</div>;
 
@@ -320,9 +327,9 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
           <div className="flex-1 min-h-0">
             <ScrollArea className="h-full">
               <FlashcardsList
-                sets={flashcardSets || []}
+                sets={flashcardSets}
                 onSelectSet={handleSetSelect}
-                onCreateNew={() => setModalOpen(true)}
+                onCreateNew={handleCreatingNewFlashcard}
               />
             </ScrollArea>
           </div>
@@ -331,7 +338,7 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
 
       <FlashcardModal
         open={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={handleClosingFlashcardModal}
         workspaceId={workspaceId}
       />
     </div>

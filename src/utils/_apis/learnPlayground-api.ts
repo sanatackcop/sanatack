@@ -1,4 +1,4 @@
-import { FlashcardSet } from "@/lib/flashcards/types";
+import { FlashcardDeck } from "@/lib/flashcards/types";
 import Api, { API_METHODS, baseURL } from "./api";
 
 export type DocumentStatus = "pending" | "uploading" | "uploaded" | "failed";
@@ -433,7 +433,7 @@ export const createFlashcard = async (
 export const getWorkSpaceContent = async (
   workspaceId: string
 ): Promise<{
-  flashcards: FlashcardSet[];
+  flashcards: FlashcardDeck[];
   quizzes: any;
   explanations: any;
   summaries: any;
@@ -491,6 +491,19 @@ export const submitWorkspaceQuizAttempt = async (attemptId: string) => {
     const response = await Api({
       method: API_METHODS.POST,
       url: `study-ai/quizzes/attempts/${attemptId}/submit`,
+    });
+    return response.data as any;
+  } catch (e: any) {
+    console.error("submitWorkspaceQuizAttempt error:", e.message);
+    throw e;
+  }
+};
+
+export const deleteFlashcardDeck = async (flashcard_deck_id: string) => {
+  try {
+    const response = await Api({
+      method: API_METHODS.DELETE,
+      url: `study-ai/flashcards/decks/${flashcard_deck_id}`,
     });
     return response.data as any;
   } catch (e: any) {

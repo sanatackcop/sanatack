@@ -32,6 +32,7 @@ import {
 } from "@/utils/_apis/courses-apis";
 import { formatRelativeDate } from "@/components/utiles";
 import { Workspace } from "@/lib/types";
+import { getErrorMessage } from "../utils";
 
 type WorkspaceFolderItemProps = {
   workspace: Workspace;
@@ -53,21 +54,6 @@ export default function WorkspaceFolderItem({
   const [spaces, setSpaces] = useState<Space[]>([]);
   const { youtubeVideo, workspaceName, createdAt, workspaceType, documentUrl } =
     workspace;
-
-  const getErrorMessage = (err: unknown, fallback: string) => {
-    if (typeof err === "string") return err;
-    if (err && typeof err === "object") {
-      const anyErr = err as {
-        message?: unknown;
-        error?: unknown;
-        detail?: unknown;
-      };
-      if (typeof anyErr.message === "string") return anyErr.message;
-      if (typeof anyErr.error === "string") return anyErr.error;
-      if (typeof anyErr.detail === "string") return anyErr.detail;
-    }
-    return fallback;
-  };
 
   function renderBanner() {
     if (workspaceType === "youtube" && youtubeVideo?.transcribe?.data?.url) {

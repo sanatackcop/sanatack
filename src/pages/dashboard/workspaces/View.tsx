@@ -118,7 +118,6 @@ const LearnPlayground: React.FC = () => {
           });
         }
       }
-      console.log({ workspaceData });
       if (
         workspaceData.workspaceType === "document" &&
         workspaceData.documentUrl
@@ -359,6 +358,7 @@ const LearnPlayground: React.FC = () => {
       </section>
     );
   }
+
   return (
     <section
       style={{ height: "calc(100vh - 3rem)" }}
@@ -589,9 +589,9 @@ const LearnPlayground: React.FC = () => {
                     </TabsContent>
                   )}
 
-                  {state.tab === "Deep Explamtionm" && (
+                  {state.tab === "deepExplanation        " && (
                     <TabsContent
-                      value="Deep Explamtionm"
+                      value="deepExplanation        "
                       className="m-0 h-full p-4 text-gray-500 flex flex-col"
                       style={{ maxHeight: "100%" }}
                     >

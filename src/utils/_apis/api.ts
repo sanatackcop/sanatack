@@ -87,4 +87,6 @@ export default Api;
 export enum API_METHODS {
   POST = "post",
   GET = "get",
+  DELETE = "delete",
+  PUT = "put",
 }

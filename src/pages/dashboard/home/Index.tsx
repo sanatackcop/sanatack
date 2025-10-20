@@ -3,7 +3,7 @@ import Recent from "@/pages/dashboard/workspaces/Recent";
 import Spaces from "@/pages/dashboard/spaces/Index";
 
 export default function LearningDashboard() {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const isRTL = i18n.language === "ar";
 
   return (

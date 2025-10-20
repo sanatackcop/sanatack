@@ -1,19 +1,36 @@
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import { createFlashcard } from "@/utils/_apis/learnPlayground-api";
+import { toast } from "sonner";
+import { getErrorMessage } from "@/pages/dashboard/utils";
+
 export default function FlashcardModal({
   open,
   onClose,
   workspaceId,
 }: {
   open: boolean;
-  onClose: () => void;
+  onClose: (created?: boolean) => void;
   workspaceId: string;
 }) {
   const { t } = useTranslation();
 
-  const handleFlashcardCreation = () => {
-    createFlashcard(workspaceId);
+  const handleFlashcardCreation = async () => {
+    try {
+      await createFlashcard(workspaceId);
+      onClose(true);
+    } catch (err) {
+      const fallbackMessage = t(
+        "dashboard.errors.loadSpaces",
+        "Failed Creating Flashcard Deck."
+      );
+      const msg = getErrorMessage(err, fallbackMessage);
+      toast.error(msg, {
+        closeButton: true,
+      });
+      console.error("Failed Creating Flashcard Deck: ", err);
+      onClose();
+    }
   };
 
   if (!open) return null;
@@ -26,7 +43,7 @@ export default function FlashcardModal({
       <div className="rounded-xl shadow-xl max-w-lg w-full p-7 relative bg-white">
         <button
           className="absolute top-4 right-4 text-gray-500 text-xl"
-          onClick={onClose}
+          onClick={() => onClose()}
           aria-label="Close"
         >
           ×
@@ -42,7 +59,7 @@ export default function FlashcardModal({
         </p>
 
         <div className="flex justify-end gap-3">
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={() => onClose()}>
             {t("cancel", "Cancel")}
           </Button>
           <Button

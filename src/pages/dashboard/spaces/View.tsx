@@ -219,6 +219,7 @@ export default function SpaceView() {
       <WorkspacesList
         workspaces={space?.workspaces ?? []}
         isRTL={dir == "rtl"}
+        refreshParentComponent={() => {}}
       />
     </section>
   );

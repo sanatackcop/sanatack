@@ -1,4 +1,4 @@
-import { ChevronsLeftRight, TextIcon } from "lucide-react";
+import { TextIcon, Play } from "lucide-react";
 import React, {
   useCallback,
   useRef,
@@ -31,15 +31,17 @@ declare global {
 
 interface TranscriptSegment {
   text: string;
-  start: number;
-  duration: number;
+  start: number; // seconds
+  duration: number; // seconds
   timestamp?: string;
 }
+
+type SegmentWithIndex = TranscriptSegment & { __idx: number };
 
 interface TranscriptSection {
   title: string;
   startTime: number;
-  segments: TranscriptSegment[];
+  segments: SegmentWithIndex[];
 }
 
 interface TranscriptData {
@@ -58,6 +60,11 @@ interface YouTubePlayerProps {
   onTranscriptLoad?: (transcript: any) => void;
   className?: string;
   transcript?: TranscriptData | null;
+  /**
+   * Adjusts when highlighting switches, in seconds. Positive leads the audio slightly,
+   * negative lags. Tweak if you feel a small desync.
+   */
+  syncOffsetSec?: number;
 }
 
 interface YouTubePlayerState {
@@ -78,15 +85,22 @@ const YouTubeReader: React.FC<YouTubePlayerProps> = ({
   onReady,
   transcript,
   className = "",
+  syncOffsetSec = 0.25,
 }) => {
   const { t } = useTranslation();
   const playerRef = useRef<any>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const playerContainerRef = useRef<HTMLDivElement>(null);
   const timeUpdateIntervalRef = useRef<number | null>(null);
-  const transcriptRef = useRef<HTMLDivElement>(null);
+
+  // Refs for auto-scrolling to the active transcript segment
+  const segmentRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const transcriptScrollRootRef = useRef<HTMLDivElement>(null);
+
   const [apiReady, setApiReady] = useState(false);
   const [activeTab, setActiveTab] = useState("transcript");
   const [activeSegmentIndex, setActiveSegmentIndex] = useState(-1);
+  const [hideYoutubeVideo, setHideYoutubeVideo] = useState(false);
+
   const [playerState, setPlayerState] = useState<YouTubePlayerState>({
     isPlaying: false,
     currentTime: 0,
@@ -97,11 +111,24 @@ const YouTubeReader: React.FC<YouTubePlayerProps> = ({
     isLoading: true,
   });
 
-  // Generate transcript sections with titles
-  const transcriptSections = useMemo((): TranscriptSection[] => {
-    if (!transcript?.transcriptSegments) return [];
+  // A flat, sorted list of segments with a stable global index
+  const flatSegments: SegmentWithIndex[] = useMemo(() => {
+    const base = transcript?.transcriptSegments ?? [];
+    return base
+      .slice()
+      .sort((a, b) => a.start - b.start)
+      .map((s, i) => ({ ...s, __idx: i }));
+  }, [transcript]);
 
-    const segments = transcript.transcriptSegments;
+  const flatStarts = useMemo(
+    () => flatSegments.map((s) => s.start),
+    [flatSegments]
+  );
+
+  // Sections built from the flat list, so indices stay consistent
+  const transcriptSections = useMemo((): TranscriptSection[] => {
+    if (!flatSegments.length) return [];
+
     const sections: TranscriptSection[] = [];
 
     const sectionBreaks = [
@@ -118,7 +145,7 @@ const YouTubeReader: React.FC<YouTubePlayerProps> = ({
       const nextBreak = sectionBreaks[i + 1];
       const endTime = nextBreak ? nextBreak.time : Number.MAX_SAFE_INTEGER;
 
-      const sectionSegments = segments.filter(
+      const sectionSegments = flatSegments.filter(
         (seg) => seg.start >= currentBreak.time && seg.start < endTime
       );
 
@@ -132,7 +159,7 @@ const YouTubeReader: React.FC<YouTubePlayerProps> = ({
     }
 
     return sections;
-  }, [transcript]);
+  }, [flatSegments]);
 
   const clearTimeUpdateInterval = useCallback(() => {
     if (timeUpdateIntervalRef.current) {
@@ -141,33 +168,41 @@ const YouTubeReader: React.FC<YouTubePlayerProps> = ({
     }
   }, []);
 
+  // Binary search to find the active index at a given time
+  const findActiveIndex = useCallback(
+    (tSec: number) => {
+      if (!flatStarts.length) return -1;
+      const x = tSec + syncOffsetSec;
+      let lo = 0,
+        hi = flatStarts.length; // [lo, hi)
+      while (lo < hi) {
+        const mid = (lo + hi) >>> 1;
+        if (flatStarts[mid] <= x) lo = mid + 1;
+        else hi = mid;
+      }
+      const idx = Math.max(0, Math.min(flatStarts.length - 1, lo - 1));
+      return idx;
+    },
+    [flatStarts, syncOffsetSec]
+  );
+
   const startTimeUpdateInterval = useCallback(() => {
     clearTimeUpdateInterval();
-    timeUpdateIntervalRef.current = setInterval(() => {
+    timeUpdateIntervalRef.current = window.setInterval(() => {
       if (playerRef.current && playerRef.current.getCurrentTime) {
         const currentTime = playerRef.current.getCurrentTime();
         const duration = playerRef.current.getDuration();
         onTimeUpdate?.(currentTime, duration);
         setPlayerState((prev) => ({ ...prev, currentTime, duration }));
 
-        if (transcript?.transcriptSegments) {
-          const activeIndex = transcript.transcriptSegments.findIndex(
-            (segment, index) => {
-              const nextSegment = transcript.transcriptSegments[index + 1];
-              return (
-                currentTime >= segment.start &&
-                (!nextSegment || currentTime < nextSegment.start)
-              );
-            }
-          );
-          setActiveSegmentIndex(activeIndex);
-        }
+        const idx = findActiveIndex(currentTime);
+        setActiveSegmentIndex(idx);
       }
-    }, 1000);
-  }, [onTimeUpdate, clearTimeUpdateInterval, transcript]);
+    }, 250);
+  }, [onTimeUpdate, clearTimeUpdateInterval, findActiveIndex]);
 
   const initializePlayer = useCallback(() => {
-    if (!containerRef.current || !window.YT || !window.YT.Player) return;
+    if (!playerContainerRef.current || !window.YT || !window.YT.Player) return;
 
     if (playerRef.current && playerRef.current.destroy) {
       playerRef.current.destroy();
@@ -261,9 +296,9 @@ const YouTubeReader: React.FC<YouTubePlayerProps> = ({
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   }, []);
 
-  // All useEffect hooks remain the same...
+  // Auto-load the YT iframe API
   useEffect(() => {
-    if (window.YT && window.YT.Player) {
+    if (typeof window !== "undefined" && window.YT && window.YT.Player) {
       setApiReady(true);
       return;
     }
@@ -314,199 +349,224 @@ const YouTubeReader: React.FC<YouTubePlayerProps> = ({
     };
   }, [clearTimeUpdateInterval]);
 
+  // Pause the video when the user hides it
+  useEffect(() => {
+    if (hideYoutubeVideo && playerRef.current?.pauseVideo) {
+      try {
+        playerRef.current.pauseVideo();
+      } catch {}
+    }
+  }, [hideYoutubeVideo]);
+
+  // Re-init player if the container returns after being hidden and player was destroyed
+  useEffect(() => {
+    if (!hideYoutubeVideo && apiReady && !playerRef.current) {
+      initializePlayer();
+    }
+  }, [hideYoutubeVideo, apiReady, initializePlayer]);
+
+  // ===== Auto-scroll: only scroll the transcript viewport (not the whole page) =====
+  const scrollSegmentIntoView = useCallback(
+    (index: number, behavior: ScrollBehavior = "smooth") => {
+      const viewport = transcriptScrollRootRef.current?.querySelector(
+        "[data-radix-scroll-area-viewport]"
+      ) as HTMLDivElement | null;
+      const el = segmentRefs.current[index] as HTMLDivElement | null;
+      if (!viewport || !el) return;
+      const vr = viewport.getBoundingClientRect();
+      const er = el.getBoundingClientRect();
+      const target =
+        viewport.scrollTop +
+        (er.top - vr.top) -
+        (viewport.clientHeight / 2 - er.height / 2);
+      viewport.scrollTo({ top: Math.max(0, target), behavior });
+    },
+    []
+  );
+
+  useEffect(() => {
+    if (activeTab !== "transcript") return;
+    if (activeSegmentIndex == null || activeSegmentIndex < 0) return;
+    scrollSegmentIntoView(activeSegmentIndex, "smooth");
+  }, [activeSegmentIndex, activeTab, scrollSegmentIntoView]);
+
   const TABS_CONFIG = [
     { id: "transcript", labelKey: "tabs.transcript", icon: TextIcon },
   ] as const;
 
   return (
-    <div className="flex-1 min-h-0">
-      <ScrollArea className="h-full">
-        <div className={`w-full h-full grid grid-cols-1  ${className}`}>
-          <div className="w-full flex-shrink-0 mb-4">
-            <div className="bg-white border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-md rounded-3xl">
-              <div
-                className="relative rounded-3xl bg-black w-full"
-                style={{ aspectRatio: "16/9" }}
-              >
-                {playerState.isLoading && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-gray-900 z-10 transition-opacity duration-300 rounded-3xl">
-                    <div className="flex flex-col items-center text-white">
-                      <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin mb-3"></div>
-                      <span className="text-sm animate-pulse">
-                        {t("loading.video", "Loading video...")}
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                <div ref={containerRef} className="w-full h-full rounded-3xl">
-                  <div
-                    id="youtube-player"
-                    className="w-full h-full rounded-3xl"
-                  />
+    <div className={`flex flex-col h-full min-h-0 ${className}`}>
+      {/* Video */}
+      <div
+        className={`w-full flex-shrink-0 mb-4 ${
+          hideYoutubeVideo ? "hidden" : ""
+        }`}
+      >
+        <div className="bg-white border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-md rounded-3xl">
+          <div
+            className="relative rounded-3xl bg-black w-full"
+            style={{ aspectRatio: "16/9" }}
+          >
+            {playerState.isLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-900 z-10 transition-opacity duration-300 rounded-3xl">
+                <div className="flex flex-col items-center text-white">
+                  <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin mb-3"></div>
+                  <span className="text-sm animate-pulse">
+                    {t("loading.video", "Loading video...")}
+                  </span>
                 </div>
               </div>
-            </div>
-          </div>
+            )}
 
-          <div className="flex-1  min-h-0 w-full px-2">
-            <div className="h-full max-h-[400px] sm:max-h-[450px] md:max-h-[350px] lg:max-h-[300px] xl:max-h-[350px]">
-              <Tabs
-                defaultValue="transcript"
-                value={activeTab}
-                onValueChange={setActiveTab}
-                className="flex flex-col h-full"
-              >
-                {/* Tab Headers */}
-                <div className="flex-shrink-0 flex items-center justify-between mb-3">
-                  <TabsList className="rounded-2xl w-fit border py-5">
-                    {TABS_CONFIG.map((tab) => {
-                      const IconComponent = tab.icon;
-                      const isActive = activeTab === tab.id;
-
-                      return (
-                        <TabsTrigger
-                          key={tab.id}
-                          value={tab.id}
-                          className={`relative flex items-center justify-center gap-2 rounded-lg  py-1.5 px-2 transition-all duration-200  font-normal ${
-                            isActive
-                              ? "text-green-700"
-                              : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
-                          }`}
-                        >
-                          <div className="flex items-center gap-2">
-                            {isActive ? (
-                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                            ) : (
-                              <IconComponent size={16} />
-                            )}
-                            <span>
-                              {t(
-                                tab.labelKey,
-                                tab.id === "transcript"
-                                  ? "Transcript"
-                                  : "Explanation"
-                              )}
-                            </span>
-                          </div>
-                        </TabsTrigger>
-                      );
-                    })}
-                  </TabsList>
-
-                  <Button
-                    className={`relative flex items-center justify-center gap-2 rounded-2xl bg-transparent shadow-none text-black font-normal border py-5`}
-                  >
-                    <ChevronsLeftRight />
-                    Auto Scroll
-                  </Button>
-                </div>
-
-                <div className="flex-1 min-h-0">
-                  <TabsContent
-                    value="transcript"
-                    className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col"
-                  >
-                    <div className="flex flex-col h-full  rounded-xl overflow-hidden">
-                      <div className="flex-1 min-h-0">
-                        {transcriptSections && transcriptSections.length > 0 ? (
-                          <ScrollArea className="h-full">
-                            <div ref={transcriptRef}>
-                              <div>
-                                {transcriptSections.map(
-                                  (section, sectionIndex) => (
-                                    <div
-                                      key={sectionIndex}
-                                      className="space-y-3"
-                                    >
-                                      <div className="space-y-2 ml-4">
-                                        {section.segments.map(
-                                          (segment, segmentIndex) => {
-                                            const globalIndex =
-                                              transcript?.transcriptSegments.indexOf(
-                                                segment
-                                              ) ?? -1;
-                                            return (
-                                              <Card
-                                                key={segmentIndex}
-                                                className={`group cursor-pointer p-3 rounded-xl shadow-none border-none hover:bg-gray-50 transition-all duration-200 border hover:border-gray-200 ${
-                                                  activeSegmentIndex ===
-                                                  globalIndex
-                                                    ? "bg-gray-50 border-gray-200"
-                                                    : ""
-                                                }`}
-                                                onClick={() =>
-                                                  handleTranscriptClick(segment)
-                                                }
-                                              >
-                                                <div className="flex flex-col items-start gap-3">
-                                                  <div className="flex-shrink-0 flex items-center gap-2">
-                                                    <span
-                                                      className={`text-xs font-mono px-2.5 py-1 rounded-lg transition-colors ${
-                                                        activeSegmentIndex ===
-                                                        globalIndex
-                                                          ? "bg-gray-100 text-gray-700"
-                                                          : "bg-gray-100 text-gray-600"
-                                                      }`}
-                                                    >
-                                                      {segment.timestamp ||
-                                                        formatTime(
-                                                          segment.start
-                                                        )}
-                                                    </span>
-                                                  </div>
-                                                  <p
-                                                    className={`text-lg leading-relaxed flex-1 transition-colors ${
-                                                      activeSegmentIndex ===
-                                                      globalIndex
-                                                        ? "text-gray-900"
-                                                        : "text-gray-700"
-                                                    }`}
-                                                  >
-                                                    {segment.text}
-                                                  </p>
-                                                </div>
-                                              </Card>
-                                            );
-                                          }
-                                        )}
-                                      </div>
-                                    </div>
-                                  )
-                                )}
-                              </div>
-                            </div>
-                          </ScrollArea>
-                        ) : (
-                          <div className="h-full flex items-center justify-center text-gray-500">
-                            <div className="text-center py-8">
-                              <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                                <TextIcon size={24} className="text-gray-400" />
-                              </div>
-                              <h4 className="text-sm font-medium text-gray-700 mb-1">
-                                {t(
-                                  "transcript.noData",
-                                  "No transcript available"
-                                )}
-                              </h4>
-                              <p className="text-xs text-gray-500 max-w-xs mx-auto">
-                                {t(
-                                  "transcript.willAppear",
-                                  "Transcript will appear here when available"
-                                )}
-                              </p>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </TabsContent>
-                </div>
-              </Tabs>
+            <div ref={playerContainerRef} className="w-full h-full rounded-3xl">
+              <div id="youtube-player" className="w-full h-full rounded-3xl" />
             </div>
           </div>
         </div>
-      </ScrollArea>
+      </div>
+
+      {/* Tabs wrapper holds both header (TabsList) and content (TabsContent) to satisfy Radix */}
+      <Tabs
+        defaultValue="transcript"
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="flex flex-col h-full"
+      >
+        {/* Sticky header (inside Tabs) */}
+        <div className="sticky top-0 z-20 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+          <div className="flex items-center justify-between px-2 py-2">
+            <TabsList className="rounded-2xl border py-4">
+              {TABS_CONFIG.map((tab) => {
+                const IconComponent = tab.icon;
+                const isActive = activeTab === tab.id;
+                return (
+                  <TabsTrigger
+                    key={tab.id}
+                    value={tab.id}
+                    className={`relative flex items-center justify-center gap-2 rounded-lg py-1.5 px-3 transition-all duration-200 font-normal ${
+                      isActive
+                        ? "text-green-700"
+                        : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      {isActive ? (
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      ) : (
+                        <IconComponent size={16} />
+                      )}
+                      <span>
+                        {t(
+                          tab.labelKey,
+                          tab.id === "transcript" ? "Transcript" : "Explanation"
+                        )}
+                      </span>
+                    </div>
+                  </TabsTrigger>
+                );
+              })}
+            </TabsList>
+
+            <Button
+              size="sm"
+              variant="outline"
+              className="rounded-full"
+              onClick={() => setHideYoutubeVideo((v) => !v)}
+              title={
+                hideYoutubeVideo
+                  ? t("video.show", "Show video")
+                  : t("video.hide", "Hide video")
+              }
+            >
+              <Play className="w-4 h-4 mr-2" />
+              {hideYoutubeVideo
+                ? t("video.show", "Show video")
+                : t("video.hide", "Hide video")}
+            </Button>
+          </div>
+        </div>
+
+        <TabsContent
+          value="transcript"
+          className="flex-1 min-h-0 m-0 data-[state=active]:flex data-[state=active]:flex-col"
+        >
+          <ScrollArea ref={transcriptScrollRootRef} className="h-full">
+            <div className="space-y-6 p-2">
+              {transcriptSections.length ? (
+                transcriptSections.map((section, sectionIndex) => (
+                  <div key={`section-${sectionIndex}`} className="space-y-3">
+                    {/* Optional section heading */}
+                    {/* <div className="text-xs uppercase tracking-wide text-gray-500 ml-4">{section.title}</div> */}
+                    <div className="space-y-2 ml-4">
+                      {section.segments.map((segment) => {
+                        const globalIndex = segment.__idx;
+                        return (
+                          <div
+                            key={`seg-${segment.__idx}`}
+                            ref={(el) => {
+                              segmentRefs.current[globalIndex] = el;
+                            }}
+                          >
+                            <Card
+                              className={`group cursor-pointer p-3 rounded-xl shadow-none border-none hover:bg-gray-50 transition-all duration-200 border hover:border-gray-200 ${
+                                activeSegmentIndex === globalIndex
+                                  ? "bg-gray-50 border-gray-200"
+                                  : ""
+                              }`}
+                              onClick={() => handleTranscriptClick(segment)}
+                            >
+                              <div className="flex flex-col items-start gap-3">
+                                <div className="flex-shrink-0 flex items-center gap-2">
+                                  <span
+                                    className={`text-xs font-mono px-2.5 py-1 rounded-lg transition-colors ${
+                                      activeSegmentIndex === globalIndex
+                                        ? "bg-gray-100 text-gray-700"
+                                        : "bg-gray-100 text-gray-600"
+                                    }`}
+                                  >
+                                    {segment.timestamp ||
+                                      formatTime(segment.start)}
+                                  </span>
+                                </div>
+                                <p
+                                  className={`text-xl leading-relaxed flex-1 transition-colors ${
+                                    activeSegmentIndex === globalIndex
+                                      ? "text-gray-900"
+                                      : "text-gray-700"
+                                  }`}
+                                >
+                                  {segment.text}
+                                </p>
+                              </div>
+                            </Card>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="h-full flex items-center justify-center text-gray-500">
+                  <div className="text-center py-8">
+                    <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                      <TextIcon size={24} className="text-gray-400" />
+                    </div>
+                    <h4 className="text-sm font-medium text-gray-700 mb-1">
+                      {t("transcript.noData", "No transcript available")}
+                    </h4>
+                    <p className="text-xs text-gray-500 max-w-xs mx-auto">
+                      {t(
+                        "transcript.willAppear",
+                        "Transcript will appear here when available"
+                      )}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
