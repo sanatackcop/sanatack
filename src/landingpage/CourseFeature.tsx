@@ -1,239 +1,422 @@
-import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import {
-  Plus,
-  X,
+  MessageSquare,
+  Code,
   BookOpen,
-  Bot,
-  PenTool,
+  Zap,
   Brain,
-  AudioLinesIcon,
-  BicepsFlexedIcon,
+  FileText,
+  Lightbulb,
+  Target,
+  Users,
+  TrendingUp,
+  CheckCircle,
+  Sparkles,
+  BookMarked,
+  GraduationCap,
+  Layers,
+  Timer,
+  Trophy,
+  Rocket,
+  ShieldCheck,
+  Compass,
+  CircleArrowLeft,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Code, Target, Award } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { motion } from "framer-motion";
+import { useLocaleDirection } from "@/hooks/useLocaleDirection";
 
-export function CourseFeature() {
-  const features = [
+export function AITutorFeatures() {
+  const { t } = useTranslation();
+  const { isRTL, direction } = useLocaleDirection();
+
+  const tutorFeatures = [
     {
       id: 1,
-      title: "دورة نصية",
-      body: "دروس تفاعلية تعتمد على النصوص مع تمارين فورية لاختبار فهمك وتطبيق المفاهيم عمليًا.",
-      icon: BookOpen,
+      titleKey: "aiTutor.chat.title",
+      descriptionKey: "aiTutor.chat.description",
+      ctaKey: "aiTutor.chat.cta",
+      icon: MessageSquare,
+      gradient: "from-blue-500 via-cyan-500 to-blue-600",
+      glowColor: "rgba(59, 130, 246, 0.5)",
+      borderColor: "#3b82f6",
+      image: "/images/chat-feature.png",
+      position: "left" as const,
+      miniFeatures: [
+        {
+          iconKey: Brain,
+          labelKey: "aiTutor.chat.features.intelligent",
+        },
+        {
+          iconKey: Zap,
+          labelKey: "aiTutor.chat.features.instant",
+        },
+        {
+          iconKey: Users,
+          labelKey: "aiTutor.chat.features.personalized",
+        },
+        {
+          iconKey: Target,
+          labelKey: "aiTutor.chat.features.focused",
+        },
+      ],
     },
     {
       id: 2,
-      title: "تحديات عملية",
-      body: "مشاريع مصغرة واقعية لتعزيز مهاراتك وتطبيق المفاهيم عمليًا مع حلول تفصيلية.",
-      icon: Target,
+      titleKey: "aiTutor.quiz.title",
+      descriptionKey: "aiTutor.quiz.description",
+      ctaKey: "aiTutor.quiz.cta",
+      icon: Zap,
+      borderColor: "#a855f7",
+      gradient: "from-purple-500 via-pink-500 to-purple-600",
+      glowColor: "rgba(168, 85, 247, 0.5)",
+      image: "/images/quiz-feature.png",
+      position: "right" as const,
+      miniFeatures: [
+        {
+          iconKey: Target,
+          labelKey: "aiTutor.quiz.features.adaptive",
+        },
+        {
+          iconKey: Trophy,
+          labelKey: "aiTutor.quiz.features.gamified",
+        },
+        {
+          iconKey: TrendingUp,
+          labelKey: "aiTutor.quiz.features.progress",
+        },
+        {
+          iconKey: Timer,
+          labelKey: "aiTutor.quiz.features.timed",
+        },
+      ],
     },
     {
       id: 3,
-      title: "محرر الأكواد",
-      body: "مئات الأسئلة البرمجية مصنفة حسب الصعوبة مع حلول مشروحة وتفسيرات مفصلة.",
-      icon: Code,
+      titleKey: "aiTutor.flashcards.title",
+      descriptionKey: "aiTutor.flashcards.description",
+      ctaKey: "aiTutor.flashcards.cta",
+      borderColor: "#10b981",
+      icon: BookOpen,
+      gradient: "from-green-500 via-emerald-500 to-green-600",
+      glowColor: "rgba(34, 197, 94, 0.5)",
+      image: "/images/flashcard-feature.png",
+      position: "left" as const,
+      miniFeatures: [
+        {
+          iconKey: Brain,
+          labelKey: "aiTutor.flashcards.features.memory",
+        },
+        {
+          iconKey: Target,
+          labelKey: "aiTutor.flashcards.features.easy",
+        },
+        {
+          iconKey: Lightbulb,
+          labelKey: "aiTutor.flashcards.features.smart",
+        },
+        {
+          iconKey: BookMarked,
+          labelKey: "aiTutor.flashcards.features.organized",
+        },
+      ],
     },
     {
       id: 4,
-      title: "مدرب بالذكاء الاصطناعي",
-      body: "مدرب شخصي بالذكاء الاصطناعي يجيب على أسئلتك ويعطي ملاحظات فورية ومخصصة.",
-      icon: Bot,
+      titleKey: "aiTutor.summary.title",
+      descriptionKey: "aiTutor.summary.description",
+      ctaKey: "aiTutor.summary.cta",
+      icon: FileText,
+      borderColor: "#f97316",
+      gradient: "from-orange-500 via-red-500 to-orange-600",
+      glowColor: "rgba(249, 115, 22, 0.5)",
+      image: "/images/summary-feature.png",
+      position: "right" as const,
+      miniFeatures: [
+        {
+          iconKey: Zap,
+          labelKey: "aiTutor.summary.features.quick",
+        },
+        {
+          iconKey: CheckCircle,
+          labelKey: "aiTutor.summary.features.accurate",
+        },
+        {
+          iconKey: Layers,
+          labelKey: "aiTutor.summary.features.structured",
+        },
+        {
+          iconKey: Sparkles,
+          labelKey: "aiTutor.summary.features.keypoints",
+        },
+      ],
     },
     {
       id: 5,
-      title: "تدوين الملاحظات",
-      body: "دوّن أفكارك مباشرة أثناء الدرس واحفظها للرجوع إليها لاحقًا مع إمكانية التصدير.",
-      icon: PenTool,
+      titleKey: "aiTutor.code.title",
+      descriptionKey: "aiTutor.code.description",
+      ctaKey: "aiTutor.code.cta",
+      icon: Code,
+      gradient: "from-indigo-500 via-blue-500 to-indigo-600",
+      glowColor: "rgba(99, 102, 241, 0.5)",
+      image: "/images/code-feature.png",
+      position: "left" as const,
+      borderColor: "#6366f1",
+      miniFeatures: [
+        {
+          iconKey: Code,
+          labelKey: "aiTutor.code.features.syntax",
+        },
+        {
+          iconKey: ShieldCheck,
+          labelKey: "aiTutor.code.features.debug",
+        },
+        {
+          iconKey: Rocket,
+          labelKey: "aiTutor.code.features.optimize",
+        },
+        {
+          iconKey: GraduationCap,
+          labelKey: "aiTutor.code.features.learn",
+        },
+      ],
     },
     {
       id: 6,
-      title: "شهادة إتمام",
-      body: "احصل على شهادة رقمية موثوقة عند إنهاء جميع التحديات والمشاريع مع إمكانية المشاركة.",
-      icon: Award,
-    },
-    {
-      id: 7,
-      title: "خرائط ذهنية أثناء التعلّم",
-      body: "نظِّم أفكارك بتجميع المفاهيم في خرائط ذهنية تفاعلية تعزّز ترسيخ المعلومات وتسهِّل المراجعة.",
+      titleKey: "aiTutor.deepExplanation.title",
+      descriptionKey: "aiTutor.deepExplanation.description",
+      ctaKey: "aiTutor.deepExplanation.cta",
       icon: Brain,
-    },
-    {
-      id: 8,
-      title: "محتوى مرئي",
-      body: "شاهد مقاطع فيديو تعليمية عالية الجودة توضح الخطوات والمفاهيم بطريقة سلسة وجذابة.",
-      icon: AudioLinesIcon,
-    },
-    {
-      id: 9,
-      title: "دروس تفاعلية",
-      body: "طبّق ما تتعلّمه فورًا من خلال دروس تفاعلية واختبارات قصيرة ومسارات متابعة تقدّمية، لتحقق أقصى استفادة من وقتك.",
-      icon: BicepsFlexedIcon,
+      gradient: "from-pink-500 via-rose-500 to-pink-600",
+      glowColor: "rgba(236, 72, 153, 0.5)",
+      image: "/images/deep-explanation-feature.png",
+      borderColor: "#ec4899",
+      position: "right" as const,
+      miniFeatures: [
+        {
+          iconKey: Brain,
+          labelKey: "aiTutor.deepExplanation.features.detailed",
+        },
+        {
+          iconKey: Compass,
+          labelKey: "aiTutor.deepExplanation.features.guided",
+        },
+        {
+          iconKey: Lightbulb,
+          labelKey: "aiTutor.deepExplanation.features.examples",
+        },
+        {
+          iconKey: BookOpen,
+          labelKey: "aiTutor.deepExplanation.features.comprehensive",
+        },
+      ],
     },
   ];
 
-  const [openId, setOpenId] = useState<number | null>(null);
-
-  const toggle = (id: number) => {
-    setOpenId((prev) => (prev === id ? null : id));
-  };
-
   return (
     <section
-      id="course-feature"
-      dir="rtl"
-      className="relative w-full py-16 md:py-20 px-4 md:px-8 lg:px-16 overflow-hidden"
+      id="ai-tutor-features"
+      dir={direction}
+      className="relative w-full py-20 md:py-32 px-4 md:px-8 lg:px-16 overflow-hidden bg-white dark:bg-[#0a0a0b] transition-colors duration-300"
     >
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute top-0 left-1/4 w-64 h-64 md:w-96 md:h-96 bg-black/5 dark:bg-white/5 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-0 right-1/4 w-64 h-64 md:w-80 md:h-80 bg-gray-600/5 dark:bg-gray-400/5 rounded-full blur-3xl animate-pulse delay-1000" />
-      </div>
+      <div className="relative mx-auto max-w-6xl text-center space-y-6 mb-24">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+        >
+          <h2 className="text-4xl tracking-tight text-gray-900 dark:text-white leading-tight mt-6">
+            {t("aiTutor.title")}
+          </h2>
 
-      <div className="mx-auto max-w-6xl text-center space-y-4 md:space-y-6 mb-12 md:mb-16">
-        <div className="inline-flex items-center gap-2 rounded-full border-2 border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 px-4 md:px-6 py-2 text-sm font-medium text-black dark:text-white backdrop-blur-sm">
-          <div className="w-2 h-2 bg-black dark:bg-white rounded-full animate-pulse" />
-          طور مهاراتك
-        </div>
-
-        <h2 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black tracking-tight text-black dark:text-white leading-tight">
-          ليست دورتك المعتادة
-        </h2>
-        <p className="max-w-2xl mx-auto text-gray-600 dark:text-gray-300 text-base md:text-lg lg:text-xl leading-relaxed font-light">
-          تم تصميم هذه الدورة بطريقة تفاعلية تعتمد على النصوص ومليئة بالتحديات
-          العملية، مما يجعل
-          <span className="text-black dark:text-white font-semibold">
-            {" "}
-            التعليم أكثر إتقانًا{" "}
-          </span>
-          هذا البرنامج التدريسي يتميز بخصائص فريدة تجعله استثنائيًا.
-        </p>
-      </div>
-
-      <div className="mt-12 md:mt-16 grid gap-6 md:gap-8 sm:grid-cols-2 lg:grid-cols-3 items-start max-w-7xl mx-auto">
-        {features.map((feature) => {
-          const IconComponent = feature.icon;
-          const isOpen = openId === feature.id;
-          return (
-            <div
-              key={feature.id}
-              className={`group relative rounded-2xl md:rounded-3xl border-2 transition-all duration-500 overflow-hidden ${
-                isOpen
-                  ? "border-gray-600 dark:border-white bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900/20 shadow-2xl scale-105"
-                  : "border-gray-300 dark:border-gray-700 bg-gradient-to-br from-white via-gray-50 to-white dark:from-gray-800 dark:via-gray-900 dark:to-gray-800 hover:border-gray-600  dark:hover:border-white hover:shadow-xl hover:bg-gradient-to-br hover:from-gray-50 hover:via-white hover:to-gray-100 dark:hover:from-gray-600 dark:hover:via-gray-700 dark:hover:to-black"
-              } backdrop-blur-md`}
-            >
-              <button
-                onClick={() => toggle(feature.id)}
-                className="w-full text-start relative z-10 group/btn"
-              >
-                <Card className="border-0 bg-white dark:bg-gray-900 shadow-none">
-                  <CardContent className="flex items-center gap-3 md:gap-4 py-6 md:py-8 px-4 md:px-8">
-                    <div
-                      className={`flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-xl md:rounded-2xl border-2 transition-all duration-300  bg-gradient-to-br from-indigo-600 to-sky-600 ${
-                        isOpen
-                          ? "border-gray-600 shadow-lg"
-                          : "border-gray-400 dark:border-gray-600 group-hover/btn:border-gray-700 dark:group-hover/btn:border-white group-hover/btn:bg-black/5 dark:group-hover/btn:bg-white/5"
-                      }`}
-                    >
-                      <IconComponent
-                        className={`h-6 w-6 md:h-7 md:w-7 transition-all text-white duration-300 ${
-                          isOpen
-                            ? "scale-110"
-                            : "group-hover/btn:text-white group-hover/btn:scale-110"
-                        }`}
-                      />
-                    </div>
-
-                    <div className="flex-1 flex items-center justify-between min-w-0">
-                      <span
-                        className={`text-lg md:text-xl font-bold transition-colors duration-300 truncate ${
-                          isOpen
-                            ? "text-black dark:text-white"
-                            : "text-gray-800 dark:text-gray-100 group-hover/btn:text-black dark:group-hover/btn:text-white"
-                        }`}
-                      >
-                        {feature.title}
-                      </span>
-
-                      <div
-                        className={`flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-full border-2 transition-all duration-300 flex-shrink-0 ml-2 ${
-                          isOpen
-                            ? "border-gray-600 dark:border-white bg-black/10 dark:bg-white/10 rotate-45"
-                            : "border-gray-400 dark:border-gray-600 group-hover/btn:border-gray-600 dark:group-hover/btn:border-white group-hover/btn:bg-black/5 dark:group-hover/btn:bg-white/5"
-                        }`}
-                      >
-                        {isOpen ? (
-                          <X className="h-4 w-4 md:h-5 md:w-5 text-gray-500 dark:text-white" />
-                        ) : (
-                          <Plus className="h-4 w-4 md:h-5 md:w-5 text-gray-600 dark:text-gray-400 group-hover/btn:text-gray-600 dark:group-hover/btn:text-white transition-colors duration-300" />
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </button>
-
-              <div
-                className={`overflow-hidden transition-all duration-500 ease-in-out ${
-                  isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-                }`}
-              >
-                <div className="px-4 md:px-8 py-4 md:pb-6  border-t-2 border-gray-300 dark:border-gray-700">
-                  <div className="bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-xl md:rounded-2xl p-4 md:p-6 backdrop-blur-sm border-2 border-gray-300 dark:border-gray-700">
-                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm md:text-base mb-4 md:mb-6">
-                      {feature.body}
-                    </p>
-
-                    <div className="flex flex-col sm:flex-row justify-start gap-3">
-                      <Button
-                        size="sm"
-                        className="!text-white bg-gradient-to-br from-indigo-600 to-sky-600 hover:bg-gray-800 dark:hover:bg-gray-200 font-semibold px-4 md:px-6 py-2 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg text-sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                        }}
-                      >
-                        <Link to="signup"> ابدأ الآن</Link>
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="border-2 border-gray-400 dark:border-gray-600 !bg-white text-black  hover:text-gray-700 hover:dark:text-gray-700 hover:border-gray-600 dark:hover:border-white px-4 md:px-6 py-2 rounded-full transition-all duration-300 text-sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggle(feature.id);
-                        }}
-                      >
-                        إغلاق
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="mt-16 md:mt-20 max-w-4xl mx-auto text-center">
-        <div className="bg-gradient-to-r from-gray-100 via-white to-gray-100 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800 rounded-2xl md:rounded-3xl p-6 md:p-8 border-2 border-gray-300 dark:border-gray-700 backdrop-blur-sm">
-          <p className="text-gray-700 dark:text-gray-300 text-base md:text-lg lg:text-xl leading-relaxed mb-6">
-            تم تصميم هذه الدورة بطريقة تفاعلية تعتمد على النصوص، ومليئة
-            <span className="text-black dark:text-white font-bold">
-              {" "}
-              بالتحديات العملية،{" "}
-            </span>
-            مما يجعل هذا المسار التدريسي يتميز بخصائص فريدة تجعله
-            <span className="text-gray-600 dark:text-gray-400 font-bold">
-              {" "}
-              استثنائيًا!
-            </span>
+          <p className="text-md text-gray-600 dark:text-gray-400 mt-3 max-w-3xl mx-auto leading-relaxed">
+            {t("aiTutor.subtitle")}
           </p>
+        </motion.div>
+      </div>
 
-          <Button className="bg-gradient-to-br from-indigo-600 to-sky-600 !text-white hover:bg-gray-800 dark:hover:bg-gray-200 font-bold px-6 md:px-8 py-3 rounded-full text-base md:text-lg transition-all duration-300 hover:scale-105 hover:shadow-xl">
-            <Link to="signup">ابدأ رحلتك الآن</Link>
-          </Button>
-        </div>
+      <div className="relative mx-auto max-w-7xl space-y-24 md:space-y-32">
+        {tutorFeatures.map((feature, index) => (
+          <FeatureCard
+            key={feature.id}
+            feature={feature}
+            index={index}
+            isRTL={isRTL}
+            t={t}
+          />
+        ))}
       </div>
     </section>
+  );
+}
+
+interface FeatureCardProps {
+  feature: {
+    id: number;
+    titleKey: string;
+    borderColor: string;
+    descriptionKey: string;
+    ctaKey: string;
+    icon: any;
+    gradient: string;
+    glowColor: string;
+    image: string;
+    position: "left" | "right";
+    miniFeatures?: Array<{
+      iconKey: any;
+      labelKey: string;
+    }>;
+  };
+  index: number;
+  isRTL: boolean;
+  t: any;
+}
+
+function FeatureCard({ feature, index, isRTL, t }: FeatureCardProps) {
+  const Icon = feature.icon;
+  const isLeft = isRTL
+    ? feature.position === "right"
+    : feature.position === "left";
+
+  return (
+    <div className="relative">
+      <motion.div
+        initial={{ opacity: 0, y: 60 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, delay: index * 0.15 }}
+        viewport={{ once: true, margin: "-100px" }}
+        className={`flex flex-col ${
+          isLeft ? "lg:flex-row" : "lg:flex-row-reverse"
+        } items-center gap-8 lg:gap-16`}
+      >
+        <motion.div
+          whileHover={{ scale: 1.02, rotateY: isLeft ? 5 : -5 }}
+          transition={{ type: "spring", stiffness: 200 }}
+          className="flex-1 w-full max-w-xl"
+        >
+          <div className="relative group">
+            {/* Glass Container */}
+            <div className="relative bg-white/80 dark:bg-white/5 backdrop-blur-xl border border-gray-200/50 dark:border-white/10 rounded-2xl p-3 shadow-2xl overflow-hidden">
+              {/* Gradient Overlay on Glass */}
+              <div
+                className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-5`}
+              />
+
+              {/* Image */}
+              <div className="relative aspect-video rounded-xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
+                <img
+                  src={feature.image}
+                  alt={t(feature.titleKey)}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                  }}
+                />
+
+                {/* Placeholder Content if Image Fails */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Icon className="w-20 h-20 text-gray-300 dark:text-white/20" />
+                </div>
+              </div>
+
+              {/* Shine Effect */}
+              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            </div>
+          </div>
+        </motion.div>
+
+        <div className="flex-1 w-full">
+          <motion.div
+            initial={{ opacity: 0, x: isLeft ? -40 : 40 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: index * 0.15 + 0.2 }}
+            viewport={{ once: true }}
+            className="relative"
+          >
+            <div
+              className={`flex items-center gap-3 mb-4 ${
+                isRTL ? "flex-row-reverse" : "flex-row"
+              }`}
+            >
+              <h3
+                className={`text-3xl ${
+                  isRTL ? "text-right" : "text-left"
+                } w-full font-medium text-gray-900 dark:text-white`}
+              >
+                {t(feature.titleKey)}
+              </h3>
+            </div>
+
+            <p
+              className={`text-gray-600 dark:text-gray-400 text-md leading-relaxed mb-8 ${
+                isRTL ? "text-right" : "text-left"
+              }`}
+            >
+              {t(feature.descriptionKey)}
+            </p>
+
+            {feature.miniFeatures && (
+              <div className="grid grid-cols-1 gap-4 mb-8">
+                {feature.miniFeatures.map((miniFeature, idx) => {
+                  const MiniIcon = miniFeature.iconKey;
+                  return (
+                    <motion.div
+                      key={idx}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{
+                        duration: 0.4,
+                        delay: index * 0.15 + 0.3 + idx * 0.1,
+                      }}
+                      viewport={{ once: true }}
+                      className="relative group cursor-pointer"
+                    >
+                      <div
+                        className={`flex items-center justify-end gap-3 ${
+                          isRTL ? "flex-row-reverse" : "flex-row"
+                        }`}
+                      >
+                        <span
+                          className={`text-sm font-medium text-gray-700 dark:text-gray-300 ${
+                            isRTL ? "text-right" : "text-left"
+                          }`}
+                        >
+                          {t(miniFeature.labelKey)}
+                        </span>
+                        <div
+                          className="size-10 rounded-lg border-2 flex items-center justify-center flex-shrink-0"
+                          style={{
+                            borderColor: feature.borderColor,
+                          }}
+                        >
+                          <MiniIcon className="size-5" />
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
+
+            <motion.button
+              className="inline-flex items-center gap-3 px-6 py-3 group border-2 
+              text-gray-900 dark:text-white rounded-2xl font-bold text-sm transition-all duration-300 hover:shadow-lg"
+              style={{
+                borderColor: feature.borderColor,
+              }}
+            >
+              <span>{t(feature.ctaKey)}</span>
+              <CircleArrowLeft
+                className={`size-5 group-hover:translate-x-1 group-hover:rotate-${
+                  isRTL ? "45" : "90"
+                } transition-transform duration-200 ${
+                  isRTL ? "" : "rotate-180"
+                }`}
+              />
+            </motion.button>
+          </motion.div>
+        </div>
+      </motion.div>
+    </div>
   );
 }

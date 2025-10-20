@@ -42,6 +42,18 @@ export type LoginResult = {
   refresh_token: string;
 };
 
+export type FirebaseSignInPayload = {
+  uid: string;
+  email: string;
+  displayName?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  phoneNumber?: string | null;
+  emailVerified?: boolean;
+  disabled?: boolean;
+  idToken?: string;
+};
+
 export const loginApi = async ({ email, password }: BasicLogin) => {
   try {
     const response = await trackPromise(
@@ -57,6 +69,26 @@ export const loginApi = async ({ email, password }: BasicLogin) => {
     return response.data;
   } catch (e: any) {
     console.log("login error", { e });
+    throw e;
+  }
+};
+
+export const firebaseSignInApi = async (
+  payload: FirebaseSignInPayload
+): Promise<LoginResult> => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "post",
+        url: "auth/firebase/sign-in",
+        data: {
+          ...payload,
+        },
+      })
+    );
+    return response.data as LoginResult;
+  } catch (e: any) {
+    console.log("firebaseSignInApi error", { e });
     throw e;
   }
 };
