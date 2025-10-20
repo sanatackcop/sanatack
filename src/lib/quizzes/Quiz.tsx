@@ -8,7 +8,7 @@ import {
   createNewQuizApi,
   getWorkSpaceContent,
 } from "@/utils/_apis/learnPlayground-api";
-import { Settings2 } from "lucide-react";
+import { AlertTriangle, Settings2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -19,15 +19,26 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { QuizView } from "./QuizView";
-import { QuizListProps, Quiz, QuizType, QuizAttemptSummary } from "./types";
+import { Quiz, QuizType, QuizAttemptSummary } from "./types";
+import {
+  getErrorMessage,
+  ProgressStrip,
+  QueuedStrip,
+  StatusBadge,
+} from "@/pages/dashboard/utils";
+import { GenerationStatus } from "../types";
+import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
-export const QuizList: React.FC<QuizListProps> = ({ workspaceId }) => {
+export const QuizList: React.FC<{ workspaceId: string }> = ({
+  workspaceId,
+}) => {
   const [loading, setLoading] = useState(true);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
   const [selectedTypes, setSelectedTypes] = useState<QuizType[]>([]);
+  const { t } = useTranslation();
 
   const [quizOptions, ,] = useState<{
     numberOfQuestions: number;
@@ -49,26 +60,34 @@ export const QuizList: React.FC<QuizListProps> = ({ workspaceId }) => {
     }
   }, [workspaceId]);
 
-  // Fetch quizzes
   useEffect(() => {
     fetchWorkspaceContent();
   }, [fetchWorkspaceContent]);
 
-  // Called when modal saves new quiz options
   const handleCreateQuiz = async (options: {
     questionTypes: QuizType[];
     numberOfQuestions: number;
     difficulty: string;
   }) => {
-    setIsModalOpen(false);
-    await createNewQuizApi({
-      id: workspaceId,
-      questionTypes: options.questionTypes,
-      numberOfQuestions: options.numberOfQuestions,
-      difficulty: options.difficulty,
-    });
-    await fetchWorkspaceContent();
-    setSelectedTypes([]);
+    try {
+      setIsModalOpen(false);
+      await createNewQuizApi({
+        id: workspaceId,
+        questionTypes: options.questionTypes,
+        numberOfQuestions: options.numberOfQuestions,
+        difficulty: options.difficulty,
+      });
+      await fetchWorkspaceContent();
+      setSelectedTypes([]);
+    } catch (err) {
+      const fallbackMessage = t(
+        "dashboard.errors.loadSpaces",
+        "Failed Creating Quiz."
+      );
+      const msg = getErrorMessage(err, fallbackMessage);
+      toast.error(msg);
+      console.error("Failed Creating Quiz.", err);
+    }
   };
 
   const handleAttemptUpdate = useCallback(
@@ -116,6 +135,7 @@ export const QuizList: React.FC<QuizListProps> = ({ workspaceId }) => {
             <h3 className="px-2 text-sm font-medium text-gray-700">
               My Quizzes
             </h3>
+
             {loading ? (
               <div className="space-y-3">
                 {[...Array(3)].map((_, i) => (
@@ -127,10 +147,19 @@ export const QuizList: React.FC<QuizListProps> = ({ workspaceId }) => {
                 ))}
               </div>
             ) : quizzes.length === 0 ? (
-<></>            ) : (
+              <></>
+            ) : (
               <div className="space-y-4">
                 {quizzes.map((quiz) => {
                   const attempt = quiz.latestAttempt ?? null;
+
+                  // async gen status
+                  const disabled =
+                    quiz.status === GenerationStatus.PENDING ||
+                    quiz.status === GenerationStatus.PROCESSING;
+                  const failed = quiz.status === GenerationStatus.FAILED;
+
+                  // progress (attempt)
                   const rawProgress = attempt
                     ? Number(
                         attempt.progressPct ??
@@ -142,11 +171,13 @@ export const QuizList: React.FC<QuizListProps> = ({ workspaceId }) => {
                   const progress = Number.isFinite(rawProgress)
                     ? Math.min(100, Math.max(0, rawProgress))
                     : 0;
+
+                  // attempt info line
                   const scoreEarned = attempt?.scoreEarned ?? 0;
-                  const totalPoints = attempt?.scoreTotal ?? 0;
+                  const totalPointsFromAttempt = attempt?.scoreTotal ?? 0;
                   const infoLine = attempt
                     ? attempt.status === "graded"
-                      ? `${scoreEarned}/${totalPoints} pts${
+                      ? `${scoreEarned}/${totalPointsFromAttempt} pts${
                           attempt.passed === true
                             ? " • Passed"
                             : attempt.passed === false
@@ -155,6 +186,7 @@ export const QuizList: React.FC<QuizListProps> = ({ workspaceId }) => {
                         }`
                       : `${attempt.answeredCount}/${attempt.totalCount} answered`
                     : "No attempt yet";
+
                   const statusLabel = (() => {
                     if (!attempt) return "Not started";
                     if (attempt.status === "graded") {
@@ -164,6 +196,7 @@ export const QuizList: React.FC<QuizListProps> = ({ workspaceId }) => {
                     }
                     return attempt.status.replace(/_/g, " ");
                   })();
+
                   const statusVariant = !attempt
                     ? "outline"
                     : attempt.status === "graded"
@@ -171,34 +204,60 @@ export const QuizList: React.FC<QuizListProps> = ({ workspaceId }) => {
                       ? "destructive"
                       : "default"
                     : "outline";
+
+                  const questionCount =
+                    quiz.payload?.questions.length ?? quiz.questionCount ?? 0;
+
                   return (
                     <Card
                       key={quiz.id}
-                      onClick={() => setSelectedQuiz(quiz)}
-                      className="group relative px-6 py-5 flex flex-col rounded-2xl justify-center hover:bg-gradient-to-r hover:from-gray-50 ease-in
-                       hover:to-gray-100/80 cursor-transition-all duration-200"
+                      role="button"
+                      aria-disabled={disabled}
+                      aria-busy={disabled}
+                      onClick={() =>
+                        !disabled && !failed && setSelectedQuiz(quiz)
+                      }
+                      className={`group relative overflow-hidden px-6 py-5 flex flex-col rounded-2xl justify-center transition-all duration-200 cursor-pointer
+                        ${
+                          failed
+                            ? "bg-red-50/50 border-red-200 hover:border-red-300"
+                            : "bg-white hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100/80 border-gray-200/60 hover:border-gray-300/80"
+                        } ${disabled ? "pointer-events-auto" : ""}`}
                     >
-                      <div className="flex justify-between items-center">
-                        <div className="flex-1 flex items-center justify-between">
-                          <h3 className="font-medium text-lg text-gray-900">
-                            {quiz.title}
-                          </h3>
+                      <div className="flex justify-between items-start gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className="font-medium text-lg text-gray-900 truncate">
+                              {quiz.payload?.title ?? "Generating quiz..."}
+                            </h3>
+                            <StatusBadge status={quiz.status} />
+                          </div>
+
                           <div className="flex items-center gap-2">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <Badge
-                                variant={statusVariant}
-                                className="text-xs capitalize"
-                              >
-                                {statusLabel}
-                              </Badge>
-                              <p className="text-sm text-gray-500">
-                                {quiz.questions.length} Questions
-                              </p>
-                            </div>
+                            <Badge
+                              variant={statusVariant}
+                              className="text-xs capitalize"
+                            >
+                              {statusLabel}
+                            </Badge>
+                            <p className="text-sm text-gray-500">
+                              {questionCount} Questions
+                            </p>
                           </div>
                         </div>
                       </div>
 
+                      {failed && (
+                        <div className="mt-3 w-full rounded-xl border border-red-200 bg-red-50 text-red-700 px-3 py-2 text-sm flex items-center gap-2">
+                          <AlertTriangle className="w-4 h-4" />
+                          <span>
+                            {quiz.failureReason ||
+                              "Generation failed. You can regenerate or delete this quiz."}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Progress */}
                       <div className="mt-3">
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-xs font-medium text-gray-500">
@@ -216,6 +275,12 @@ export const QuizList: React.FC<QuizListProps> = ({ workspaceId }) => {
                         </div>
                         <p className="mt-2 text-xs text-gray-500">{infoLine}</p>
                       </div>
+                      {quiz.status === GenerationStatus.PROCESSING && (
+                        <ProgressStrip />
+                      )}
+                      {quiz.status === GenerationStatus.PENDING && (
+                        <QueuedStrip />
+                      )}
                     </Card>
                   );
                 })}
@@ -223,7 +288,8 @@ export const QuizList: React.FC<QuizListProps> = ({ workspaceId }) => {
             )}
           </motion.div>
 
-          <Card className="relative z-0 mx-5 px-4 py-2  flex flex-col justify-between overflow-hidden bg-gradient-to-br from-white to-gray-50/50 border-2 border-dashed border-gray-200 hover:border-gray-300 transition-colors duration-200">
+          {/* Create New CTA unchanged */}
+          <Card className="relative z-0 mx-5 px-4 py-2 flex flex-col justify-between overflow-hidden bg-gradient-to-br from-white to-gray-50/50 border-2 border-dashed border-gray-200 hover:border-gray-300 transition-colors duration-200">
             <div className="relative z-10 flex items-start justify-between mx-2 px-4 py-6">
               <div className="max-w-[65%]">
                 <h2 className="text-2xl font-bold tracking-tight text-gray-900 mb-2">

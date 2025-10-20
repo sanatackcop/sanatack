@@ -265,12 +265,21 @@ export const QuizView: React.FC<QuizViewProps> = ({
   onClose,
   onAttemptUpdate,
 }) => {
+  if (!quiz || !quiz.payload)
+    return (
+      <div className="max-w-4xl mx-auto px-6 py-16">
+        <Card className="p-8 text-center bg-yellow-50 border border-yellow-200 shadow-sm">
+          <p className="text-sm text-yellow-700">No Quiz Payload</p>
+        </Card>
+      </div>
+    );
+
   const [quizData, setQuizData] = useState<Quiz>(quiz);
   const [attempt, setAttempt] = useState<QuizAttemptSummary | null>(
     quiz.latestAttempt ?? null
   );
   const [currentIndex, setCurrentIndex] = useState(() =>
-    deriveNextIndex(quiz.latestAttempt ?? null, quiz.questions ?? [])
+    deriveNextIndex(quiz.latestAttempt ?? null, quiz.payload?.questions ?? [])
   );
   const [showResults, setShowResults] = useState(
     quiz.latestAttempt?.status === "graded"
@@ -319,8 +328,8 @@ export const QuizView: React.FC<QuizViewProps> = ({
         const serverQuiz = data?.quiz as Quiz | undefined;
         applyAttemptToState(att, serverQuiz);
 
-        const questions = (serverQuiz?.questions ??
-          quiz.questions ??
+        const questions = (serverQuiz?.payload?.questions ??
+          quiz.payload?.questions ??
           []) as Question[];
         const nextIndex = deriveNextIndex(att, questions);
         setCurrentIndex(nextIndex);
@@ -347,7 +356,7 @@ export const QuizView: React.FC<QuizViewProps> = ({
     setQuizData(quiz);
     setAttempt(quiz.latestAttempt ?? null);
     setCurrentIndex(
-      deriveNextIndex(quiz.latestAttempt ?? null, quiz.questions ?? [])
+      deriveNextIndex(quiz.latestAttempt ?? null, quiz.payload?.questions ?? [])
     );
     setShowResults(quiz.latestAttempt?.status === "graded");
     setError(null);
@@ -361,7 +370,7 @@ export const QuizView: React.FC<QuizViewProps> = ({
     return await fetchAttempt();
   }, [attempt, fetchAttempt]);
 
-  const questions = quizData.questions ?? [];
+  const questions = quizData.payload?.questions ?? [];
   const totalQuestions = questions.length;
   const currentQuestion: Question | undefined = questions[currentIndex];
   const currentAnswer = currentQuestion
@@ -381,19 +390,14 @@ export const QuizView: React.FC<QuizViewProps> = ({
       return Math.min(100, Math.max(0, raw));
     }
     if (!totalQuestions) return 0;
-    return Math.min(
-      100,
-      Math.max(0, (answeredCount / totalQuestions) * 100)
-    );
+    return Math.min(100, Math.max(0, (answeredCount / totalQuestions) * 100));
   })();
   const statusLabel = normaliseStatusLabel(attempt);
   const scoreEarnedValue =
     attempt && attempt.scoreEarned !== undefined
       ? Number(attempt.scoreEarned)
       : NaN;
-  const scoreEarned = Number.isFinite(scoreEarnedValue)
-    ? scoreEarnedValue
-    : 0;
+  const scoreEarned = Number.isFinite(scoreEarnedValue) ? scoreEarnedValue : 0;
 
   const totalPointsValue =
     attempt && attempt.scoreTotal !== undefined
@@ -599,9 +603,10 @@ export const QuizView: React.FC<QuizViewProps> = ({
         )
       : 0;
   const passingScoreValue =
-    quizData.passing_score === undefined || quizData.passing_score === null
+    quizData.payload?.passing_score === undefined ||
+    quizData.payload?.passing_score === null
       ? null
-      : Number(quizData.passing_score);
+      : Number(quizData.payload?.passing_score);
   const passingScore =
     passingScoreValue === null || Number.isNaN(passingScoreValue)
       ? null

@@ -381,7 +381,6 @@ const BubbleToolbar: React.FC<{
   );
 };
 
-// ---------- ChatMessages ----------
 export default function ChatMessages({
   messages,
   isLoading = false,
