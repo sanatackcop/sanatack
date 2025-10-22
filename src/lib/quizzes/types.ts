@@ -43,7 +43,6 @@ export interface QuizAttemptSummary {
   status: "in_progress" | "submitted" | "graded";
   answeredCount: number;
   totalCount: number;
-  progressPct: number;
   lastQuestionId?: string | null;
   lastQuestionPos: number;
   answers: AnswerEntry[];

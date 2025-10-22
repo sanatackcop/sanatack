@@ -1,70 +1,69 @@
-import React, { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { Progress } from "@/components/ui/progress";
 import { getWorkSpaceContent } from "@/utils/_apis/learnPlayground-api";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Settings2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  updateFlashcardData,
-  updateFlashcardDifficulty,
-  LoadingSkeleton,
-  CARD_VARIANTS,
-} from "./consts";
+import { LoadingSkeleton, CARD_VARIANTS } from "./consts";
 import FlashcardModal from "./FlashcardModal";
 import { FlashcardsList } from "./FlashcardsList";
 import { StudyCard, StudyNavigation } from "./StudyCard";
 import { FlashcardDeck, Flashcard } from "./types";
 import { FlashCardHome } from "./FlashCardsHome";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
+import flashcards from "@/assets/flashcards.svg";
 
-const trackCardFlip = async (cardId: string, setId: string) => {
+const trackCardFlip = async (/*cardId: string, setId: string*/) => {
   try {
-    const response = await fetch(`/api/flashcards/${cardId}/flip`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        setId,
-        flippedAt: new Date().toISOString(),
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to track flip");
-    }
-
-    return await response.json();
+    //! TODO
+    // const response = await fetch(`/api/flashcards/${cardId}/flip`, {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    //   body: JSON.stringify({
+    //     setId,
+    //     flippedAt: new Date().toISOString(),
+    //   }),
+    // });
+    // if (!response.ok) {
+    //   throw new Error("Failed to track flip");
+    // }
+    // return await response.json();
   } catch (error) {
     console.error("Error tracking flip:", error);
     throw error;
   }
 };
 
-const resetStudySession = async (setId: string) => {
-  try {
-    const response = await fetch(
-      `/api/flashcards/sets/${setId}/reset-session`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          resetAt: new Date().toISOString(),
-        }),
-      }
-    );
+//! TODO
+// const resetStudySession = async (setId: string) => {
+//   try {
+//     const response = await fetch(
+//       `/api/flashcards/sets/${setId}/reset-session`,
+//       {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify({
+//           resetAt: new Date().toISOString(),
+//         }),
+//       }
+//     );
 
-    if (!response.ok) {
-      throw new Error("Failed to reset session");
-    }
+//     if (!response.ok) {
+//       throw new Error("Failed to reset session");
+//     }
 
-    return await response.json();
-  } catch (error) {
-    console.error("Error resetting session:", error);
-    throw error;
-  }
-};
+//     return await response.json();
+//   } catch (error) {
+//     console.error("Error resetting session:", error);
+//     throw error;
+//   }
+// };
 
 const useFlashcards = (workspaceId: string) => {
   const [flashcardSets, setFlashcardSets] = useState<FlashcardDeck[]>([]);
@@ -106,6 +105,7 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
   const [flipped, setFlipped] = useState(false);
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
   const [flipAttempts, setFlipAttempts] = useState<Record<string, number>>({});
+  const { t } = useTranslation();
 
   const handleSetSelect = useCallback((set: FlashcardDeck) => {
     setActiveSet(set);
@@ -125,7 +125,8 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
 
     if (activeSet?.id) {
       try {
-        await resetStudySession(activeSet.id);
+        //! TODO
+        // await resetStudySession(activeSet.id);
       } catch (error) {
         console.error("Failed to reset study session:", error);
       }
@@ -151,24 +152,25 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
 
       const flashcardId = activeSet.flashcards[index]?.id;
       if (flashcardId) {
-        await updateFlashcardData(flashcardId, activeSet.id, updates);
+        // await updateFlashcardData(flashcardId, activeSet.id, updates);
       }
     },
     [activeSet]
   );
 
   const handleDifficultySelect = useCallback(
-    async (difficulty: number, difficultyLabel: string) => {
+    async (difficulty: number /*difficultyLabel: string*/) => {
       if (!activeSet) return;
 
       const currentCard = activeSet.flashcards[studyIndex];
 
       if (currentCard?.id) {
-        await updateFlashcardDifficulty(
-          currentCard.id,
-          activeSet.id,
-          difficultyLabel
-        );
+        //! TODO
+        // await updateFlashcardDifficulty(
+        //   currentCard.id,
+        //   activeSet.id,
+        //   difficultyLabel
+        // );
       }
 
       const updatedSet = { ...activeSet };
@@ -224,7 +226,7 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
     }
 
     try {
-      await trackCardFlip(cardId, activeSet.id);
+      await trackCardFlip(/* cardId, activeSet.id */);
 
       setFlipped(true);
       setFlippedCards((prev) => new Set(prev).add(cardId));
@@ -245,6 +247,14 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
     setModalOpen(false);
     if (created) refetch();
   }
+
+  const anyActive = useMemo(
+    () =>
+      flashcardSets.some(
+        (x) => x.status === "pending" || x.status === "processing"
+      ),
+    [flashcardSets]
+  );
 
   if (loading) return <LoadingSkeleton />;
   if (error) return <div className="text-center text-destructive">{error}</div>;
@@ -329,8 +339,43 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
               <FlashcardsList
                 sets={flashcardSets}
                 onSelectSet={handleSetSelect}
-                onCreateNew={handleCreatingNewFlashcard}
               />
+              <Card className="relative z-0 mx-5 px-4 py-2 h-[25rem] flex flex-col justify-between overflow-hidden bg-gradient-to-br from-white to-gray-50/50 border-2 border-dashed border-gray-200 hover:border-gray-300 transition-colors duration-200">
+                <div className="relative z-10 flex items-start justify-between mx-2 px-4 py-6">
+                  <div className="max-w-[65%]">
+                    <h2 className="text-2xl font-bold tracking-tight text-gray-900 mb-2">
+                      {t("common.createFlashCard", "Create Flashcards")}
+                    </h2>
+                    <p className="text-gray-600 text-sm leading-relaxed">
+                      {t(
+                        "common.createFlashCardDescription",
+                        "Create a flashcard set with custom settings and personalization"
+                      )}
+                    </p>
+                  </div>
+                  <div className="flex gap-2 shrink-0">
+                    <Button
+                      disabled={anyActive}
+                      className="rounded-2xl px-6 py-3 font-medium shadow-sm transition-all duration-200"
+                      onClick={handleCreatingNewFlashcard}
+                    >
+                      <Settings2 className="mr-2 h-4 w-4" />
+                      {t("common.generate", "Generate")}
+                    </Button>
+                  </div>
+                </div>
+
+                <div
+                  className="pointer-events-none select-none absolute -left-20 bottom-0 z-0 opacity-90"
+                  aria-hidden
+                >
+                  <img
+                    src={flashcards}
+                    alt="Flashcards"
+                    className="block h-auto w-[22rem] md:w-[26rem] lg:w-[30rem] translate-x-[20px] translate-y-1/4"
+                  />
+                </div>
+              </Card>
             </ScrollArea>
           </div>
         )}
@@ -340,6 +385,7 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
         open={modalOpen}
         onClose={handleClosingFlashcardModal}
         workspaceId={workspaceId}
+        anyActive={anyActive}
       />
     </div>
   );

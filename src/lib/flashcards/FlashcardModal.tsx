@@ -3,19 +3,25 @@ import { useTranslation } from "react-i18next";
 import { createFlashcard } from "@/utils/_apis/learnPlayground-api";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/pages/dashboard/utils";
+import { useState } from "react";
+import { RefreshCcw, Settings2 } from "lucide-react";
 
 export default function FlashcardModal({
   open,
   onClose,
   workspaceId,
+  anyActive,
 }: {
   open: boolean;
   onClose: (created?: boolean) => void;
   workspaceId: string;
+  anyActive: boolean;
 }) {
   const { t } = useTranslation();
+  const [generating, setGenerating] = useState(false);
 
   const handleFlashcardCreation = async () => {
+    setGenerating(true);
     try {
       await createFlashcard(workspaceId);
       onClose(true);
@@ -30,6 +36,8 @@ export default function FlashcardModal({
       });
       console.error("Failed Creating Flashcard Deck: ", err);
       onClose();
+    } finally {
+      setGenerating(false);
     }
   };
 
@@ -63,10 +71,19 @@ export default function FlashcardModal({
             {t("cancel", "Cancel")}
           </Button>
           <Button
+            disabled={generating || anyActive}
             onClick={() => handleFlashcardCreation()}
             className="bg-black text-white hover:bg-gray-700"
           >
-            {t("createSet", "Create Set")}
+            {generating ? (
+              <>
+                <RefreshCcw className="mr-2 h-4 w-4 animate-spin" /> Generating…
+              </>
+            ) : (
+              <>
+                <Settings2 className="mr-2 h-4 w-4" /> Generate
+              </>
+            )}
           </Button>
         </div>
       </div>

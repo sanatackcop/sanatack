@@ -60,21 +60,14 @@ const LearnPlayground: React.FC = () => {
   const [workspaceLoading, setWorkspaceLoading] = useState(true);
   const [contentLoading, setContentLoading] = useState(false);
   const [workspace, setWorkspace] = useState<Workspace | undefined>();
-
   const [fullScreen, setFullScreen] = useState(false);
-
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const tabsListRef = useRef<HTMLDivElement>(null);
-
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [, setCanScrollRight] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
-
-  const [isResizing, setIsResizing] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
-
   const isRTL = i18n.language === "ar";
 
   const extractVideoId = useCallback((url: string): string | null => {
@@ -384,227 +377,415 @@ const LearnPlayground: React.FC = () => {
         </div>
       </div>
 
-      <ResizablePanelGroup direction="horizontal" className="flex-1 min-h-0">
-        {!fullScreen && (
+      <ResizablePanelGroup
+        key={fullScreen ? "pg-full" : "pg-split"}
+        direction="horizontal"
+        dir="ltr"
+        className="flex-1 min-h-0"
+        autoSaveId={fullScreen ? "fs-layout" : "split-layout"}
+      >
+        {fullScreen ? (
           <ResizablePanel
-            defaultSize={50}
-            minSize={30}
+            defaultSize={100}
+            minSize={0}
             className="mt-2 min-h-0 flex flex-col"
           >
             <motion.div
               initial={{ x: 20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ type: "spring", stiffness: 260, damping: 30 }}
-              className="h-full p-4 pt-0 flex flex-col min-h-0"
+              className="h-full flex flex-col min-h-0"
             >
-              {renderContent()}
-            </motion.div>
-          </ResizablePanel>
-        )}
-
-        <ResizableHandle
-          onPointerDown={() => setIsResizing(true)}
-          onPointerUp={() => setIsResizing(false)}
-          onPointerCancel={() => setIsResizing(false)}
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-          style={{
-            opacity: isResizing || isHovered ? 1 : 0,
-            transition: "opacity 0.3s ease",
-            cursor: "col-resize",
-            pointerEvents: "auto",
-          }}
-        />
-
-        <ResizablePanel
-          defaultSize={50}
-          minSize={30}
-          className="mt-2 min-h-0 flex flex-col"
-        >
-          <motion.div
-            initial={{ x: 20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ type: "spring", stiffness: 260, damping: 30 }}
-            className="h-full flex flex-col min-h-0"
-          >
-            {workspaceLoading ? (
-              <TabsSkeleton />
-            ) : (
-              <Tabs
-                value={state.tab}
-                onValueChange={(v) =>
-                  dispatch({ type: "SET_TAB", tab: v as TabKey })
-                }
-                className="h-full flex flex-col min-h-0"
-              >
-                {/* Tabs Header */}
-                <div className="relative p-2 pt-0 flex-shrink-0">
-                  {canScrollLeft && (
-                    <div
-                      className={`absolute ${
-                        isRTL ? "right-2 sm:right-4" : "left-2 sm:left-4"
-                      } top-2 sm:top-4 bottom-2 sm:bottom-4 w-4 sm:w-8 z-20 pointer-events-none`}
-                      style={{
-                        background: `linear-gradient(to ${
-                          isRTL ? "left" : "right"
-                        }, rgba(255,255,255,0.8), transparent)`,
-                        backdropFilter: "blur(1px)",
-                      }}
-                    />
-                  )}
-
-                  <div
-                    ref={scrollContainerRef}
-                    className="overflow-x-auto scrollbar-hide flex w-full items-center gap-2 justify-center relative touch-pan-x"
-                    onMouseDown={handleMouseDown}
-                    onMouseMove={handleMouseMove}
-                    onMouseUp={handleDragEnd}
-                    onMouseLeave={handleDragEnd}
-                    onTouchStart={handleTouchStart}
-                    onTouchMove={handleTouchMove}
-                    onTouchEnd={handleDragEnd}
-                    style={{
-                      cursor: isDragging ? "grabbing" : "grab",
-                      WebkitOverflowScrolling: "touch",
-                    }}
-                  >
-                    <TabsList
-                      ref={tabsListRef}
-                      className="relative !space-x-0 !p-1 flex items-center gap-4 h-11 min-w-max rounded-2xl border w-fit"
-                      style={{ direction: isRTL ? "rtl" : "ltr" }}
-                    >
-                      {TABS_CONFIG.map((tab) => {
-                        const IconComponent = tab.icon;
-                        const isActive = state.tab === tab.id;
-                        return (
-                          <TabsTrigger
-                            key={tab.id}
-                            value={tab.id}
-                            className={`px-2 sm:px-3 py-1.5 sm:py-2 relative z-20 flex-shrink-0 transition-all duration-150 
-                            hover:bg-transparent data-[state=active]:bg-gray-50 rounded-xl h-7 sm:h-9 flex flex-row items-center 
-                            justify-center select-none cursor-pointer gap-1.5`}
-                            style={{
-                              minWidth: "fit-content",
-                              padding: "0 8px",
-                              margin: "0 1px",
-                            }}
-                          >
-                            {isActive ? (
-                              <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full flex-shrink-0" />
-                            ) : (
-                              <IconComponent className="size-4 flex-shrink-0 text-gray-600" />
-                            )}
-                            <span
-                              className={`text-xs font-normal sm:text-sm transition-colors duration-150 whitespace-nowrap ${
-                                isActive ? "text-gray-900" : "text-gray-700"
-                              }`}
-                            >
-                              {t(tab.labelKey as any)}
-                            </span>
-                          </TabsTrigger>
-                        );
-                      })}
-                    </TabsList>
-
-                    <Tooltip title="Full Screen" className="cursor-pointer">
-                      <Scan
-                        className="opacity-50 hover:opacity-100 transition-all ease-linear duration-200 size-5"
-                        onClick={() => {
-                          setFullScreen(!fullScreen);
+              {workspaceLoading ? (
+                <TabsSkeleton />
+              ) : (
+                <Tabs
+                  value={state.tab}
+                  onValueChange={(v) =>
+                    dispatch({ type: "SET_TAB", tab: v as TabKey })
+                  }
+                  className="h-full flex flex-col min-h-0"
+                >
+                  {/* Tabs Header */}
+                  <div className="relative p-2 pt-0 flex-shrink-0">
+                    {canScrollLeft && (
+                      <div
+                        className={`absolute ${
+                          isRTL ? "right-2 sm:right-4" : "left-2 sm:left-4"
+                        } top-2 sm:top-4 bottom-2 sm:bottom-4 w-4 sm:w-8 z-20 pointer-events-none`}
+                        style={{
+                          background: `linear-gradient(to ${
+                            isRTL ? "left" : "right"
+                          }, rgba(255,255,255,0.8), transparent)`,
+                          backdropFilter: "blur(1px)",
                         }}
                       />
-                    </Tooltip>
+                    )}
+
+                    <div
+                      ref={scrollContainerRef}
+                      className="overflow-x-auto scrollbar-hide flex w-full items-center gap-2 justify-center relative touch-pan-x"
+                      onMouseDown={handleMouseDown}
+                      onMouseMove={handleMouseMove}
+                      onMouseUp={handleDragEnd}
+                      onMouseLeave={handleDragEnd}
+                      onTouchStart={handleTouchStart}
+                      onTouchMove={handleTouchMove}
+                      onTouchEnd={handleDragEnd}
+                      style={{
+                        cursor: isDragging ? "grabbing" : "grab",
+                        WebkitOverflowScrolling: "touch",
+                      }}
+                    >
+                      <TabsList
+                        ref={tabsListRef}
+                        className="relative !space-x-0 !p-1 flex items-center gap-4 h-11 min-w-max rounded-2xl border w-fit"
+                        style={{ direction: isRTL ? "rtl" : "ltr" }}
+                      >
+                        {TABS_CONFIG.map((tab) => {
+                          const IconComponent = tab.icon;
+                          const isActive = state.tab === tab.id;
+                          return (
+                            <TabsTrigger
+                              key={tab.id}
+                              value={tab.id}
+                              className={`px-2 sm:px-3 py-1.5 sm:py-2 relative z-20 flex-shrink-0 transition-all duration-150 
+                        hover:bg-transparent data-[state=active]:bg-gray-50 rounded-xl h-7 sm:h-9 flex flex-row items-center 
+                        justify-center select-none cursor-pointer gap-1.5`}
+                              style={{
+                                minWidth: "fit-content",
+                                padding: "0 8px",
+                                margin: "0 1px",
+                              }}
+                            >
+                              {isActive ? (
+                                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full flex-shrink-0" />
+                              ) : (
+                                <IconComponent className="size-4 flex-shrink-0 text-gray-600" />
+                              )}
+                              <span
+                                className={`text-xs font-normal sm:text-sm transition-colors duration-150 whitespace-nowrap ${
+                                  isActive ? "text-gray-900" : "text-gray-700"
+                                }`}
+                              >
+                                {t(tab.labelKey as any)}
+                              </span>
+                            </TabsTrigger>
+                          );
+                        })}
+                      </TabsList>
+
+                      <Tooltip title="Full Screen" className="cursor-pointer">
+                        <Scan
+                          className="opacity-50 hover:opacity-100 transition-all ease-linear duration-200 size-5"
+                          onClick={() => {
+                            setFullScreen(!fullScreen);
+                          }}
+                        />
+                      </Tooltip>
+                    </div>
                   </div>
-                </div>
 
-                <div className="flex-1 overflow-hidden flex flex-col min-h-0">
-                  {state.tab === "chat" && (
-                    <TabsContent
-                      value="chat"
-                      className="m-0 flex-1 flex flex-col relative items-end justify-end min-h-0"
-                      style={{ maxHeight: "100%" }}
-                    >
-                      {state.isLoading ? (
-                        <div className="w-full flex-1">
-                          <ChatSkeleton />
-                        </div>
-                      ) : (
-                        <>
-                          <div className="w-full  flex-1 flex flex-col justify-end items-center overflow-y-auto min-h-0">
-                            <ChatMessages
-                              messages={state.chatMessages || []}
-                              isLoading={state.chatLoading}
-                              streamingMessage={state.streamingMessage}
-                              onSendMessage={handleSendMessage}
-                            />
+                  <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+                    {state.tab === "chat" && (
+                      <TabsContent
+                        value="chat"
+                        className="m-0 flex-1 flex flex-col relative items-end justify-end min-h-0"
+                        style={{ maxHeight: "100%" }}
+                      >
+                        {state.isLoading ? (
+                          <div className="w-full flex-1">
+                            <ChatSkeleton />
                           </div>
-                          <ChatInput
-                            className="flex-shrink-0 p-2 px-20 pb-2"
-                            value={state.prompt}
-                            expandSection={false}
-                            onChange={(value: string) =>
-                              dispatch({ type: "SET_PROMPT", prompt: value })
-                            }
-                            onSubmit={handleSendMessage}
-                            placeholder={t(
-                              "chat.placeholder",
-                              `Ask anything about ${getDisplayTitle()}...`
-                            )}
-                          />
-                        </>
+                        ) : (
+                          <>
+                            <div className="w-full flex-1 flex flex-col justify-end items-center overflow-y-auto min-h-0">
+                              <ChatMessages
+                                messages={state.chatMessages || []}
+                                isLoading={state.chatLoading}
+                                streamingMessage={state.streamingMessage}
+                                onSendMessage={handleSendMessage}
+                              />
+                            </div>
+                            <ChatInput
+                              className="flex-shrink-0 p-2 px-20 pb-2"
+                              value={state.prompt}
+                              expandSection={false}
+                              onChange={(value: string) =>
+                                dispatch({ type: "SET_PROMPT", prompt: value })
+                              }
+                              onSubmit={handleSendMessage}
+                              placeholder={t(
+                                "chat.placeholder",
+                                `Ask anything about ${getDisplayTitle()}...`
+                              )}
+                            />
+                          </>
+                        )}
+                      </TabsContent>
+                    )}
+
+                    {state.tab === "flashcards" && workspace && (
+                      <TabsContent
+                        value="flashcards"
+                        className="m-0 h-full flex flex-col"
+                        style={{ maxHeight: "100%" }}
+                      >
+                        <FlashCards workspaceId={workspace.id} />
+                      </TabsContent>
+                    )}
+
+                    {state.tab === "quizzes" && (
+                      <TabsContent
+                        value="quizzes"
+                        className="m-0 h-full p-4 text-gray-500 flex flex-col"
+                      >
+                        <QuizList
+                          workspaceId={(workspace && workspace.id) || ""}
+                        />
+                      </TabsContent>
+                    )}
+
+                    {state.tab === "summary" && (
+                      <TabsContent
+                        value="summary"
+                        className="m-0 h-full p-4 text-gray-500 flex flex-col"
+                        style={{ maxHeight: "100%" }}
+                      >
+                        <SummaryList
+                          worksapceId={(workspace && workspace.id) || ""}
+                        />
+                      </TabsContent>
+                    )}
+
+                    {state.tab === "deepExplanation" && (
+                      <TabsContent
+                        value="deepExplanation"
+                        className="m-0 h-full p-4 text-gray-500 flex flex-col"
+                        style={{ maxHeight: "100%" }}
+                      >
+                        <MindMap
+                          workspaceId={(workspace && workspace.id) || ""}
+                        />
+                      </TabsContent>
+                    )}
+                  </div>
+                </Tabs>
+              )}
+            </motion.div>
+          </ResizablePanel>
+        ) : (
+          <>
+            <ResizablePanel
+              defaultSize={50}
+              minSize={30}
+              className="mt-2 min-h-0 flex flex-col"
+            >
+              <motion.div
+                initial={{ x: 20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ type: "spring", stiffness: 260, damping: 30 }}
+                className="h-full p-4 pt-0 flex flex-col min-h-0"
+              >
+                {renderContent()}
+              </motion.div>
+            </ResizablePanel>
+
+            <ResizableHandle />
+
+            <ResizablePanel
+              defaultSize={50}
+              minSize={30}
+              className="mt-2 min-h-0 flex flex-col"
+            >
+              <motion.div
+                initial={{ x: 20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ type: "spring", stiffness: 260, damping: 30 }}
+                className="h-full flex flex-col min-h-0"
+              >
+                {workspaceLoading ? (
+                  <TabsSkeleton />
+                ) : (
+                  <Tabs
+                    value={state.tab}
+                    onValueChange={(v) =>
+                      dispatch({ type: "SET_TAB", tab: v as TabKey })
+                    }
+                    className="h-full flex flex-col min-h-0"
+                  >
+                    <div className="relative p-2 pt-0 flex-shrink-0">
+                      {canScrollLeft && (
+                        <div
+                          className={`absolute ${
+                            isRTL ? "right-2 sm:right-4" : "left-2 sm:left-4"
+                          } top-2 sm:top-4 bottom-2 sm:bottom-4 w-4 sm:w-8 z-20 pointer-events-none`}
+                          style={{
+                            background: `linear-gradient(to ${
+                              isRTL ? "left" : "right"
+                            }, rgba(255,255,255,0.8), transparent)`,
+                            backdropFilter: "blur(1px)",
+                          }}
+                        />
                       )}
-                    </TabsContent>
-                  )}
 
-                  {state.tab === "flashcards" && workspace && (
-                    <TabsContent
-                      value="flashcards"
-                      className="m-0 h-full flex flex-col"
-                      style={{ maxHeight: "100%" }}
-                    >
-                      <FlashCards workspaceId={workspace.id} />
-                    </TabsContent>
-                  )}
+                      <div
+                        ref={scrollContainerRef}
+                        className="overflow-x-auto scrollbar-hide flex w-full items-center gap-2 justify-center relative touch-pan-x"
+                        onMouseDown={handleMouseDown}
+                        onMouseMove={handleMouseMove}
+                        onMouseUp={handleDragEnd}
+                        onMouseLeave={handleDragEnd}
+                        onTouchStart={handleTouchStart}
+                        onTouchMove={handleTouchMove}
+                        onTouchEnd={handleDragEnd}
+                        style={{
+                          cursor: isDragging ? "grabbing" : "grab",
+                          WebkitOverflowScrolling: "touch",
+                        }}
+                      >
+                        <TabsList
+                          ref={tabsListRef}
+                          className="relative !space-x-0 !p-1 flex items-center gap-4 h-11 min-w-max rounded-2xl border w-fit"
+                          style={{ direction: isRTL ? "rtl" : "ltr" }}
+                        >
+                          {TABS_CONFIG.map((tab) => {
+                            const IconComponent = tab.icon;
+                            const isActive = state.tab === tab.id;
+                            return (
+                              <TabsTrigger
+                                key={tab.id}
+                                value={tab.id}
+                                className={`px-2 sm:px-3 py-1.5 sm:py-2 relative z-20 flex-shrink-0 transition-all duration-150 
+                          hover:bg-transparent data-[state=active]:bg-gray-50 rounded-xl h-7 sm:h-9 flex flex-row items-center 
+                          justify-center select-none cursor-pointer gap-1.5`}
+                                style={{
+                                  minWidth: "fit-content",
+                                  padding: "0 8px",
+                                  margin: "0 1px",
+                                }}
+                              >
+                                {isActive ? (
+                                  <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full flex-shrink-0" />
+                                ) : (
+                                  <IconComponent className="size-4 flex-shrink-0 text-gray-600" />
+                                )}
+                                <span
+                                  className={`text-xs font-normal sm:text-sm transition-colors duration-150 whitespace-nowrap ${
+                                    isActive ? "text-gray-900" : "text-gray-700"
+                                  }`}
+                                >
+                                  {t(tab.labelKey as any)}
+                                </span>
+                              </TabsTrigger>
+                            );
+                          })}
+                        </TabsList>
 
-                  {state.tab === "quizzes" && (
-                    <TabsContent
-                      value="quizzes"
-                      className="m-0 h-full p-4 text-gray-500 flex flex-col"
-                    >
-                      <QuizList
-                        workspaceId={(workspace && workspace.id) || ""}
-                      />
-                    </TabsContent>
-                  )}
+                        <Tooltip title="Full Screen" className="cursor-pointer">
+                          <Scan
+                            className="opacity-50 hover:opacity-100 transition-all ease-linear duration-200 size-5"
+                            onClick={() => {
+                              setFullScreen(!fullScreen);
+                            }}
+                          />
+                        </Tooltip>
+                      </div>
+                    </div>
 
-                  {state.tab === "summary" && (
-                    <TabsContent
-                      value="summary"
-                      className="m-0 h-full p-4 text-gray-500 flex flex-col"
-                      style={{ maxHeight: "100%" }}
-                    >
-                      <SummaryList
-                        worksapceId={(workspace && workspace.id) || ""}
-                      />
-                    </TabsContent>
-                  )}
+                    <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+                      {state.tab === "chat" && (
+                        <TabsContent
+                          value="chat"
+                          className="m-0 flex-1 flex flex-col relative items-end justify-end min-h-0"
+                          style={{ maxHeight: "100%" }}
+                        >
+                          {state.isLoading ? (
+                            <div className="w-full flex-1">
+                              <ChatSkeleton />
+                            </div>
+                          ) : (
+                            <>
+                              <div className="w-full  flex-1 flex flex-col justify-end items-center overflow-y-auto min-h-0">
+                                <ChatMessages
+                                  messages={state.chatMessages || []}
+                                  isLoading={state.chatLoading}
+                                  streamingMessage={state.streamingMessage}
+                                  onSendMessage={handleSendMessage}
+                                />
+                              </div>
+                              <ChatInput
+                                className="flex-shrink-0 p-2 px-20 pb-2"
+                                value={state.prompt}
+                                expandSection={false}
+                                onChange={(value: string) =>
+                                  dispatch({
+                                    type: "SET_PROMPT",
+                                    prompt: value,
+                                  })
+                                }
+                                onSubmit={handleSendMessage}
+                                placeholder={t(
+                                  "chat.placeholder",
+                                  `Ask anything about ${getDisplayTitle()}...`
+                                )}
+                              />
+                            </>
+                          )}
+                        </TabsContent>
+                      )}
 
-                  {state.tab === "deepExplanation        " && (
-                    <TabsContent
-                      value="deepExplanation        "
-                      className="m-0 h-full p-4 text-gray-500 flex flex-col"
-                      style={{ maxHeight: "100%" }}
-                    >
-                      <MindMap
-                        workspaceId={(workspace && workspace.id) || ""}
-                      />
-                    </TabsContent>
-                  )}
-                </div>
-              </Tabs>
-            )}
-          </motion.div>
-        </ResizablePanel>
+                      {state.tab === "flashcards" && workspace && (
+                        <TabsContent
+                          value="flashcards"
+                          className="m-0 h-full flex flex-col"
+                          style={{ maxHeight: "100%" }}
+                        >
+                          <FlashCards workspaceId={workspace.id} />
+                        </TabsContent>
+                      )}
+
+                      {state.tab === "quizzes" && (
+                        <TabsContent
+                          value="quizzes"
+                          className="m-0 h-full p-4 text-gray-500 flex flex-col"
+                        >
+                          <QuizList
+                            workspaceId={(workspace && workspace.id) || ""}
+                          />
+                        </TabsContent>
+                      )}
+
+                      {state.tab === "summary" && (
+                        <TabsContent
+                          value="summary"
+                          className="m-0 h-full p-4 text-gray-500 flex flex-col"
+                          style={{ maxHeight: "100%" }}
+                        >
+                          <SummaryList
+                            worksapceId={(workspace && workspace.id) || ""}
+                          />
+                        </TabsContent>
+                      )}
+
+                      {state.tab === "deepExplanation" && (
+                        <TabsContent
+                          value="deepExplanation"
+                          className="m-0 h-full p-4 text-gray-500 flex flex-col"
+                          style={{ maxHeight: "100%" }}
+                        >
+                          <MindMap
+                            workspaceId={(workspace && workspace.id) || ""}
+                          />
+                        </TabsContent>
+                      )}
+                    </div>
+                  </Tabs>
+                )}
+              </motion.div>
+            </ResizablePanel>
+          </>
+        )}
       </ResizablePanelGroup>
     </section>
   );

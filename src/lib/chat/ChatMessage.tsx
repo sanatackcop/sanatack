@@ -3,8 +3,6 @@ import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import {
   MessageCircle,
-  Bot,
-  User,
   Clipboard,
   ClipboardCheck,
   Link as LinkIcon,
@@ -49,7 +47,6 @@ const formatClock = (d?: Date) => {
   }
 };
 
-// ---------- Code block with header + copy ----------
 const CodeBlock: React.FC<{
   className?: string;
   children?: React.ReactNode;
@@ -154,23 +151,6 @@ const MessageBubble: React.FC<{
       className={`flex ${containerJustify} mb-5`}
     >
       <div className={`flex max-w-[85%] ${innerDirection} items-start gap-3`}>
-        {/* avatar */}
-        <div className="shrink-0 select-none">
-          <div
-            className={`w-8 h-8 rounded-full grid place-items-center border ${
-              isUser
-                ? "bg-blue-600 text-white border-blue-700"
-                : "bg-white dark:bg-neutral-900 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-white/10"
-            }`}
-          >
-            {isUser ? (
-              <User className="w-4 h-4" />
-            ) : (
-              <Bot className="w-4 h-4" />
-            )}
-          </div>
-        </div>
-
         {/* bubble */}
         <div
           className={`group relative overflow-hidden rounded-2xl px-4 py-3 transition-colors duration-200 border shadow-sm ${
@@ -349,35 +329,22 @@ const BubbleToolbar: React.FC<{
   message: ChatMessage;
   content: string;
   isUser: boolean;
-}> = ({ content, isUser }) => {
-  const [copied, setCopied] = useState(false);
-  const onCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(content);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1200);
-    } catch {}
-  };
+}> = ({ /*content, */ isUser }) => {
+  // const [copied, setCopied] = useState(false);
+  // const onCopy = async () => {
+  //   try {
+  //     await navigator.clipboard.writeText(content);
+  //     setCopied(true);
+  //     setTimeout(() => setCopied(false), 1200);
+  //   } catch {}
+  // };
 
   return (
     <div
       className={`absolute ${
         isUser ? "top-1.5 left-2" : "top-1.5 right-2"
       } flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity`}
-    >
-      <button
-        onClick={onCopy}
-        className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] border border-gray-200 dark:border-white/10 bg-white/70 dark:bg-neutral-800/60 hover:bg-white dark:hover:bg-neutral-700/70"
-        title="Copy message"
-      >
-        {copied ? (
-          <ClipboardCheck className="w-3 h-3" />
-        ) : (
-          <Clipboard className="w-3 h-3" />
-        )}
-        <span>{copied ? "Copied" : "Copy"}</span>
-      </button>
-    </div>
+    ></div>
   );
 };
 

@@ -2,11 +2,9 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useTranslation } from "react-i18next";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Settings2, Loader2, AlertTriangle } from "lucide-react";
+import { Trash2, Loader2, AlertTriangle } from "lucide-react";
 import { motion } from "framer-motion";
-import flashcards from "@/assets/flashcards.svg";
 import {
   Dialog,
   DialogContent,
@@ -29,9 +27,8 @@ import {
 export const FlashcardsList: React.FC<{
   sets: FlashcardDeck[];
   onSelectSet: (set: FlashcardDeck) => void;
-  onCreateNew: () => void;
   onDeleteSet?: (setId: string) => void; // parent removes set from its state
-}> = ({ sets, onSelectSet, onCreateNew, onDeleteSet }) => {
+}> = ({ sets, onSelectSet, onDeleteSet }) => {
   const { t } = useTranslation();
 
   const [deleteModal, setDeleteModal] = useState<DeleteModalState>({
@@ -89,16 +86,7 @@ export const FlashcardsList: React.FC<{
           </h3>
 
           {isEmpty ? (
-            <div className="mx-5 space-y-3">
-              {[...Array(3)].map((_, i) => (
-                <Card key={i} className="px-4 py-2 h-40 animate-pulse">
-                  <Skeleton className="h-6 w-40 mb-3" />
-                  <Skeleton className="h-4 w-60 mb-1" />
-                  <Skeleton className="h-3 w-48 mb-1" />
-                  <Skeleton className="h-3 w-32" />
-                </Card>
-              ))}
-            </div>
+            <></>
           ) : (
             <div className="space-y-3">
               {sets.map((set) => {
@@ -209,43 +197,6 @@ export const FlashcardsList: React.FC<{
             </div>
           )}
         </div>
-
-        {/* Create New */}
-        <Card className="relative z-0 mx-5 px-4 py-2 h-[25rem] flex flex-col justify-between overflow-hidden bg-gradient-to-br from-white to-gray-50/50 border-2 border-dashed border-gray-200 hover:border-gray-300 transition-colors duration-200">
-          <div className="relative z-10 flex items-start justify-between mx-2 px-4 py-6">
-            <div className="max-w-[65%]">
-              <h2 className="text-2xl font-bold tracking-tight text-gray-900 mb-2">
-                {t("common.createFlashCard", "Create Flashcards")}
-              </h2>
-              <p className="text-gray-600 text-sm leading-relaxed">
-                {t(
-                  "common.createFlashCardDescription",
-                  "Create a flashcard set with custom settings and personalization"
-                )}
-              </p>
-            </div>
-            <div className="flex gap-2 shrink-0">
-              <Button
-                className="rounded-2xl px-6 py-3 font-medium shadow-sm transition-all duration-200"
-                onClick={onCreateNew}
-              >
-                <Settings2 className="mr-2 h-4 w-4" />
-                {t("common.generate", "Generate")}
-              </Button>
-            </div>
-          </div>
-
-          <div
-            className="pointer-events-none select-none absolute -left-20 bottom-0 z-0 opacity-90"
-            aria-hidden
-          >
-            <img
-              src={flashcards}
-              alt="Flashcards"
-              className="block h-auto w-[22rem] md:w-[26rem] lg:w-[30rem] translate-x-[20px] translate-y-1/4"
-            />
-          </div>
-        </Card>
       </motion.div>
 
       {/* Delete confirm */}

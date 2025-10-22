@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import ReactFlow, {
@@ -9,8 +9,6 @@ import ReactFlow, {
   Position,
   ReactFlowInstance,
   Background,
-  useNodesState,
-  useEdgesState,
   Controls,
 } from "reactflow";
 import "reactflow/dist/style.css";
@@ -188,15 +186,7 @@ interface FlowChartProps {
 }
 
 function FlowChart({ initialNodes, initialEdges }: FlowChartProps) {
-  const [nodes, , onNodesChange] = useNodesState(initialNodes);
-  const [edges, , onEdgesChange] = useEdgesState(initialEdges);
   const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>(null);
-
-  useEffect(() => {
-    console.log("Nodes:", nodes);
-    console.log("Edges:", edges);
-  }, [nodes, edges]);
-
   const onInit = useCallback((instance: ReactFlowInstance) => {
     setRfInstance(instance);
     setTimeout(() => {
@@ -208,20 +198,22 @@ function FlowChart({ initialNodes, initialEdges }: FlowChartProps) {
     if (rfInstance) {
       rfInstance.fitView({ padding: 0.2, duration: 200 });
     }
-  }, [rfInstance, nodes, edges]);
+  }, [rfInstance]);
+
+  const initialNodes2 = initialNodes.map((node) => {
+    const { type, ...fil } = node;
+    return fil;
+  });
 
   return (
     <ReactFlow
-      nodes={nodes}
-      edges={edges}
-      onNodesChange={onNodesChange}
-      onEdgesChange={onEdgesChange}
+      nodes={initialNodes2}
+      edges={initialEdges}
       nodeTypes={nodeTypes}
       onInit={onInit}
       fitView
       minZoom={0.1}
       maxZoom={2}
-      elementsSelectable={true}
       nodesConnectable={false}
       nodesDraggable={true}
       zoomOnScroll={true}
@@ -233,31 +225,41 @@ function FlowChart({ initialNodes, initialEdges }: FlowChartProps) {
   );
 }
 
-// ---------- SummaryList Component ----------
 export function SummaryList({ worksapceId }: SummaryListProps) {
   const [summaries, setSummaries] = useState<Summary[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [refetch, setRefetch] = useState<boolean>(false);
   const [selectedSummary, setSelectedSummary] = useState<Summary | null>(null);
+  const [generating, setGenerating] = useState(false);
   const { t } = useTranslation();
 
   const createNewSummary = async () => {
+    setGenerating(true);
     try {
       await createNewSummaryApi({ id: worksapceId });
       setRefetch(!refetch);
-      toast.success("Summary Created Successfully");
     } catch (err) {
       const fallbackMessage = t(
         "dashboard.errors.loadSpaces",
-        "Failed Creating Summary Deck."
+        "Failed Creating Summary."
       );
       const msg = getErrorMessage(err, fallbackMessage);
       toast.error(msg, {
         closeButton: true,
       });
-      console.error("Failed Creating Summary Deck: ", err);
+      console.error("Failed Creating Summary: ", err);
+    } finally {
+      setGenerating(false);
     }
   };
+
+  const anyActive = useMemo(
+    () =>
+      summaries.some(
+        (x) => x.status === "pending" || x.status === "processing"
+      ),
+    [summaries]
+  );
 
   useEffect(() => {
     setLoading(true);
@@ -369,12 +371,13 @@ export function SummaryList({ worksapceId }: SummaryListProps) {
                 <p className="text-gray-600 text-sm leading-relaxed">
                   {t(
                     "common.createFlashCardDescription",
-                    "Create a flashcard set with custom settings and personalization"
+                    "Create a Summary to summarize key points and generate a mind map for better understanding."
                   )}
                 </p>
               </div>
               <div className="flex gap-2 shrink-0">
                 <Button
+                  disabled={generating || anyActive}
                   className="rounded-2xl px-6 py-3 font-medium shadow-sm transition-all duration-200"
                   onClick={createNewSummary}
                 >

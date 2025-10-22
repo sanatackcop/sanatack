@@ -174,7 +174,9 @@ export const reducer = (state: any, action: any): any => {
       return {
         ...state,
         workspace: action.workspace,
-        chatMessages: [...Object.values(action.workspace.chatMessages)],
+        chatMessages: [
+          ...Object.values(action.workspace?.chatMessages?.messages ?? {}),
+        ],
         title:
           action.workspace?.workspaceName || action.workspace?.title || null,
         youtubeVideoId: action.workspace?.youtubeUrl

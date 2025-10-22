@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -38,6 +38,7 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
   const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTypes, setSelectedTypes] = useState<QuizType[]>([]);
+  const [generating, setGenerating] = useState(false);
   const { t } = useTranslation();
 
   const [quizOptions, ,] = useState<{
@@ -69,6 +70,7 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
     numberOfQuestions: number;
     difficulty: string;
   }) => {
+    setGenerating(true);
     try {
       setIsModalOpen(false);
       await createNewQuizApi({
@@ -87,8 +89,16 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
       const msg = getErrorMessage(err, fallbackMessage);
       toast.error(msg);
       console.error("Failed Creating Quiz.", err);
+    } finally {
+      setGenerating(false);
     }
   };
+
+  const anyActive = useMemo(
+    () =>
+      quizzes.some((x) => x.status === "pending" || x.status === "processing"),
+    [quizzes]
+  );
 
   const handleAttemptUpdate = useCallback(
     (quizId: string, attempt: QuizAttemptSummary | null) => {
@@ -152,22 +162,14 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
               <div className="space-y-4">
                 {quizzes.map((quiz) => {
                   const attempt = quiz.latestAttempt ?? null;
-
-                  // async gen status
                   const disabled =
                     quiz.status === GenerationStatus.PENDING ||
                     quiz.status === GenerationStatus.PROCESSING;
                   const failed = quiz.status === GenerationStatus.FAILED;
-
-                  // progress (attempt)
-                  const rawProgress = attempt
-                    ? Number(
-                        attempt.progressPct ??
-                          (attempt.totalCount
-                            ? (attempt.answeredCount / attempt.totalCount) * 100
-                            : 0)
-                      )
+                  const percent = attempt?.scoreTotal
+                    ? (attempt.scoreEarned * 100) / attempt.scoreTotal
                     : 0;
+                  const rawProgress = attempt ? Number(percent) : 0;
                   const progress = Number.isFinite(rawProgress)
                     ? Math.min(100, Math.max(0, rawProgress))
                     : 0;
@@ -302,6 +304,7 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
               </div>
               <div className="flex gap-2 shrink-0">
                 <Button
+                  disabled={generating || anyActive}
                   className="rounded-2xl px-6 py-3 font-medium shadow-sm transition-all duration-200"
                   onClick={() => setIsModalOpen(true)}
                 >
