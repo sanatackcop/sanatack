@@ -411,14 +411,18 @@ export const getWorkSpaceChatHistory = async (id: string) => {
 };
 
 export const createFlashcard = async (
-  workspaceId: string
+  workspaceId: string,
+  count: number,
+  language: "en" | "ar",
+  focus: string
 ): Promise<GenerationJobResponse> => {
   try {
     const response = await Api<GenerationJobResponse>({
       method: API_METHODS.POST,
       data: {
-        youtubeUrl: "https://www.youtube.com/watch?v=jPPzvuDIr1w",
-        language: "en",
+        count,
+        language,
+        focus,
       },
       url: `study-ai/workspaces/${workspaceId}/generate/flashcards`,
     });
