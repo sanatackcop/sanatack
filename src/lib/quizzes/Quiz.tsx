@@ -1,34 +1,20 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
-import {
-  createNewQuizApi,
-  getWorkSpaceContent,
-} from "@/utils/_apis/learnPlayground-api";
-import { AlertTriangle, Settings2 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { getWorkSpaceContent } from "@/utils/_apis/learnPlayground-api";
+import { AlertTriangle } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { QuizView } from "./QuizView";
-import { Quiz, QuizType, QuizAttemptSummary } from "./types";
+import { Quiz, QuizAttemptSummary } from "./types";
 import {
-  getErrorMessage,
   ProgressStrip,
   QueuedStrip,
   StatusBadge,
 } from "@/pages/dashboard/utils";
 import { GenerationStatus } from "../types";
-import { toast } from "sonner";
-import { useTranslation } from "react-i18next";
+import QuizModal from "./QuizModal";
 
 export const QuizList: React.FC<{ workspaceId: string }> = ({
   workspaceId,
@@ -36,18 +22,7 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
   const [loading, setLoading] = useState(true);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedTypes, setSelectedTypes] = useState<QuizType[]>([]);
-  const [generating, setGenerating] = useState(false);
-  const { t } = useTranslation();
-
-  const [quizOptions, ,] = useState<{
-    numberOfQuestions: number;
-    difficulty: string;
-  }>({
-    numberOfQuestions: 5,
-    difficulty: "medium",
-  });
+  const [refresh, setRefresh] = useState(false);
 
   const fetchWorkspaceContent = useCallback(async () => {
     setLoading(true);
@@ -63,36 +38,7 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
 
   useEffect(() => {
     fetchWorkspaceContent();
-  }, [fetchWorkspaceContent]);
-
-  const handleCreateQuiz = async (options: {
-    questionTypes: QuizType[];
-    numberOfQuestions: number;
-    difficulty: string;
-  }) => {
-    setGenerating(true);
-    try {
-      setIsModalOpen(false);
-      await createNewQuizApi({
-        id: workspaceId,
-        questionTypes: options.questionTypes,
-        numberOfQuestions: options.numberOfQuestions,
-        difficulty: options.difficulty,
-      });
-      await fetchWorkspaceContent();
-      setSelectedTypes([]);
-    } catch (err) {
-      const fallbackMessage = t(
-        "dashboard.errors.loadSpaces",
-        "Failed Creating Quiz."
-      );
-      const msg = getErrorMessage(err, fallbackMessage);
-      toast.error(msg);
-      console.error("Failed Creating Quiz.", err);
-    } finally {
-      setGenerating(false);
-    }
-  };
+  }, [fetchWorkspaceContent, refresh]);
 
   const anyActive = useMemo(
     () =>
@@ -174,7 +120,6 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
                     ? Math.min(100, Math.max(0, rawProgress))
                     : 0;
 
-                  // attempt info line
                   const scoreEarned = attempt?.scoreEarned ?? 0;
                   const totalPointsFromAttempt = attempt?.scoreTotal ?? 0;
                   const infoLine = attempt
@@ -259,7 +204,6 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
                         </div>
                       )}
 
-                      {/* Progress */}
                       <div className="mt-3">
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-xs font-medium text-gray-500">
@@ -290,54 +234,13 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
             )}
           </motion.div>
 
-          {/* Create New CTA unchanged */}
-          <Card className="relative z-0 mx-5 px-4 py-2 flex flex-col justify-between overflow-hidden bg-gradient-to-br from-white to-gray-50/50 border-2 border-dashed border-gray-200 hover:border-gray-300 transition-colors duration-200">
-            <div className="relative z-10 flex items-start justify-between mx-2 px-4 py-6">
-              <div className="max-w-[65%]">
-                <h2 className="text-2xl font-bold tracking-tight text-gray-900 mb-2">
-                  Create Quiz
-                </h2>
-                <p className="text-gray-600 text-sm leading-relaxed">
-                  Create quiz sets with preferred question types, difficulty,
-                  and more.
-                </p>
-              </div>
-              <div className="flex gap-2 shrink-0">
-                <Button
-                  disabled={generating || anyActive}
-                  className="rounded-2xl px-6 py-3 font-medium shadow-sm transition-all duration-200"
-                  onClick={() => setIsModalOpen(true)}
-                >
-                  <Settings2 className="mr-2 h-4 w-4" />
-                  Generate
-                </Button>
-              </div>
-            </div>
-          </Card>
+          <QuizModal
+            workspaceId={workspaceId}
+            anyActive={anyActive}
+            setRefresh={() => setRefresh(!refresh)}
+          />
         </ScrollArea>
       </div>
-
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create Quiz Options</DialogTitle>
-            <DialogDescription>Set options for the new quiz.</DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              onClick={() =>
-                handleCreateQuiz({
-                  questionTypes: selectedTypes,
-                  numberOfQuestions: quizOptions.numberOfQuestions,
-                  difficulty: quizOptions.difficulty,
-                })
-              }
-            >
-              Create
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </>
   );
 };

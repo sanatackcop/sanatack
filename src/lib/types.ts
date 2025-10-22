@@ -144,3 +144,8 @@ export type Action =
   | { type: "SET_TRANSCRIPT"; transcript: YouTubeTranscript }
   | { type: "SET_TRANSCRIPT_LOADING"; loading: boolean }
   | { type: "REORDER_TABS"; newOrder: string[] };
+
+export const LANGUAGES = [
+  { name: "English", value: "en" },
+  { name: "العربية", value: "ar" },
+];

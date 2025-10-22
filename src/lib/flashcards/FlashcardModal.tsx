@@ -32,6 +32,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { LANGUAGES } from "../types";
 
 type Props = {
   open: boolean;
@@ -40,10 +41,6 @@ type Props = {
   anyActive: boolean;
 };
 
-const LANGUAGES = [
-  { name: "English", value: "en" },
-  { name: "العربية", value: "ar" },
-];
 const MIN_CARDS = 5;
 const MAX_CARDS = 16;
 

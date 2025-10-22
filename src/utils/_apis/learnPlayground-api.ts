@@ -115,15 +115,17 @@ export const createNewWorkSpace = async ({
 export const createNewQuizApi = async ({
   id,
   language = "en",
-  questionTypes,
-  numberOfQuestions,
+  question_types,
+  count,
   difficulty,
+  focus,
 }: {
   id: string;
   language?: "en" | "ar";
-  questionTypes?: string[];
-  numberOfQuestions?: number;
+  question_types?: string[];
+  count?: number;
   difficulty?: string;
+  focus: string;
 }): Promise<GenerationJobResponse> => {
   try {
     const response = await Api<GenerationJobResponse>({
@@ -131,9 +133,10 @@ export const createNewQuizApi = async ({
       url: `study-ai/workspaces/${id}/generate/quiz`,
       data: {
         language,
-        questionTypes,
-        numberOfQuestions,
+        question_types,
+        count,
         difficulty,
+        focus,
       },
     });
 
