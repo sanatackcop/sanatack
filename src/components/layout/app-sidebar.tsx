@@ -52,6 +52,8 @@ import LogoLight from "@/assets/logo.svg";
 import { submitFeedback } from "@/utils/_apis/feedback-api";
 import { toast } from "sonner";
 import { useUserContext } from "@/context/UserContext";
+import { FaChrome, FaDiscord } from "react-icons/fa6";
+import LogoDark from "@/assets/dark_logo.svg";
 
 type MenuItem =
   | {
@@ -243,14 +245,12 @@ export function AppSidebar() {
           {
             title: "Discord",
             url: "https://discord.com",
-            icon: Globe,
-            comingSoon: true,
+            icon: FaDiscord,
           },
           {
             title: "Chrome Extension",
             url: "https://chrome.google.com/webstore/category/extensions",
-            icon: BoxIcon,
-            comingSoon: true,
+            icon: FaChrome,
           },
         ],
       },
@@ -578,15 +578,17 @@ export function AppSidebar() {
     title: string;
     action?: React.ReactNode;
   }) => (
-    <div className="flex items-center justify-between px-2 mb-1">
-      <h3
+    <div className="flex items-center justify-between mb-1">
+      <div
         className={clsx(
-          "text-[11px] text-sidebar-foreground/50 font-semibold uppercase tracking-wider",
-          getTextAlignment()
+          `flex items-center px-2 py-1.5 text-[11px] text-sidebar-foreground/50 
+           capitalize tracking-wider select-none`,
+          getFlexDirection()
         )}
       >
-        {title}
-      </h3>
+        <span>{title}</span>
+      </div>
+
       {action}
     </div>
   );
@@ -595,7 +597,8 @@ export function AppSidebar() {
     <div
       dir={isRTL ? "rtl" : "ltr"}
       lang={i18n.language}
-      className="h-full flex flex-col border-r bg-[#f9f9f6]"
+      className="h-full flex flex-col border-r bg-[#f9f9f6]
+       dark:bg-[#080809] dark:border-zinc-800"
     >
       <div className="flex flex-col h-full py-2 pl-3 pr-2">
         <div className="flex items-center justify-between">
@@ -605,7 +608,7 @@ export function AppSidebar() {
             )}
           >
             <img
-              src={String(LogoLight)}
+              src={String(darkMode ? LogoDark : LogoLight)}
               alt="logo"
               className={`h-full w-auto transition-all object-contain scale-[2.5] ${
                 i18n.dir() === "rtl" ? "pr-6" : "pl-5"
@@ -618,11 +621,11 @@ export function AppSidebar() {
           {allItemGroups.map((group) => (
             <MenuGroupEntry key={group.groupTitle} group={group} />
           ))}
-          <hr className="-mx-5" />
+          <hr className="-mx-5 dark:border-zinc-700" />
         </div>
 
         <div
-          className="flex-1 overflow-y-auto min-h-0 px-3 py-2 space-y-4"
+          className="flex-1 overflow-y-auto min-h-0  py-2 space-y-4"
           style={{
             scrollbarWidth: "thin",
             scrollbarColor: darkMode
@@ -887,7 +890,10 @@ export function AppSidebar() {
         </div>
 
         <div className="flex-shrink-0">
-          <div className="relative user-dropdown-container bg-white dark:bg-gray-800/60 backdrop-blur-sm rounded-xl border border-zinc-200/50 dark:border-gray-700/30">
+          <div
+            className="relative user-dropdown-container bg-white dark:bg-zinc-800/60 backdrop-blur-sm rounded-xl border border-zinc-200/50
+           dark:border-zinc-700/30"
+          >
             <button
               onClick={() => setShowUserDropdown((s) => !s)}
               className="w-full flex items-center gap-2 px-2 py-2 rounded-md hover:bg-sidebar-accent/50 transition-colors"
@@ -916,7 +922,10 @@ export function AppSidebar() {
             </button>
 
             {showUserDropdown && (
-              <div className="absolute bottom-full left-0 right-0 mb-2 bg-white dark:bg-gray-900/90 backdrop-blur-xl border border-white/20 dark:border-gray-700/30 rounded-2xl p-2 z-50">
+              <div
+                className="absolute bottom-full left-0 right-0 mb-2 bg-white 
+              dark:bg-zinc-900/90 backdrop-blur-xl border border-white/20 dark:border-zinc-700/30 rounded-2xl p-2 z-50"
+              >
                 <button
                   onClick={toggleTheme}
                   className={clsx(

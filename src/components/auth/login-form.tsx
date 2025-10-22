@@ -1,10 +1,18 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { loginApi, LoginResult } from "@/utils/_apis/auth-apis";
+import {
+  loginApi,
+  LoginResult,
+  firebaseSignInApi,
+} from "@/utils/_apis/auth-apis";
 import { useNavigate } from "react-router-dom";
 import UserContext, { ContextType } from "@/context/UserContext";
 import { ChangeEvent, useContext, useState, FormEvent } from "react";
 import { Eye, EyeOff, Github } from "lucide-react";
+import { signInWithPopup } from "firebase/auth";
+import { auth, googleProvider } from "@/lib/firebase";
+import { FirebaseError } from "firebase/app";
+import { toast } from "sonner";
 
 interface LoginFormProps {}
 
@@ -41,6 +49,21 @@ interface FormErrors {
   password?: string;
   general?: string;
 }
+
+const firebaseErrorMessages: Record<string, string> = {
+  "auth/popup-closed-by-user": "تم إغلاق نافذة Google قبل إكمال العملية.",
+  "auth/cancelled-popup-request": "تم إلغاء نافذة تسجيل الدخول السابقة.",
+  "auth/popup-blocked": "يرجى السماح بالنوافذ المنبثقة لإكمال تسجيل الدخول.",
+  "auth/network-request-failed": "فشل الاتصال بالشبكة. حاول مرة أخرى.",
+};
+
+const mapFirebaseError = (code?: string) => {
+  if (!code) return "تعذر تسجيل الدخول باستخدام Google حالياً.";
+  return (
+    firebaseErrorMessages[code] ||
+    "تعذر تسجيل الدخول باستخدام Google. حاول مرة أخرى."
+  );
+};
 
 export const LoginForm: React.FC<LoginFormProps> = () => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -140,8 +163,71 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
       }
     };
 
+  const handleGoogleLogin = async () => {
+    setIsLoading(true);
+    setErrors({});
+    try {
+      const credential = await signInWithPopup(auth, googleProvider);
+      const firebaseUser = credential.user;
+
+      if (!firebaseUser.email) {
+        throw new Error("لا يوجد بريد إلكتروني مرتبط بهذا الحساب.");
+      }
+
+      const idToken = await firebaseUser.getIdToken(true);
+      const nameParts =
+        firebaseUser.displayName
+          ?.split(" ")
+          .map((part) => part.trim())
+          .filter(Boolean) ?? [];
+      const [firstName, ...rest] = nameParts;
+
+      const result = await firebaseSignInApi({
+        uid: firebaseUser.uid,
+        email: firebaseUser.email,
+        displayName: firebaseUser.displayName ?? undefined,
+        firstName: firstName || undefined,
+        lastName: rest.length ? rest.join(" ") : undefined,
+        phoneNumber: firebaseUser.phoneNumber ?? undefined,
+        emailVerified: firebaseUser.emailVerified,
+        idToken,
+      });
+
+      if (login) {
+        login({
+          role: result.role,
+          type: result.type as ContextType,
+          user: result.user,
+          refresh_token: result.refresh_token,
+        });
+      }
+
+      toast.success("تم تسجيل الدخول باستخدام Google");
+      navigate("/dashboard", { replace: true });
+    } catch (error) {
+      console.error("Google login error:", error);
+      if (error instanceof FirebaseError) {
+        if (error.code === "auth/popup-closed-by-user") {
+          toast.info(mapFirebaseError(error.code));
+        } else {
+          toast.error(mapFirebaseError(error.code));
+        }
+      } else if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("حدث خطأ غير متوقع أثناء تسجيل الدخول بواسطة Google.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleOAuthLogin = (provider: string) => {
-    console.log(`OAuth login with ${provider}`);
+    if (provider === "google") {
+      void handleGoogleLogin();
+      return;
+    }
+    toast.info("سيتم دعم هذا الخيار قريباً.");
   };
 
   return (

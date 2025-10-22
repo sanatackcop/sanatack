@@ -111,7 +111,7 @@ export default function DashboardLayout({
   return (
     <SidebarProvider>
       <div
-        className="flex h-dvh w-screen overflow-hidden bg-zinc-100/20"
+        className="flex h-dvh w-screen overflow-hidden bg-zinc-100/20 dark:bg-[#101012]"
         dir={currentDir}
       >
         <ResizablePanelGroup
@@ -195,11 +195,14 @@ export default function DashboardLayout({
                 </button>
               )}
 
-              <main className={`flex-1 min-w-0 min-h-0  flex`}>
+              <main className={`flex-1 min-w-0 min-h-0 flex`}>
                 <div className="flex-1 min-w-0 min-h-0 flex flex-col">
                   <div className="flex-1 min-h-0 overflow-hidden">
                     <div className="h-full min-h-0 overflow-hidden">
-                      <div className="h-full overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-blue-200/70 scrollbar-track-transparent hover:scrollbar-thumb-blue-300/80">
+                      <div
+                        className="h-full overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-blue-200/70
+                       scrollbar-track-transparent hover:scrollbar-thumb-blue-300/80"
+                      >
                         {children}
                       </div>
                     </div>

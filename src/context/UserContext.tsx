@@ -15,6 +15,7 @@ interface User {
   firstName: string;
   lastName: string;
   avatar?: string;
+  isVerify?: boolean;
 }
 
 export enum ContextType {
@@ -34,6 +35,7 @@ const initialUserState: User = {
   lastName: "",
   mobile: "",
   email: "",
+  isVerify: false,
 };
 
 const initialAuth: Auth = {
@@ -80,7 +82,7 @@ export const UserContextProvider: FC<Props> = ({ children }: Props) => {
     jwt: string,
     type: ContextType,
     role: "admin" | "student"
-  ): Auth => {
+  ) => {
     const tokenParts = jwt.split(".");
     if (tokenParts.length < 2) {
       throw new Error("Invalid token format");
@@ -112,7 +114,21 @@ export const UserContextProvider: FC<Props> = ({ children }: Props) => {
   const getAuth = () => {
     const auth = Storage.get("auth");
     if (auth) {
-      setAuth(auth);
+      const normalizedUser: User = {
+        ...initialUserState,
+        ...(auth.user || {}),
+        isVerify:
+          auth.user?.isVerify ??
+          auth.user?.email_verified ??
+          auth.user?.emailVerified ??
+          false,
+      };
+
+      setAuth({
+        user: normalizedUser,
+        role: auth.role || "student",
+        type: auth.type,
+      });
       if (!auth?.role) setAuth((prev) => ({ ...prev, role: "student" }));
     }
     return auth;
@@ -126,15 +142,55 @@ export const UserContextProvider: FC<Props> = ({ children }: Props) => {
 
   const login = ({ user, type, role, refresh_token }: LoginPayload) => {
     try {
-      const decodedAuth = decodeJWT(user, type, role);
-      Storage.set("refreshToken", refresh_token);
-      Storage.set("auth", decodedAuth);
+    const decodedAuth = decodeJWT(user, type, role);
+    const payloadUser: any = decodedAuth?.user || {};
 
-      setAuth({
-        user: decodedAuth?.user,
-        role: role || "student",
-        type: type as ContextType,
-      });
+    const fullName = [
+      payloadUser.firstName,
+      payloadUser.lastName,
+    ]
+      .filter(Boolean)
+      .join(" ") || payloadUser.name || "";
+
+    const nameParts = fullName ? fullName.split(" ") : [];
+    const derivedFirstName = payloadUser.firstName || nameParts[0] || "";
+    const derivedLastName =
+      payloadUser.lastName || (nameParts.length > 1 ? nameParts.slice(1).join(" ") : "");
+
+    const normalizedUser: User = {
+      id:
+        payloadUser.id ||
+        payloadUser.user_id ||
+        payloadUser.uid ||
+        payloadUser.sub ||
+        "",
+      email: payloadUser.email || "",
+      firstName: derivedFirstName,
+      lastName: derivedLastName,
+      mobile: payloadUser.mobile || payloadUser.phone_number || "",
+      avatar: payloadUser.avatar || payloadUser.picture || "",
+      isVerify:
+        payloadUser.isVerify ||
+        payloadUser.email_verified ||
+        payloadUser.emailVerified ||
+        false,
+    };
+
+    Storage.set("refreshToken", refresh_token);
+    Storage.set("refresh_token", refresh_token);
+    Storage.set("access_token", user);
+    Storage.set("accessToken", user);
+    Storage.set("auth", {
+      user: normalizedUser,
+      role: role || "student",
+      type: type as ContextType,
+    });
+
+    setAuth({
+      user: normalizedUser,
+      role: role || "student",
+      type: type as ContextType,
+    });
 
       setRefreshAccess((prevState) => !prevState);
     } catch (error) {
@@ -163,7 +219,7 @@ export const UserContextProvider: FC<Props> = ({ children }: Props) => {
 export const useUserContext = () => {
   const context = useContext(UserContext);
   if (!context)
-    throw new Error("useSettings must be used within a SettingsProvider");
+    throw new Error("useUserContext must be used within a UserContextProvider");
   return context;
 };
 
