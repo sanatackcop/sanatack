@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import ReactFlow, {
@@ -9,8 +9,6 @@ import ReactFlow, {
   Position,
   ReactFlowInstance,
   Background,
-  useNodesState,
-  useEdgesState,
   Controls,
 } from "reactflow";
 import "reactflow/dist/style.css";
@@ -19,27 +17,63 @@ import {
   getWorkSpaceContent,
 } from "@/utils/_apis/learnPlayground-api";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ArrowLeft, Settings2 } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Settings2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-
-export interface MindMapNode {
-  id?: string;
-  label: string;
-  children?: MindMapNode[];
-}
+import { GenerationStatus } from "../types";
+import {
+  getErrorMessage,
+  ProgressStrip,
+  QueuedStrip,
+  StatusBadge,
+} from "@/pages/dashboard/utils";
+import { toast } from "sonner";
 
 export interface MindMap {
   root: string;
   nodes: MindMapNode[];
 }
-
 export interface Summary {
-  title: string;
-  overview: string;
-  main_points: string[];
-  mind_map: MindMap;
+  id: string;
+  created_at: string;
+  updated_at: string;
+  userId: string;
+  workspaceId: string;
+  videoId: string;
+  documentId: string | null;
+  language: string;
+  status: GenerationStatus; // "PENDING" | "PROCESSING" | "FAILED" | "COMPLETED"
+  payload?: SummaryPayload; // optional when not ready
+  failureReason?: string | null;
 }
+
+export interface SummaryPayload {
+  title: string;
+  mind_map: {
+    root: string;
+    nodes: MindMapNode[];
+  };
+  overview: string;
+  structure: {
+    content: string;
+    section: string;
+    sub_points: string[];
+  }[];
+  study_tips: string[];
+  main_points: string[];
+  key_concepts: {
+    concept: string;
+    definition: string;
+    importance: string;
+  }[];
+  practical_applications: string[];
+}
+
+export type MindMapNode = {
+  id: string;
+  label: string;
+  children: MindMapNode[];
+};
 
 export interface SummaryListProps {
   worksapceId: string;
@@ -152,15 +186,7 @@ interface FlowChartProps {
 }
 
 function FlowChart({ initialNodes, initialEdges }: FlowChartProps) {
-  const [nodes, , onNodesChange] = useNodesState(initialNodes);
-  const [edges, , onEdgesChange] = useEdgesState(initialEdges);
   const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>(null);
-
-  useEffect(() => {
-    console.log("Nodes:", nodes);
-    console.log("Edges:", edges);
-  }, [nodes, edges]);
-
   const onInit = useCallback((instance: ReactFlowInstance) => {
     setRfInstance(instance);
     setTimeout(() => {
@@ -172,20 +198,22 @@ function FlowChart({ initialNodes, initialEdges }: FlowChartProps) {
     if (rfInstance) {
       rfInstance.fitView({ padding: 0.2, duration: 200 });
     }
-  }, [rfInstance, nodes, edges]);
+  }, [rfInstance]);
+
+  const initialNodes2 = initialNodes.map((node) => {
+    const { type, ...fil } = node;
+    return fil;
+  });
 
   return (
     <ReactFlow
-      nodes={nodes}
-      edges={edges}
-      onNodesChange={onNodesChange}
-      onEdgesChange={onEdgesChange}
+      nodes={initialNodes2}
+      edges={initialEdges}
       nodeTypes={nodeTypes}
       onInit={onInit}
       fitView
       minZoom={0.1}
       maxZoom={2}
-      elementsSelectable={true}
       nodesConnectable={false}
       nodesDraggable={true}
       zoomOnScroll={true}
@@ -197,16 +225,41 @@ function FlowChart({ initialNodes, initialEdges }: FlowChartProps) {
   );
 }
 
-// ---------- SummaryList Component ----------
 export function SummaryList({ worksapceId }: SummaryListProps) {
   const [summaries, setSummaries] = useState<Summary[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [refetch, setRefetch] = useState<boolean>(false);
   const [selectedSummary, setSelectedSummary] = useState<Summary | null>(null);
+  const [generating, setGenerating] = useState(false);
   const { t } = useTranslation();
 
   const createNewSummary = async () => {
-    await createNewSummaryApi({ id: worksapceId });
+    setGenerating(true);
+    try {
+      await createNewSummaryApi({ id: worksapceId });
+      setRefetch(!refetch);
+    } catch (err) {
+      const fallbackMessage = t(
+        "dashboard.errors.loadSpaces",
+        "Failed Creating Summary."
+      );
+      const msg = getErrorMessage(err, fallbackMessage);
+      toast.error(msg, {
+        closeButton: true,
+      });
+      console.error("Failed Creating Summary: ", err);
+    } finally {
+      setGenerating(false);
+    }
   };
+
+  const anyActive = useMemo(
+    () =>
+      summaries.some(
+        (x) => x.status === "pending" || x.status === "processing"
+      ),
+    [summaries]
+  );
 
   useEffect(() => {
     setLoading(true);
@@ -214,7 +267,7 @@ export function SummaryList({ worksapceId }: SummaryListProps) {
       setSummaries(data.summaries ?? []);
       setLoading(false);
     });
-  }, [worksapceId]);
+  }, [worksapceId, refetch]);
 
   if (selectedSummary) {
     return (
@@ -241,7 +294,7 @@ export function SummaryList({ worksapceId }: SummaryListProps) {
           className="px-6 mb-4 flex flex-col rounded-3xl justify-between space-y-3"
         >
           <h3 className="px-2 text-sm font-medium text-gray-700">
-            {t("common.myFlashcards", "My Summary")}
+            {t("common.mySummary", "Summaries")}
           </h3>
           {loading ? (
             <div className="space-y-3">
@@ -250,25 +303,63 @@ export function SummaryList({ worksapceId }: SummaryListProps) {
               ))}
             </div>
           ) : summaries.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              No summaries yet. Create your first one!
-            </div>
+            <></>
           ) : (
             <div className="flex flex-col gap-4">
-              {summaries.map((summary, idx) => (
-                <Card
-                  key={idx}
-                  onClick={() => setSelectedSummary(summary)}
-                  className="group relative px-6 py-5 flex flex-col rounded-2xl justify-center hover:bg-gradient-to-r hover:from-gray-50 ease-in
-                                         hover:to-gray-100/80 cursor-transition-all duration-200"
-                >
-                  <div className="flex justify-between items-center">
-                    <h4 className="font-medium text-lg text-gray-900">
-                      {summary.title}
-                    </h4>
-                  </div>
-                </Card>
-              ))}
+              {summaries.map((summary) => {
+                const disabled =
+                  summary.status === GenerationStatus.PENDING ||
+                  summary.status === GenerationStatus.PROCESSING;
+                const failed = summary.status === GenerationStatus.FAILED;
+                const completed = summary.status === GenerationStatus.COMPLETED;
+
+                return (
+                  <Card
+                    key={summary.id}
+                    role="button"
+                    aria-disabled={disabled}
+                    aria-busy={disabled}
+                    onClick={() =>
+                      completed &&
+                      summary.payload &&
+                      setSelectedSummary(summary)
+                    }
+                    className={`group relative overflow-hidden px-6 py-5 flex flex-col rounded-2xl justify-center transition-all duration-200 cursor-pointer
+        ${
+          failed
+            ? "bg-red-50/50 border-red-200 hover:border-red-300"
+            : "bg-white hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100/80 border-gray-200/60 hover:border-gray-300/80"
+        }`}
+                  >
+                    <div className="flex justify-between items-start gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className="font-semibold text-lg text-gray-900 truncate">
+                            {summary.payload?.title ?? "Generating summary..."}
+                          </h3>
+                          <StatusBadge status={summary.status} />
+                        </div>
+                      </div>
+                    </div>
+
+                    {failed && (
+                      <div className="mt-3 w-full rounded-xl border border-red-200 bg-red-50 text-red-700 px-3 py-2 text-sm flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4" />
+                        <span>
+                          Generation failed. You can delete and try again.
+                        </span>
+                      </div>
+                    )}
+
+                    {summary.status === GenerationStatus.PROCESSING && (
+                      <ProgressStrip />
+                    )}
+                    {summary.status === GenerationStatus.PENDING && (
+                      <QueuedStrip />
+                    )}
+                  </Card>
+                );
+              })}
             </div>
           )}
           <Card className="relative z-0 py-2  flex flex-col justify-between overflow-hidden bg-gradient-to-br from-white to-gray-50/50 border-2 border-dashed border-gray-200 hover:border-gray-300 transition-colors duration-200">
@@ -280,12 +371,13 @@ export function SummaryList({ worksapceId }: SummaryListProps) {
                 <p className="text-gray-600 text-sm leading-relaxed">
                   {t(
                     "common.createFlashCardDescription",
-                    "Create a flashcard set with custom settings and personalization"
+                    "Create a Summary to summarize key points and generate a mind map for better understanding."
                   )}
                 </p>
               </div>
               <div className="flex gap-2 shrink-0">
                 <Button
+                  disabled={generating || anyActive}
                   className="rounded-2xl px-6 py-3 font-medium shadow-sm transition-all duration-200"
                   onClick={createNewSummary}
                 >
@@ -303,7 +395,18 @@ export function SummaryList({ worksapceId }: SummaryListProps) {
 
 // ---------- SummaryView Component ----------
 export function SummaryView({ summary, onClose }: SummaryViewProps) {
-  const { nodes, edges } = mapMindMapRootToFlowData(summary.mind_map);
+  if (!summary.payload) {
+    return (
+      <div className="p-6">
+        <p className="text-gray-700">No summary data available.</p>
+        <Button className="mt-4" onClick={onClose}>
+          Back
+        </Button>
+      </div>
+    );
+  }
+
+  const { nodes, edges } = mapMindMapRootToFlowData(summary.payload.mind_map);
 
   return (
     <Card className="flex flex-col gap-4 px-2 md:px-6  w-full min-h-[600px] border-none overflow-visible">
@@ -315,13 +418,15 @@ export function SummaryView({ summary, onClose }: SummaryViewProps) {
           <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-all ease-out duration-200" />
           <span className="text-sm">Back</span>
         </div>
-        <h2 className="text-2xl font-bold text-gray-900">{summary.title}</h2>
-        <p className="text-gray-600 mb-2">{summary.overview}</p>
+        <h2 className="text-2xl font-bold text-gray-900">
+          {summary.payload.title}
+        </h2>
+        <p className="text-gray-600 mb-2">{summary.payload.overview}</p>
       </div>
       <div className="flex flex-col w-full max-w-5xl mx-auto mt-2">
         <div className="font-semibold mb-1">Main Points:</div>
         <ul className="mb-4 list-disc list-inside text-gray-700 px-2">
-          {summary.main_points.map((pt, idx) => (
+          {summary.payload.main_points.map((pt, idx) => (
             <li key={idx}>{pt}</li>
           ))}
         </ul>

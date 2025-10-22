@@ -1,7 +1,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-
 import { CircularProgressProps, Flashcard } from "./types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";

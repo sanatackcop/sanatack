@@ -1,108 +1,82 @@
-import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
-import { getAllWorkSpace } from "@/utils/_apis/learnPlayground-api";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import {
-  Loader2,
-  PlayIcon,
-  EllipsisVertical,
-  Trash2,
-  Move,
-  Boxes,
-  FileQuestionIcon,
-  FileTextIcon,
-  Loader2Icon,
-} from "lucide-react";
-import Button from "@mui/material/Button";
+import { useTranslation } from "react-i18next";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@radix-ui/react-dropdown-menu";
-import {
   DropdownMenuItem,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Space } from "@/types/courses";
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
 import {
+  Boxes,
+  EllipsisVertical,
+  FileQuestionIcon,
+  FileTextIcon,
+  Loader2Icon,
+  Move,
+  PlayIcon,
+  Trash2,
+} from "lucide-react";
+import { Document, Page } from "react-pdf";
+import {
+  deleteWorkspace,
   getAllSpaces,
   linkWorkspaceToSpace,
   unlinkWorkspaceFromSpace,
 } from "@/utils/_apis/courses-apis";
-import { formatRelativeDate } from "../../../components/utiles";
-import { Document, Page } from "react-pdf";
+import { formatRelativeDate } from "@/components/utiles";
 import { Workspace } from "@/lib/types";
-import WorkspacesList from "./WorkspacesList.";
+import { getErrorMessage } from "../utils";
 
-const WorkspaceItemSkeleton = () => (
-  <Card className="p-4 border border-zinc-300 rounded-2xl bg-zinc-50">
-    <CardContent className="p-0">
-      <div className="flex items-start space-x-3 rtl:space-x-reverse">
-        <Skeleton className="w-16 h-12 rounded-lg flex-shrink-0" />
-        <div className="flex-1 space-y-2 min-w-0">
-          <Skeleton className="h-4 w-3/4" />
-          <Skeleton className="h-3 w-1/2" />
-          <div className="flex items-center space-x-2 rtl:space-x-reverse">
-            <Skeleton className="h-3 w-12" />
-            <Skeleton className="h-3 w-16" />
-          </div>
-        </div>
-        <Skeleton className="w-8 h-8 rounded-full" />
-      </div>
-    </CardContent>
-  </Card>
-);
-
-export type WorkspaceFolderItemProps = {
+type WorkspaceFolderItemProps = {
   workspace: Workspace;
   onClick: () => void;
-  isRTL: boolean;
+  refreshParentComponent: () => void;
+  isRTL?: boolean;
 };
 
-export const WorkspaceFolderItem = ({
+type Space = { id: string; name: string };
+
+export default function WorkspaceFolderItem({
   workspace,
   onClick,
+  refreshParentComponent,
   isRTL,
-}: WorkspaceFolderItemProps) => {
+}: WorkspaceFolderItemProps) {
+  const { t } = useTranslation();
   const [menuOpen, setMenuOpen] = useState(false);
-
+  const [spaces, setSpaces] = useState<Space[]>([]);
   const { youtubeVideo, workspaceName, createdAt, workspaceType, documentUrl } =
     workspace;
 
   function renderBanner() {
-    if (workspaceType === "youtube" && youtubeVideo?.transcribe.data.url) {
-      if (workspaceType === "youtube" && youtubeVideo?.transcribe?.data?.url) {
-        const url = youtubeVideo.transcribe.data.url;
-        const match = url.match(
-          /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|embed)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/
-        );
-        const videoID = match ? match[1] : null;
-        const thumbnailUrl = videoID
-          ? `https://img.youtube.com/vi/${videoID}/hqdefault.jpg`
-          : null;
+    if (workspaceType === "youtube" && youtubeVideo?.transcribe?.data?.url) {
+      const url = youtubeVideo.transcribe.data.url;
+      const match = url.match(
+        /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|embed)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/
+      );
+      const videoID = match ? match[1] : null;
+      const thumbnailUrl = videoID
+        ? `https://img.youtube.com/vi/${videoID}/hqdefault.jpg`
+        : null;
 
-        return videoID ? (
-          <img
-            src={String(thumbnailUrl)}
-            alt="YouTube thumbnail"
-            className="w-full h-28 object-cover rounded-t-2xl"
-          />
-        ) : (
-          <div className="flex items-center justify-center min-h-28 rounded-t-2xl bg-gray-100 border-b border-zinc-200">
-            <PlayIcon className="h-12 w-12 text-zinc-400" />
-          </div>
-        );
-      } else {
-        return (
-          <div className="flex items-center justify-center min-h-28 rounded-t-2xl bg-gray-100 border-b border-zinc-200">
-            <PlayIcon className="h-12 w-12 text-zinc-400" />
-          </div>
-        );
-      }
+      return videoID ? (
+        <img
+          src={String(thumbnailUrl)}
+          alt="YouTube thumbnail"
+          className="w-full h-28 object-cover rounded-t-2xl"
+        />
+      ) : (
+        <div className="flex items-center justify-center min-h-28 rounded-t-2xl bg-gray-100 border-b border-zinc-200">
+          <PlayIcon className="h-12 w-12 text-zinc-400" />
+        </div>
+      );
     }
 
     if (workspaceType === "document" && documentUrl) {
@@ -127,15 +101,20 @@ export const WorkspaceFolderItem = ({
     );
   }
 
-  const [spaces, setSpaces] = useState<Space[]>([]);
-
-  const fetchAllCourses = async () => {
+  const fetchSpaces = async () => {
     try {
       const spaces = await getAllSpaces();
       setSpaces(spaces);
     } catch (err) {
-      // setError(t("dashboard.errors.loadCourses"));
-      console.error("Error fetching courses:", err);
+      const fallbackMessage = t(
+        "dashboard.errors.loadSpaces",
+        "Failed to load spaces. Please try again later."
+      );
+      const msg = getErrorMessage(err, fallbackMessage);
+      toast.error(msg, {
+        closeButton: true,
+      });
+      console.error("Error fetching available spaces:", err);
     }
   };
 
@@ -145,9 +124,15 @@ export const WorkspaceFolderItem = ({
   ) => {
     try {
       await linkWorkspaceToSpace(space_id, workspace_id);
+      refreshParentComponent();
     } catch (err) {
-      // setError(t("dashboard.errors.loadCourses"));
-      console.error("Error fetching courses:", err);
+      const fallbackMessage = t(
+        "dashboard.errors.linkWorkspace",
+        "Unable to move the workspace. Please try again."
+      );
+      const msg = getErrorMessage(err, fallbackMessage);
+      toast.error(msg, { closeButton: true });
+      console.error("Error linking workspace to space:", err);
     } finally {
       setMenuOpen(false);
     }
@@ -156,18 +141,42 @@ export const WorkspaceFolderItem = ({
   const handleUnlinkWorkspacefromSpace = async (workspace_id: string) => {
     try {
       await unlinkWorkspaceFromSpace(workspace_id);
+      refreshParentComponent();
     } catch (err) {
-      // setError(t("dashboard.errors.loadCourses"));
-      console.error("Error fetching courses:", err);
+      const fallbackMessage = t(
+        "dashboard.errors.unlinkWorkspace",
+        "Unable to remove the workspace from this space. Please try again."
+      );
+      const msg = getErrorMessage(err, fallbackMessage);
+      toast.error(msg, { closeButton: true });
+      console.error("Error unlinking workspace from space:", err);
     } finally {
       setMenuOpen(false);
     }
   };
 
+  const handleWorkspaceDeletion = async (workspace_id: string) => {
+    try {
+      await deleteWorkspace(workspace_id);
+      refreshParentComponent();
+    } catch (err) {
+      const fallbackMessage = t(
+        "dashboard.errors.deleteWorkspace",
+        "Failed to delete the workspace. Please try again later."
+      );
+      const msg = getErrorMessage(err, fallbackMessage);
+      toast.error(msg, { closeButton: true });
+      console.error("Error deleting workspace:", err);
+    } finally {
+      setMenuOpen(false);
+    }
+  };
+
+  const fetchData = async () => {
+    await Promise.all([fetchSpaces()]);
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      await Promise.all([fetchAllCourses()]);
-    };
     fetchData();
   }, []);
 
@@ -184,6 +193,15 @@ export const WorkspaceFolderItem = ({
       }}
       aria-label={`Open workspace ${workspaceName}`}
     >
+      <Toaster
+        richColors
+        theme="system"
+        dir={isRTL ? "rtl" : "ltr"}
+        position={isRTL ? "top-left" : "top-right"}
+        closeButton
+        duration={5000}
+      />
+
       <Card
         onClick={onClick}
         className="relative flex flex-col group rounded-2xl
@@ -210,6 +228,7 @@ export const WorkspaceFolderItem = ({
             </p>
           </div>
         </CardContent>
+
         <div
           className={[
             "absolute right-1 top-1 z-10 transition-opacity",
@@ -274,8 +293,8 @@ export const WorkspaceFolderItem = ({
                         No spaces available. Create a space first.
                       </div>
                     ) : (
-                      spaces.map((space) => {
-                        return space.id != workspace.spaceId ? (
+                      spaces.map((space) =>
+                        space.id !== workspace.spaceId ? (
                           <DropdownMenuItem
                             key={space.id}
                             className="
@@ -315,8 +334,8 @@ export const WorkspaceFolderItem = ({
                             <Boxes className="h-4 w-4 text-zinc-700" />
                             <span className="truncate">{space.name}</span>
                           </DropdownMenuItem>
-                        );
-                      })
+                        )
+                      )
                     )}
                   </div>
                 </DropdownMenuSubContent>
@@ -325,7 +344,7 @@ export const WorkspaceFolderItem = ({
               <DropdownMenuItem
                 onClick={(e) => {
                   e.stopPropagation();
-                  alert(`Delete ${workspace.workspaceName}`);
+                  handleWorkspaceDeletion(workspace.id);
                   setMenuOpen(false);
                 }}
                 className="
@@ -344,97 +363,4 @@ export const WorkspaceFolderItem = ({
       </Card>
     </motion.div>
   );
-};
-
-export default function Recent({ isRTL }: { isRTL: boolean }) {
-  const { t } = useTranslation();
-  const [workspaces, setWorkspaces] = useState<Workspace[] | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchRecent = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const { workspaces: fetchedWorkspaces }: any = await getAllWorkSpace();
-
-      const sortedWorkspaces =
-        fetchedWorkspaces?.sort(
-          (a: Workspace, b: Workspace) =>
-            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-        ) || [];
-
-      setWorkspaces(sortedWorkspaces);
-    } catch (err) {
-      console.error("Failed to fetch workspaces:", err);
-      setError(t("errors.fetchWorkspaces", "Failed to load recent workspaces"));
-      setWorkspaces([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchRecent();
-  }, []);
-
-  if (loading) {
-    return (
-      <section>
-        <div className="flex items-center justify-between mb-3">
-          <h2
-            className={`text-lg font-semibold ${
-              isRTL ? "text-right" : "text-left"
-            }`}
-          >
-            {t("sidebar.recent")}
-          </h2>
-          <div className="flex items-center space-x-2 rtl:space-x-reverse">
-            <Loader2 className="w-4 h-4 animate-spin text-zinc-400" />
-            <span className="text-xs text-zinc-500">
-              {t("loading.recent", "Loading...")}
-            </span>
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <WorkspaceItemSkeleton key={i} />
-          ))}
-        </div>
-      </section>
-    );
-  }
-
-  if (error) {
-    return (
-      <section>
-        <div className="flex items-center justify-between mb-3">
-          <h2
-            className={`text-lg font-semibold ${
-              isRTL ? "text-right" : "text-left"
-            }`}
-          >
-            {t("sidebar.recent")}
-          </h2>
-        </div>
-
-        <div className="text-center py-8">
-          <p className="text-red-500 text-sm mb-2">{error}</p>
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={fetchRecent}
-            className="text-xs"
-          >
-            {t("actions.retry", "Try Again")}
-          </Button>
-        </div>
-      </section>
-    );
-  }
-
-  if (!workspaces) return;
-  return <WorkspacesList workspaces={workspaces} isRTL={isRTL} />;
 }

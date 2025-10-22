@@ -1,4 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { GenerationStatus } from "@/lib/types";
+import { AlertTriangle, Clock3, Loader2 } from "lucide-react";
 
 export const ContentSkeleton = () => (
   <div className="w-full h-full flex flex-col space-y-4 p-4">
@@ -172,7 +174,9 @@ export const reducer = (state: any, action: any): any => {
       return {
         ...state,
         workspace: action.workspace,
-        chatMessages: [...Object.values(action.workspace.chatMessages)],
+        chatMessages: [
+          ...Object.values(action.workspace?.chatMessages?.messages ?? {}),
+        ],
         title:
           action.workspace?.workspaceName || action.workspace?.title || null,
         youtubeVideoId: action.workspace?.youtubeUrl
@@ -199,3 +203,70 @@ export const extractYouTubeId = (url: string): string => {
   const match = url.match(regExp);
   return match && match[2].length === 11 ? match[2] : "";
 };
+
+export const getErrorMessage = (err: unknown, fallback: string) => {
+  if (typeof err === "string") return err;
+  if (err && typeof err === "object") {
+    const anyErr = err as {
+      message?: unknown;
+      error?: unknown;
+      detail?: unknown;
+    };
+    if (typeof anyErr.message === "string") return anyErr.message;
+    if (typeof anyErr.error === "string") return anyErr.error;
+    if (typeof anyErr.detail === "string") return anyErr.detail;
+  }
+  return fallback;
+};
+
+export const StatusBadge: React.FC<{ status: GenerationStatus }> = ({
+  status,
+}) => {
+  switch (status) {
+    case GenerationStatus.PENDING:
+      return (
+        <span className="inline-flex items-center gap-1.5 text-[11px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 border border-gray-200">
+          <Clock3 className="w-3.5 h-3.5" /> Pending
+        </span>
+      );
+    case GenerationStatus.PROCESSING:
+      return (
+        <span className="inline-flex items-center gap-1.5 text-[11px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+          <Loader2 className="w-3.5 h-3.5 animate-spin" /> Generating…
+        </span>
+      );
+    case GenerationStatus.FAILED:
+      return (
+        <span className="inline-flex items-center gap-1.5 text-[11px] px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200">
+          <AlertTriangle className="w-3.5 h-3.5" /> Failed
+        </span>
+      );
+    case GenerationStatus.COMPLETED:
+    default:
+      return "";
+  }
+};
+
+export const ProgressStrip: React.FC = () => (
+  <div className="absolute bottom-0 left-0 right-0 h-1 overflow-hidden rounded-b-2xl">
+    <div className="h-full w-full bg-gradient-to-r from-blue-200/60 via-blue-400/80 to-blue-200/60 animate-[shimmer_1.2s_linear_infinite] [background-size:200%_100%]" />
+    <style>{`
+      @keyframes shimmer {
+        0% { background-position: 0% 0; }
+        100% { background-position: -200% 0; }
+      }
+    `}</style>
+  </div>
+);
+
+export const QueuedStrip: React.FC = () => (
+  <div className="absolute bottom-0 left-0 right-0 h-1 overflow-hidden rounded-b-2xl">
+    <div className="h-full w-full bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 animate-[pulsebar_1.6s_ease_infinite]" />
+    <style>{`
+      @keyframes pulsebar {
+        0%, 100% { opacity: .5; }
+        50% { opacity: 1; }
+      }
+    `}</style>
+  </div>
+);

@@ -1,5 +1,10 @@
+import { GenerationStatus } from "../types";
+
 export type QuizOption = string;
 export type QuizType = "multiple_choice" | "true_false" | "scenario";
+export type QuestionType = "multiple_choice" | "true_false" | "scenario";
+export type Difficulty = "easy" | "medium" | "hard";
+export type CognitiveLevel = "remember" | "understand" | "analyze" | "apply";
 
 export interface AnswerEntry {
   question_id: string;
@@ -12,14 +17,23 @@ export interface AnswerEntry {
 
 export interface Question {
   id: string;
-  type: QuizType;
+  type: QuestionType;
   points: number;
-  options: QuizOption[];
+  options: string[];
   question: string;
-  difficulty: string;
-  explanation?: string;
+  difficulty: Difficulty;
+  explanation: string;
   correct_answer: string;
-  cognitive_level?: string;
+  cognitive_level: CognitiveLevel;
+}
+
+export interface QuizPayload {
+  id: string;
+  title: string;
+  duration: number; // minutes
+  questions: Question[];
+  description: string;
+  passing_score: number;
 }
 
 export interface QuizAttemptSummary {
@@ -29,7 +43,6 @@ export interface QuizAttemptSummary {
   status: "in_progress" | "submitted" | "graded";
   answeredCount: number;
   totalCount: number;
-  progressPct: number;
   lastQuestionId?: string | null;
   lastQuestionPos: number;
   answers: AnswerEntry[];
@@ -43,14 +56,19 @@ export interface QuizAttemptSummary {
 
 export interface Quiz {
   id: string;
-  title: string;
-  duration: number | null;
-  questions: Question[];
-  description?: string;
-  passing_score?: number | null;
-  latestAttempt?: QuizAttemptSummary | null;
-}
-
-export interface QuizListProps {
   workspaceId: string;
+  videoId: string;
+  userId: string;
+  status: GenerationStatus;
+  title?: string;
+  durationMinutes?: number;
+  passingScore?: number;
+  description?: string;
+  questionCount?: number;
+  totalPoints?: number;
+  payload?: QuizPayload;
+  latestAttempt?: QuizAttemptSummary | null;
+  failureReason?: string | null;
+  createdAt: string;
+  updatedAt?: string;
 }

@@ -4,35 +4,39 @@ import { useNavigate } from "react-router-dom";
 import { Plus } from "lucide-react";
 import { AddContentModal } from "@/lib/modal/AddContantModal";
 import { Workspace } from "@/lib/types";
-import { WorkspaceFolderItem } from "./Index";
+import WorkspaceFolderItem from "./WorkspaceFolderItem";
 
 export default function WorkspacesList({
   workspaces,
+  refreshParentComponent,
   isRTL,
 }: {
   workspaces: Workspace[];
+  refreshParentComponent: () => void;
   isRTL: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const [, setActiveStep] = useState(0);
-  const [, setSelectedCard] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const handleWorkspaceClick = (workspaceId: string) => {
     navigate(`/dashboard/learn/workspace/${workspaceId}`);
   };
 
+  const refreshComponent = () => {
+    refreshParentComponent();
+  };
+
   const handleReset = () => {
-    setSelectedCard(null);
-    setActiveStep(0);
     setOpen(false);
   };
+
   return (
     <section>
       <div className="flex gap-4 flex-wrap">
         {workspaces.length !== 0 &&
           workspaces.map((workspace) => (
             <WorkspaceFolderItem
+              refreshParentComponent={refreshComponent}
               key={workspace.id}
               workspace={workspace}
               onClick={() => handleWorkspaceClick(workspace.id)}

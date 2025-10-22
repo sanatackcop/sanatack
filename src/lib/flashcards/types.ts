@@ -1,3 +1,5 @@
+import { GenerationStatus } from "../types";
+
 export interface Flashcard {
   id?: string;
   term?: string;
@@ -12,11 +14,12 @@ export interface Flashcard {
   difficulty?: number; // 1: Again, 2: Hard, 3: Good, 4: Easy
 }
 
-export interface FlashcardSet {
+export interface FlashcardDeck {
   id: string;
   title: string;
   description: string;
   categories: string[];
+  status: GenerationStatus;
   flashcards: Flashcard[];
 }
 
@@ -30,5 +33,5 @@ export interface CircularProgressProps {
 
 export interface DeleteModalState {
   isOpen: boolean;
-  setToDelete: FlashcardSet | null;
+  setToDelete: FlashcardDeck | null;
 }

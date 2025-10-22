@@ -1,394 +1,149 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import ReactFlow, {
-  Background,
-  Controls,
-  Edge,
-  MiniMap,
-  Node,
-  ReactFlowProvider,
-} from "reactflow";
-import "reactflow/dist/style.css";
-
-import { Button } from "@/components/ui/button";
+import { AnimatePresence, motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Settings2, RefreshCcw } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  ArrowLeft,
+  Loader2,
+  RefreshCcw,
+  Settings2,
+  AlertTriangle,
+} from "lucide-react";
+import { GenerationStatus } from "../types";
 import {
   createNewDeepExplanationApi,
   getWorkSpaceContent,
 } from "@/utils/_apis/learnPlayground-api";
-import { motion } from "framer-motion";
+import {
+  getErrorMessage,
+  ProgressStrip,
+  QueuedStrip,
+  StatusBadge,
+} from "@/pages/dashboard/utils";
+import ExplanationSections from "./ExplanationSection";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
-interface MindMapNodeDto {
+export type Explanation = {
   id: string;
-  label: string;
-  children?: MindMapNodeDto[];
-}
+  created_at: string;
+  updated_at: string;
+  status: "pending" | "processing" | "failed" | "completed";
+  payload: ExplanationPayload | null;
+  failureReason?: string | null;
+};
 
-interface ExplanationMindMapDto {
-  root: string;
-  nodes: MindMapNodeDto[];
-}
-
-interface ExplanationDto {
+export type ExplanationPayload = {
   title: string;
   introduction: string;
-  main_content?: Array<{
-    section: string;
+  main_content: {
     content: string;
-    detailed_breakdown?: string;
+    section: string;
     examples?: string[];
     key_points?: string[];
+    connections?: string[];
+    detailed_breakdown?: string;
     practical_significance?: string;
-  }>;
+  }[];
+  key_takeaways?: string[];
+  terminology_explained?: {
+    term: string;
+    context?: string;
+    definition: string;
+  }[];
   comprehensive_analysis?: {
     core_themes?: string[];
-    detailed_concepts?: Array<{
+    detailed_concepts?: {
       concept: string;
-      in_depth_explanation: string;
       supporting_details?: string[];
-    }>;
-    processes_and_methods?: Array<{
+      in_depth_explanation?: string;
+    }[];
+    processes_and_methods?: {
       process: string;
-      detailed_steps: string[];
       explanations?: string[];
-    }>;
+      detailed_steps?: string[];
+    }[];
   };
-  key_takeaways?: string[];
   practical_applications?: string[];
-  study_tips?: string[];
-  mind_map?: ExplanationMindMapDto | null;
-}
-
-interface MindMapProps {
-  workspaceId: string;
-}
-
-const VERTICAL_SPACING = 140;
-const HORIZONTAL_SPACING = 220;
-
-const buildMindMapGraph = (mindMap?: ExplanationMindMapDto | null) => {
-  if (!mindMap || (!mindMap.root && !mindMap.nodes?.length)) {
-    return { nodes: [], edges: [] };
-  }
-
-  const nodes: Node[] = [];
-  const edges: Edge[] = [];
-  let yCursor = 0;
-
-  nodes.push({
-    id: "root",
-    data: { label: mindMap.root || "Root" },
-    position: { x: 0, y: 0 },
-    type: "input",
-  });
-
-  const normaliseId = (rawId: string, fallbackSuffix: string) =>
-    rawId && rawId.trim().length ? rawId : `node-${fallbackSuffix}`;
-
-  const walk = (node: MindMapNodeDto, depth: number, parentId: string) => {
-    const nodeId = normaliseId(node.id, `${parentId}-${nodes.length}`);
-    const position = { x: depth * HORIZONTAL_SPACING, y: yCursor };
-    yCursor += VERTICAL_SPACING;
-
-    nodes.push({
-      id: nodeId,
-      data: { label: node.label },
-      position,
-      type: depth === 1 ? "default" : undefined,
-    });
-
-    edges.push({
-      id: `${parentId}-${nodeId}`,
-      source: parentId,
-      target: nodeId,
-      animated: depth < 2,
-    });
-
-    node.children?.forEach((child) => walk(child, depth + 1, nodeId));
-  };
-
-  mindMap.nodes?.forEach((child) => walk(child, 1, "root"));
-
-  const minY = nodes.reduce((acc, n) => Math.min(acc, n.position.y), 0);
-  if (minY < 0) {
-    nodes.forEach((n) => {
-      n.position = { ...n.position, y: n.position.y - minY + VERTICAL_SPACING };
-    });
-  }
-
-  return { nodes, edges };
+  mind_map?: unknown;
 };
 
-const ExplanationSections = ({
-  explanation,
-}: {
-  explanation: ExplanationDto;
-}) => {
-  const hasSections =
-    explanation.main_content && explanation.main_content.length > 0;
-  const hasAnalysis = explanation.comprehensive_analysis;
-  const hasTips = explanation.study_tips && explanation.study_tips.length > 0;
-  const hasApplications =
-    explanation.practical_applications &&
-    explanation.practical_applications.length > 0;
-  const hasKeyTakeaways =
-    explanation.key_takeaways && explanation.key_takeaways.length > 0;
+const POLL_MS = 2000;
 
-  return (
-    <div className="space-y-6 h-full">
-      <section>
-        <h2 className="text-2xl font-semibold text-gray-900 mb-2">
-          {explanation.title}
-        </h2>
-        <p className="text-gray-600 leading-relaxed">
-          {explanation.introduction}
-        </p>
-      </section>
+const toGen = (s: Explanation["status"]): GenerationStatus =>
+  s === "pending"
+    ? GenerationStatus.PENDING
+    : s === "processing"
+    ? GenerationStatus.PROCESSING
+    : s === "failed"
+    ? GenerationStatus.FAILED
+    : GenerationStatus.COMPLETED;
 
-      {hasSections && (
-        <section className="space-y-4">
-          <h3 className="text-xl font-semibold text-gray-900">Main Sections</h3>
-          {explanation.main_content!.map((section, idx) => (
-            <Card key={idx} className="p-5 space-y-3">
-              <div>
-                <h4 className="text-lg font-semibold text-gray-900">
-                  {section.section}
-                </h4>
-                <p className="text-gray-700 leading-relaxed">
-                  {section.content}
-                </p>
-              </div>
-              {section.detailed_breakdown && (
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm text-gray-600">
-                  {section.detailed_breakdown}
-                </div>
-              )}
-              {section.examples && section.examples.length > 0 && (
-                <div>
-                  <p className="text-sm font-medium text-gray-800 mb-1">
-                    Examples
-                  </p>
-                  <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
-                    {section.examples.map((example, exampleIdx) => (
-                      <li key={exampleIdx}>{example}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {section.key_points && section.key_points.length > 0 && (
-                <div>
-                  <p className="text-sm font-medium text-gray-800 mb-1">
-                    Key Points
-                  </p>
-                  <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
-                    {section.key_points.map((point, pointIdx) => (
-                      <li key={pointIdx}>{point}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {section.practical_significance && (
-                <div className="text-sm text-green-700 bg-green-50 border border-green-100 rounded-lg p-3">
-                  {section.practical_significance}
-                </div>
-              )}
-            </Card>
-          ))}
-        </section>
-      )}
+export default function MindMap({ workspaceId }: { workspaceId: string }) {
+  const [items, setItems] = useState<Explanation[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(null); // null => show LIST first
+  const [loading, setLoading] = useState(true);
+  const [generating, setGenerating] = useState(false);
+  const { t } = useTranslation();
 
-      {hasAnalysis && (
-        <section className="space-y-4">
-          <h3 className="text-xl font-semibold text-gray-900">
-            Comprehensive Analysis
-          </h3>
-          {explanation.comprehensive_analysis?.core_themes && (
-            <Card className="p-4">
-              <h4 className="font-medium text-gray-900 mb-2">Core Themes</h4>
-              <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
-                {explanation.comprehensive_analysis.core_themes.map(
-                  (theme, idx) => (
-                    <li key={idx}>{theme}</li>
-                  )
-                )}
-              </ul>
-            </Card>
-          )}
-          {explanation.comprehensive_analysis?.detailed_concepts?.map(
-            (concept, idx) => (
-              <Card key={idx} className="p-4 space-y-2">
-                <div className="text-lg font-semibold text-gray-900">
-                  {concept.concept}
-                </div>
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  {concept.in_depth_explanation}
-                </p>
-                {concept.supporting_details &&
-                  concept.supporting_details.length > 0 && (
-                    <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
-                      {concept.supporting_details.map((detail, detailIdx) => (
-                        <li key={detailIdx}>{detail}</li>
-                      ))}
-                    </ul>
-                  )}
-              </Card>
-            )
-          )}
-        </section>
-      )}
-
-      {hasApplications && (
-        <section className="space-y-3">
-          <h3 className="text-xl font-semibold text-gray-900">
-            Practical Applications
-          </h3>
-          <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
-            {explanation.practical_applications!.map((item, idx) => (
-              <li key={idx}>{item}</li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {hasTips && (
-        <section className="space-y-3">
-          <h3 className="text-xl font-semibold text-gray-900">Study Tips</h3>
-          <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
-            {explanation.study_tips!.map((tip, idx) => (
-              <li key={idx}>{tip}</li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {hasKeyTakeaways && (
-        <section className="space-y-3">
-          <h3 className="text-xl font-semibold text-gray-900">Key Takeaways</h3>
-          <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
-            {explanation.key_takeaways!.map((takeaway, idx) => (
-              <li key={idx}>{takeaway}</li>
-            ))}
-          </ul>
-        </section>
-      )}
-    </div>
-  );
-};
-
-const EmptyState = ({
-  onGenerate,
-  loading,
-}: {
-  onGenerate: () => Promise<void>;
-  loading: boolean;
-}) => (
-  <Card className="relative z-0 mx-5 px-6 py-10 flex flex-col items-center text-center gap-4 border-2 border-dashed border-gray-200 bg-gradient-to-br from-white to-gray-50/50">
-    <h2 className="text-2xl font-semibold text-gray-900">
-      Generate a Deep Explanation
-    </h2>
-    <p className="text-gray-600 max-w-xl">
-      Create a comprehensive deep-dive explanation with structured sections, key
-      themes, and a mind map overview tailored to your workspace content.
-    </p>
-    <Button
-      onClick={onGenerate}
-      disabled={loading}
-      className="rounded-2xl px-6 py-3 font-medium shadow-sm"
-    >
-      {loading ? (
-        <>
-          <RefreshCcw className="mr-2 h-4 w-4 animate-spin" />
-          Generating...
-        </>
-      ) : (
-        <>
-          <Settings2 className="mr-2 h-4 w-4" />
-          Generate Explanation
-        </>
-      )}
-    </Button>
-  </Card>
-);
-
-const ExplanationHeader = ({
-  onGenerate,
-  loading,
-}: {
-  onGenerate: () => Promise<void>;
-  loading: boolean;
-}) => (
-  <Card className="relative z-0 mx-5 px-6 py-6 flex items-center justify-between border border-gray-200 bg-white shadow-sm">
-    <div className="max-w-[70%] space-y-1">
-      <h2 className="text-2xl font-semibold text-gray-900">Deep Explanation</h2>
-      <p className="text-sm text-gray-600">
-        Detailed concept breakdown, comprehensive analysis, and a visual mind
-        map for accelerated learning.
-      </p>
-    </div>
-    <Button
-      onClick={onGenerate}
-      disabled={loading}
-      className="rounded-2xl px-6 py-3"
-    >
-      {loading ? (
-        <>
-          <RefreshCcw className="mr-2 h-4 w-4 animate-spin" />
-          Generating...
-        </>
-      ) : (
-        <>
-          <Settings2 className="mr-2 h-4 w-4" />
-          Regenerate
-        </>
-      )}
-    </Button>
-  </Card>
-);
-
-export default function MindMap({ workspaceId }: MindMapProps) {
-  const [explanation, setExplanation] = useState<ExplanationDto | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [generating, setGenerating] = useState<boolean>(false);
-
-  const loadExplanation = useCallback(async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
-      const content = await getWorkSpaceContent(workspaceId);
-      const explanations = content?.explanations ?? [];
-      setExplanation(explanations.length ? explanations[0] : null);
-    } catch (error) {
-      console.error("Failed to load explanation", error);
-      setExplanation(null);
+      const content = (await getWorkSpaceContent(workspaceId)) as {
+        explanations?: Explanation[];
+      };
+      const list = (content.explanations ?? [])
+        .slice()
+        .sort(
+          (a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+      setItems(list);
+      // IMPORTANT: do NOT auto-select anything; list first like FlashcardsList
     } finally {
       setLoading(false);
     }
   }, [workspaceId]);
 
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const anyActive = useMemo(
+    () =>
+      items.some((x) => x.status === "pending" || x.status === "processing"),
+    [items]
+  );
+
+  useEffect(() => {
+    if (!anyActive) return;
+    const t = setInterval(load, POLL_MS);
+    return () => clearInterval(t);
+  }, [anyActive, load]);
+
   const handleGenerate = useCallback(async () => {
     setGenerating(true);
     try {
       await createNewDeepExplanationApi({ id: workspaceId });
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      await loadExplanation();
-    } catch (error) {
-      console.error("Failed to generate explanation", error);
+      await load();
+    } catch (err) {
+      const fallbackMessage = t(
+        "dashboard.errors.loadSpaces",
+        "Failed Creating Explanation Deck."
+      );
+      const msg = getErrorMessage(err, fallbackMessage);
+      toast.error(msg, {
+        closeButton: true,
+      });
+      console.error("Failed Creating Explanation: ", err);
     } finally {
       setGenerating(false);
     }
-  }, [workspaceId, loadExplanation]);
+  }, [workspaceId, load]);
 
-  useEffect(() => {
-    loadExplanation();
-  }, [loadExplanation]);
-
-  const { nodes, edges } = useMemo(
-    () => buildMindMapGraph(explanation?.mind_map),
-    [explanation]
-  );
-
-  if (loading && !explanation) {
+  if (loading && items.length === 0) {
     return (
       <div className="space-y-6 px-6">
         <Skeleton className="h-16 w-full rounded-xl" />
@@ -397,48 +152,177 @@ export default function MindMap({ workspaceId }: MindMapProps) {
     );
   }
 
-  if (!explanation) {
-    return <EmptyState onGenerate={handleGenerate} loading={generating} />;
-  }
+  const active = items.find((x) => x.id === activeId) ?? null;
 
   return (
     <div className="flex-1 min-h-0">
       <ScrollArea className="h-full">
-        <motion.div
-          key="list"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 20 }}
-          transition={{ duration: 0.25 }}
-          className="px-6 mb-4 flex flex-col rounded-3xl justify-between space-y-3"
-        >
-          <div className="px-6">
-            <div className="flex-1 min-h-0">
-              <ScrollArea className="h-full">
-                <ExplanationSections explanation={explanation} />
-              </ScrollArea>
-            </div>
-          </div>
-          {nodes.length > 0 && (
-            <Card className="mx-6 p-4 h-[32rem] border border-gray-200">
-              <ReactFlowProvider>
-                <ReactFlow
-                  nodes={nodes}
-                  edges={edges}
-                  fitView
-                  minZoom={0.25}
-                  nodeTypes={{}}
-                  edgeTypes={{}}
+        <AnimatePresence mode="wait">
+          {!active ? (
+            <motion.div
+              key="list"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.25 }}
+              className="px-6 py-4 mb-4 flex flex-col rounded-3xl space-y-3"
+            >
+              <h3 className="px-2 text-sm font-medium text-gray-700">
+                My Explanations
+              </h3>
+              <div className="space-y-3">
+                {items.map((it) => {
+                  const disabled =
+                    it.status === "pending" || it.status === "processing";
+                  const isFailed = it.status === "failed";
+                  return (
+                    <Card
+                      key={it.id}
+                      role="button"
+                      aria-disabled={disabled}
+                      aria-busy={disabled}
+                      onClick={() =>
+                        it.status === "completed" && setActiveId(it.id)
+                      }
+                      className={`group relative overflow-hidden px-6 py-5 flex flex-col rounded-2xl justify-center shadow-sm border transition-all cursor-pointer
+                        ${
+                          isFailed
+                            ? "bg-red-50/50 border-red-200 hover:border-red-300"
+                            : "bg-white hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100/80 border-gray-200/60 hover:border-gray-300/80"
+                        }`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className="font-semibold text-lg text-gray-900 truncate">
+                              {it.payload?.title || "Explanation"}
+                            </h3>
+                            <StatusBadge status={toGen(it.status)} />
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            Created {new Date(it.created_at).toLocaleString()}
+                          </div>
+                        </div>
+                      </div>
+
+                      {isFailed && (
+                        <div className="mt-3 w-full rounded-xl border border-red-200 bg-red-50 text-red-700 px-3 py-2 text-sm flex items-center gap-2">
+                          <AlertTriangle className="w-4 h-4" />
+                          <span>
+                            {it.failureReason ||
+                              "Generation failed. You can try again."}
+                          </span>
+                        </div>
+                      )}
+
+                      {it.status === "processing" && <ProgressStrip />}
+                      {it.status === "pending" && <QueuedStrip />}
+                    </Card>
+                  );
+                })}
+                <Card className="relative z-0 px-6 py-6 mt-4 flex items-center justify-between border border-gray-200 bg-white shadow-sm">
+                  <div className="max-w-[70%] space-y-1">
+                    <h2 className="text-2xl font-semibold text-gray-900">
+                      Deep Explanation
+                    </h2>
+                    <p className="text-sm text-gray-600">
+                      Detailed concept broken down
+                      {/* and visual mind map. */}
+                    </p>
+                  </div>
+                  <Button
+                    onClick={handleGenerate}
+                    disabled={generating || anyActive}
+                    className="rounded-2xl px-6 py-3"
+                  >
+                    {generating ? (
+                      <>
+                        <RefreshCcw className="mr-2 h-4 w-4 animate-spin" />{" "}
+                        Generating…
+                      </>
+                    ) : (
+                      <>
+                        <Settings2 className="mr-2 h-4 w-4" /> Generate
+                      </>
+                    )}
+                  </Button>
+                </Card>
+              </div>
+            </motion.div>
+          ) : (
+            // DETAIL (only after user clicks)
+            <motion.div
+              key={`detail-${active.id}`}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.25 }}
+              className="h-full flex flex-col w-full"
+            >
+              <div className="flex items-center gap-4 px-14 py-4 flex-shrink-0">
+                <div
+                  className="flex group items-center text-gray-400/50 cursor-pointer hover:bg-gray-50/50 rounded-2xl py-2 px-3"
+                  onClick={() => setActiveId(null)}
                 >
-                  <MiniMap />
-                  <Controls />
-                  <Background gap={16} color="#f3f4f6" />
-                </ReactFlow>
-              </ReactFlowProvider>
-            </Card>
+                  <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition" />
+                  <span className="text-sm">Back</span>
+                </div>
+              </div>
+
+              <div className="flex-1 min-h-0 bg-white">
+                <ScrollArea className="h-full">
+                  {active.status !== "completed" ? (
+                    <div className="space-y-6 px-6">
+                      <Skeleton className="h-16 w-full rounded-xl" />
+                      <Card className="px-6 py-4 flex items-center gap-2 border border-amber-200 bg-amber-50 text-amber-800">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>
+                          {active.status === "pending"
+                            ? "Queued…"
+                            : "Processing…"}
+                        </span>
+                      </Card>
+                      <Skeleton className="h-[480px] w-full rounded-xl" />
+                    </div>
+                  ) : (
+                    <div className="px-6 mb-4 flex flex-col rounded-3xl space-y-3">
+                      <div className="px-6">
+                        <ScrollArea className="h-full">
+                          {active.payload ? (
+                            <ExplanationSections explanation={active.payload} />
+                          ) : (
+                            <Card className="p-4">
+                              <div className="text-sm text-gray-600">
+                                No explanation content available.
+                              </div>
+                            </Card>
+                          )}
+                        </ScrollArea>
+                      </div>
+
+                      {/* If/when you want the mind-map back, uncomment below */}
+                      {/* {active.payload?.mind_map && (
+                        <Card className="mx-6 p-4 h-[32rem] border border-gray-200">
+                          <ReactFlowProvider>
+                            <ReactFlow
+                              {...buildMindMapGraph(active.payload.mind_map)}
+                              fitView
+                              minZoom={0.25}
+                            >
+                              <MiniMap />
+                              <Controls />
+                              <Background gap={16} color="#f3f4f6" />
+                            </ReactFlow>
+                          </ReactFlowProvider>
+                        </Card>
+                      )} */}
+                    </div>
+                  )}
+                </ScrollArea>
+              </div>
+            </motion.div>
           )}
-          <ExplanationHeader onGenerate={handleGenerate} loading={generating} />
-        </motion.div>
+        </AnimatePresence>
       </ScrollArea>
     </div>
   );
