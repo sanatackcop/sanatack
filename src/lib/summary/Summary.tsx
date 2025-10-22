@@ -76,7 +76,7 @@ export type MindMapNode = {
 };
 
 export interface SummaryListProps {
-  worksapceId: string;
+  workspaceId: string;
 }
 
 export interface SummaryViewProps {
@@ -225,7 +225,7 @@ function FlowChart({ initialNodes, initialEdges }: FlowChartProps) {
   );
 }
 
-export function SummaryList({ worksapceId }: SummaryListProps) {
+export function SummaryList({ workspaceId }: SummaryListProps) {
   const [summaries, setSummaries] = useState<Summary[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [refetch, setRefetch] = useState<boolean>(false);
@@ -236,7 +236,7 @@ export function SummaryList({ worksapceId }: SummaryListProps) {
   const createNewSummary = async () => {
     setGenerating(true);
     try {
-      await createNewSummaryApi({ id: worksapceId });
+      await createNewSummaryApi({ id: workspaceId });
       setRefetch(!refetch);
     } catch (err) {
       const fallbackMessage = t(
@@ -263,11 +263,11 @@ export function SummaryList({ worksapceId }: SummaryListProps) {
 
   useEffect(() => {
     setLoading(true);
-    getWorkSpaceContent(worksapceId).then((data: any) => {
+    getWorkSpaceContent(workspaceId).then((data: any) => {
       setSummaries(data.summaries ?? []);
       setLoading(false);
     });
-  }, [worksapceId, refetch]);
+  }, [workspaceId, refetch]);
 
   if (selectedSummary) {
     return (
@@ -299,7 +299,10 @@ export function SummaryList({ worksapceId }: SummaryListProps) {
           {loading ? (
             <div className="space-y-3">
               {[...Array(3)].map((_, i) => (
-                <Card key={i} className="p-4 h-32 animate-pulse bg-gray-100" />
+                <Card
+                  key={i}
+                  className="p-4 h-32 animate-pulse bg-zinc-100 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800"
+                />
               ))}
             </div>
           ) : summaries.length === 0 ? (
@@ -362,13 +365,13 @@ export function SummaryList({ worksapceId }: SummaryListProps) {
               })}
             </div>
           )}
-          <Card className="relative z-0 py-2  flex flex-col justify-between overflow-hidden bg-gradient-to-br from-white to-gray-50/50 border-2 border-dashed border-gray-200 hover:border-gray-300 transition-colors duration-200">
+          <Card className="relative z-0 py-2 flex flex-col justify-between overflow-hidden bg-gradient-to-br from-white to-zinc-50/60 dark:from-zinc-950/40 dark:to-zinc-900/40 border-2 border-dashed border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600 transition-colors duration-200">
             <div className="relative z-10 flex items-start justify-between mx-2 px-4 py-6">
               <div className="max-w-[65%]">
-                <h2 className="text-2xl font-bold tracking-tight text-gray-900 mb-2">
-                  Create a Summary
+                <h2 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mb-2">
+                  {t("summary.createTitle", "Create a Summary")}
                 </h2>
-                <p className="text-gray-600 text-sm leading-relaxed">
+                <p className="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed">
                   {t(
                     "common.createFlashCardDescription",
                     "Create a Summary to summarize key points and generate a mind map for better understanding."
@@ -409,10 +412,10 @@ export function SummaryView({ summary, onClose }: SummaryViewProps) {
   const { nodes, edges } = mapMindMapRootToFlowData(summary.payload.mind_map);
 
   return (
-    <Card className="flex flex-col gap-4 px-2 md:px-6  w-full min-h-[600px] border-none overflow-visible">
+    <Card className="flex flex-col gap-4 px-2 md:px-6 w-full min-h-[600px] border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/60 overflow-visible">
       <div className="flex flex-col items-start w-full max-w-5xl mx-auto gap-4">
         <div
-          className="flex group items-center text-gray-400/50 cursor-pointer hover:bg-gray-50/50 drop-shadow-sm hover:text-zinc-700 rounded-2xl py-2 px-3 transition-all ease-linear duration-100"
+          className="flex group items-center text-zinc-400/70 cursor-pointer hover:bg-zinc-100/60 dark:hover:bg-zinc-900/60 drop-shadow-sm hover:text-zinc-700 dark:hover:text-zinc-200 rounded-2xl py-2 px-3 transition-all ease-linear duration-100"
           onClick={onClose}
         >
           <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-all ease-out duration-200" />
@@ -432,8 +435,13 @@ export function SummaryView({ summary, onClose }: SummaryViewProps) {
         </ul>
       </div>
       <div className="w-full max-w-5xl mx-auto mt-2 flex flex-col">
-        <div className="font-semibold mb-2">Mind Map</div>
-        <div className="w-full relative" style={{ height: 500 }}>
+        <div className="font-semibold mb-2 text-zinc-800 dark:text-zinc-200">
+          Mind Map
+        </div>
+        <div
+          className="w-full relative bg-zinc-100 dark:bg-zinc-900/60 rounded-xl border border-zinc-200 dark:border-zinc-800"
+          style={{ height: 500 }}
+        >
           <ReactFlowProvider>
             <FlowChart initialNodes={nodes} initialEdges={edges} />
           </ReactFlowProvider>

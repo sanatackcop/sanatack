@@ -155,10 +155,10 @@ const MessageBubble: React.FC<{
         <div
           className={`group relative overflow-hidden rounded-2xl px-4 py-3 transition-colors duration-200 border shadow-sm ${
             isUser
-              ? "bg-gradient-to-br from-blue-50 to-white text-blue-900 border-blue-200 dark:from-blue-900/30 dark:to-neutral-900 dark:text-blue-100 dark:border-blue-800/50"
+              ? "bg-zinc-50/85 text-zinc-900 border border-zinc-200 dark:bg-zinc-900/70 dark:text-zinc-100 dark:border-zinc-800/60"
               : isError
-              ? "bg-red-50 border-red-200 text-red-800 dark:bg-red-950/30 dark:border-red-900/50 dark:text-red-200"
-              : "bg-white/90 text-gray-900 dark:bg-neutral-900/70 dark:text-gray-100 dark:border-white/10 border-gray-200"
+              ? "bg-red-50 border border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-700/40 dark:text-red-300"
+              : "bg-zinc-50/85 text-zinc-900 border border-zinc-200 dark:bg-zinc-900/70 dark:text-zinc-100 dark:border-zinc-800/60"
           }`}
         >
           {/* subtle pattern & glow */}
@@ -206,18 +206,22 @@ const MessageBubble: React.FC<{
                     </a>
                   ),
                   h1: ({ children }) => (
-                    <h1 className="text-lg font-bold mb-3 text-gray-900 dark:text-white border-b border-gray-200 dark:border-white/10 pb-1">
+                    <h1 className="text-lg font-bold mb-3 text-zinc-900 dark:text-zinc-100 border-b border-zinc-200 dark:border-zinc-700 pb-1">
                       {children}
                     </h1>
                   ),
                   h2: ({ children }) => (
-                    <h2 className="text-base font-semibold mb-2">{children}</h2>
+                    <h2 className="text-base font-bold mb-2 text-zinc-900 dark:text-zinc-100">
+                      {children}
+                    </h2>
                   ),
                   h3: ({ children }) => (
-                    <h3 className="text-sm font-semibold mb-2">{children}</h3>
+                    <h3 className="text-sm font-bold mb-2 text-zinc-900 dark:text-zinc-100">
+                      {children}
+                    </h3>
                   ),
                   p: ({ children }) => (
-                    <p className="mb-3 last:mb-0 text-gray-800 dark:text-gray-200 leading-relaxed">
+                    <p className="mb-3 last:mb-0 text-zinc-800 dark:text-zinc-200 leading-relaxed">
                       {children}
                     </p>
                   ),
@@ -241,46 +245,59 @@ const MessageBubble: React.FC<{
                   ),
                   li: ({ children }) => (
                     <li
-                      className={`leading-relaxed ${
-                        isRtl ? "text-right" : "text-left"
+                      className={`text-zinc-800 dark:text-zinc-200 leading-relaxed flex items-start ${
+                        isRtl ? "flex-row-reverse" : ""
                       }`}
                     >
-                      {children}
+                      <span
+                        className={`w-1.5 h-1.5 bg-zinc-400 dark:bg-zinc-600 rounded-full mt-2 flex-shrink-0 ${
+                          isRtl ? "ml-2" : "mr-2"
+                        }`}
+                      ></span>
+                      <span>{children}</span>
                     </li>
                   ),
                   strong: ({ children }) => (
-                    <strong className="font-semibold">{children}</strong>
+                    <strong className="font-semibold text-zinc-900 dark:text-zinc-100">
+                      {children}
+                    </strong>
                   ),
-                  em: ({ children }) => <em className="italic">{children}</em>,
+                  em: ({ children }) => (
+                    <em className="italic text-zinc-800 dark:text-zinc-200">
+                      {children}
+                    </em>
+                  ),
                   blockquote: ({ children }) => (
                     <blockquote
                       className={`${
                         isRtl ? "border-r-4 pr-4" : "border-l-4 pl-4"
-                      } border-blue-500/60 py-2 my-3 bg-blue-50/40 dark:bg-blue-950/20 rounded`}
+                      } border-blue-500 py-2 my-3 bg-zinc-50 text-zinc-700 italic rounded dark:bg-zinc-900/50 dark:text-zinc-200`}
                     >
                       {children}
                     </blockquote>
                   ),
                   hr: () => (
-                    <hr className="my-4 border-t border-gray-200 dark:border-white/10" />
+                    <hr className="my-4 border-t border-zinc-200 dark:border-zinc-700" />
                   ),
                   table: ({ children }) => (
-                    <div className="overflow-x-auto my-4 border border-gray-200 dark:border-white/10 rounded-lg">
-                      <table className="min-w-full">{children}</table>
+                    <div className="overflow-x-auto my-4">
+                      <table className="min-w-full border border-zinc-200 dark:border-zinc-700 rounded-lg">
+                        {children}
+                      </table>
                     </div>
                   ),
                   thead: ({ children }) => (
-                    <thead className="bg-gray-50 dark:bg-neutral-800">
+                    <thead className="bg-zinc-50 dark:bg-zinc-900/40">
                       {children}
                     </thead>
                   ),
                   th: ({ children }) => (
-                    <th className="px-4 py-2 text-left font-semibold border-b border-gray-200 dark:border-white/10">
+                    <th className="px-4 py-2 text-left font-semibold text-zinc-900 dark:text-zinc-100 border-b border-zinc-200 dark:border-zinc-700">
                       {children}
                     </th>
                   ),
                   td: ({ children }) => (
-                    <td className="px-4 py-2 border-b border-gray-100 dark:border-white/5">
+                    <td className="px-4 py-2 text-zinc-800 dark:text-zinc-200 border-b border-zinc-100 dark:border-zinc-800/60">
                       {children}
                     </td>
                   ),
@@ -374,14 +391,14 @@ export default function ChatMessages({
           className="flex items-center justify-center text-center h-full"
         >
           <div className="space-y-4">
-            <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-gray-500 to-gray-600 flex items-center justify-center shadow-lg">
+            <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-zinc-500 to-zinc-600 flex items-center justify-center shadow-lg dark:shadow-zinc-900/40">
               <MessageCircle className="w-8 h-8 text-white" />
             </div>
             <div className="space-y-2">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+              <h3 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
                 {t("chat.welcome", "تعلم مع المدرس الذكي")}
               </h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
+              <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-sm">
                 {t(
                   "chat.welcome_message",
                   "اسأل أي سؤال عن المحتوى أو احصل على المساعدة فيما تحتاجه."
@@ -427,12 +444,8 @@ export default function ChatMessages({
                   isRtl ? "flex-row-reverse" : ""
                 }`}
               >
-                <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-3 shadow-sm">
-                  <div
-                    className={`flex ${
-                      isRtl ? "space-x-reverse" : ""
-                    } space-x-1`}
-                  >
+                <div className="bg-zinc-50/85 border border-zinc-200 rounded-2xl px-4 py-3 shadow-sm dark:bg-zinc-900/70 dark:border-zinc-800/60 dark:shadow-none">
+                  <div className="flex space-x-1">
                     <motion.div
                       animate={{ opacity: [0.4, 1, 0.4] }}
                       transition={{ duration: 1.4, repeat: Infinity }}

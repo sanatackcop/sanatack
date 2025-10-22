@@ -22,6 +22,8 @@ import {
   BookOpen,
   Mic,
   TestTube,
+  Spade,
+  PencilRulerIcon,
 } from "lucide-react";
 import {
   createNewWorkSpace,
@@ -31,6 +33,7 @@ import {
   youtubeUrlPastApi,
 } from "@/utils/_apis/learnPlayground-api";
 import CircularProgress from "@mui/material/CircularProgress";
+import { useTranslation } from "react-i18next";
 
 interface AddContentModalProps {
   open: boolean;
@@ -62,6 +65,10 @@ interface PasteState {
 }
 
 export function AddContentModal({ open, onClose }: AddContentModalProps) {
+  const { t, i18n } = useTranslation();
+  const dir = i18n.dir();
+  const isRTL = dir === "rtl";
+
   const navigate = useNavigate();
   const [activeModal, setActiveModal] = useState<ModalType>("selection");
 
@@ -129,7 +136,10 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
       setUploadState((prev) => ({
         ...prev,
         files: [],
-        error: "Only PDF files are supported.",
+        error: t(
+          "modals.addContent.errors.pdfOnly",
+          "Only PDF files are supported."
+        ),
         isUploading: false,
         uploadProgress: 0,
         status: null,
@@ -188,7 +198,11 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
           ...prev,
           isUploading: false,
           error:
-            error?.message || "Unable to retrieve document status right now.",
+            error?.message ||
+            t(
+              "modals.addContent.errors.documentStatus",
+              "Unable to retrieve document status right now."
+            ),
         }));
       }
     };
@@ -351,46 +365,99 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-[600px]" dir="ltr">
+      <DialogContent
+        className="sm:max-w-[600px]"
+        dir={dir}
+        lang={i18n.language}
+      >
         {activeModal === "selection" && (
           <>
-            <DialogHeader>
-              <DialogTitle>Add New Learning Playground</DialogTitle>
+            <DialogHeader className={isRTL ? "text-right" : "text-left"}>
+              <DialogTitle>
+                {t("modals.addContent.title", "Add New Learning Playground")}
+              </DialogTitle>
               <DialogDescription>
-                Choose how to add your content
+                {t(
+                  "modals.addContent.subtitle",
+                  "Choose how to add your content"
+                )}
               </DialogDescription>
             </DialogHeader>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-4">
               <ContentTypeCard
-                title="Upload PDF"
-                subtitle="Upload a PDF document"
+                title={t("modals.addContent.uploadPdf.title", "Upload PDF")}
+                subtitle={t(
+                  "modals.addContent.uploadPdf.subtitle",
+                  "Upload a PDF document"
+                )}
                 Icon={UploadCloud}
+                isRTL={isRTL}
                 onClick={() => setActiveModal("upload")}
               />
               <ContentTypeCard
-                title="Paste URL"
-                subtitle="Add content from a link"
+                title={t("modals.addContent.pasteUrl.title", "Paste URL")}
+                subtitle={t(
+                  "modals.addContent.pasteUrl.subtitle",
+                  "Add content from a link"
+                )}
                 Icon={Link2}
+                isRTL={isRTL}
                 onClick={() => setActiveModal("paste")}
               />
               <ContentTypeCard
-                title="Create Course"
-                subtitle="Generate a course from content"
+                title={t(
+                  "modals.addContent.createCourse.title",
+                  "Create Course"
+                )}
+                subtitle={t(
+                  "modals.addContent.createCourse.subtitle",
+                  "Generate a course from content"
+                )}
                 Icon={BookOpen}
+                isRTL={isRTL}
                 onClick={() => setActiveModal("createCourse")}
               />
               <ContentTypeCard
-                title="Record Audio"
-                subtitle="Record and add audio content"
+                title={t("modals.addContent.recordAudio.title", "Record Audio")}
+                subtitle={t(
+                  "modals.addContent.recordAudio.subtitle",
+                  "Record and add audio content"
+                )}
                 Icon={Mic}
+                isRTL={isRTL}
+                onClick={() => setActiveModal("recordAudio")}
+              />
+              <ContentTypeCard
+                title="Learngin Session"
+                subtitle={t(
+                  "modals.addContent.recordAudio.subtitle",
+                  "Record and add audio content"
+                )}
+                Icon={PencilRulerIcon}
+                isRTL={isRTL}
+                onClick={() => setActiveModal("recordAudio")}
+              />
+
+              <ContentTypeCard
+                title="Book Summary Workshop"
+                subtitle={t(
+                  "modals.addContent.recordAudio.subtitle",
+                  "Record and add audio content"
+                )}
+                Icon={Spade}
+                isRTL={isRTL}
                 onClick={() => setActiveModal("recordAudio")}
               />
               <div className=" col-span-2">
                 <ContentTypeCard
-                  title="Research"
-                  subtitle="Do Your Research With Ease"
+                  title={t("modals.addContent.research.title", "Research")}
+                  subtitle={t(
+                    "modals.addContent.research.subtitle",
+                    "Do Your Research With Ease"
+                  )}
                   Icon={TestTube}
+                  isRTL={isRTL}
                   onClick={() => setActiveModal("recordAudio")}
                 />
               </div>
@@ -400,10 +467,15 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
 
         {activeModal === "upload" && (
           <>
-            <DialogHeader>
-              <DialogTitle>Upload PDF</DialogTitle>
+            <DialogHeader className={isRTL ? "text-right" : "text-left"}>
+              <DialogTitle>
+                {t("modals.addContent.uploadPdf.title", "Upload PDF")}
+              </DialogTitle>
               <DialogDescription>
-                Drag and drop your PDF or choose one to upload.
+                {t(
+                  "modals.addContent.uploadPdf.helper",
+                  "Drag and drop your PDF or choose one to upload."
+                )}
               </DialogDescription>
             </DialogHeader>
 
@@ -418,7 +490,7 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
                   ${
                     isDragActive
                       ? "border-blue-500 bg-blue-50/50 dark:bg-blue-950/30 scale-[1.02] shadow-lg"
-                      : "border-gray-300 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-gray-50/50 dark:hover:bg-gray-800/30"
+                      : "border-zinc-300 dark:border-zinc-700 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30"
                   }
                 `}
               >
@@ -430,27 +502,38 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
                   className={`mx-auto mb-4 h-16 w-16 transition-all duration-200 ${
                     isDragActive
                       ? "scale-110 text-blue-600 dark:text-blue-400 animate-bounce"
-                      : "text-gray-400 dark:text-gray-500"
+                      : "text-zinc-400 dark:text-zinc-500"
                   }`}
                 />
                 <div
                   className={`text-xl font-semibold mb-2 transition-colors duration-200 ${
                     isDragActive
                       ? "text-blue-700 dark:text-blue-300"
-                      : "text-gray-700 dark:text-gray-200"
+                      : "text-zinc-700 dark:text-zinc-200"
                   }`}
                 >
-                  {isDragActive ? "Drop your PDF here" : "Drag & Drop your PDF"}
+                  {isDragActive
+                    ? t(
+                        "modals.addContent.upload.dragActive",
+                        "Drop your PDF here"
+                      )
+                    : t(
+                        "modals.addContent.upload.dragIdle",
+                        "Drag & Drop your PDF"
+                      )}
                 </div>
-                <div className="text-sm text-gray-500 mb-6 dark:text-gray-400">
-                  or click to browse from your computer
+                <div className="text-sm text-zinc-500 mb-6 dark:text-zinc-400">
+                  {t(
+                    "modals.addContent.upload.orBrowse",
+                    "or click to browse from your computer"
+                  )}
                 </div>
                 <Button
                   variant="outline"
                   size="default"
                   className="pointer-events-none"
                 >
-                  Choose PDF
+                  {t("modals.addContent.upload.choosePdf", "Choose PDF")}
                 </Button>
                 <input
                   ref={uploadRef}
@@ -459,29 +542,39 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
                   onChange={handleFileSelect}
                   className="hidden"
                 />
-                <div className="text-xs text-gray-400 mt-4 dark:text-gray-500">
-                  Supported format: PDF
+                <div className="text-xs text-zinc-400 mt-4 dark:text-zinc-500">
+                  {t(
+                    "modals.addContent.upload.supportedFormat",
+                    "Supported format: PDF"
+                  )}
                 </div>
               </div>
 
               {uploadState.files.length > 0 && (
                 <div className="space-y-3">
-                  <div className="font-medium text-sm text-gray-700 dark:text-gray-300">
-                    Selected file:
+                  <div
+                    className={`font-medium text-sm text-zinc-700 dark:text-zinc-300 ${
+                      isRTL ? "text-right" : "text-left"
+                    }`}
+                  >
+                    {t(
+                      "modals.addContent.upload.selectedFile",
+                      "Selected file:"
+                    )}
                   </div>
                   <div className="max-h-48 overflow-y-auto space-y-2">
                     {uploadState.files.map((file, index) => (
                       <div
                         key={index}
-                        className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-750 transition-colors"
+                        className="flex items-center gap-3 p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-750 transition-colors"
                       >
-                        <div className="flex-shrink-0 text-gray-500 dark:text-gray-400">
+                        <div className="flex-shrink-0 text-zinc-500 dark:text-zinc-400">
                           <FileTypeIcon file={file} />
                         </div>
-                        <span className="flex-1 text-sm font-medium text-gray-700 dark:text-gray-300 truncate">
+                        <span className="flex-1 text-sm font-medium text-zinc-700 dark:text-zinc-300 truncate">
                           {file.name}
                         </span>
-                        <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                        <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
                           {formatFileSize(file.size)}
                         </span>
                       </div>
@@ -499,16 +592,28 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
                           ? "text-red-600"
                           : uploadState.status === "uploaded"
                           ? "text-green-600 dark:text-green-400"
-                          : "text-gray-600 dark:text-gray-300"
+                          : "text-zinc-600 dark:text-zinc-300"
                       }
                     >
                       {uploadState.status === "uploaded"
-                        ? "Upload complete"
+                        ? t(
+                            "modals.addContent.upload.status.complete",
+                            "Upload complete"
+                          )
                         : uploadState.status === "failed"
-                        ? "Upload failed"
+                        ? t(
+                            "modals.addContent.upload.status.failed",
+                            "Upload failed"
+                          )
                         : uploadState.status === "uploading"
-                        ? "Uploading to storage..."
-                        : "Preparing upload..."}
+                        ? t(
+                            "modals.addContent.upload.status.uploading",
+                            "Uploading to storage..."
+                          )
+                        : t(
+                            "modals.addContent.upload.status.preparing",
+                            "Preparing upload..."
+                          )}
                     </span>
                     <span>{uploadState.uploadProgress}%</span>
                   </div>
@@ -525,7 +630,10 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
                           rel="noopener noreferrer"
                           className="underline"
                         >
-                          View document
+                          {t(
+                            "modals.addContent.upload.viewDocument",
+                            "View document"
+                          )}
                         </a>
                       </div>
                     )}
@@ -539,12 +647,16 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
               )}
             </div>
 
-            <DialogFooter className="flex gap-2">
+            <DialogFooter
+              className={`flex gap-2 ${
+                isRTL ? "flex-row-reverse" : "flex-row"
+              }`}
+            >
               <Button
                 variant="outline"
                 onClick={() => setActiveModal("selection")}
               >
-                Back
+                {t("common.back", "Back")}
               </Button>
               <Button
                 onClick={handleFileUpload}
@@ -552,7 +664,9 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
                   uploadState.files.length === 0 || uploadState.isUploading
                 }
               >
-                {uploadState.isUploading ? "Uploading..." : "Upload PDF"}
+                {uploadState.isUploading
+                  ? t("modals.addContent.upload.uploading", "Uploading...")
+                  : t("modals.addContent.upload.submit", "Upload PDF")}
               </Button>
             </DialogFooter>
           </>
@@ -560,21 +674,33 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
 
         {activeModal === "paste" && (
           <>
-            <DialogHeader>
-              <DialogTitle>Paste URL</DialogTitle>
+            <DialogHeader className={isRTL ? "text-right" : "text-left"}>
+              <DialogTitle>
+                {t("modals.addContent.pasteUrl.title", "Paste URL")}
+              </DialogTitle>
               <DialogDescription>
-                Paste a URL from YouTube or other sources
+                {t(
+                  "modals.addContent.pasteUrl.helper",
+                  "Paste a URL from YouTube or other sources"
+                )}
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4">
               <div>
-                <Label htmlFor="url" className="block mb-2">
-                  URL
+                <Label
+                  htmlFor="url"
+                  className={`block mb-2 ${isRTL ? "text-right" : "text-left"}`}
+                >
+                  {t("modals.addContent.pasteUrl.label", "URL")}
                 </Label>
                 <Input
                   id="url"
-                  placeholder="https://youtube.com/watch?v=..."
+                  dir={isRTL ? "rtl" : "ltr"}
+                  placeholder={t(
+                    "modals.addContent.pasteUrl.placeholder",
+                    "https://youtube.com/watch?v=..."
+                  )}
                   value={pasteState.url}
                   onChange={(e) =>
                     setPasteState((prev) => ({
@@ -592,12 +718,16 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
               )}
             </div>
 
-            <DialogFooter className="flex gap-2">
+            <DialogFooter
+              className={`flex gap-2 ${
+                isRTL ? "flex-row-reverse" : "flex-row"
+              }`}
+            >
               <Button
                 variant="outline"
                 onClick={() => setActiveModal("selection")}
               >
-                Back
+                {t("common.back", "Back")}
               </Button>
               <Button
                 onClick={handlePasteSubmit}
@@ -606,10 +736,13 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
                 {pasteState.isProcessing ? (
                   <div className="flex items-center gap-2">
                     <CircularProgress size={20} />
-                    Processing...
+                    {t(
+                      "modals.addContent.pasteUrl.processing",
+                      "Processing..."
+                    )}
                   </div>
                 ) : (
-                  "Process Content"
+                  t("modals.addContent.pasteUrl.submit", "Process Content")
                 )}
               </Button>
             </DialogFooter>
@@ -618,18 +751,27 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
 
         {activeModal === "createCourse" && (
           <>
-            <DialogHeader>
-              <DialogTitle>Create Course</DialogTitle>
+            <DialogHeader className={isRTL ? "text-right" : "text-left"}>
+              <DialogTitle>
+                {t("modals.addContent.createCourse.title", "Create Course")}
+              </DialogTitle>
               <DialogDescription>
-                Course creation functionality goes here.
+                {t(
+                  "modals.addContent.createCourse.helper",
+                  "Course creation functionality goes here."
+                )}
               </DialogDescription>
             </DialogHeader>
-            <DialogFooter className="flex gap-2">
+            <DialogFooter
+              className={`flex gap-2 ${
+                isRTL ? "flex-row-reverse" : "flex-row"
+              }`}
+            >
               <Button
                 variant="outline"
                 onClick={() => setActiveModal("selection")}
               >
-                Back
+                {t("common.back", "Back")}
               </Button>
             </DialogFooter>
           </>
@@ -637,18 +779,27 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
 
         {activeModal === "recordAudio" && (
           <>
-            <DialogHeader>
-              <DialogTitle>Record Audio</DialogTitle>
+            <DialogHeader className={isRTL ? "text-right" : "text-left"}>
+              <DialogTitle>
+                {t("modals.addContent.recordAudio.title", "Record Audio")}
+              </DialogTitle>
               <DialogDescription>
-                Audio recording functionality goes here.
+                {t(
+                  "modals.addContent.recordAudio.helper",
+                  "Audio recording functionality goes here."
+                )}
               </DialogDescription>
             </DialogHeader>
-            <DialogFooter className="flex gap-2">
+            <DialogFooter
+              className={`flex gap-2 ${
+                isRTL ? "flex-row-reverse" : "flex-row"
+              }`}
+            >
               <Button
                 variant="outline"
                 onClick={() => setActiveModal("selection")}
               >
-                Back
+                {t("common.back", "Back")}
               </Button>
             </DialogFooter>
           </>
@@ -663,21 +814,25 @@ function ContentTypeCard({
   subtitle,
   onClick,
   Icon,
+  isRTL,
 }: {
   title: string;
   subtitle: string;
   onClick: () => void;
   Icon: any;
+  isRTL: boolean;
 }) {
   return (
     <div
       onClick={onClick}
       tabIndex={0}
       role="button"
-      className="group relative p-6 w-full flex flex-col items-start justify-center gap-y-2 rounded-2xl border shadow-sm 
-        cursor-pointer transition-all dark:bg-gray-900 dark:border-gray-800 bg-white border-gray-200
-        hover:shadow-md hover:border-gray-300 dark:hover:border-gray-700
-        focus:outline-none"
+      className={`group relative p-6 w-full flex flex-col ${
+        isRTL ? "items-end" : "items-start"
+      } justify-center gap-y-2 rounded-2xl border shadow-sm 
+        cursor-pointer transition-all dark:bg-zinc-900 dark:border-zinc-800 bg-white border-zinc-200
+        hover:shadow-md hover:border-zinc-300 dark:hover:border-zinc-700
+        focus:outline-none`}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
@@ -685,11 +840,19 @@ function ContentTypeCard({
         }
       }}
     >
-      <Icon className="h-8 w-8 text-gray-500 opacity-85 group-hover:text-gray-800 group-hover:opacity-100 dark:text-gray-400 dark:group-hover:text-gray-200 transition-all duration-200" />
-      <h3 className="font-medium text-base text-gray-600 opacity-90 group-hover:text-gray-900 group-hover:opacity-100 dark:text-gray-300 dark:group-hover:text-gray-100 transition-all duration-200">
+      <Icon className="h-8 w-8 text-zinc-500 opacity-85 group-hover:text-zinc-800 group-hover:opacity-100 dark:text-zinc-400 dark:group-hover:text-zinc-200 transition-all duration-200" />
+      <h3
+        className={`font-medium text-base text-zinc-600 opacity-90 group-hover:text-zinc-900 group-hover:opacity-100 dark:text-zinc-300 dark:group-hover:text-zinc-100 transition-all duration-200 ${
+          isRTL ? "text-right" : "text-left"
+        }`}
+      >
         {title}
       </h3>
-      <div className="text-sm text-gray-500 opacity-85 group-hover:text-gray-800 group-hover:opacity-100 dark:text-gray-400 dark:group-hover:text-gray-200 transition-all duration-200">
+      <div
+        className={`text-sm text-zinc-500 opacity-85 group-hover:text-zinc-800 group-hover:opacity-100 dark:text-zinc-400 dark:group-hover:text-zinc-200 transition-all duration-200 ${
+          isRTL ? "text-right" : "text-left"
+        }`}
+      >
         {subtitle}
       </div>
     </div>

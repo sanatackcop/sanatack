@@ -207,6 +207,38 @@ export const getDocumentApi = async (id: string): Promise<DocumentResponse> => {
   }
 };
 
+export interface RunCodeRequest {
+  code: string;
+  language: string;
+  stdin?: string;
+}
+
+export interface RunCodeResponse {
+  success: boolean;
+  output: string;
+  error: string | null;
+  executionTime: number;
+  memoryUsage: number | null;
+  status: string;
+}
+
+export const runWorkspaceCode = async (
+  payload: RunCodeRequest
+): Promise<RunCodeResponse> => {
+  try {
+    const response = await Api<RunCodeResponse>({
+      method: API_METHODS.POST,
+      url: `study-ai/code/run`,
+      data: payload,
+    });
+
+    return response.data;
+  } catch (e: any) {
+    console.error("runWorkspaceCode error:", e.message ?? e);
+    throw e;
+  }
+};
+
 export const getQuizStatusApi = async (
   id: string
 ): Promise<QuizStatusResponse> => {

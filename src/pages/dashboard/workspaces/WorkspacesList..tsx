@@ -33,17 +33,6 @@ export default function WorkspacesList({
   return (
     <section>
       <div className="flex gap-4 flex-wrap">
-        {workspaces.length !== 0 &&
-          workspaces.map((workspace) => (
-            <WorkspaceFolderItem
-              refreshParentComponent={refreshComponent}
-              key={workspace.id}
-              workspace={workspace}
-              onClick={() => handleWorkspaceClick(workspace.id)}
-              isRTL={isRTL}
-            />
-          ))}
-
         <Card
           onClick={() => setOpen(true)}
           className="
@@ -78,6 +67,16 @@ export default function WorkspacesList({
             </span>
           </div>
         </Card>
+        {workspaces.length !== 0 &&
+          workspaces.map((workspace) => (
+            <WorkspaceFolderItem
+              refreshParentComponent={refreshComponent}
+              key={workspace.id}
+              workspace={workspace}
+              onClick={() => handleWorkspaceClick(workspace.id)}
+              isRTL={isRTL}
+            />
+          ))}
       </div>
 
       <AddContentModal open={open} onClose={handleReset} />

@@ -20,6 +20,7 @@ import {
   Sun,
   Languages,
   MessageCircle,
+  Tablet,
 } from "lucide-react";
 import clsx from "clsx";
 import {
@@ -54,6 +55,7 @@ import { toast } from "sonner";
 import { useUserContext } from "@/context/UserContext";
 import { FaChrome, FaDiscord } from "react-icons/fa6";
 import LogoDark from "@/assets/dark_logo.svg";
+import { useSettings } from "@/context/SettingsContexts";
 
 type MenuItem =
   | {
@@ -90,6 +92,7 @@ type SpaceItem = { id: string; title: string; url: string };
 
 export function AppSidebar() {
   const { t, i18n } = useTranslation();
+  const { darkMode, toggleDarkMode, language, setLanguage } = useSettings();
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [spaces, setSpaces] = useState<SpaceItem[]>([]);
   const [loadingSpaces, setLoadingSpaces] = useState<boolean>(true);
@@ -98,13 +101,6 @@ export function AppSidebar() {
   const [openCreate, setOpenCreate] = useState(false);
   const [newName, setNewName] = useState("");
   const [showAllSpaces, setShowAllSpaces] = useState(false);
-  const [darkMode, setDarkMode] = useState<boolean>(() => {
-    const saved = localStorage.getItem("theme");
-    return (
-      saved === "dark" ||
-      (!saved && window.matchMedia("(prefers-color-scheme: dark)").matches)
-    );
-  });
 
   const { logout } = useUserContext();
   const [workspaces, setWorkspaces] = useState<Workspace[] | null>(null);
@@ -118,34 +114,21 @@ export function AppSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isRTL = i18n.language === "ar";
+  const isRTL = i18n.dir() === "rtl";
+  const nextLanguage = language === "ar" ? "en" : "ar";
+  const nextLanguageLabel = t(`languages.${nextLanguage}`);
 
   const getTextAlignment = () => (isRTL ? "text-right" : "text-left");
   const getFlexDirection = () => (isRTL ? "flex-row-reverse" : "flex-row");
 
   useEffect(() => {
-    document.documentElement.dir = isRTL ? "rtl" : "ltr";
-    document.documentElement.lang = i18n.language;
     setNewName(t("sidebar.newSpace"));
-  }, [i18n.language, t]);
-
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-  }, [darkMode]);
-
-  const toggleTheme = () => {
-    setDarkMode((prev) => !prev);
-  };
+  }, [t]);
 
   const toggleLanguage = () => {
-    const newLang = i18n.language === "ar" ? "en" : "ar";
-    i18n.changeLanguage(newLang);
+    const newLang = language === "ar" ? "en" : "ar";
+    setLanguage(newLang);
+    toast.success(t("languages.changed", { lang: t(`languages.${newLang}`) }));
   };
 
   const handleFeedbackSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -154,7 +137,7 @@ export function AppSidebar() {
     const trimmedMessage = feedbackMessage.trim();
 
     if (!trimmedSubject || !trimmedMessage) {
-      setFeedbackError("Please add both a subject and a message.");
+      setFeedbackError(t("sidebar.feedbackForm.validation"));
       return;
     }
 
@@ -165,7 +148,7 @@ export function AppSidebar() {
         subject: trimmedSubject,
         message: trimmedMessage,
       });
-      toast.success("Thanks for sharing your feedback!");
+      toast.success(t("sidebar.feedbackForm.success"));
       setFeedbackSubject("");
       setFeedbackMessage("");
       setFeedbackOpen(false);
@@ -174,11 +157,11 @@ export function AppSidebar() {
         error?.error?.body ??
         error?.response?.data?.message ??
         error?.message ??
-        "Failed to send feedback.";
+        t("sidebar.feedbackForm.error");
       toast.error(
         typeof errorMessage === "string"
           ? errorMessage
-          : "Failed to send feedback."
+          : t("sidebar.feedbackForm.error")
       );
     } finally {
       setFeedbackLoading(false);
@@ -188,9 +171,18 @@ export function AppSidebar() {
   const topItemGroups: MenuGroup[] = useMemo(
     () => [
       {
-        groupTitle: "Learning",
+        groupTitle: t("sidebar.groups.learning"),
         menuItems: [
-          { title: "My Learning", url: "/dashboard/overview", icon: Box },
+          {
+            title: t("sidebar.items.myLearning"),
+            url: "/dashboard/overview",
+            icon: Box,
+          },
+          {
+            title: t("sidebar.items.discover"),
+            url: "/dashboard/discover",
+            icon: Globe,
+          },
           {
             title: t("sidebar.createMap"),
             url: "/dashboard/learn/map",
@@ -198,30 +190,24 @@ export function AppSidebar() {
             comingSoon: true,
           },
           {
-            title: "Your Brain",
+            title: t("sidebar.items.yourBrain"),
             url: "/dashboard/learn/brain",
             icon: Brain,
-            comingSoon: true,
-          },
-          {
-            title: "Discover",
-            url: "/dashboard/learn/ds",
-            icon: Globe,
             comingSoon: true,
           },
         ],
       },
       {
-        groupTitle: "Task Management",
+        groupTitle: t("sidebar.groups.taskManagement"),
         menuItems: [
           {
-            title: "Tasks",
+            title: t("sidebar.items.tasks"),
             url: "/dashboard/learn/tasks",
             icon: CheckCircle,
             comingSoon: true,
           },
           {
-            title: "Promodo",
+            title: t("sidebar.items.promodo"),
             url: "/dashboard/learn/promodo",
             icon: Clock10,
             comingSoon: true,
@@ -235,22 +221,28 @@ export function AppSidebar() {
         ],
       },
       {
-        groupTitle: "Help And Tools",
+        groupTitle: t("sidebar.groups.helpTools"),
         menuItems: [
           {
-            title: "Feedback",
+            title: t("sidebar.feedback"),
             icon: MessageCircle,
             type: "feedback",
           },
           {
-            title: "Discord",
+            title: t("sidebar.discord"),
             url: "https://discord.com",
             icon: FaDiscord,
           },
           {
-            title: "Chrome Extension",
+            title: t("sidebar.chromeExtension"),
             url: "https://chrome.google.com/webstore/category/extensions",
             icon: FaChrome,
+          },
+          {
+            title: t("sidebar.app"),
+            url: "https://chrome.google.com/webstore/category/extensions",
+            comingSoon: true,
+            icon: Tablet,
           },
         ],
       },
@@ -339,7 +331,7 @@ export function AppSidebar() {
 
   const getWorkspaceTitle = (workspace: Workspace) => {
     if (workspace.workspaceName) return workspace.workspaceName;
-    return workspace.title || "Untitled";
+    return workspace.title || t("workspace.untitled", "Untitled");
   };
 
   const isWorkspaceActive = (workspaceId: string) => {
@@ -390,7 +382,7 @@ export function AppSidebar() {
         </span>
         {item.comingSoon && (
           <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 font-medium border border-amber-200 dark:border-amber-800/50">
-            Soon
+            {t("common.comingSoon")}
           </span>
         )}
       </NavLink>
@@ -451,12 +443,14 @@ export function AppSidebar() {
         >
           <form className="space-y-3" onSubmit={handleFeedbackSubmit}>
             <div className="space-y-1">
-              <Label htmlFor="feedback-subject">Subject</Label>
+              <Label htmlFor="feedback-subject">
+                {t("sidebar.feedbackForm.subject")}
+              </Label>
               <Input
                 id="feedback-subject"
                 value={feedbackSubject}
                 maxLength={120}
-                placeholder="How can we help?"
+                placeholder={t("sidebar.feedbackForm.placeholderSubject")}
                 onChange={(event) => {
                   setFeedbackSubject(event.target.value);
                   if (feedbackError) {
@@ -468,11 +462,13 @@ export function AppSidebar() {
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="feedback-message">Message</Label>
+              <Label htmlFor="feedback-message">
+                {t("sidebar.feedbackForm.message")}
+              </Label>
               <Textarea
                 id="feedback-message"
                 value={feedbackMessage}
-                placeholder="Share your thoughts or issues..."
+                placeholder={t("sidebar.feedbackForm.placeholderMessage")}
                 onChange={(event) => {
                   setFeedbackMessage(event.target.value);
                   if (feedbackError) {
@@ -493,7 +489,9 @@ export function AppSidebar() {
               )}
             >
               <Button type="submit" size="sm" disabled={feedbackLoading}>
-                {feedbackLoading ? "Sending..." : "Send Feedback"}
+                {feedbackLoading
+                  ? t("common.loading")
+                  : t("sidebar.feedbackForm.submit")}
               </Button>
             </div>
           </form>
@@ -597,8 +595,8 @@ export function AppSidebar() {
     <div
       dir={isRTL ? "rtl" : "ltr"}
       lang={i18n.language}
-      className="h-full flex flex-col border-r bg-[#f9f9f6]
-       dark:bg-[#080809] dark:border-zinc-800"
+      className="h-full flex flex-col border-r bg-zinc-50
+       dark:bg-zinc-950 dark:border-zinc-800"
     >
       <div className="flex flex-col h-full py-2 pl-3 pr-2">
         <div className="flex items-center justify-between">
@@ -927,7 +925,7 @@ export function AppSidebar() {
               dark:bg-zinc-900/90 backdrop-blur-xl border border-white/20 dark:border-zinc-700/30 rounded-2xl p-2 z-50"
               >
                 <button
-                  onClick={toggleTheme}
+                  onClick={toggleDarkMode}
                   className={clsx(
                     "w-full flex items-center gap-2 px-2 py-2 hover:bg-sidebar-accent/50 rounded-md text-[13px] transition-colors text-sidebar-foreground font-normal",
                     getFlexDirection(),
@@ -940,7 +938,9 @@ export function AppSidebar() {
                     <Moon size={16} strokeWidth={2} />
                   )}
                   <span className="flex-1">
-                    {darkMode ? "Light Mode" : "Dark Mode"}
+                    {darkMode
+                      ? t("settings.lightMode", "Light Mode")
+                      : t("settings.darkMode", "Dark Mode")}
                   </span>
                 </button>
 
@@ -954,7 +954,10 @@ export function AppSidebar() {
                 >
                   <Languages size={16} strokeWidth={2} />
                   <span className="flex-1">
-                    {i18n.language === "ar" ? "English" : "العربية"}
+                    {t("languages.switchTo", {
+                      lang: nextLanguageLabel,
+                      defaultValue: `Switch to ${nextLanguageLabel}`,
+                    })}
                   </span>
                 </button>
 

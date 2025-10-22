@@ -402,13 +402,13 @@ const YouTubeReader: React.FC<YouTubePlayerProps> = ({
           hideYoutubeVideo ? "hidden" : ""
         }`}
       >
-        <div className="bg-white border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-md rounded-3xl">
+        <div className="bg-white dark:bg-zinc-950/60 border border-zinc-200 dark:border-zinc-800 overflow-hidden transition-all duration-300 hover:shadow-md dark:hover:shadow-zinc-900/40 rounded-3xl backdrop-blur-sm">
           <div
             className="relative rounded-3xl bg-black w-full"
             style={{ aspectRatio: "16/9" }}
           >
             {playerState.isLoading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-900 z-10 transition-opacity duration-300 rounded-3xl">
+              <div className="absolute inset-0 flex items-center justify-center bg-zinc-900/95 dark:bg-zinc-950/90 z-10 transition-opacity duration-300 rounded-3xl">
                 <div className="flex flex-col items-center text-white">
                   <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin mb-3"></div>
                   <span className="text-sm animate-pulse">
@@ -433,7 +433,7 @@ const YouTubeReader: React.FC<YouTubePlayerProps> = ({
         className="flex flex-col h-full"
       >
         {/* Sticky header (inside Tabs) */}
-        <div className="sticky top-0 z-20 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+        <div className="sticky top-0 z-20 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60 shadow-sm dark:shadow-none py-3">
           <div className="flex items-center justify-between px-2 py-2">
             <TabsList className="rounded-2xl border py-4">
               {TABS_CONFIG.map((tab) => {
@@ -508,9 +508,9 @@ const YouTubeReader: React.FC<YouTubePlayerProps> = ({
                             }}
                           >
                             <Card
-                              className={`group cursor-pointer p-3 rounded-xl shadow-none border-none hover:bg-gray-50 transition-all duration-200 border hover:border-gray-200 ${
+                              className={`group cursor-pointer p-3 rounded-xl shadow-none border border-transparent hover:border-zinc-200 dark:hover:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-900/40 transition-all duration-200 ${
                                 activeSegmentIndex === globalIndex
-                                  ? "bg-gray-50 border-gray-200"
+                                  ? "bg-zinc-50 dark:bg-zinc-900/40 border-zinc-200 dark:border-zinc-700"
                                   : ""
                               }`}
                               onClick={() => handleTranscriptClick(segment)}
@@ -520,8 +520,8 @@ const YouTubeReader: React.FC<YouTubePlayerProps> = ({
                                   <span
                                     className={`text-xs font-mono px-2.5 py-1 rounded-lg transition-colors ${
                                       activeSegmentIndex === globalIndex
-                                        ? "bg-gray-100 text-gray-700"
-                                        : "bg-gray-100 text-gray-600"
+                                        ? "bg-zinc-200 text-zinc-800 dark:bg-zinc-700/60 dark:text-zinc-100"
+                                        : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800/60 dark:text-zinc-300"
                                     }`}
                                   >
                                     {segment.timestamp ||
@@ -531,8 +531,8 @@ const YouTubeReader: React.FC<YouTubePlayerProps> = ({
                                 <p
                                   className={`text-xl leading-relaxed flex-1 transition-colors ${
                                     activeSegmentIndex === globalIndex
-                                      ? "text-gray-900"
-                                      : "text-gray-700"
+                                      ? "text-zinc-900 dark:text-zinc-100"
+                                      : "text-zinc-700 dark:text-zinc-300"
                                   }`}
                                 >
                                   {segment.text}
@@ -546,15 +546,18 @@ const YouTubeReader: React.FC<YouTubePlayerProps> = ({
                   </div>
                 ))
               ) : (
-                <div className="h-full flex items-center justify-center text-gray-500">
+                <div className="h-full flex items-center justify-center text-zinc-500 dark:text-zinc-400">
                   <div className="text-center py-8">
-                    <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                      <TextIcon size={24} className="text-gray-400" />
+                    <div className="w-16 h-16 mx-auto mb-4 bg-zinc-100 dark:bg-zinc-900 rounded-full flex items-center justify-center">
+                      <TextIcon
+                        size={24}
+                        className="text-zinc-400 dark:text-zinc-500"
+                      />
                     </div>
-                    <h4 className="text-sm font-medium text-gray-700 mb-1">
+                    <h4 className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                       {t("transcript.noData", "No transcript available")}
                     </h4>
-                    <p className="text-xs text-gray-500 max-w-xs mx-auto">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-xs mx-auto">
                       {t(
                         "transcript.willAppear",
                         "Transcript will appear here when available"

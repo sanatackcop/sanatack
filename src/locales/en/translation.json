@@ -34,7 +34,9 @@
     "tabContent": "{{tab}} content will appear here",
     "generate": "Generate",
     "featuresTitle": "Learn efficiently Succeed effortlessly",
-    "createFlashCard": "Create Flashcard"
+    "createFlashCard": "Create Flashcard",
+    "moreActions": "More actions",
+    "back": "Back"
   },
   "theme": {
     "light": "Light",
@@ -55,6 +57,7 @@
     "history": "History",
     "feedback": "Feedback",
     "chromeExtension": "Chrome Extension",
+    "app": "App",
     "discord": "Discord",
     "inviteAndEarn": "Invite & Earn",
     "premium": "Premium",
@@ -97,7 +100,29 @@
     "showMore": "Show more",
     "showLess": "Show less",
     "noSpacesYet": "No spaces yet.",
-    "newSpace": "New Space"
+    "newSpace": "New Space",
+    "groups": {
+      "learning": "Learning",
+      "taskManagement": "Task Management",
+      "helpTools": "Help & Tools"
+    },
+    "items": {
+      "myLearning": "My Learning",
+      "yourBrain": "Your Brain",
+      "discover": "Discover",
+      "tasks": "Tasks",
+      "promodo": "Promodo"
+    },
+    "feedbackForm": {
+      "subject": "Subject",
+      "message": "Message",
+      "placeholderSubject": "How can we help?",
+      "placeholderMessage": "Share your thoughts or issues...",
+      "submit": "Send Feedback",
+      "validation": "Please add both a subject and a message.",
+      "success": "Thanks for sharing your feedback!",
+      "error": "Failed to send feedback."
+    }
   },
   "languages": {
     "ar": "العربية",
@@ -105,7 +130,8 @@
     "fr": "Français",
     "es": "Español",
     "current": "Current Language",
-    "changed": "تم تغيير اللغة إلى {{lang}}"
+    "changed": "Language switched to {{lang}}",
+    "switchTo": "Switch to {{lang}}"
   },
   "dialogs": {
     "createNewSpace": "Create New Space",
@@ -155,7 +181,8 @@
       "newSpace": "New Space",
       "defaultName": "Untitled Space ({{count}})",
       "deleteSpace": "Delete Space",
-      "itemCount": "{{count}} items"
+      "itemCount": "{{count}} items",
+      "header": "Your Spaces"
     },
     "dialogs": {
       "createSpace": {
@@ -172,6 +199,14 @@
         "itemCount": "Item count: {{count}}",
         "confirmDelete": "Yes, Delete"
       }
+    },
+    "workspaces": {
+      "addContent": "Add New Content",
+      "addWorkspaceAria": "Add New Workspace",
+      "openWorkspace": "Open workspace {{name}}",
+      "moveTo": "Move to",
+      "noSpaces": "No spaces available. Create a space first.",
+      "deleteAlert": "Delete {{name}}"
     }
   },
   "aiActions": {
@@ -372,6 +407,7 @@
     "quizzes": "Quizzes",
     "summary": "Summary",
     "notes": "Notes",
+    "code": "Code",
     "charts": "Charts",
     "mindmaps": "Mind Maps",
     "audio": "Audio Generation"
@@ -482,7 +518,6 @@
     "subtitle": "Choose the perfect plan for your learning journey. Upgrade anytime to unlock more features.",
     "popularBadge": "Popular",
     "billedMonthly": "Billed Monthly",
-
     "free": {
       "name": "Free",
       "period": "/ month",
@@ -501,7 +536,6 @@
         "size": "10 MB"
       }
     },
-
     "pro": {
       "name": "Pro",
       "period": "/ month",
@@ -523,7 +557,6 @@
         "sizeLarge": "300 MB"
       }
     },
-
     "team": {
       "name": "Team",
       "period": "/ month / seat",
@@ -584,5 +617,132 @@
     "title": "Your learning journey starts here.",
     "subtitle": "Upload your content and unlock personalized insights.",
     "button": "Get Started"
+  },
+  "settings": {
+    "lightMode": "Light Mode",
+    "darkMode": "Dark Mode"
+  },
+  "workspace": {
+    "untitled": "Untitled",
+    "fullScreen": "Full Screen"
+  },
+  "codeRunner": {
+    "title": "Code Playground",
+    "subtitle": "Experiment with code, iterate quickly, and capture your ideas right inside the workspace.",
+    "language": "Language",
+    "stdinLabel": "Standard input",
+    "stdinPlaceholder": "Optional input passed to your program",
+    "run": "Run code",
+    "running": "Running...",
+    "resultHeading": "Execution result",
+    "status": {
+      "success": "Executed successfully",
+      "error": "Execution failed"
+    },
+    "output": "Output",
+    "error": "Error",
+    "timing": "Completed in {{time}} ms",
+    "memory": "Memory usage: {{memory}}",
+    "emptyOutput": "No output produced.",
+    "toast": {
+      "missingCode": "Write some code before running.",
+      "missingLanguage": "Choose a language before running.",
+      "runFailed": "We couldn't run your code. Please try again."
+    }
+  },
+  "modals": {
+    "addContent": {
+      "title": "Add New Learning Playground",
+      "subtitle": "Choose how to add your content",
+      "uploadPdf": {
+        "title": "Upload PDF",
+        "subtitle": "Upload a PDF document",
+        "helper": "Drag and drop your PDF or choose one to upload."
+      },
+      "pasteUrl": {
+        "title": "Paste URL",
+        "subtitle": "Add content from a link",
+        "helper": "Paste a URL from YouTube or other sources",
+        "label": "URL",
+        "placeholder": "https://youtube.com/watch?v=...",
+        "processing": "Processing...",
+        "submit": "Process Content"
+      },
+      "createCourse": {
+        "title": "Create Course",
+        "subtitle": "Generate a course from content",
+        "helper": "Course creation functionality goes here."
+      },
+      "recordAudio": {
+        "title": "Record Audio",
+        "subtitle": "Record and add audio content",
+        "helper": "Audio recording functionality goes here."
+      },
+      "research": {
+        "title": "Research",
+        "subtitle": "Do Your Research With Ease"
+      },
+      "upload": {
+        "dragActive": "Drop your PDF here",
+        "dragIdle": "Drag & Drop your PDF",
+        "orBrowse": "or click to browse from your computer",
+        "choosePdf": "Choose PDF",
+        "supportedFormat": "Supported format: PDF",
+        "selectedFile": "Selected file:",
+        "status": {
+          "complete": "Upload complete",
+          "failed": "Upload failed",
+          "uploading": "Uploading to storage...",
+          "preparing": "Preparing upload..."
+        },
+        "viewDocument": "View document",
+        "uploading": "Uploading...",
+        "submit": "Upload PDF"
+      },
+      "errors": {
+        "pdfOnly": "Only PDF files are supported.",
+        "documentStatus": "Unable to retrieve document status right now."
+      }
+    }
+  },
+  "discover": {
+    "title": "Discover and organise your videos",
+    "subtitle": "Build personal playlists and explore fresh content without leaving the dashboard.",
+    "playlists": {
+      "title": "Make Your Playlist",
+      "description": "Create collections for the videos that matter most to you and keep them handy for later.",
+      "validation": "Please provide a playlist name before creating it.",
+      "nameLabel": "Playlist name",
+      "placeholder": "e.g. Deep learning inspirations",
+      "activeLabel": "Add videos to",
+      "choosePlaceholder": "Select a playlist",
+      "currentTitle": "Your playlists",
+      "empty": "You have not created any playlists yet.",
+      "count": "{{count}} videos",
+      "moreCount": "+{{count}} more",
+      "created": "Playlist \"{{name}}\" created",
+      "selectFirst": "Pick a playlist before adding videos.",
+      "videoExists": "This video is already saved in the selected playlist.",
+      "addedTo": "Added \"{{title}}\" to {{playlist}}"
+    },
+    "explore": {
+      "title": "Explore YouTube",
+      "description": "Search YouTube without leaving your workspace and save any result to your playlists.",
+      "placeholder": "Search for topics, channels, or video titles"
+    },
+    "actions": {
+      "create": "Create",
+      "remove": "Remove",
+      "search": "Search",
+      "searching": "Searching...",
+      "addToPlaylist": "Add to playlist"
+    },
+    "errors": {
+      "missingKey": "Missing YouTube API key. Please set VITE_YOUTUBE_API_KEY in your environment.",
+      "emptyQuery": "Type something to search for videos.",
+      "noResults": "No videos found for this search.",
+      "requestFailedWith": "We could not load videos: {{message}}",
+      "generic": "Something went wrong while fetching videos. Please try again."
+    }
   }
 }

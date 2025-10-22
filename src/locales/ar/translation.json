@@ -34,7 +34,9 @@
     "tabContent": "محتوى {{tab}} سيظهر هنا",
     "generate": "أنشئ",
     "createFlashCard": "إنشاء بطاقة تعليمية",
-    "featuresTitle": "تعلّم بكفاءة وحقق النجاح بسهولة"
+    "featuresTitle": "تعلّم بكفاءة وحقق النجاح بسهولة",
+    "moreActions": "المزيد من الإجراءات",
+    "back": "رجوع"
   },
   "theme": {
     "light": "فاتح",
@@ -55,6 +57,7 @@
     "history": "التاريخ",
     "feedback": "ملاحظات",
     "chromeExtension": "إضافة كروم",
+    "app": "التطبيق",
     "discord": "ديسكورد",
     "inviteAndEarn": "ادعو واكسب",
     "premium": "بريميوم",
@@ -97,7 +100,29 @@
     "showMore": "عرض المزيد",
     "showLess": "عرض أقل",
     "noSpacesYet": "لا توجد مساحات بعد.",
-    "newSpace": "مساحة جديدة"
+    "newSpace": "مساحة جديدة",
+    "groups": {
+      "learning": "التعلّم",
+      "taskManagement": "إدارة المهام",
+      "helpTools": "المساعدة والأدوات"
+    },
+    "items": {
+      "myLearning": "دروسي",
+      "yourBrain": "عقلك",
+      "discover": "اكتشف",
+      "tasks": "مهام",
+      "promodo": "بومودورو"
+    },
+    "feedbackForm": {
+      "subject": "الموضوع",
+      "message": "الرسالة",
+      "placeholderSubject": "كيف يمكننا مساعدتك؟",
+      "placeholderMessage": "شارك أفكارك أو المشكلات التي تواجهها...",
+      "submit": "إرسال الملاحظات",
+      "validation": "يرجى إضافة موضوع ورسالة.",
+      "success": "شكرًا لمشاركتك ملاحظاتك!",
+      "error": "تعذّر إرسال الملاحظات."
+    }
   },
   "languages": {
     "ar": "العربية",
@@ -106,7 +131,8 @@
     "es": "Español",
     "de": "Deutsch",
     "current": "اللغة الحالية",
-    "changed": "Language switched to {{lang}}"
+    "changed": "تم تغيير اللغة إلى {{lang}}",
+    "switchTo": "التبديل إلى {{lang}}"
   },
   "dialogs": {
     "createNewSpace": "إنشاء مساحة جديدة",
@@ -154,7 +180,8 @@
       "newSpace": "مساحة جديدة",
       "defaultName": "مساحة بدون عنوان ({{count}})",
       "deleteSpace": "حذف المساحة",
-      "itemCount": "{{count}} عناصر"
+      "itemCount": "{{count}} عناصر",
+      "header": "مساحاتك"
     },
     "dialogs": {
       "createSpace": {
@@ -171,6 +198,14 @@
         "itemCount": "عدد العناصر: {{count}}",
         "confirmDelete": "نعم، احذف"
       }
+    },
+    "workspaces": {
+      "addContent": "إضافة محتوى جديد",
+      "addWorkspaceAria": "إضافة مساحة عمل جديدة",
+      "openWorkspace": "فتح مساحة العمل {{name}}",
+      "moveTo": "نقل إلى",
+      "noSpaces": "لا توجد مساحات متاحة. أنشئ مساحة أولًا.",
+      "deleteAlert": "حذف {{name}}"
     }
   },
   "aiActions": {
@@ -340,7 +375,6 @@
       }
     }
   },
-
   "emptyState": {
     "title": "أضف محتوى للبدء",
     "description": "تعلّم بذكاء وخصِّص تجربتك مع صناعتك.",
@@ -374,6 +408,7 @@
     "quizzes": "اختبارات",
     "summary": "ملخص",
     "notes": "ملاحظات",
+    "code": "الكود",
     "charts": "الرسوم البيانية",
     "mindmaps": "الخرائط الذهنية",
     "audio": "توليد الصوت"
@@ -489,7 +524,6 @@
     "subtitle": "اختر الخطة المثالية لرحلة التعلم الخاصة بك. قم بالترقية في أي وقت لفتح المزيد من الميزات.",
     "popularBadge": "الأكثر شعبية",
     "billedMonthly": "الدفع شهرياً",
-
     "free": {
       "name": "مجاني",
       "period": "/ شهر",
@@ -508,7 +542,6 @@
         "size": "10 ميجابايت"
       }
     },
-
     "pro": {
       "name": "احترافي",
       "period": "/ شهر",
@@ -530,7 +563,6 @@
         "sizeLarge": "300 ميجابايت"
       }
     },
-
     "team": {
       "name": "فريق",
       "period": "/ شهر / مقعد",
@@ -586,5 +618,132 @@
     "twitter": "تابعنا على تويتر",
     "linkedin": "تواصل معنا على لينكد إن",
     "discord": "انضم إلى مجتمع ديسكورد"
+  },
+  "settings": {
+    "lightMode": "الوضع النهاري",
+    "darkMode": "الوضع الليلي"
+  },
+  "workspace": {
+    "untitled": "بدون عنوان",
+    "fullScreen": "ملء الشاشة"
+  },
+  "codeRunner": {
+    "title": "مساحة الأكواد",
+    "subtitle": "جرّب أفكارك البرمجية وكرّر التعديلات بسرعة ودوّن ملاحظاتك من داخل مساحة العمل.",
+    "language": "اللغة",
+    "stdinLabel": "الدخل القياسي",
+    "stdinPlaceholder": "إدخال اختياري يمرر إلى برنامجك",
+    "run": "تشغيل الكود",
+    "running": "جاري التشغيل...",
+    "resultHeading": "نتيجة التنفيذ",
+    "status": {
+      "success": "تم التنفيذ بنجاح",
+      "error": "فشل التنفيذ"
+    },
+    "output": "المخرجات",
+    "error": "الخطأ",
+    "timing": "اكتمل خلال {{time}} مللي ثانية",
+    "memory": "استهلاك الذاكرة: {{memory}}",
+    "emptyOutput": "لم يتم إنتاج أي مخرجات.",
+    "toast": {
+      "missingCode": "اكتب بعض الكود قبل التشغيل.",
+      "missingLanguage": "اختر لغة قبل التشغيل.",
+      "runFailed": "تعذّر تشغيل الكود، حاول مرة أخرى."
+    }
+  },
+  "modals": {
+    "addContent": {
+      "title": "إضافة ساحة تعلّم جديدة",
+      "subtitle": "اختر كيفية إضافة المحتوى",
+      "uploadPdf": {
+        "title": "رفع ملف PDF",
+        "subtitle": "رفع مستند PDF",
+        "helper": "اسحب وأفلت ملف PDF أو اختره للتحميل."
+      },
+      "pasteUrl": {
+        "title": "لصق رابط",
+        "subtitle": "أضف محتوى من رابط",
+        "helper": "الصق رابطًا من يوتيوب أو مصادر أخرى",
+        "label": "الرابط",
+        "placeholder": "https://youtube.com/watch?v=...",
+        "processing": "جارٍ المعالجة...",
+        "submit": "معالجة المحتوى"
+      },
+      "createCourse": {
+        "title": "إنشاء دورة",
+        "subtitle": "إنشاء دورة من المحتوى",
+        "helper": "ستتوفر وظيفة إنشاء الدورة هنا."
+      },
+      "recordAudio": {
+        "title": "تسجيل صوت",
+        "subtitle": "تسجيل وإضافة محتوى صوتي",
+        "helper": "ستتوفر وظيفة تسجيل الصوت هنا."
+      },
+      "research": {
+        "title": "بحث",
+        "subtitle": "أنجز بحثك بسهولة"
+      },
+      "upload": {
+        "dragActive": "أفلت ملف PDF هنا",
+        "dragIdle": "اسحب وأفلت ملف PDF",
+        "orBrowse": "أو انقر لاختيار ملف من جهازك",
+        "choosePdf": "اختر ملف PDF",
+        "supportedFormat": "الصيغة المدعومة: PDF",
+        "selectedFile": "الملف المحدد:",
+        "status": {
+          "complete": "اكتمل التحميل",
+          "failed": "فشل التحميل",
+          "uploading": "جاري التحميل إلى التخزين...",
+          "preparing": "جارٍ تجهيز التحميل..."
+        },
+        "viewDocument": "عرض المستند",
+        "uploading": "جارٍ التحميل...",
+        "submit": "رفع ملف PDF"
+      },
+      "errors": {
+        "pdfOnly": "يُسمح بملفات PDF فقط.",
+        "documentStatus": "تعذّر استرجاع حالة المستند في الوقت الحالي."
+      }
+    }
+  },
+  "discover": {
+    "title": "اكتشف ونظم مقاطع الفيديو الخاصة بك",
+    "subtitle": "أنشئ قوائم تشغيل مخصّصة واستكشف محتوى جديدًا دون مغادرة لوحة التحكم.",
+    "playlists": {
+      "title": "أنشئ قائمة التشغيل",
+      "description": "كوِّن مجموعات للمقاطع المهمة لديك واحتفظ بها جاهزة للعودة إليها متى شئت.",
+      "validation": "يرجى إدخال اسم قائمة التشغيل قبل إنشائها.",
+      "nameLabel": "اسم قائمة التشغيل",
+      "placeholder": "مثال: إلهامات التعلم العميق",
+      "activeLabel": "إضافة المقاطع إلى",
+      "choosePlaceholder": "اختر قائمة تشغيل",
+      "currentTitle": "قوائمك",
+      "empty": "لم تقم بإنشاء أي قوائم تشغيل بعد.",
+      "count": "{{count}} مقاطع",
+      "moreCount": "+{{count}} إضافية",
+      "created": "تم إنشاء القائمة \"{{name}}\"",
+      "selectFirst": "اختر قائمة تشغيل قبل إضافة المقاطع.",
+      "videoExists": "هذا المقطع موجود بالفعل في القائمة المختارة.",
+      "addedTo": "تمت إضافة \"{{title}}\" إلى {{playlist}}"
+    },
+    "explore": {
+      "title": "استكشف يوتيوب",
+      "description": "ابحث في يوتيوب من داخل مساحة عملك وأضف أي نتيجة إلى قوائمك بنقرة واحدة.",
+      "placeholder": "ابحث عن موضوع أو قناة أو عنوان مقطع"
+    },
+    "actions": {
+      "create": "إنشاء",
+      "remove": "إزالة",
+      "search": "بحث",
+      "searching": "جارٍ البحث...",
+      "addToPlaylist": "أضف إلى قائمة"
+    },
+    "errors": {
+      "missingKey": "مفتاح واجهة يوتيوب غير متوفر. يرجى ضبط المتغير VITE_YOUTUBE_API_KEY في البيئة.",
+      "emptyQuery": "اكتب شيئًا للبحث عن المقاطع.",
+      "noResults": "لم يتم العثور على مقاطع لهذا البحث.",
+      "requestFailedWith": "تعذّر تحميل المقاطع: {{message}}",
+      "generic": "حدث خطأ أثناء جلب المقاطع، حاول مرة أخرى لاحقًا."
+    }
   }
 }

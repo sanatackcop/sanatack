@@ -202,7 +202,7 @@ export default function FlashcardModal({
             </Label>
             <Select
               value={language}
-              onValueChange={setLanguage}
+              onValueChange={(val: any) => setLanguage(val)}
               disabled={generating}
             >
               <SelectTrigger id="language-select">

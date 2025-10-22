@@ -75,12 +75,14 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     } else {
       document.documentElement.classList.remove("dark");
     }
+    localStorage.setItem("darkMode", darkMode.toString());
   }, [darkMode]);
 
   // ✅ sync language with i18n + save to localStorage + set dir
   useEffect(() => {
     i18n.changeLanguage(language);
     document.documentElement.dir = i18n.dir(language);
+    document.documentElement.lang = language;
     localStorage.setItem("language", language);
   }, [language]);
 

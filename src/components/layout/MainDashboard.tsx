@@ -10,6 +10,7 @@ import UserProfile from "../../pages/unused/userProfile/Index";
 import SpaceView from "../../pages/dashboard/spaces/View";
 import CoursePlayground from "../../pages/unused/courseProduct/Index";
 import LearnPlayGround from "../../pages/dashboard/workspaces/View";
+import DiscoverPage from "../../pages/dashboard/discover/Index";
 
 const Placeholder = ({ title }: { title: string }) => (
   <div className="p-6">
@@ -45,6 +46,7 @@ export default function MainDashboard() {
           path="create-space"
           element={<Placeholder title="إنشاء مساحة" />}
         />
+        <Route path="discover" element={<DiscoverPage />} />
         <Route path="learn/workspace/:id" element={<LearnPlayGround />} />
         <Route
           path="*"

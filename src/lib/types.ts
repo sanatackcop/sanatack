@@ -13,7 +13,8 @@ export type TabKey =
   | "quizzes"
   | "summary"
   | "chapters"
-  | "notes";
+  | "notes"
+  | "code";
 
 export enum GenerationStatus {
   PENDING = "pending",

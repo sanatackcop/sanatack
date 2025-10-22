@@ -5,7 +5,7 @@ import { AlertTriangle, Clock3, Loader2 } from "lucide-react";
 export const ContentSkeleton = () => (
   <div className="w-full h-full flex flex-col space-y-4 p-4">
     <Skeleton className="h-8 w-3/4" />
-    <div className="flex-1 bg-gray-100 rounded-lg animate-pulse" />
+    <div className="flex-1 bg-zinc-100 rounded-lg animate-pulse dark:bg-zinc-900/60" />
     <div className="flex space-x-2">
       <Skeleton className="h-10 w-20" />
       <Skeleton className="h-10 w-20" />
@@ -17,7 +17,7 @@ export const ContentSkeleton = () => (
 export const TabsSkeleton = () => (
   <div className="h-full flex flex-col">
     <div className="p-2 pt-0 flex-shrink-0">
-      <div className="flex space-x-2 rounded-2xl bg-gray-100 p-1 w-fit mx-auto">
+      <div className="flex space-x-2 rounded-2xl bg-zinc-100 p-1 w-fit mx-auto dark:bg-zinc-900/60">
         {[1, 2, 3, 4].map((i) => (
           <Skeleton key={i} className="h-12 w-24 rounded-xl" />
         ))}

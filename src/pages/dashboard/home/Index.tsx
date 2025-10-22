@@ -8,11 +8,15 @@ export default function LearningDashboard() {
 
   return (
     <>
-      <section className="px-32  py-4">
+      <section className="px-32  py-4 my-5" dir={isRTL ? "rtl" : "ltr"}>
         <header className="mb-2">
-          <h1 className={`text-left text-xl md:text-[24px] font-medium my-5`}>
-            Recent Learning Playgrounds 🧠
-          </h1>
+          <h2
+            className={`text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-5 ${
+              isRTL ? "text-right" : "text-left"
+            }`}
+          >
+            Recent Learning Playgrounds
+          </h2>
         </header>
         <Recent isRTL={isRTL} />
         <Spaces isRTL={isRTL} />

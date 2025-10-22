@@ -50,8 +50,84 @@ const TABS_CONFIG = [
   { id: "quizzes", labelKey: "tabs.quizzes", icon: TestTube2 },
   { id: "summary", labelKey: "tabs.summary", icon: BookOpen },
   { id: "deepExplanation", labelKey: "Deep Explantion", icon: BrainCog },
-  { id: "code", labelKey: "Code", icon: Code },
+  { id: "code", labelKey: "tabs.code", icon: Code },
 ] as const;
+
+const PANEL_BASE_CLASSES =
+  "m-0 h-full flex flex-col rounded-2xl border border-zinc-200/60 dark:border-zinc-800/60 bg-white/80 dark:bg-zinc-950/40 shadow-sm dark:shadow-none backdrop-blur-sm";
+
+// const CODE_TEMPLATES: Record<string, string> = {
+//   javascript: `function solution() {
+//   console.log("Hello, world!");
+// }
+
+// solution();
+// `,
+//   typescript: `function solution(): void {
+//   console.log("Hello, world!");
+// }
+
+// solution();
+// `,
+//   python: `def solution():
+//     print("Hello, world!")
+
+// if __name__ == "__main__":
+//     solution()
+// `,
+//   java: `public class Main {
+//     public static void main(String[] args) {
+//         System.out.println("Hello, world!");
+//     }
+// }
+// `,
+//   cpp: `#include <iostream>
+
+// int main() {
+//     std::cout << "Hello, world!" << std::endl;
+//     return 0;
+// }
+// `,
+//   c: `#include <stdio.h>
+
+// int main() {
+//     printf("Hello, world!\\n");
+//     return 0;
+// }
+// `,
+//   csharp: `using System;
+
+// public class Program {
+//     public static void Main() {
+//         Console.WriteLine("Hello, world!");
+//     }
+// }
+// `,
+//   go: `package main
+
+// import "fmt"
+
+// func main() {
+//     fmt.Println("Hello, world!")
+// }
+// `,
+//   rust: `fn main() {
+//     println!("Hello, world!");
+// }
+// `,
+// };
+
+// const LANGUAGE_OPTIONS = [
+//   { value: "javascript", label: "JavaScript / Node.js" },
+//   { value: "typescript", label: "TypeScript" },
+//   { value: "python", label: "Python" },
+//   { value: "java", label: "Java" },
+//   { value: "cpp", label: "C++" },
+//   { value: "c", label: "C" },
+//   { value: "csharp", label: "C#" },
+//   { value: "go", label: "Go" },
+//   { value: "rust", label: "Rust" },
+// ] as const;
 
 const LearnPlayground: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -61,6 +137,15 @@ const LearnPlayground: React.FC = () => {
   const [contentLoading, setContentLoading] = useState(false);
   const [workspace, setWorkspace] = useState<Workspace | undefined>();
   const [fullScreen, setFullScreen] = useState(false);
+
+  // const [codeLanguage, setCodeLanguage] = useState<string>("javascript");
+  // const [codeContent, setCodeContent] = useState<string>(
+  //   CODE_TEMPLATES.javascript
+  // );
+  // const [codeInput, setCodeInput] = useState<string>("");
+  // const [codeResult, setCodeResult] = useState<RunCodeResponse | null>(null);
+  // const [codeRunning, setCodeRunning] = useState<boolean>(false);
+
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const tabsListRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -69,6 +154,79 @@ const LearnPlayground: React.FC = () => {
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
   const isRTL = i18n.language === "ar";
+
+  // const codeEditorExtensions = useMemo(() => {
+  //   if (codeLanguage === "javascript" || codeLanguage === "typescript") {
+  //     return [
+  //       javascript({
+  //         jsx: codeLanguage === "javascript",
+  //         typescript: codeLanguage === "typescript",
+  //       }),
+  //     ];
+  //   }
+  //   return [];
+  // }, [codeLanguage]);
+
+  // const handleLanguageChange = useCallback(
+  //   (value: string) => {
+  //     setCodeLanguage(value);
+  //     setCodeContent((prev) => {
+  //       const previousTemplate = CODE_TEMPLATES[codeLanguage];
+  //       const nextTemplate = CODE_TEMPLATES[value];
+
+  //       if (!prev.trim() && nextTemplate) {
+  //         return nextTemplate;
+  //       }
+
+  //       if (previousTemplate && prev === previousTemplate && nextTemplate) {
+  //         return nextTemplate;
+  //       }
+
+  //       return prev;
+  //     });
+  //     setCodeResult(null);
+  //   },
+  //   [codeLanguage]
+  // );
+
+  // const handleRunCode = useCallback(async () => {
+  //   if (!codeContent.trim()) {
+  //     toast.error(t("codeRunner.toast.missingCode"));
+  //     return;
+  //   }
+
+  //   if (!codeLanguage) {
+  //     toast.error(t("codeRunner.toast.missingLanguage"));
+  //     return;
+  //   }
+
+  //   try {
+  //     setCodeRunning(true);
+  //     setCodeResult(null);
+  //     const response = await runWorkspaceCode({
+  //       code: codeContent,
+  //       language: codeLanguage,
+  //       stdin: codeInput,
+  //     });
+
+  //     setCodeResult(response);
+
+  //     if (response.success) {
+  //       toast.success(t("codeRunner.status.success"));
+  //     } else {
+  //       toast.error(response.error || t("codeRunner.toast.runFailed"));
+  //     }
+  //   } catch (error: any) {
+  //     console.error("Failed to run code:", error);
+  //     toast.error(
+  //       error?.response?.data?.message ||
+  //         error?.message ||
+  //         t("codeRunner.toast.runFailed")
+  //     );
+  //   } finally {
+  //     setCodeRunning(false);
+  //   }
+  // }, [codeContent, codeInput, codeLanguage, t]);
 
   const extractVideoId = useCallback((url: string): string | null => {
     if (url.includes("youtu.be/")) {
@@ -344,7 +502,7 @@ const LearnPlayground: React.FC = () => {
       >
         <div className="flex flex-col items-center space-y-4">
           <Loader2 className="h-8 w-8 animate-spin" />
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-zinc-600 dark:text-zinc-300">
             {t("loading.workspace", "Loading workspace...")}
           </p>
         </div>
@@ -371,7 +529,7 @@ const LearnPlayground: React.FC = () => {
           )}
           {contentLoading && (
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+              <Loader2 className="h-4 w-4 animate-spin text-zinc-400 dark:text-zinc-500" />
             </div>
           )}
         </div>
@@ -439,7 +597,7 @@ const LearnPlayground: React.FC = () => {
                     >
                       <TabsList
                         ref={tabsListRef}
-                        className="relative !space-x-0 !p-1 flex items-center gap-4 h-11 min-w-max rounded-2xl border w-fit"
+                        className="relative !space-x-0 !p-1 flex items-center gap-4 h-11 min-w-max rounded-2xl border border-zinc-200/60 dark:border-zinc-800/60 bg-white/80 dark:bg-zinc-950/40 shadow-sm dark:shadow-none backdrop-blur-sm w-fit"
                         style={{ direction: isRTL ? "rtl" : "ltr" }}
                       >
                         {TABS_CONFIG.map((tab) => {
@@ -450,7 +608,7 @@ const LearnPlayground: React.FC = () => {
                               key={tab.id}
                               value={tab.id}
                               className={`px-2 sm:px-3 py-1.5 sm:py-2 relative z-20 flex-shrink-0 transition-all duration-150 
-                        hover:bg-transparent data-[state=active]:bg-gray-50 rounded-xl h-7 sm:h-9 flex flex-row items-center 
+                        hover:bg-transparent data-[state=active]:bg-zinc-100 dark:data-[state=active]:bg-zinc-800/60 rounded-xl h-7 sm:h-9 flex flex-row items-center 
                         justify-center select-none cursor-pointer gap-1.5`}
                               style={{
                                 minWidth: "fit-content",
@@ -461,11 +619,13 @@ const LearnPlayground: React.FC = () => {
                               {isActive ? (
                                 <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full flex-shrink-0" />
                               ) : (
-                                <IconComponent className="size-4 flex-shrink-0 text-gray-600" />
+                                <IconComponent className="size-4 flex-shrink-0 text-zinc-600 dark:text-zinc-300" />
                               )}
                               <span
                                 className={`text-xs font-normal sm:text-sm transition-colors duration-150 whitespace-nowrap ${
-                                  isActive ? "text-gray-900" : "text-gray-700"
+                                  isActive
+                                    ? "text-zinc-900 dark:text-zinc-100"
+                                    : "text-zinc-700 dark:text-zinc-300"
                                 }`}
                               >
                                 {t(tab.labelKey as any)}
@@ -475,7 +635,10 @@ const LearnPlayground: React.FC = () => {
                         })}
                       </TabsList>
 
-                      <Tooltip title="Full Screen" className="cursor-pointer">
+                      <Tooltip
+                        title={t("workspace.fullScreen", "Full Screen")}
+                        className="cursor-pointer"
+                      >
                         <Scan
                           className="opacity-50 hover:opacity-100 transition-all ease-linear duration-200 size-5"
                           onClick={() => {
@@ -490,7 +653,7 @@ const LearnPlayground: React.FC = () => {
                     {state.tab === "chat" && (
                       <TabsContent
                         value="chat"
-                        className="m-0 flex-1 flex flex-col relative items-end justify-end min-h-0"
+                        className={`${PANEL_BASE_CLASSES} flex-1 relative items-end justify-end min-h-0 overflow-hidden`}
                         style={{ maxHeight: "100%" }}
                       >
                         {state.isLoading ? (
@@ -510,7 +673,8 @@ const LearnPlayground: React.FC = () => {
                             <ChatInput
                               className="flex-shrink-0 p-2 px-20 pb-2"
                               value={state.prompt}
-                              expandSection={false}
+                              hasAutoContext={true}
+                              expandSection={true}
                               onChange={(value: string) =>
                                 dispatch({ type: "SET_PROMPT", prompt: value })
                               }
@@ -528,17 +692,17 @@ const LearnPlayground: React.FC = () => {
                     {state.tab === "flashcards" && workspace && (
                       <TabsContent
                         value="flashcards"
-                        className="m-0 h-full flex flex-col"
+                        className={`${PANEL_BASE_CLASSES}`}
                         style={{ maxHeight: "100%" }}
                       >
                         <FlashCards workspaceId={workspace.id} />
                       </TabsContent>
                     )}
 
-                    {state.tab === "quizzes" && (
+                    {state.tab === "quizzes" && workspace && (
                       <TabsContent
                         value="quizzes"
-                        className="m-0 h-full p-4 text-gray-500 flex flex-col"
+                        className={`${PANEL_BASE_CLASSES} p-4 text-zinc-500 dark:text-zinc-300`}
                       >
                         <QuizList
                           workspaceId={(workspace && workspace.id) || ""}
@@ -546,15 +710,13 @@ const LearnPlayground: React.FC = () => {
                       </TabsContent>
                     )}
 
-                    {state.tab === "summary" && (
+                    {state.tab === "summary" && workspace?.id && (
                       <TabsContent
                         value="summary"
-                        className="m-0 h-full p-4 text-gray-500 flex flex-col"
+                        className={`${PANEL_BASE_CLASSES} p-4 text-zinc-500 dark:text-zinc-300`}
                         style={{ maxHeight: "100%" }}
                       >
-                        <SummaryList
-                          worksapceId={(workspace && workspace.id) || ""}
-                        />
+                        <SummaryList workspaceId={String(workspace.id)} />
                       </TabsContent>
                     )}
 
@@ -763,7 +925,9 @@ const LearnPlayground: React.FC = () => {
                           style={{ maxHeight: "100%" }}
                         >
                           <SummaryList
-                            worksapceId={(workspace && workspace.id) || ""}
+                            workspaceId={
+                              String(workspace && workspace.id) || ""
+                            }
                           />
                         </TabsContent>
                       )}
