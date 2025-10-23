@@ -56,8 +56,8 @@ export default function WorkspaceFolderItem({
     workspace;
 
   function renderBanner() {
-    if (workspaceType === "youtube" && youtubeVideo?.transcribe?.data?.url) {
-      const url = youtubeVideo.transcribe.data.url;
+    if (workspaceType === "youtube" && youtubeVideo?.transcript?.data?.url) {
+      const url = youtubeVideo.transcript.data.url;
       const match = url.match(
         /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|embed)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/
       );

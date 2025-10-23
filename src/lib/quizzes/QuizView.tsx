@@ -387,7 +387,7 @@ export const QuizView: React.FC<QuizViewProps> = ({
 
   const questions = quizData.payload?.questions ?? [];
   const totalQuestions = questions.length;
-  const currentQuestion: Question | undefined = questions[currentIndex];
+  const currentQuestion: Question = questions[currentIndex];
   const currentAnswer = currentQuestion
     ? answersMap[currentQuestion.id]
     : undefined;
