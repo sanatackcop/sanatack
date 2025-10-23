@@ -17,7 +17,6 @@ import { DeleteModalState, Flashcard, FlashcardDeck } from "./types";
 import { GenerationStatus } from "../types";
 import { FlashCardsInputs, InputConfig } from "./consts";
 import { Textarea } from "@/components/ui/textarea";
-import { deleteFlashcardDeck } from "@/utils/_apis/learnPlayground-api";
 import {
   ProgressStrip,
   QueuedStrip,
@@ -59,7 +58,7 @@ export const FlashcardsList: React.FC<{
     setDeletingId(id);
 
     try {
-      await deleteFlashcardDeck(id);
+      // await deleteFlashcardDeck(id);
       onDeleteSet?.(id);
       setDeleteModal({ isOpen: false, setToDelete: null });
     } catch (err: any) {

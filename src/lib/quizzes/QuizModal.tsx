@@ -64,7 +64,7 @@ export default function QuizModal({
   const [difficulty, setDifficulty] =
     useState<(typeof DIFFICULTIES)[number]>("medium");
   const [count, setCount] = useState<number>(8);
-  const [focus, setFocus] = useState<string>("");
+  const [focus, setFocus] = useState<string | null>(null);
   const [countError, setCountError] = useState<string | null>(null);
   const [language, setLanguage] = useState<"en" | "ar">("ar");
   const { t } = useTranslation();
@@ -132,7 +132,7 @@ export default function QuizModal({
         question_types: selectedTypes,
         count: finalCount,
         difficulty,
-        focus: focus?.trim() ?? "",
+        focus,
       });
 
       setRefresh();
@@ -345,7 +345,7 @@ export default function QuizModal({
             </Label>
             <Textarea
               id="focus-input"
-              value={focus}
+              value={focus || ""}
               placeholder={t(
                 "quiz.focusPlaceholder",
                 "e.g. arrays, pointers, error handling"

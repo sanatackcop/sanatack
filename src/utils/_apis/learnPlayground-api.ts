@@ -71,7 +71,7 @@ export const youtubeUrlPastApi = async ({ url }: { url: string }) => {
   try {
     const response = await Api({
       method: API_METHODS.POST,
-      url: `study-ai/transcribe`,
+      url: `study-ai/transcript`,
       data: {
         youtubeUrl: url,
       },
@@ -239,66 +239,6 @@ export const runWorkspaceCode = async (
   }
 };
 
-export const getQuizStatusApi = async (
-  id: string
-): Promise<QuizStatusResponse> => {
-  try {
-    const response = await Api<QuizStatusResponse>({
-      method: API_METHODS.GET,
-      url: `study-ai/quizzes/${id}`,
-    });
-    return response.data;
-  } catch (e: any) {
-    console.error("getQuizStatusApi error:", e.message);
-    throw e;
-  }
-};
-
-export const getFlashcardDeckStatusApi = async (
-  id: string
-): Promise<FlashcardDeckStatusResponse> => {
-  try {
-    const response = await Api<FlashcardDeckStatusResponse>({
-      method: API_METHODS.GET,
-      url: `study-ai/flashcards/decks/${id}`,
-    });
-    return response.data;
-  } catch (e: any) {
-    console.error("getFlashcardDeckStatusApi error:", e.message);
-    throw e;
-  }
-};
-
-export const getSummaryStatusApi = async (
-  id: string
-): Promise<SummaryStatusResponse> => {
-  try {
-    const response = await Api<SummaryStatusResponse>({
-      method: API_METHODS.GET,
-      url: `study-ai/summaries/${id}`,
-    });
-    return response.data;
-  } catch (e: any) {
-    console.error("getSummaryStatusApi error:", e.message);
-    throw e;
-  }
-};
-
-export const getExplanationStatusApi = async (
-  id: string
-): Promise<ExplanationStatusResponse> => {
-  try {
-    const response = await Api<ExplanationStatusResponse>({
-      method: API_METHODS.GET,
-      url: `study-ai/explanations/${id}`,
-    });
-    return response.data;
-  } catch (e: any) {
-    console.error("getExplanationStatusApi error:", e.message);
-    throw e;
-  }
-};
-
 export const createNewSummaryApi = async ({
   id,
 }: {
@@ -449,7 +389,7 @@ export const createFlashcard = async (
   workspaceId: string,
   count: number,
   language: "en" | "ar",
-  focus: string
+  focus: string | null
 ): Promise<GenerationJobResponse> => {
   try {
     const response = await Api<GenerationJobResponse>({
@@ -530,19 +470,6 @@ export const submitWorkspaceQuizAttempt = async (attemptId: string) => {
     const response = await Api({
       method: API_METHODS.POST,
       url: `study-ai/quizzes/attempts/${attemptId}/submit`,
-    });
-    return response.data as any;
-  } catch (e: any) {
-    console.error("submitWorkspaceQuizAttempt error:", e.message);
-    throw e;
-  }
-};
-
-export const deleteFlashcardDeck = async (flashcard_deck_id: string) => {
-  try {
-    const response = await Api({
-      method: API_METHODS.DELETE,
-      url: `study-ai/flashcards/decks/${flashcard_deck_id}`,
     });
     return response.data as any;
   } catch (e: any) {

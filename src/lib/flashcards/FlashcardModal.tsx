@@ -55,7 +55,7 @@ export default function FlashcardModal({
   const [generating, setGenerating] = useState(false);
   const [count, setCount] = useState<number>(8);
   const [language, setLanguage] = useState<"en" | "ar">("ar");
-  const [focus, setFocus] = useState<string>("");
+  const [focus, setFocus] = useState<string | null>(null);
   const [countError, setCountError] = useState<string | null>(null);
 
   const disabled = generating || anyActive || !workspaceId;
@@ -64,7 +64,6 @@ export default function FlashcardModal({
     Math.max(MIN_CARDS, Math.min(MAX_CARDS, Math.floor(n)));
 
   const validateAndSetCount = (raw: string) => {
-    // Allow empty while typing
     if (raw.trim() === "") {
       setCountError(null);
       setCount(NaN as any);
@@ -106,7 +105,7 @@ export default function FlashcardModal({
     setGenerating(true);
     try {
       // POST with payload
-      await createFlashcard(workspaceId, finalCount, language, focus?.trim());
+      await createFlashcard(workspaceId, finalCount, language, focus);
 
       toast.success(t("flashcards.created", "Flashcard deck created"));
       onClose(true);
@@ -150,7 +149,7 @@ export default function FlashcardModal({
           </Label>
           <Textarea
             id="focus-input"
-            value={focus}
+            value={focus || ""}
             placeholder={t(
               "focus.placeholder",
               "e.g. pointers, memory management, or dynamic arrays"

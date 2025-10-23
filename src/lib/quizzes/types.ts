@@ -31,7 +31,7 @@ export interface QuizPayload {
   id: string;
   title: string;
   duration: number; // minutes
-  questions: Question[];
+  questions:       [];
   description: string;
   passing_score: number;
 }
