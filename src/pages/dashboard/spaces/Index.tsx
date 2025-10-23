@@ -21,8 +21,9 @@ import {
 } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
 
-export default function Spaces({ isRTL }: { isRTL: boolean }) {
-  const { t } = useTranslation();
+export default function Spaces() {
+  const { i18n, t } = useTranslation();
+  const isRTL = i18n.language === "ar";
   const navigate = useNavigate();
 
   const [spaces, setSpaces] = useState<Space[]>([]);
@@ -134,9 +135,12 @@ export default function Spaces({ isRTL }: { isRTL: boolean }) {
                 type="button"
                 onClick={() => setOpenAdd(true)}
                 disabled={creating}
-                className={`group relative h-[88px] rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-800/50 flex flex-col items-center justify-center gap-2 transition-all duration-200 hover:border-zinc-300 hover:bg-zinc-50/50 dark:hover:border-zinc-500 dark:hover:bg-zinc-900/20 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
-                  isRTL ? "text-right" : "text-left"
-                }`}
+                className={`group relative h-[88px] rounded-xl border-2 border-dashed border-zinc-200
+                   dark:border-zinc-700 flex flex-col items-center justify-center gap-2 transition-all duration-200
+                    hover:border-zinc-300 hover:bg-zinc-50/50 dark:hover:border-zinc-500 focus:outline-none focus:ring-2 
+                    focus:ring-zinc-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                      isRTL ? "text-right" : "text-left"
+                    }`}
               >
                 <div className="h-10 w-10 rounded-full bg-zinc-100 dark:bg-zinc-700 flex items-center justify-center transition-colors group-hover:bg-zinc-100 dark:group-hover:bg-zinc-800">
                   <Plus className="h-5 w-5 text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-400" />

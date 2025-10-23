@@ -3,7 +3,7 @@ import Recent from "@/pages/dashboard/workspaces/Recent";
 import Spaces from "@/pages/dashboard/spaces/Index";
 
 export default function LearningDashboard() {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   const isRTL = i18n.language === "ar";
 
   return (
@@ -15,11 +15,11 @@ export default function LearningDashboard() {
               isRTL ? "text-right" : "text-left"
             }`}
           >
-            Recent Learning Playgrounds
+            {t("common.workspaceTitle")}
           </h2>
         </header>
-        <Recent isRTL={isRTL} />
-        <Spaces isRTL={isRTL} />
+        <Recent />
+        <Spaces />
       </section>
     </>
   );

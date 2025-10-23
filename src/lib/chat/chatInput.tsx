@@ -21,6 +21,7 @@ import {
   BookOpen,
   Sparkles,
   Search,
+  Loader2,
 } from "lucide-react";
 import i18n from "@/i18n";
 
@@ -44,15 +45,15 @@ export type Context = {
     | "image"
     | "video"
     | "transcript"
-    | "ai_generated";
+    | "ai_generated"
+    | "document"
+    | "summary";
   size?: string;
   preview?: string;
   thumbnail?: string;
   duration?: string;
   metadata?: {
-    views?: string;
-    author?: string;
-    uploadedAt?: string;
+    [key: string]: any;
   };
 };
 
@@ -75,6 +76,7 @@ export interface ChatInputProps {
   hasAutoContext?: boolean;
   autoContextCount?: number;
   onAutoContextClick?: () => void;
+  autoContextLoading?: boolean;
 }
 
 const ChatInput: React.FC<ChatInputProps> = ({
@@ -196,6 +198,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   hasAutoContext = true,
   autoContextCount = 3,
   onAutoContextClick,
+  autoContextLoading = false,
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [isModelPopoverOpen, setIsModelPopoverOpen] = useState(false);
@@ -248,6 +251,10 @@ const ChatInput: React.FC<ChatInputProps> = ({
   useEffect(() => {
     adjustTextareaHeight();
   }, [value, adjustTextareaHeight]);
+
+  useEffect(() => {
+    setSelectedContexts(contexts);
+  }, [contexts]);
 
   // Handle @ mention detection
   const handleInputChange = (newValue: string) => {
@@ -444,6 +451,10 @@ const ChatInput: React.FC<ChatInputProps> = ({
         return <FileText className={iconClass} />;
       case "ai_generated":
         return <Sparkles className={iconClass} />;
+      case "document":
+        return <BookOpen className={iconClass} />;
+      case "summary":
+        return <Sparkles className={iconClass} />;
       case "file":
         return <FileText className={iconClass} />;
       case "image":
@@ -462,6 +473,10 @@ const ChatInput: React.FC<ChatInputProps> = ({
       case "transcript":
         return "bg-blue-50 hover:bg-blue-100 dark:bg-blue-950 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border-blue-200/60 dark:border-blue-800";
       case "ai_generated":
+        return "bg-purple-50 hover:bg-purple-100 dark:bg-purple-950 dark:hover:bg-purple-900/60 text-purple-700 dark:text-purple-300 border-purple-200/60 dark:border-purple-800";
+      case "document":
+        return "bg-amber-50 hover:bg-amber-100 dark:bg-amber-950 dark:hover:bg-amber-900/60 text-amber-700 dark:text-amber-300 border-amber-200/60 dark:border-amber-800";
+      case "summary":
         return "bg-purple-50 hover:bg-purple-100 dark:bg-purple-950 dark:hover:bg-purple-900/60 text-purple-700 dark:text-purple-300 border-purple-200/60 dark:border-purple-800";
       case "file":
         return "bg-blue-50 hover:bg-blue-100 dark:bg-blue-950 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border-blue-200/60 dark:border-blue-800";
@@ -568,7 +583,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
           ref={contextMenuRef}
           className="absolute bottom-full left-0 right-0 mb-2 z-50 animate-in slide-in-from-bottom-2 fade-in-0 duration-200"
         >
-          <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-xl border border-zinc-200 dark:border-zinc-700 overflow-hidden max-w-md">
+          <div className="bg-white dark:bg-zinc-900 rounded-xl  border border-zinc-200 dark:border-zinc-700 overflow-hidden max-w-md">
             <div className="px-3 py-2 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50">
               <div className="flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
                 <Search className="w-3.5 h-3.5" />
@@ -685,7 +700,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
             transition-all duration-300 ease-out
             ${
               isDragging
-                ? "border-blue-400 dark:border-blue-500 bg-blue-50 dark:bg-blue-950/20 shadow-lg shadow-blue-200 dark:shadow-blue-900/20"
+                ? "border-blue-400 dark:border-blue-500 bg-blue-50 dark:bg-blue-950/20 shadow-blue-200 dark:shadow-blue-900/20"
                 : isFocused
                 ? "border-zinc-300 dark:border-zinc-600 shadow-lg shadow-zinc-200/50 dark:shadow-zinc-900/40"
                 : "border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600"
@@ -706,9 +721,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
 
           {/* Context Pills Above Input */}
           {selectedContexts.length > 0 && (
-            <div
-              className={`px-3 pt-3 pb-2 border-b border-zinc-200 dark:border-zinc-800`}
-            >
+            <div className={`px-3 pt-3 pb-2`}>
               <div className="flex flex-wrap gap-2">
                 {selectedContexts.map((context) => (
                   <Badge
@@ -791,11 +804,11 @@ const ChatInput: React.FC<ChatInputProps> = ({
                 disabled={!value?.trim()}
                 size="sm"
                 className={`
-                  size-9 rounded-xl font-medium shadow-sm
-                  transition-all duration-300 ease-out
+                  size-9 rounded-xl font-medium
+                                    transition-all duration-300 ease-out
                   ${
                     value?.trim()
-                      ? "bg-zinc-800 hover:bg-zinc-900 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-white hover:scale-110 active:scale-95 shadow-zinc-300 dark:shadow-zinc-950"
+                      ? "bg-zinc-800 hover:bg-zinc-900 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-white hover:scale-110 active:scale-95  dark:shadow-zinc-950"
                       : "bg-zinc-200 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-600 cursor-not-allowed"
                   }
                 `}
@@ -863,7 +876,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent
-                        className="w-80 p-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-900 shadow-xl backdrop-blur-sm animate-in slide-in-from-bottom-2 fade-in-0 duration-300"
+                        className="w-80 p-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-900  backdrop-blur-sm animate-in slide-in-from-bottom-2 fade-in-0 duration-300"
                         align={isRTL ? "end" : "start"}
                         side="top"
                         sideOffset={8}
@@ -892,7 +905,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                                   hover:scale-[1.01] active:scale-[0.99]
                                   ${
                                     isActive
-                                      ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm"
+                                      ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 "
                                       : "hover:bg-zinc-50 dark:hover:bg-zinc-800/50 text-zinc-700 dark:text-zinc-300"
                                   }
                                 `}
@@ -927,13 +940,18 @@ const ChatInput: React.FC<ChatInputProps> = ({
                         variant="ghost"
                         size="sm"
                         className="h-9 px-3 text-xs bg-blue-50 hover:bg-blue-100 dark:bg-blue-950 dark:hover:bg-blue-900 rounded-xl text-blue-700 dark:text-blue-300 transition-all duration-200 font-medium border border-blue-200 dark:border-blue-800 hover:scale-[1.02] active:scale-[0.98]"
+                        disabled={autoContextLoading}
                         onClick={(e) => {
                           e.stopPropagation();
                           onAutoContextClick?.();
                         }}
                       >
                         <div className="flex items-center gap-1.5">
-                          <Sparkles className="w-3.5 h-3.5" />
+                          {autoContextLoading ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Sparkles className="w-3.5 h-3.5" />
+                          )}
                           <span>{isRTL ? "سياق تلقائي" : "Auto context"}</span>
                           {autoContextCount > 0 && (
                             <Badge className="ml-1 h-5 px-1.5 text-[10px] bg-blue-600 hover:bg-blue-600 dark:bg-blue-700 dark:hover:bg-blue-700 text-white">

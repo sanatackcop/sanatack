@@ -27,12 +27,13 @@ const WorkspaceItemSkeleton = () => (
   </Card>
 );
 
-export default function Recent({ isRTL }: { isRTL: boolean }) {
-  const { t } = useTranslation();
+export default function Recent() {
+  const { t, i18n } = useTranslation();
   const [workspaces, setWorkspaces] = useState<Workspace[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [refresh, setRefresh] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const isRTL = i18n.language === "ar";
 
   const fetchRecent = async () => {
     try {

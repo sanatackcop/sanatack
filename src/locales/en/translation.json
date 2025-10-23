@@ -1,5 +1,6 @@
 {
   "common": {
+    "workspaceTitle": "Recent Playground",
     "creating": "Creating",
     "deleting": "Deleting",
     "chosen_by_minds": "Chosen by the brightest minds worldwide",
@@ -403,6 +404,7 @@
     "transcript": "Transcript",
     "explanation": "Deep explain",
     "chat": "Chat",
+    "deepExplanation": "Deep Explain",
     "flashcards": "Flashcards",
     "quizzes": "Quizzes",
     "summary": "Summary",
@@ -649,6 +651,11 @@
       "missingLanguage": "Choose a language before running.",
       "runFailed": "We couldn't run your code. Please try again."
     }
+  },
+  "chat": {
+    "auto_context_success": "Workspace context updated successfully.",
+    "auto_context_failed": "Unable to generate context for this workspace.",
+    "auto_context_empty": "No context was generated for this workspace yet."
   },
   "modals": {
     "addContent": {

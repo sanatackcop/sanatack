@@ -21,6 +21,8 @@ import {
   Languages,
   MessageCircle,
   Tablet,
+  ChevronsLeft,
+  ChevronsRight,
 } from "lucide-react";
 import clsx from "clsx";
 import {
@@ -90,7 +92,11 @@ interface Workspace {
 type RawSpace = { id: string; name: string; description?: string | null };
 type SpaceItem = { id: string; title: string; url: string };
 
-export function AppSidebar() {
+interface AppSidebarProps {
+  onCollapse?: () => void;
+}
+
+export function AppSidebar({ onCollapse }: AppSidebarProps) {
   const { t, i18n } = useTranslation();
   const { darkMode, toggleDarkMode, language, setLanguage } = useSettings();
   const [showUserDropdown, setShowUserDropdown] = useState(false);
@@ -101,6 +107,7 @@ export function AppSidebar() {
   const [openCreate, setOpenCreate] = useState(false);
   const [newName, setNewName] = useState("");
   const [showAllSpaces, setShowAllSpaces] = useState(false);
+  const [isLogoHovered, setIsLogoHovered] = useState(false);
 
   const { logout } = useUserContext();
   const [workspaces, setWorkspaces] = useState<Workspace[] | null>(null);
@@ -229,6 +236,12 @@ export function AppSidebar() {
             type: "feedback",
           },
           {
+            title: t("sidebar.app"),
+            url: "https://chrome.google.com/webstore/category/extensions",
+            comingSoon: true,
+            icon: Tablet,
+          },
+          {
             title: t("sidebar.discord"),
             url: "https://discord.com",
             icon: FaDiscord,
@@ -237,12 +250,6 @@ export function AppSidebar() {
             title: t("sidebar.chromeExtension"),
             url: "https://chrome.google.com/webstore/category/extensions",
             icon: FaChrome,
-          },
-          {
-            title: t("sidebar.app"),
-            url: "https://chrome.google.com/webstore/category/extensions",
-            comingSoon: true,
-            icon: Tablet,
           },
         ],
       },
@@ -415,8 +422,7 @@ export function AppSidebar() {
             type="button"
             className={clsx(
               "w-full flex items-center gap-2.5 px-2 py-1.5 rounded-md transition-colors duration-150 group relative focus:outline-none",
-              "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
-              getFlexDirection()
+              "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
             )}
           >
             <ItemIcon
@@ -505,8 +511,7 @@ export function AppSidebar() {
         <div
           className={clsx(
             `flex items-center px-2 py-1.5 text-[11px] text-sidebar-foreground/50 
-           capitalize tracking-wider select-none`,
-            getFlexDirection()
+           capitalize tracking-wider select-none`
           )}
         >
           <span>{group.groupTitle}</span>
@@ -602,8 +607,10 @@ export function AppSidebar() {
         <div className="flex items-center justify-between">
           <div
             className={clsx(
-              "h-[60px] flex items-center overflow-hidden w-full justify-start"
+              "h-[60px] flex items-center overflow-hidden w-full justify-between group relative"
             )}
+            onMouseEnter={() => setIsLogoHovered(true)}
+            onMouseLeave={() => setIsLogoHovered(false)}
           >
             <img
               src={String(darkMode ? LogoDark : LogoLight)}
@@ -612,6 +619,24 @@ export function AppSidebar() {
                 i18n.dir() === "rtl" ? "pr-6" : "pl-5"
               }`}
             />
+
+            {/* Collapse button - appears on hover */}
+            <button
+              onClick={onCollapse}
+              className={clsx(
+                "p-1.5 rounded-md transition-all duration-200",
+                "hover:bg-sidebar-accent/50 text-sidebar-foreground/60 hover:text-sidebar-accent-foreground",
+                isLogoHovered ? "opacity-100 visible" : "opacity-0 invisible",
+                isRTL ? "ml-2" : "mr-2"
+              )}
+              aria-label={t("sidebar.collapse", "Collapse sidebar")}
+            >
+              {isRTL ? (
+                <ChevronsRight size={18} strokeWidth={2} />
+              ) : (
+                <ChevronsLeft size={18} strokeWidth={2} />
+              )}
+            </button>
           </div>
         </div>
 
@@ -708,16 +733,6 @@ export function AppSidebar() {
               title={t("sidebar.spaces")}
               action={
                 <Dialog open={openCreate} onOpenChange={setOpenCreate}>
-                  <DialogTrigger asChild>
-                    <button
-                      className={clsx(
-                        "inline-flex items-center justify-center w-5 h-5 rounded-md transition-colors bg-transparent hover:bg-sidebar-accent text-sidebar-foreground/60 hover:text-sidebar-accent-foreground",
-                        getFlexDirection()
-                      )}
-                    >
-                      <Plus size={14} strokeWidth={2} />
-                    </button>
-                  </DialogTrigger>
                   <DialogContent
                     dir={isRTL ? "rtl" : "ltr"}
                     className="rounded-2xl"

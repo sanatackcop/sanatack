@@ -12,8 +12,8 @@ import { useTranslation } from "react-i18next";
 const CONFIG = {
   AUTO_COLLAPSE_THRESHOLD: 10,
   MIN_SIZE: 13,
-  DEFAULT_SIZE: 10,
-  MAX_SIZE: 16,
+  DEFAULT_SIZE: 16,
+  MAX_SIZE: 20,
   MAIN_MIN_SIZE: 55,
 } as const;
 
@@ -101,7 +101,9 @@ export default function DashboardLayout({
   }, []);
 
   const handleCollapse = React.useCallback(() => {
-    setIsCollapsed(true);
+    if (panelRef.current) {
+      panelRef.current.collapse();
+    }
   }, []);
 
   const handleExpand = React.useCallback(() => {
@@ -126,18 +128,36 @@ export default function DashboardLayout({
             collapsible={true}
             collapsedSize={0}
             onResize={handlePanelResize}
-            onCollapse={handleCollapse}
+            onCollapse={() => setIsCollapsed(true)}
             onExpand={handleExpand}
             className="transition-all duration-200 ease-out"
           >
             <div
               className={`h-full transition-opacity duration-200 ${
-                isCollapsed ? "opacity-0" : "opacity-100"
+                isCollapsed ? "opacity-0 pointer-events-none" : "opacity-100"
               }`}
             >
-              <AppSidebar />
+              <AppSidebar onCollapse={handleCollapse} />
             </div>
           </ResizablePanel>
+
+          <ResizableHandle
+            withHandle={false}
+            onDragging={handleDraggingChange}
+            aria-label={isRTL ? "تغيير حجم الشريط الجانبي" : "Resize sidebar"}
+            className={`
+              relative z-20 w-1.5 select-none
+              transition-all duration-200 ease-out cursor-col-resize
+              ${isDragging ? "opacity-100" : "opacity-0 hover:opacity-100"}
+              before:absolute before:inset-y-0 before:left-1/2 before:-translate-x-1/2 
+              before:w-px before:transition-colors before:duration-200
+              ${
+                isDragging
+                  ? "before:bg-blue-400/60"
+                  : "before:bg-border/40 hover:before:bg-blue-300/50"
+              }
+            `}
+          />
 
           <ResizablePanel
             defaultSize={100 - CONFIG.DEFAULT_SIZE}
@@ -145,34 +165,6 @@ export default function DashboardLayout({
             className="min-w-0"
           >
             <div className="relative flex h-full min-w-0 min-h-0">
-              {!isCollapsed && (
-                <ResizableHandle
-                  withHandle={false}
-                  onDragging={handleDraggingChange}
-                  aria-label={
-                    isRTL
-                      ? "[translate:تغيير حجم الشريط الجانبي]"
-                      : "Resize sidebar"
-                  }
-                  className={`
-                    absolute top-0 ${
-                      isRTL ? "right-0" : "left-0"
-                    } z-20 h-full w-1.5 select-none
-                    transition-all duration-200 ease-out cursor-col-resize
-                    ${
-                      isDragging ? "opacity-100" : "opacity-0 hover:opacity-100"
-                    }
-                    before:absolute before:inset-y-0 before:left-1/2 before:-translate-x-1/2 
-                    before:w-px before:transition-colors before:duration-200
-                    ${
-                      isDragging
-                        ? "before:bg-blue-400/60"
-                        : "before:bg-border/40 hover:before:bg-blue-300/50"
-                    }
-                  `}
-                />
-              )}
-
               {isCollapsed && (
                 <button
                   type="button"
@@ -180,22 +172,19 @@ export default function DashboardLayout({
                   className={`
                     absolute top-3 z-30 inline-flex items-center gap-2 px-2 py-2 rounded-xl
                     focus:outline-none focus:ring-2 focus:ring-blue-500/40 group
-                    hover:bg-gray-100/40 duration-400 transition-all ease-linear
+                    bg-white/80 border border-gray-200/50 shadow-sm backdrop-blur-sm
+                    hover:bg-gray-50 hover:shadow-md duration-200 transition-all
                     dark:border-white/10 dark:bg-zinc-800/80 dark:hover:bg-zinc-700/90
                     ${isRTL ? "right-3" : "left-3"}
                   `}
-                  aria-label={
-                    isRTL ? "[translate:فتح الشريط الجانبي]" : "Open sidebar"
-                  }
-                  title={
-                    isRTL ? "[translate:فتح الشريط الجانبي]" : "Open sidebar"
-                  }
+                  aria-label={isRTL ? "فتح الشريط الجانبي" : "Open sidebar"}
+                  title={isRTL ? "فتح الشريط الجانبي" : "Open sidebar"}
                 >
-                  <PanelLeft className="h-4 w-4 text-zinc-600 group-hover:text-zinc-950 duration-200 transition-all ease-linear" />
+                  <PanelLeft className="h-4 w-4 text-zinc-600 dark:text-zinc-300 group-hover:text-zinc-950 dark:group-hover:text-zinc-100 duration-200 transition-all" />
                 </button>
               )}
 
-              <main className={`flex-1 min-w-0 min-h-0 flex`}>
+              <main className="flex-1 min-w-0 min-h-0 flex">
                 <div className="flex-1 min-w-0 min-h-0 flex flex-col">
                   <div className="flex-1 min-h-0 overflow-hidden">
                     <div className="h-full min-h-0 overflow-hidden">

@@ -4,6 +4,7 @@ import React, {
   useReducer,
   useState,
   useRef,
+  useMemo,
 } from "react";
 import {
   ResizablePanelGroup,
@@ -22,6 +23,7 @@ import {
   TestTube2,
   Code,
   GalleryVerticalEnd,
+  Pencil,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
@@ -29,105 +31,42 @@ import {
   getWorkSpace,
   getWorkSpaceChatHistory,
   sendWorkspaceChatMessage,
+  generateWorkspaceAutoContext,
+  getWorkspaceContexts,
 } from "@/utils/_apis/learnPlayground-api";
 import { useParams } from "react-router-dom";
 import FlashCards from "../../../lib/flashcards/FlashCards";
 import Tooltip from "@mui/material/Tooltip";
-import ChatInput from "@/lib/chat/chatInput";
+import ChatInput, {
+  Context as ChatContext,
+  Model as ChatModel,
+} from "@/lib/chat/chatInput";
 import ChatMessages from "@/lib/chat/ChatMessage";
 import { initialState } from "@/lib/consts";
 import MindMap from "@/lib/mindMap/MindMap";
 import PdfReader from "@/lib/PdfReader";
 import { QuizList } from "@/lib/quizzes/Quiz";
 import { SummaryList } from "@/lib/summary/Summary";
-import { ChatMessage, TabKey, Workspace } from "@/lib/types";
+import {
+  ChatMessage,
+  TabKey,
+  Workspace,
+  WorkspaceContext,
+  WorkspaceContextInput,
+} from "@/lib/types";
 import YouTubeReader from "@/lib/YoutubeReader";
 import { ChatSkeleton, ContentSkeleton, reducer, TabsSkeleton } from "../utils";
+import { toast } from "sonner";
 
 const TABS_CONFIG = [
   { id: "chat", labelKey: "tabs.chat", icon: MessageCircle },
   { id: "flashcards", labelKey: "tabs.flashcards", icon: GalleryVerticalEnd },
   { id: "quizzes", labelKey: "tabs.quizzes", icon: TestTube2 },
   { id: "summary", labelKey: "tabs.summary", icon: BookOpen },
-  { id: "deepExplanation", labelKey: "Deep Explantion", icon: BrainCog },
+  { id: "deepExplanation", labelKey: "tabs.deepExplanation", icon: BrainCog },
   { id: "code", labelKey: "tabs.code", icon: Code },
+  { id: "note", labelKey: "tabs.notes", icon: Pencil },
 ] as const;
-
-const PANEL_BASE_CLASSES =
-  "m-0 h-full flex flex-col rounded-2xl border border-zinc-200/60 dark:border-zinc-800/60 bg-white/80 dark:bg-zinc-950/40 shadow-sm dark:shadow-none backdrop-blur-sm";
-
-// const CODE_TEMPLATES: Record<string, string> = {
-//   javascript: `function solution() {
-//   console.log("Hello, world!");
-// }
-
-// solution();
-// `,
-//   typescript: `function solution(): void {
-//   console.log("Hello, world!");
-// }
-
-// solution();
-// `,
-//   python: `def solution():
-//     print("Hello, world!")
-
-// if __name__ == "__main__":
-//     solution()
-// `,
-//   java: `public class Main {
-//     public static void main(String[] args) {
-//         System.out.println("Hello, world!");
-//     }
-// }
-// `,
-//   cpp: `#include <iostream>
-
-// int main() {
-//     std::cout << "Hello, world!" << std::endl;
-//     return 0;
-// }
-// `,
-//   c: `#include <stdio.h>
-
-// int main() {
-//     printf("Hello, world!\\n");
-//     return 0;
-// }
-// `,
-//   csharp: `using System;
-
-// public class Program {
-//     public static void Main() {
-//         Console.WriteLine("Hello, world!");
-//     }
-// }
-// `,
-//   go: `package main
-
-// import "fmt"
-
-// func main() {
-//     fmt.Println("Hello, world!")
-// }
-// `,
-//   rust: `fn main() {
-//     println!("Hello, world!");
-// }
-// `,
-// };
-
-// const LANGUAGE_OPTIONS = [
-//   { value: "javascript", label: "JavaScript / Node.js" },
-//   { value: "typescript", label: "TypeScript" },
-//   { value: "python", label: "Python" },
-//   { value: "java", label: "Java" },
-//   { value: "cpp", label: "C++" },
-//   { value: "c", label: "C" },
-//   { value: "csharp", label: "C#" },
-//   { value: "go", label: "Go" },
-//   { value: "rust", label: "Rust" },
-// ] as const;
 
 const LearnPlayground: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -137,14 +76,11 @@ const LearnPlayground: React.FC = () => {
   const [contentLoading, setContentLoading] = useState(false);
   const [workspace, setWorkspace] = useState<Workspace | undefined>();
   const [fullScreen, setFullScreen] = useState(false);
-
-  // const [codeLanguage, setCodeLanguage] = useState<string>("javascript");
-  // const [codeContent, setCodeContent] = useState<string>(
-  //   CODE_TEMPLATES.javascript
-  // );
-  // const [codeInput, setCodeInput] = useState<string>("");
-  // const [codeResult, setCodeResult] = useState<RunCodeResponse | null>(null);
-  // const [codeRunning, setCodeRunning] = useState<boolean>(false);
+  const [workspaceContexts, setWorkspaceContexts] = useState<
+    WorkspaceContext[]
+  >([]);
+  const [selectedContexts, setSelectedContexts] = useState<ChatContext[]>([]);
+  const [autoContextLoading, setAutoContextLoading] = useState(false);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const tabsListRef = useRef<HTMLDivElement>(null);
@@ -155,78 +91,82 @@ const LearnPlayground: React.FC = () => {
   const [scrollLeft, setScrollLeft] = useState(0);
   const isRTL = i18n.language === "ar";
 
-  // const codeEditorExtensions = useMemo(() => {
-  //   if (codeLanguage === "javascript" || codeLanguage === "typescript") {
-  //     return [
-  //       javascript({
-  //         jsx: codeLanguage === "javascript",
-  //         typescript: codeLanguage === "typescript",
-  //       }),
-  //     ];
-  //   }
-  //   return [];
-  // }, [codeLanguage]);
+  const autoContextCount = useMemo(() => {
+    if (!workspaceContexts.length) return 0;
+    const autoGenerated = workspaceContexts.filter(
+      (ctx) => ctx.isAutoGenerated
+    );
+    return autoGenerated.length > 0
+      ? autoGenerated.length
+      : workspaceContexts.length;
+  }, [workspaceContexts]);
 
-  // const handleLanguageChange = useCallback(
-  //   (value: string) => {
-  //     setCodeLanguage(value);
-  //     setCodeContent((prev) => {
-  //       const previousTemplate = CODE_TEMPLATES[codeLanguage];
-  //       const nextTemplate = CODE_TEMPLATES[value];
+  const mapContextType = useCallback((type?: string): ChatContext["type"] => {
+    switch (type) {
+      case "video":
+        return "video";
+      case "transcript":
+        return "transcript";
+      case "document":
+        return "document";
+      case "summary":
+      case "ai_generated":
+        return "summary";
+      case "note":
+      case "text":
+        return "text";
+      default:
+        return "text";
+    }
+  }, []);
 
-  //       if (!prev.trim() && nextTemplate) {
-  //         return nextTemplate;
-  //       }
+  const mapWorkspaceContextsToChat = useCallback(
+    (contexts: WorkspaceContext[] = []): ChatContext[] =>
+      contexts.map((context) => {
+        const content = context.content ?? "";
+        return {
+          id: context.id,
+          name: context.title,
+          content,
+          type: mapContextType(context.type),
+          preview: content.length > 160 ? `${content.slice(0, 160)}…` : content,
+          metadata: {
+            ...context.metadata,
+            source: context.source,
+            isAutoGenerated: context.isAutoGenerated,
+            workspaceContextId: context.id,
+          },
+        };
+      }),
+    [mapContextType]
+  );
 
-  //       if (previousTemplate && prev === previousTemplate && nextTemplate) {
-  //         return nextTemplate;
-  //       }
+  const mapChatContextsToPayload = useCallback(
+    (contexts: ChatContext[]): WorkspaceContextInput[] =>
+      contexts.map((ctx) => ({
+        id: ctx.id,
+        title: ctx.name,
+        content: ctx.content,
+        type: ctx.type,
+        source: ctx.metadata?.source,
+        metadata: ctx.metadata,
+      })),
+    []
+  );
 
-  //       return prev;
-  //     });
-  //     setCodeResult(null);
-  //   },
-  //   [codeLanguage]
-  // );
+  const availableContexts = useMemo(
+    () => mapWorkspaceContextsToChat(workspaceContexts),
+    [mapWorkspaceContextsToChat, workspaceContexts]
+  );
 
-  // const handleRunCode = useCallback(async () => {
-  //   if (!codeContent.trim()) {
-  //     toast.error(t("codeRunner.toast.missingCode"));
-  //     return;
-  //   }
+  useEffect(() => {
+    if (!availableContexts.length) {
+      setSelectedContexts([]);
+      return;
+    }
 
-  //   if (!codeLanguage) {
-  //     toast.error(t("codeRunner.toast.missingLanguage"));
-  //     return;
-  //   }
-
-  //   try {
-  //     setCodeRunning(true);
-  //     setCodeResult(null);
-  //     const response = await runWorkspaceCode({
-  //       code: codeContent,
-  //       language: codeLanguage,
-  //       stdin: codeInput,
-  //     });
-
-  //     setCodeResult(response);
-
-  //     if (response.success) {
-  //       toast.success(t("codeRunner.status.success"));
-  //     } else {
-  //       toast.error(response.error || t("codeRunner.toast.runFailed"));
-  //     }
-  //   } catch (error: any) {
-  //     console.error("Failed to run code:", error);
-  //     toast.error(
-  //       error?.response?.data?.message ||
-  //         error?.message ||
-  //         t("codeRunner.toast.runFailed")
-  //     );
-  //   } finally {
-  //     setCodeRunning(false);
-  //   }
-  // }, [codeContent, codeInput, codeLanguage, t]);
+    setSelectedContexts(availableContexts);
+  }, [availableContexts]);
 
   const extractVideoId = useCallback((url: string): string | null => {
     if (url.includes("youtu.be/")) {
@@ -251,6 +191,20 @@ const LearnPlayground: React.FC = () => {
       ]);
       const workspaceData = response.workspace;
       workspaceData.chatMessages = history;
+
+      let contextsList =
+        (workspaceData.contexts as WorkspaceContext[] | undefined) ?? [];
+
+      if (!contextsList.length) {
+        try {
+          contextsList = await getWorkspaceContexts(id);
+        } catch (contextError) {
+          console.error("Failed to load workspace contexts:", contextError);
+        }
+      }
+
+      workspaceData.contexts = contextsList;
+      setWorkspaceContexts(contextsList);
 
       dispatch({ type: "SET_WORKSPACE", workspace: workspaceData });
       setWorkspace(workspaceData);
@@ -292,9 +246,55 @@ const LearnPlayground: React.FC = () => {
     fetchWorkspace();
   }, [fetchWorkspace]);
 
+  const handleAutoContext = useCallback(async () => {
+    if (!id) return;
+    try {
+      setAutoContextLoading(true);
+      const contexts = await generateWorkspaceAutoContext(id, true);
+      setWorkspaceContexts(contexts);
+
+      if (contexts.length > 0) {
+        toast.success(
+          t(
+            "chat.auto_context_success",
+            "Workspace context updated successfully."
+          )
+        );
+      } else {
+        toast.info(
+          t(
+            "chat.auto_context_empty",
+            "No context was generated for this workspace yet."
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Failed to generate auto context:", error);
+      toast.error(
+        t(
+          "chat.auto_context_failed",
+          "Unable to generate context for this workspace."
+        )
+      );
+    } finally {
+      setAutoContextLoading(false);
+    }
+  }, [id, t]);
+
   const handleSendMessage = useCallback(
-    async (message: string) => {
+    async (
+      message: string,
+      model?: ChatModel,
+      contextsOverride?: ChatContext[]
+    ) => {
       if (!message.trim() || !id) return;
+
+      const contextsToSend =
+        contextsOverride && contextsOverride.length
+          ? contextsOverride
+          : selectedContexts;
+
+      const contextPayload = mapChatContextsToPayload(contextsToSend);
 
       const userMessage: ChatMessage = {
         id: Date.now().toString(),
@@ -312,7 +312,11 @@ const LearnPlayground: React.FC = () => {
           id,
           message.trim(),
           i18n.language as "en" | "ar",
-          undefined,
+          {
+            model: model?.id,
+            contexts: contextPayload,
+            autoContext: contextPayload.length > 0,
+          },
           (chunk) => {
             if (chunk.chunk) {
               dispatch({ type: "ADD_STREAMING_CHUNK", chunk: chunk.chunk });
@@ -354,7 +358,13 @@ const LearnPlayground: React.FC = () => {
         dispatch({ type: "SET_STREAMING_MESSAGE", content: "" });
       }
     },
-    [id, i18n.language, t]
+    [id, i18n.language, mapChatContextsToPayload, selectedContexts, t]
+  );
+
+  const handleQuickSend = useCallback(
+    (message: string) =>
+      handleSendMessage(message, undefined, selectedContexts),
+    [handleSendMessage, selectedContexts]
   );
 
   const checkScrollability = useCallback(() => {
@@ -365,6 +375,9 @@ const LearnPlayground: React.FC = () => {
       setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5);
     }
   }, []);
+
+  const [isResizing, setIsResizing] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
     checkScrollability();
@@ -501,7 +514,7 @@ const LearnPlayground: React.FC = () => {
         className="flex items-center justify-center"
       >
         <div className="flex flex-col items-center space-y-4">
-          <Loader2 className="h-8 w-8 animate-spin" />
+          <Loader2 className="h-8 w-8 animate-spin text-zinc-600 dark:text-zinc-400" />
           <p className="text-sm text-zinc-600 dark:text-zinc-300">
             {t("loading.workspace", "Loading workspace...")}
           </p>
@@ -522,7 +535,7 @@ const LearnPlayground: React.FC = () => {
             <Skeleton className="h-10 w-full rounded-2xl" />
           ) : (
             <Input
-              className="rounded-2xl shadow-none border-none w-full"
+              className="rounded-2xl shadow-none border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-900 dark:text-zinc-100 w-full"
               value={getDisplayTitle()}
               readOnly
             />
@@ -552,7 +565,7 @@ const LearnPlayground: React.FC = () => {
               initial={{ x: 20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ type: "spring", stiffness: 260, damping: 30 }}
-              className="h-full flex flex-col min-h-0"
+              className="h-full flex flex-col min-h-0 px-6 mx-4"
             >
               {workspaceLoading ? (
                 <TabsSkeleton />
@@ -564,17 +577,17 @@ const LearnPlayground: React.FC = () => {
                   }
                   className="h-full flex flex-col min-h-0"
                 >
-                  {/* Tabs Header */}
-                  <div className="relative p-2 pt-0 flex-shrink-0">
+                  {/* Tabs Header - Clean version for fullscreen */}
+                  <div className="relative pb-4 flex-shrink-0">
                     {canScrollLeft && (
                       <div
                         className={`absolute ${
-                          isRTL ? "right-2 sm:right-4" : "left-2 sm:left-4"
-                        } top-2 sm:top-4 bottom-2 sm:bottom-4 w-4 sm:w-8 z-20 pointer-events-none`}
+                          isRTL ? "right-0" : "left-0"
+                        } top-0 bottom-4 w-8 z-20 pointer-events-none`}
                         style={{
                           background: `linear-gradient(to ${
                             isRTL ? "left" : "right"
-                          }, rgba(255,255,255,0.8), transparent)`,
+                          }, rgba(255,255,255,0.8) 0%, transparent 100%)`,
                           backdropFilter: "blur(1px)",
                         }}
                       />
@@ -582,7 +595,7 @@ const LearnPlayground: React.FC = () => {
 
                     <div
                       ref={scrollContainerRef}
-                      className="overflow-x-auto scrollbar-hide flex w-full items-center gap-2 justify-center relative touch-pan-x"
+                      className="overflow-x-auto scrollbar-hide flex w-full items-center gap-3 justify-center relative touch-pan-x"
                       onMouseDown={handleMouseDown}
                       onMouseMove={handleMouseMove}
                       onMouseUp={handleDragEnd}
@@ -597,7 +610,7 @@ const LearnPlayground: React.FC = () => {
                     >
                       <TabsList
                         ref={tabsListRef}
-                        className="relative !space-x-0 !p-1 flex items-center gap-4 h-11 min-w-max rounded-2xl border border-zinc-200/60 dark:border-zinc-800/60 bg-white/80 dark:bg-zinc-950/40 shadow-sm dark:shadow-none backdrop-blur-sm w-fit"
+                        className="relative !space-x-0 !p-1.5 flex items-center gap-2 h-12 min-w-max rounded-2xl border border-zinc-200/60 dark:border-zinc-800/60 bg-white/90 dark:bg-zinc-900/50 shadow-sm dark:shadow-zinc-950/20 backdrop-blur-md w-fit"
                         style={{ direction: isRTL ? "rtl" : "ltr" }}
                       >
                         {TABS_CONFIG.map((tab) => {
@@ -607,22 +620,22 @@ const LearnPlayground: React.FC = () => {
                             <TabsTrigger
                               key={tab.id}
                               value={tab.id}
-                              className={`px-2 sm:px-3 py-1.5 sm:py-2 relative z-20 flex-shrink-0 transition-all duration-150 
-                        hover:bg-transparent data-[state=active]:bg-zinc-100 dark:data-[state=active]:bg-zinc-800/60 rounded-xl h-7 sm:h-9 flex flex-row items-center 
-                        justify-center select-none cursor-pointer gap-1.5`}
+                              className={`px-4 py-2 relative z-20 flex-shrink-0 transition-all duration-200 
+                        hover:bg-zinc-50 dark:hover:bg-zinc-800/40 
+                        data-[state=active]:bg-zinc-100 dark:data-[state=active]:bg-zinc-800/60 
+                        rounded-xl h-9 flex flex-row items-center 
+                        justify-center select-none cursor-pointer gap-2`}
                               style={{
                                 minWidth: "fit-content",
-                                padding: "0 8px",
-                                margin: "0 1px",
                               }}
                             >
                               {isActive ? (
                                 <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full flex-shrink-0" />
                               ) : (
-                                <IconComponent className="size-4 flex-shrink-0 text-zinc-600 dark:text-zinc-300" />
+                                <IconComponent className="size-4 flex-shrink-0 text-zinc-600 dark:text-zinc-400" />
                               )}
                               <span
-                                className={`text-xs font-normal sm:text-sm transition-colors duration-150 whitespace-nowrap ${
+                                className={`text-sm font-medium transition-colors duration-200 whitespace-nowrap ${
                                   isActive
                                     ? "text-zinc-900 dark:text-zinc-100"
                                     : "text-zinc-700 dark:text-zinc-300"
@@ -636,15 +649,20 @@ const LearnPlayground: React.FC = () => {
                       </TabsList>
 
                       <Tooltip
-                        title={t("workspace.fullScreen", "Full Screen")}
+                        title={t(
+                          "workspace.exitFullScreen",
+                          "Exit Full Screen"
+                        )}
                         className="cursor-pointer"
                       >
-                        <Scan
-                          className="opacity-50 hover:opacity-100 transition-all ease-linear duration-200 size-5"
-                          onClick={() => {
-                            setFullScreen(!fullScreen);
-                          }}
-                        />
+                        <div className="p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors duration-200">
+                          <Scan
+                            className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors duration-200 size-5"
+                            onClick={() => {
+                              setFullScreen(!fullScreen);
+                            }}
+                          />
+                        </div>
                       </Tooltip>
                     </div>
                   </div>
@@ -653,7 +671,7 @@ const LearnPlayground: React.FC = () => {
                     {state.tab === "chat" && (
                       <TabsContent
                         value="chat"
-                        className={`${PANEL_BASE_CLASSES} flex-1 relative items-end justify-end min-h-0 overflow-hidden`}
+                        className="m-0 flex-1 relative items-end justify-end min-h-0 overflow-hidden"
                         style={{ maxHeight: "100%" }}
                       >
                         {state.isLoading ? (
@@ -667,7 +685,7 @@ const LearnPlayground: React.FC = () => {
                                 messages={state.chatMessages || []}
                                 isLoading={state.chatLoading}
                                 streamingMessage={state.streamingMessage}
-                                onSendMessage={handleSendMessage}
+                                onSendMessage={handleQuickSend}
                               />
                             </div>
                             <ChatInput
@@ -675,10 +693,18 @@ const LearnPlayground: React.FC = () => {
                               value={state.prompt}
                               hasAutoContext={true}
                               expandSection={true}
+                              contexts={selectedContexts}
+                              availableContexts={availableContexts}
+                              autoContextCount={autoContextCount}
+                              autoContextLoading={autoContextLoading}
                               onChange={(value: string) =>
                                 dispatch({ type: "SET_PROMPT", prompt: value })
                               }
-                              onSubmit={handleSendMessage}
+                              onSubmit={(value, model, contexts) =>
+                                handleSendMessage(value, model, contexts)
+                              }
+                              onContextsChange={setSelectedContexts}
+                              onAutoContextClick={handleAutoContext}
                               placeholder={t(
                                 "chat.placeholder",
                                 `Ask anything about ${getDisplayTitle()}...`
@@ -692,7 +718,7 @@ const LearnPlayground: React.FC = () => {
                     {state.tab === "flashcards" && workspace && (
                       <TabsContent
                         value="flashcards"
-                        className={`${PANEL_BASE_CLASSES}`}
+                        className="m-0 h-full"
                         style={{ maxHeight: "100%" }}
                       >
                         <FlashCards workspaceId={workspace.id} />
@@ -702,7 +728,7 @@ const LearnPlayground: React.FC = () => {
                     {state.tab === "quizzes" && workspace && (
                       <TabsContent
                         value="quizzes"
-                        className={`${PANEL_BASE_CLASSES} p-4 text-zinc-500 dark:text-zinc-300`}
+                        className="m-0 h-full p-4 text-zinc-500 dark:text-zinc-400"
                       >
                         <QuizList
                           workspaceId={(workspace && workspace.id) || ""}
@@ -713,7 +739,7 @@ const LearnPlayground: React.FC = () => {
                     {state.tab === "summary" && workspace?.id && (
                       <TabsContent
                         value="summary"
-                        className={`${PANEL_BASE_CLASSES} p-4 text-zinc-500 dark:text-zinc-300`}
+                        className="m-0 h-full p-4 text-zinc-500 dark:text-zinc-400"
                         style={{ maxHeight: "100%" }}
                       >
                         <SummaryList workspaceId={String(workspace.id)} />
@@ -723,7 +749,7 @@ const LearnPlayground: React.FC = () => {
                     {state.tab === "deepExplanation" && (
                       <TabsContent
                         value="deepExplanation"
-                        className="m-0 h-full p-4 text-gray-500 flex flex-col"
+                        className="m-0 h-full p-4 text-zinc-500 dark:text-zinc-400 flex flex-col"
                         style={{ maxHeight: "100%" }}
                       >
                         <MindMap
@@ -753,7 +779,20 @@ const LearnPlayground: React.FC = () => {
               </motion.div>
             </ResizablePanel>
 
-            <ResizableHandle />
+            <ResizableHandle
+              onPointerDown={() => setIsResizing(true)}
+              onPointerUp={() => setIsResizing(false)}
+              onPointerCancel={() => setIsResizing(false)}
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
+              className="hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors duration-200"
+              style={{
+                opacity: isResizing || isHovered ? 1 : 0,
+                transition: "opacity 0.3s ease",
+                cursor: "col-resize",
+                pointerEvents: "auto",
+              }}
+            />
 
             <ResizablePanel
               defaultSize={50}
@@ -808,7 +847,7 @@ const LearnPlayground: React.FC = () => {
                       >
                         <TabsList
                           ref={tabsListRef}
-                          className="relative !space-x-0 !p-1 flex items-center gap-4 h-11 min-w-max rounded-2xl border w-fit"
+                          className="relative !space-x-0 !p-1 flex items-center gap-4 h-11 min-w-max rounded-2xl border border-zinc-200/60 dark:border-zinc-800/60 bg-white/80 dark:bg-zinc-950/40 shadow-sm dark:shadow-none backdrop-blur-sm w-fit"
                           style={{ direction: isRTL ? "rtl" : "ltr" }}
                         >
                           {TABS_CONFIG.map((tab) => {
@@ -819,7 +858,7 @@ const LearnPlayground: React.FC = () => {
                                 key={tab.id}
                                 value={tab.id}
                                 className={`px-2 sm:px-3 py-1.5 sm:py-2 relative z-20 flex-shrink-0 transition-all duration-150 
-                          hover:bg-transparent data-[state=active]:bg-gray-50 rounded-xl h-7 sm:h-9 flex flex-row items-center 
+                          hover:bg-transparent data-[state=active]:bg-zinc-100 dark:data-[state=active]:bg-zinc-800/60 rounded-xl h-7 sm:h-9 flex flex-row items-center 
                           justify-center select-none cursor-pointer gap-1.5`}
                                 style={{
                                   minWidth: "fit-content",
@@ -830,11 +869,13 @@ const LearnPlayground: React.FC = () => {
                                 {isActive ? (
                                   <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full flex-shrink-0" />
                                 ) : (
-                                  <IconComponent className="size-4 flex-shrink-0 text-gray-600" />
+                                  <IconComponent className="size-4 flex-shrink-0 text-zinc-600 dark:text-zinc-400" />
                                 )}
                                 <span
                                   className={`text-xs font-normal sm:text-sm transition-colors duration-150 whitespace-nowrap ${
-                                    isActive ? "text-gray-900" : "text-gray-700"
+                                    isActive
+                                      ? "text-zinc-900 dark:text-zinc-100"
+                                      : "text-zinc-700 dark:text-zinc-300"
                                   }`}
                                 >
                                   {t(tab.labelKey as any)}
@@ -844,9 +885,12 @@ const LearnPlayground: React.FC = () => {
                           })}
                         </TabsList>
 
-                        <Tooltip title="Full Screen" className="cursor-pointer">
+                        <Tooltip
+                          title={t("workspace.fullScreen", "Full Screen")}
+                          className="cursor-pointer"
+                        >
                           <Scan
-                            className="opacity-50 hover:opacity-100 transition-all ease-linear duration-200 size-5"
+                            className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-all ease-linear duration-200 size-5"
                             onClick={() => {
                               setFullScreen(!fullScreen);
                             }}
@@ -873,20 +917,29 @@ const LearnPlayground: React.FC = () => {
                                   messages={state.chatMessages || []}
                                   isLoading={state.chatLoading}
                                   streamingMessage={state.streamingMessage}
-                                  onSendMessage={handleSendMessage}
+                                  onSendMessage={handleQuickSend}
                                 />
                               </div>
                               <ChatInput
                                 className="flex-shrink-0 p-2 px-20 pb-2"
                                 value={state.prompt}
                                 expandSection={false}
+                                hasAutoContext={true}
+                                contexts={selectedContexts}
+                                availableContexts={availableContexts}
+                                autoContextCount={autoContextCount}
+                                autoContextLoading={autoContextLoading}
                                 onChange={(value: string) =>
                                   dispatch({
                                     type: "SET_PROMPT",
                                     prompt: value,
                                   })
                                 }
-                                onSubmit={handleSendMessage}
+                                onSubmit={(value, model, contexts) =>
+                                  handleSendMessage(value, model, contexts)
+                                }
+                                onContextsChange={setSelectedContexts}
+                                onAutoContextClick={handleAutoContext}
                                 placeholder={t(
                                   "chat.placeholder",
                                   `Ask anything about ${getDisplayTitle()}...`
@@ -910,7 +963,7 @@ const LearnPlayground: React.FC = () => {
                       {state.tab === "quizzes" && (
                         <TabsContent
                           value="quizzes"
-                          className="m-0 h-full p-4 text-gray-500 flex flex-col"
+                          className="m-0 h-full p-4 text-zinc-500 dark:text-zinc-400 flex flex-col"
                         >
                           <QuizList
                             workspaceId={(workspace && workspace.id) || ""}
@@ -921,7 +974,7 @@ const LearnPlayground: React.FC = () => {
                       {state.tab === "summary" && (
                         <TabsContent
                           value="summary"
-                          className="m-0 h-full p-4 text-gray-500 flex flex-col"
+                          className="m-0 h-full p-4 text-zinc-500 dark:text-zinc-400 flex flex-col"
                           style={{ maxHeight: "100%" }}
                         >
                           <SummaryList
@@ -935,7 +988,7 @@ const LearnPlayground: React.FC = () => {
                       {state.tab === "deepExplanation" && (
                         <TabsContent
                           value="deepExplanation"
-                          className="m-0 h-full p-4 text-gray-500 flex flex-col"
+                          className="m-0 h-full p-4 text-zinc-500 dark:text-zinc-400 flex flex-col"
                           style={{ maxHeight: "100%" }}
                         >
                           <MindMap

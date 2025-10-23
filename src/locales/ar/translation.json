@@ -1,5 +1,6 @@
 {
   "common": {
+    "workspaceTitle": "أحدث الساحات",
     "creating": "جارٍ الإنشاء…",
     "deleting": "جاري المسح",
     "chosen_by_minds": "مختار من ألمع العقول حول العالم",
@@ -407,6 +408,7 @@
     "flashcards": "بطاقات",
     "quizzes": "اختبارات",
     "summary": "ملخص",
+    "deepExplanation": "الشرح العميق",
     "notes": "ملاحظات",
     "code": "الكود",
     "charts": "الرسوم البيانية",
@@ -650,6 +652,11 @@
       "missingLanguage": "اختر لغة قبل التشغيل.",
       "runFailed": "تعذّر تشغيل الكود، حاول مرة أخرى."
     }
+  },
+  "chat": {
+    "auto_context_success": "تم تحديث سياق مساحة العمل بنجاح.",
+    "auto_context_failed": "تعذّر إنشاء سياق لهذه المساحة.",
+    "auto_context_empty": "لم يتم إنشاء أي سياق لهذه المساحة بعد."
   },
   "modals": {
     "addContent": {

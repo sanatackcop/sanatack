@@ -5,6 +5,7 @@ import { Plus } from "lucide-react";
 import { AddContentModal } from "@/lib/modal/AddContantModal";
 import { Workspace } from "@/lib/types";
 import WorkspaceFolderItem from "./WorkspaceFolderItem";
+import { useTranslation } from "react-i18next";
 
 export default function WorkspacesList({
   workspaces,
@@ -15,6 +16,7 @@ export default function WorkspacesList({
   refreshParentComponent: () => void;
   isRTL: boolean;
 }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -36,12 +38,10 @@ export default function WorkspacesList({
         <Card
           onClick={() => setOpen(true)}
           className="
-            relative flex flex-col justify-center items-center group rounded-2xl w-[20em]
+            relative flex flex-col justify-center items-center group rounded-2xl w-[15em]
             border-2 border-dashed border-zinc-300 cursor-pointer h-48
-            bg-gradient-to-br from-zinc-50 to-transparent
             hover:border-zinc-400 
             transition-all duration-300 ease-out
-            hover:shadow-lg hover:shadow-zinc-100/50
           "
           role="button"
           tabIndex={0}
@@ -63,7 +63,7 @@ export default function WorkspacesList({
               <Plus className="h-6 w-6 transition-transform duration-300 group-hover:rotate-90" />
             </div>
             <span className="text-sm font-medium select-none">
-              Add New Content
+              {t("common.add")}
             </span>
           </div>
         </Card>

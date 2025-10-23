@@ -1,4 +1,5 @@
 import { FlashcardDeck } from "@/lib/flashcards/types";
+import { WorkspaceContext, WorkspaceContextInput } from "@/lib/types";
 import Api, { API_METHODS, baseURL } from "./api";
 
 export type DocumentStatus = "pending" | "uploading" | "uploaded" | "failed";
@@ -370,7 +371,11 @@ export const sendWorkspaceChatMessage = async (
   workspaceId: string,
   message: string,
   language: "en" | "ar" = "en",
-  model?: string,
+  options: {
+    model?: string;
+    contexts?: WorkspaceContextInput[];
+    autoContext?: boolean;
+  } = {},
   onChunk?: (chunk: any) => void
 ): Promise<void> => {
   try {
@@ -387,7 +392,9 @@ export const sendWorkspaceChatMessage = async (
         body: JSON.stringify({
           message,
           language,
-          model,
+          model: options.model,
+          contexts: options.contexts,
+          autoContext: options.autoContext,
         }),
       }
     );
@@ -441,6 +448,44 @@ export const getWorkSpaceChatHistory = async (id: string) => {
     return response.data as unknown;
   } catch (e: any) {
     console.error("enrollCoursesApi error:", e.message);
+    throw e;
+  }
+};
+
+export const getWorkspaceContexts = async (
+  workspaceId: string
+): Promise<WorkspaceContext[]> => {
+  try {
+    const response = await Api({
+      method: API_METHODS.GET,
+      url: `study-ai/workspaces/${workspaceId}/contexts`,
+    });
+
+    const data = response.data as { contexts?: WorkspaceContext[] };
+    return (data.contexts ?? []) as WorkspaceContext[];
+  } catch (e: any) {
+    console.error("getWorkspaceContexts error:", e.message);
+    throw e;
+  }
+};
+
+export const generateWorkspaceAutoContext = async (
+  workspaceId: string,
+  force?: boolean
+): Promise<WorkspaceContext[]> => {
+  try {
+    const response = await Api({
+      method: API_METHODS.POST,
+      url: `study-ai/workspaces/${workspaceId}/contexts/auto`,
+      data: {
+        force: !!force,
+      },
+    });
+
+    const data = response.data as { contexts?: WorkspaceContext[] };
+    return (data.contexts ?? []) as WorkspaceContext[];
+  } catch (e: any) {
+    console.error("generateWorkspaceAutoContext error:", e.message);
     throw e;
   }
 };

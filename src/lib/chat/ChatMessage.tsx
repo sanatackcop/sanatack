@@ -153,12 +153,12 @@ const MessageBubble: React.FC<{
       <div className={`flex max-w-[85%] ${innerDirection} items-start gap-3`}>
         {/* bubble */}
         <div
-          className={`group relative overflow-hidden rounded-2xl px-4 py-3 transition-colors duration-200 border shadow-sm ${
+          className={`group relative overflow-hidden rounded-2xl px-4 py-3 transition-colors duration-200  ${
             isUser
               ? "bg-zinc-50/85 text-zinc-900 border border-zinc-200 dark:bg-zinc-900/70 dark:text-zinc-100 dark:border-zinc-800/60"
               : isError
-              ? "bg-red-50 border border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-700/40 dark:text-red-300"
-              : "bg-zinc-50/85 text-zinc-900 border border-zinc-200 dark:bg-zinc-900/70 dark:text-zinc-100 dark:border-zinc-800/60"
+              ? "bg-red-50 border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-700/40 dark:text-red-300"
+              : "text-zinc-900  dark:text-zinc-100"
           }`}
         >
           {/* subtle pattern & glow */}
