@@ -179,12 +179,12 @@ export const reducer = (state: any, action: any): any => {
         ],
         title:
           action.workspace?.workspaceName || action.workspace?.title || null,
-        youtubeVideoId: action.workspace?.youtubeUrl
-          ? extractYouTubeId(action.workspace.youtubeUrl)
-          : state.youtubeVideoId,
-        workspaceType: action.workspace?.workspaceType || state.workspaceType,
+        youtubeVideoId: action.workspace?.video?.url
+          ? extractYouTubeId(action.workspace?.video.url)
+          : null,
+        workspaceType: "document",
         src: action.workspace?.pdfUrl || state.src,
-        transcript: action.workspace?.transcript || null,
+        transcript: action.workspace?.video?.transcript,
       };
     case "SET_TITLE":
       return { ...state, title: action.title };

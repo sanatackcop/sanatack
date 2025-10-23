@@ -99,7 +99,7 @@ export interface Workspace {
   id: string;
   workspaceName: string;
   youtubeVideo?: {
-    transcribe?: { data?: { url?: string } };
+    transcript?: { data?: { url?: string } };
   };
   documentUrl?: string;
   workspaceType: "youtube" | "document" | "chat" | "other";

@@ -661,11 +661,15 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
               <Button
                 onClick={handleFileUpload}
                 disabled={
-                  uploadState.files.length === 0 || uploadState.isUploading
+                  uploadState.files.length === 0 ||
+                  uploadState.isUploading ||
+                  uploadState.status === "uploaded"
                 }
               >
                 {uploadState.isUploading
                   ? t("modals.addContent.upload.uploading", "Uploading...")
+                  : uploadState.status === "uploaded"
+                  ? t("modals.addContent.upload.done", "Uploaded")
                   : t("modals.addContent.upload.submit", "Upload PDF")}
               </Button>
             </DialogFooter>

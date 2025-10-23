@@ -209,7 +209,7 @@ const LearnPlayground: React.FC = () => {
       dispatch({ type: "SET_WORKSPACE", workspace: workspaceData });
       setWorkspace(workspaceData);
 
-      const youtubeUrl = workspaceData.youtubeVideo?.transcribe?.data?.url;
+      const youtubeUrl = workspaceData.youtubeVideo?.transcript?.data?.url;
       if (youtubeUrl) {
         dispatch({ type: "SET_WORKSPACE_TYPE", workspaceType: "youtube" });
         const videoId = extractVideoId(youtubeUrl);
@@ -440,6 +440,8 @@ const LearnPlayground: React.FC = () => {
     if (contentLoading) {
       return <ContentSkeleton />;
     }
+
+
     if (state.workspaceType === "document") {
       return (
         <PdfReader
@@ -477,7 +479,7 @@ const LearnPlayground: React.FC = () => {
       return (
         <YouTubeReader
           videoId={state.youtubeVideoId}
-          transcript={state.workspace?.youtubeVideo?.transcribe?.data as any}
+          transcript={state.workspace?.video?.transcript?.data as any}
           onVideoSelect={(videoId) =>
             dispatch({ type: "SET_YOUTUBE_VIDEO", videoId })
           }
