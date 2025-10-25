@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { motion } from "framer-motion";
@@ -9,7 +15,14 @@ import {
   startWorkspaceQuizAttempt,
   submitWorkspaceQuizAttempt,
 } from "@/utils/_apis/learnPlayground-api";
-import { AnswerEntry, Question, Quiz, QuizAttemptSummary } from "./types";
+import {
+  AnswerEntry,
+  Question,
+  Quiz,
+  QuizAttemptSummary,
+  QuizPayload,
+} from "./types";
+import { normalizeQuiz } from "./utils";
 
 interface QuizViewProps {
   quiz: Quiz;
@@ -17,6 +30,34 @@ interface QuizViewProps {
   onClose: () => void;
   onAttemptUpdate?: (attempt: QuizAttemptSummary | null) => void;
 }
+
+const createDefaultPayload = (): QuizPayload => ({
+  questions: [],
+  passing_score: null,
+  total_points: null,
+  duration: null,
+  title: null,
+  description: null,
+});
+
+const ensurePayload = (payload?: QuizPayload | null): QuizPayload => {
+  if (!payload) return createDefaultPayload();
+  const base = createDefaultPayload();
+  const questions = Array.isArray(payload.questions)
+    ? payload.questions
+    : [];
+  return {
+    ...base,
+    ...payload,
+    questions,
+  };
+};
+
+const toNumberOrNull = (value: unknown): number | null => {
+  if (value === undefined || value === null) return null;
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : null;
+};
 
 // Loading Component
 const LoadingCard: React.FC<{ message?: string }> = ({
@@ -265,7 +306,7 @@ export const QuizView: React.FC<QuizViewProps> = ({
   onClose,
   onAttemptUpdate,
 }) => {
-  if (!quiz || !quiz.payload)
+  if (!quiz)
     return (
       <div className="max-w-4xl mx-auto px-6 py-16">
         <Card className="p-8 text-center bg-yellow-50 border border-yellow-200 shadow-sm">
@@ -274,21 +315,38 @@ export const QuizView: React.FC<QuizViewProps> = ({
       </div>
     );
 
-  const [quizData, setQuizData] = useState<Quiz>(quiz);
+  const normalizedQuiz = normalizeQuiz(quiz);
+  const initialPayload = ensurePayload(normalizedQuiz.payload);
+
+  const [quizData, setQuizData] = useState<Quiz>(normalizedQuiz);
   const [attempt, setAttempt] = useState<QuizAttemptSummary | null>(
-    quiz.latestAttempt ?? null
+    normalizedQuiz.latestAttempt ?? null
   );
   const [currentIndex, setCurrentIndex] = useState(() =>
-    deriveNextIndex(quiz.latestAttempt ?? null, quiz.payload?.questions ?? [])
+    deriveNextIndex(
+      normalizedQuiz.latestAttempt ?? null,
+      initialPayload.questions
+    )
   );
   const [showResults, setShowResults] = useState(
-    quiz.latestAttempt?.status === "graded"
+    normalizedQuiz.latestAttempt?.status === "graded"
   );
   const [loadingAttempt, setLoadingAttempt] = useState(false);
   const [savingAnswer, setSavingAnswer] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [initialised, setInitialised] = useState(false);
+  const lastQuizIdRef = useRef<string | null>(null);
+  const [localAnswers, setLocalAnswers] = useState<
+    Record<
+      string,
+      {
+        selectedOption: string | null;
+        isCorrect: boolean | null;
+        answeredAt: string;
+      }
+    >
+  >({});
 
   const answersMap = useMemo(() => {
     const map: Record<string, AnswerEntry> = {};
@@ -300,32 +358,43 @@ export const QuizView: React.FC<QuizViewProps> = ({
 
   const applyAttemptToState = (
     att: QuizAttemptSummary | null,
-    serverQuiz?: Quiz
+    incomingQuiz?: Quiz | null
   ) => {
     setAttempt(att);
     setQuizData((prev) => {
-      const incoming = serverQuiz ?? prev;
-      const mergedPayload = {
-        ...(prev.payload ?? {}),
-        ...(incoming.payload ?? {}),
+      const nextQuiz = incomingQuiz ?? prev;
+      const prevPayload = ensurePayload(prev.payload);
+      const nextPayload = ensurePayload(nextQuiz.payload);
+      const mergedPayload: QuizPayload = {
+        ...prevPayload,
+        ...nextPayload,
+        questions:
+          nextPayload.questions.length > 0
+            ? nextPayload.questions
+            : prevPayload.questions,
       };
-
-      if (
-        !Array.isArray(mergedPayload.questions) ||
-        mergedPayload.questions.length === 0
-      ) {
-        mergedPayload.questions = prev.payload?.questions ?? [];
-      }
 
       return {
         ...prev,
-        ...incoming, // overlay server updates
+        ...nextQuiz, // overlay server updates
         payload: mergedPayload, // merged payload with preserved questions
         latestAttempt:
-          att ?? incoming.latestAttempt ?? prev.latestAttempt ?? null,
+          att ?? nextQuiz.latestAttempt ?? prev.latestAttempt ?? null,
       } as Quiz;
     });
     setShowResults(att?.status === "graded");
+    if (att?.answers?.length) {
+      setLocalAnswers((prev) => {
+        if (!prev || Object.keys(prev).length === 0) return prev;
+        const updated = { ...prev };
+        att.answers.forEach((answer) => {
+          if (answer?.question_id && updated[answer.question_id]) {
+            delete updated[answer.question_id];
+          }
+        });
+        return updated;
+      });
+    }
     onAttemptUpdate?.(att ?? null);
   };
 
@@ -340,12 +409,16 @@ export const QuizView: React.FC<QuizViewProps> = ({
           payload
         );
         const att = (data?.attempt ?? null) as QuizAttemptSummary | null;
-        const serverQuiz = data?.quiz as Quiz | undefined;
-        applyAttemptToState(att, serverQuiz);
+        const normalizedServerQuiz = data?.quiz
+          ? normalizeQuiz(data?.quiz)
+          : null;
+        applyAttemptToState(att, normalizedServerQuiz);
 
-        const questions = (serverQuiz?.payload?.questions ??
-          quiz.payload?.questions ??
-          []) as Question[];
+        const fallbackQuestions = ensurePayload(
+          normalizeQuiz(quiz).payload
+        ).questions;
+        const questions = (normalizedServerQuiz?.payload?.questions ??
+          fallbackQuestions) as Question[];
         const nextIndex = deriveNextIndex(att, questions);
         setCurrentIndex(nextIndex);
 
@@ -358,7 +431,7 @@ export const QuizView: React.FC<QuizViewProps> = ({
         setInitialised(true);
       }
     },
-    [workspaceId, quiz.id]
+    [workspaceId, quiz]
   );
 
   useEffect(() => {
@@ -368,29 +441,77 @@ export const QuizView: React.FC<QuizViewProps> = ({
   }, [initialised, fetchAttempt]);
 
   useEffect(() => {
-    setQuizData(quiz);
-    setAttempt(quiz.latestAttempt ?? null);
-    setCurrentIndex(
-      deriveNextIndex(quiz.latestAttempt ?? null, quiz.payload?.questions ?? [])
-    );
-    setShowResults(quiz.latestAttempt?.status === "graded");
+    const nextQuiz = normalizeQuiz(quiz);
+    setQuizData(nextQuiz);
+    setAttempt(nextQuiz.latestAttempt ?? null);
+    const nextQuestions = ensurePayload(nextQuiz.payload).questions;
+    setShowResults(nextQuiz.latestAttempt?.status === "graded");
     setError(null);
     setSavingAnswer(false);
     setSubmitting(false);
-    setInitialised(false);
-  }, [quiz.id]);
+    const nextId = nextQuiz.id ?? null;
+    const isNewQuiz = lastQuizIdRef.current !== nextId;
+    lastQuizIdRef.current = nextId;
+    if (isNewQuiz) {
+      const nextIndex = deriveNextIndex(
+        nextQuiz.latestAttempt ?? null,
+        nextQuestions
+      );
+      setCurrentIndex(nextIndex);
+      setLocalAnswers({});
+      setInitialised(false);
+    } else {
+      setCurrentIndex((prev) => {
+        if (nextQuestions.length === 0) return 0;
+        if (prev >= nextQuestions.length) {
+          return Math.max(nextQuestions.length - 1, 0);
+        }
+        return prev;
+      });
+    }
+  }, [quiz]);
 
   const ensureAttempt = useCallback(async () => {
     if (attempt?.id) return attempt;
     return await fetchAttempt();
   }, [attempt, fetchAttempt]);
 
-  const questions = quizData.payload?.questions ?? [];
+  const questions = ensurePayload(quizData.payload).questions;
   const totalQuestions = questions.length;
   const currentQuestion: Question = questions[currentIndex];
-  const currentAnswer = currentQuestion
+  const serverAnswer = currentQuestion
     ? answersMap[currentQuestion.id]
     : undefined;
+  const pendingAnswer = currentQuestion
+    ? localAnswers[currentQuestion.id]
+    : undefined;
+  const currentAnswer: AnswerEntry | undefined = useMemo(() => {
+    if (!currentQuestion) return undefined;
+    if (serverAnswer) {
+      const derivedCorrect =
+        typeof serverAnswer.is_correct === "boolean"
+          ? serverAnswer.is_correct
+          : currentQuestion.correct_answer !== undefined &&
+            currentQuestion.correct_answer !== null
+          ? serverAnswer.selected_option === currentQuestion.correct_answer
+          : serverAnswer.is_correct ?? null;
+      return {
+        ...serverAnswer,
+        is_correct: derivedCorrect,
+      };
+    }
+    if (pendingAnswer) {
+      return {
+        question_id: currentQuestion.id,
+        position: currentIndex,
+        selected_option: pendingAnswer.selectedOption,
+        is_correct: pendingAnswer.isCorrect,
+        points_earned: 0,
+        answered_at: pendingAnswer.answeredAt,
+      };
+    }
+    return undefined;
+  }, [currentQuestion, currentIndex, serverAnswer, pendingAnswer]);
 
   const answeredCount =
     attempt?.answers?.length ??
@@ -405,25 +526,20 @@ export const QuizView: React.FC<QuizViewProps> = ({
     return Math.min(100, percent);
   })();
   const statusLabel = normaliseStatusLabel(attempt);
-  const scoreEarnedValue =
-    attempt && attempt.scoreEarned !== undefined
-      ? Number(attempt.scoreEarned)
-      : NaN;
-  const scoreEarned = Number.isFinite(scoreEarnedValue) ? scoreEarnedValue : 0;
+  const scoreEarned = toNumberOrNull(attempt?.scoreEarned) ?? 0;
 
-  const totalPointsValue =
-    attempt && attempt.scoreTotal !== undefined
-      ? Number(attempt.scoreTotal)
-      : NaN;
+  const totalPointsCandidate =
+    attempt?.scoreTotal !== undefined
+      ? toNumberOrNull(attempt?.scoreTotal)
+      : toNumberOrNull(quizData.totalPoints ?? quizData.payload?.total_points);
 
   const fallbackTotalPoints = questions.reduce((acc, q) => {
     const pts = Number.isFinite(Number(q.points)) ? Number(q.points) : 0;
     return acc + pts;
   }, 0);
 
-  const totalPoints = Number.isFinite(totalPointsValue)
-    ? totalPointsValue
-    : fallbackTotalPoints;
+  const totalPoints =
+    totalPointsCandidate !== null ? totalPointsCandidate : fallbackTotalPoints;
 
   const isLastQuestion = currentIndex >= totalQuestions - 1;
 
@@ -431,12 +547,37 @@ export const QuizView: React.FC<QuizViewProps> = ({
     questionId: string,
     option: string | null
   ) => {
-    if (answersMap[questionId]) return;
+    if (answersMap[questionId] || localAnswers[questionId]) return;
     if (savingAnswer || showResults || loadingAttempt) return;
+
+    const question = questions.find((q) => q.id === questionId);
+    const expected = question?.correct_answer;
+    const isAutoGradable =
+      expected !== undefined && expected !== null && expected !== "";
+    const isCorrect =
+      option === null
+        ? null
+        : isAutoGradable
+        ? option === expected
+        : null;
+    const answeredAt = new Date().toISOString();
+    setLocalAnswers((prev) => ({
+      ...prev,
+      [questionId]: {
+        selectedOption: option,
+        isCorrect,
+        answeredAt,
+      },
+    }));
 
     const activeAttempt = await ensureAttempt();
     if (!activeAttempt) {
       setError("Unable to start quiz attempt. Please try again.");
+      setLocalAnswers((prev) => {
+        const updated = { ...prev };
+        delete updated[questionId];
+        return updated;
+      });
       return;
     }
 
@@ -452,6 +593,11 @@ export const QuizView: React.FC<QuizViewProps> = ({
       applyAttemptToState(updated);
     } catch (e: any) {
       setError(e?.error?.body || "Unable to save answer.");
+      setLocalAnswers((prev) => {
+        const updated = { ...prev };
+        delete updated[questionId];
+        return updated;
+      });
     } finally {
       setSavingAnswer(false);
     }
@@ -501,9 +647,14 @@ export const QuizView: React.FC<QuizViewProps> = ({
   };
   const [scenarioInput, setScenarioInput] = useState("");
 
+  useEffect(() => {
+    setScenarioInput("");
+  }, [currentQuestion?.id]);
+
   const restartQuiz = async () => {
     setShowResults(false);
     setCurrentIndex(0);
+    setLocalAnswers({});
     await fetchAttempt({ restart: true });
   };
 
@@ -595,9 +746,14 @@ export const QuizView: React.FC<QuizViewProps> = ({
     }
 
     if (question.type === "true_false") {
-      return ["True", "False"].map((val, idx) => {
-        const isSelected = currentAnswer?.selected_option === val;
-        const isCorrect = val === question.correct_answer;
+      const baseOptions =
+        question.options && question.options.length > 0
+          ? question.options
+          : ["True", "False"];
+
+      return baseOptions.map((option, idx) => {
+        const isSelected = currentAnswer?.selected_option === option;
+        const isCorrect = option === question.correct_answer;
         const showCorrectness = hasAnswered;
 
         let btnClass =
@@ -626,7 +782,9 @@ export const QuizView: React.FC<QuizViewProps> = ({
         return (
           <button
             key={idx}
-            onClick={() => !isDisabled && handleSelectAnswer(question.id, val)}
+            onClick={() =>
+              !isDisabled && handleSelectAnswer(question.id, option)
+            }
             disabled={isDisabled}
             className={btnClass}
             type="button"
@@ -635,7 +793,7 @@ export const QuizView: React.FC<QuizViewProps> = ({
               <span className="font-semibold text-gray-500">
                 {String.fromCharCode(65 + idx)}.
               </span>
-              <span>{val}</span>
+              <span>{option}</span>
             </div>
           </button>
         );
@@ -653,16 +811,9 @@ export const QuizView: React.FC<QuizViewProps> = ({
         )
       : 0;
 
-  const passingScoreValue =
-    quizData.payload?.passing_score === undefined ||
-    quizData.payload?.passing_score === null
-      ? null
-      : Number(quizData.payload?.passing_score);
-
-  const passingScore =
-    passingScoreValue === null || Number.isNaN(passingScoreValue)
-      ? null
-      : passingScoreValue;
+  const rawPassingScore =
+    quizData.passingScore ?? quizData.payload?.passing_score ?? null;
+  const passingScore = toNumberOrNull(rawPassingScore);
 
   const hasPassed =
     passingScore !== null
@@ -711,7 +862,7 @@ export const QuizView: React.FC<QuizViewProps> = ({
               totalQuestions={totalQuestions}
               attemptProgress={attemptProgress}
               answeredCount={answeredCount}
-              scoreEarned={accuracyPct}
+              scoreEarned={scoreEarned}
               totalPoints={totalPoints}
             />
 

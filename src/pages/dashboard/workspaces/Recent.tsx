@@ -27,7 +27,13 @@ const WorkspaceItemSkeleton = () => (
   </Card>
 );
 
-export default function Recent() {
+export default function Recent({
+  setParentRefresh,
+  refreshParent,
+}: {
+  setParentRefresh: any;
+  refreshParent: boolean;
+}) {
   const { t, i18n } = useTranslation();
   const [workspaces, setWorkspaces] = useState<Workspace[] | null>(null);
   const [loading, setLoading] = useState(true);
@@ -41,14 +47,7 @@ export default function Recent() {
       setError(null);
 
       const { workspaces: fetchedWorkspaces }: any = await getAllWorkSpace();
-
-      const sortedWorkspaces =
-        fetchedWorkspaces?.sort(
-          (a: Workspace, b: Workspace) =>
-            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-        ) || [];
-
-      setWorkspaces(sortedWorkspaces);
+      setWorkspaces(fetchedWorkspaces);
     } catch (err) {
       console.error("Failed to fetch workspaces:", err);
       setError(t("errors.fetchWorkspaces", "Failed to load recent workspaces"));
@@ -60,6 +59,7 @@ export default function Recent() {
 
   const refreshComponent = () => {
     setRefresh(!refresh);
+    setParentRefresh(!refreshParent);
   };
 
   useEffect(() => {

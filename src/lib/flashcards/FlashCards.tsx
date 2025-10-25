@@ -1,19 +1,17 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { Progress } from "@/components/ui/progress";
 import { getWorkSpaceContent } from "@/utils/_apis/learnPlayground-api";
-import { ArrowLeft, Settings2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { LoadingSkeleton, CARD_VARIANTS } from "./consts";
-import FlashcardModal from "./FlashcardModal";
-import { FlashcardsList } from "./FlashcardsList";
+import { LoadingSkeleton, CARD_VARIANTS, ProgressIndicator } from "./consts";
+import { FlashcardEditForm, FlashcardsList } from "./FlashcardsList";
 import { StudyCard, StudyNavigation } from "./StudyCard";
 import { FlashcardDeck, Flashcard } from "./types";
-import { FlashCardHome } from "./FlashCardsHome";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { useTranslation } from "react-i18next";
-import flashcards from "@/assets/flashcards.svg";
+import GenerateContentComponent from "@/shared/workspaces/Generate";
+import FlashcardModal from "@/shared/workspaces/modals/flashcardModal";
+import { Badge } from "@/components/ui/badge";
+import Card from "@mui/material/Card";
 
 const trackCardFlip = async (/*cardId: string, setId: string*/) => {
   try {
@@ -105,7 +103,7 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
   const [flipped, setFlipped] = useState(false);
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
   const [flipAttempts, setFlipAttempts] = useState<Record<string, number>>({});
-  const { t } = useTranslation();
+  const [, setAnswerFeedback] = useState<any | null>(null);
 
   const handleSetSelect = useCallback((set: FlashcardDeck) => {
     setActiveSet(set);
@@ -114,7 +112,12 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
     setFlipped(false);
     setFlippedCards(new Set());
     setFlipAttempts({});
+    setAnswerFeedback(null);
   }, []);
+
+  const handleDeleteSet = () => {
+    console.log("Deleeting The Flashcards");
+  };
 
   const handleStudyStart = useCallback(async () => {
     setStudyMode(true);
@@ -122,6 +125,7 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
     setFlipped(false);
     setFlippedCards(new Set());
     setFlipAttempts({});
+    setAnswerFeedback(null);
 
     if (activeSet?.id) {
       try {
@@ -137,6 +141,7 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
     setStudyMode(false);
     setFlipped(false);
     setStudyIndex(0);
+    setAnswerFeedback(null);
   }, []);
 
   const handleCardUpdate = useCallback(
@@ -159,7 +164,7 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
   );
 
   const handleDifficultySelect = useCallback(
-    async (difficulty: number /*difficultyLabel: string*/) => {
+    async (difficulty: number, _difficultyLabel: string) => {
       if (!activeSet) return;
 
       const currentCard = activeSet.flashcards[studyIndex];
@@ -187,6 +192,7 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
       } else {
         setStudyIndex((prev) => prev + 1);
         setFlipped(false);
+        setAnswerFeedback(null);
       }
     },
     [studyIndex, activeSet, handleStudyStop]
@@ -222,6 +228,7 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
         ...prev,
         [cardId]: (prev[cardId] || 0) + 1,
       }));
+      setAnswerFeedback(null);
       return;
     }
 
@@ -230,12 +237,14 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
 
       setFlipped(true);
       setFlippedCards((prev) => new Set(prev).add(cardId));
+      setAnswerFeedback(null);
 
       await handleCardUpdate(studyIndex, {});
     } catch (error) {
       console.error("Failed to flip card:", error);
       setFlipped(true);
       setFlippedCards((prev) => new Set(prev).add(cardId));
+      setAnswerFeedback(null);
     }
   }, [activeSet, studyIndex, flippedCards, flipAttempts, handleCardUpdate]);
 
@@ -277,7 +286,8 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
           >
             <div className="flex items-center gap-4 px-14 py-4 flex-shrink-0 ">
               <div
-                className="flex group items-center text-gray-400/50 cursor-pointer hover:bg-gray-50/50 drop-shadow-sm hover:text-zinc-700 rounded-2xl py-2 px-3 transition-all ease-linear duration-100"
+                className="flex group items-center  dark:hover:bg-zinc-100
+                text-gray-400/50 cursor-pointer hover:bg-gray-50/50 drop-shadow-sm hover:text-zinc-700 rounded-2xl py-2 px-3 transition-all ease-linear duration-100"
                 onClick={() => setActiveSet(null)}
               >
                 <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-all ease-out duration-200" />
@@ -320,15 +330,54 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
             )}
 
             {!studyMode && (
-              <div className="flex-1 min-h-0 bg-white">
+              <div className="flex-1 min-h-0">
                 <ScrollArea className="h-full px-6 pb-6">
-                  <FlashCardHome
-                    totalCards={totalCards}
-                    activeSet={activeSet}
-                    handleCardUpdate={handleCardUpdate}
-                    reviewedCount={reviewedCount}
-                    handleStudyStart={handleStudyStart}
-                  />
+                  <div className="flex flex-col items-center">
+                    <ProgressIndicator
+                      reviewed={reviewedCount}
+                      total={totalCards}
+                      onStartStudy={handleStudyStart}
+                    />
+                  </div>
+
+                  <div className="space-y-2 px-16 sm:px-0 flex-col flex justify-center align-baseline">
+                    <div className="flex w-full items-center justify-between">
+                      <h2 className="text-[18px] text-zinc-900 font-medium dark:text-white">
+                        Flashcards{" "}
+                        <span className="text-sm">({totalCards})</span>
+                      </h2>
+                    </div>
+
+                    {activeSet.flashcards.map((flashcard: any, idx: number) => (
+                      <Card
+                        key={flashcard.id || idx}
+                        className="!rounded-2xl !shadow-none border dark:border-zinc-100/10 dark:bg-zinc-900 dark:text-white"
+                      >
+                        <div className="mx-5 space-y-4 py-2">
+                          <div className="flex items-center justify-between pt-2">
+                            <div className="flex items-center">
+                              <span className="text-sm font-medium text-opacity-75 text-zinc-800 dark:text-white flex items-center gap-2">
+                                <span>Card {idx + 1} </span>
+                                <Badge
+                                  variant={"outline"}
+                                  className="rounded-2xl"
+                                >
+                                  {flashcard.category}
+                                </Badge>
+                              </span>
+                            </div>
+                          </div>
+
+                          <FlashcardEditForm
+                            flashcard={flashcard}
+                            onUpdate={(updates) =>
+                              handleCardUpdate(idx, updates)
+                            }
+                          />
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
                 </ScrollArea>
               </div>
             )}
@@ -339,43 +388,14 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
               <FlashcardsList
                 sets={flashcardSets}
                 onSelectSet={handleSetSelect}
+                onDeleteSet={handleDeleteSet}
               />
-              <Card className="relative z-0 mx-5 px-4 py-2 h-[25rem] flex flex-col justify-between overflow-hidden bg-gradient-to-br from-white to-gray-50/50 border-2 border-dashed border-gray-200 hover:border-gray-300 transition-colors duration-200">
-                <div className="relative z-10 flex items-start justify-between mx-2 px-4 py-6">
-                  <div className="max-w-[65%]">
-                    <h2 className="text-2xl font-bold tracking-tight text-gray-900 mb-2">
-                      {t("common.createFlashCard", "Create Flashcards")}
-                    </h2>
-                    <p className="text-gray-600 text-sm leading-relaxed">
-                      {t(
-                        "common.createFlashCardDescription",
-                        "Create a flashcard set with custom settings and personalization"
-                      )}
-                    </p>
-                  </div>
-                  <div className="flex gap-2 shrink-0">
-                    <Button
-                      disabled={anyActive}
-                      className="rounded-2xl px-6 py-3 font-medium shadow-sm transition-all duration-200"
-                      onClick={handleCreatingNewFlashcard}
-                    >
-                      <Settings2 className="mr-2 h-4 w-4" />
-                      {t("common.generate", "Generate")}
-                    </Button>
-                  </div>
-                </div>
-
-                <div
-                  className="pointer-events-none select-none absolute -left-20 bottom-0 z-0 opacity-90"
-                  aria-hidden
-                >
-                  <img
-                    src={flashcards}
-                    alt="Flashcards"
-                    className="block h-auto w-[22rem] md:w-[26rem] lg:w-[30rem] translate-x-[20px] translate-y-1/4"
-                  />
-                </div>
-              </Card>
+              <GenerateContentComponent
+                title="Flashcards"
+                description="Quickly generate a flashcard based on your topic of interest."
+                buttonLabel="Generate"
+                onClick={handleCreatingNewFlashcard}
+              />
             </ScrollArea>
           </div>
         )}

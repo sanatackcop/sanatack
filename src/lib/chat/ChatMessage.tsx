@@ -6,9 +6,22 @@ import {
   Clipboard,
   ClipboardCheck,
   Link as LinkIcon,
+  FileText,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+
+type Attachment = {
+  id?: string;
+  filename?: string;
+  mimetype?: string;
+  size?: number;
+  type?: string;
+  url?: string;
+  contentPreview?: string;
+  status?: "uploading" | "uploaded";
+};
+
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 
@@ -24,6 +37,7 @@ export interface ChatMessage {
     workspaceName?: string;
     chatType?: string;
     error?: string;
+    attachments?: Attachment[];
   };
 }
 
@@ -34,7 +48,15 @@ interface ChatMessagesProps {
   onSendMessage: (message: string) => Promise<void>;
 }
 
-// ---------- utilities ----------
+const formatFileSize = (bytes?: number) => {
+  if (typeof bytes !== "number" || Number.isNaN(bytes)) return "";
+  if (bytes < 1024) return `${bytes} B`;
+  const kb = bytes / 1024;
+  if (kb < 1024) return `${kb.toFixed(kb > 100 ? 0 : 1)} KB`;
+  const mb = kb / 1024;
+  return `${mb.toFixed(mb > 100 ? 0 : 1)} MB`;
+};
+
 const formatClock = (d?: Date) => {
   if (!d) return "";
   try {
@@ -110,11 +132,15 @@ const MessageBubble: React.FC<{
   isStreaming?: boolean;
   streamingContent?: string;
   isRtl?: boolean;
+  uploadingLabel?: string;
+  failedLabel?: string;
 }> = ({
   message,
   isStreaming = false,
   streamingContent = "",
   isRtl = false,
+  uploadingLabel = "Uploading…",
+  failedLabel = "Failed to upload",
 }) => {
   if (!message) return null;
 
@@ -125,6 +151,9 @@ const MessageBubble: React.FC<{
   const isUser = who === "user";
   const isError = !!message.metadata?.error;
   const displayContent = isStreaming ? streamingContent : message.content;
+  const attachments: Attachment[] = Array.isArray(message.metadata?.attachments)
+    ? (message.metadata?.attachments as Attachment[])
+    : [];
 
   // layout helpers
   const containerJustify = isUser
@@ -315,6 +344,105 @@ const MessageBubble: React.FC<{
                 className="inline-block align-baseline w-2 h-4 ml-1 bg-current rounded-sm"
               />
             )}
+
+            {attachments.length > 0 && (
+              <div className="mt-3 space-y-2">
+                {attachments.map((attachment, index) => {
+                  const sizeLabel = formatFileSize(attachment.size);
+                  const url = attachment.url;
+                  const filename = attachment.filename || "attachment";
+                  const key = attachment.id || `${filename}-${index}`;
+                  const isImageAttachment = (attachment.type || "")
+                    .toLowerCase()
+                    .includes("image");
+
+                  if (isImageAttachment && url) {
+                    return (
+                      <a
+                        key={key}
+                        href={url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700"
+                      >
+                        <img
+                          src={url}
+                          alt={filename}
+                          className="max-h-48 w-full object-cover"
+                          loading="lazy"
+                        />
+                        <div className="flex items-center justify-between px-3 py-2 text-xs bg-zinc-50 dark:bg-zinc-900/70 text-zinc-600 dark:text-zinc-300">
+                          <span className="font-medium truncate">
+                            {filename}
+                          </span>
+                          {sizeLabel && <span>{sizeLabel}</span>}
+                        </div>
+                      </a>
+                    );
+                  }
+
+                  const statusMessage = !url
+                    ? attachment.status === "failed"
+                      ? failedLabel
+                      : uploadingLabel
+                    : undefined;
+
+                  const attachmentContent = (
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800">
+                        <FileText className="h-4 w-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium truncate">{filename}</div>
+                        <div
+                          className={`text-[11px] ${
+                            attachment.status === "failed"
+                              ? "text-red-500 dark:text-red-300"
+                              : "text-zinc-500 dark:text-zinc-400"
+                          }`}
+                        >
+                          {sizeLabel && <span>{sizeLabel}</span>}
+                          {statusMessage && (
+                            <span>
+                              {sizeLabel ? " · " : ""}
+                              {statusMessage}
+                            </span>
+                          )}
+                        </div>
+                        {attachment.contentPreview && (
+                          <p className="mt-1 line-clamp-2 text-[11px] text-zinc-500 dark:text-zinc-400">
+                            {attachment.contentPreview}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  );
+
+                  return url ? (
+                    <a
+                      key={key}
+                      href={url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs text-zinc-700 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                    >
+                      {attachmentContent}
+                    </a>
+                  ) : (
+                    <div
+                      key={key}
+                      className={`rounded-xl border border-dashed px-3 py-2 text-xs transition-colors ${
+                        attachment.status === "failed"
+                          ? "border-red-300 bg-red-50 text-red-600 dark:border-red-700 dark:bg-red-900/30 dark:text-red-200"
+                          : "border-zinc-300 bg-zinc-50 text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-400"
+                      }`}
+                    >
+                      {attachmentContent}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* timestamp */}
@@ -378,6 +506,8 @@ export default function ChatMessages({
   }, [i18n.language]);
 
   const hasMessages = messages && messages.length > 0;
+  const uploadingLabel = t("chat.attachment.uploading", "Uploading…");
+  const failedLabel = t("chat.attachment.failed", "Failed to upload");
 
   return (
     <div
@@ -414,6 +544,8 @@ export default function ChatMessages({
               key={message.id || `${message.timestamp}-${message.role}`}
               message={message}
               isRtl={isRtl}
+              uploadingLabel={uploadingLabel}
+              failedLabel={failedLabel}
             />
           ))}
 
@@ -429,6 +561,8 @@ export default function ChatMessages({
               isStreaming
               streamingContent={streamingMessage}
               isRtl={isRtl}
+              uploadingLabel={uploadingLabel}
+              failedLabel={failedLabel}
             />
           )}
 

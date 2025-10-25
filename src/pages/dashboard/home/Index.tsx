@@ -1,10 +1,12 @@
 import { useTranslation } from "react-i18next";
 import Recent from "@/pages/dashboard/workspaces/Recent";
 import Spaces from "@/pages/dashboard/spaces/Index";
+import { useState } from "react";
 
 export default function LearningDashboard() {
   const { i18n, t } = useTranslation();
   const isRTL = i18n.language === "ar";
+  const [refresh, setRefresh] = useState(false);
 
   return (
     <>
@@ -18,8 +20,8 @@ export default function LearningDashboard() {
             {t("common.workspaceTitle")}
           </h2>
         </header>
-        <Recent />
-        <Spaces />
+        <Recent setParentRefresh={setRefresh} refreshParent={refresh} />
+        <Spaces setParentRefresh={setRefresh} refreshParent={refresh} />
       </section>
     </>
   );

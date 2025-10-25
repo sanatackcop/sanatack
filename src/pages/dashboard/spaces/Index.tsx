@@ -2,7 +2,14 @@ import { Space } from "@/types/courses";
 import { useTranslation } from "react-i18next";
 import { Button } from "../../../components/ui/button";
 import { Skeleton } from "../../../components/ui/skeleton";
-import { Boxes, Plus, Trash2, Loader2 } from "lucide-react";
+import {
+  FileText,
+  ImageIcon,
+  Loader2,
+  Plus,
+  Trash2,
+  Users,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   createSpacesApi,
@@ -11,6 +18,7 @@ import {
 } from "@/utils/_apis/courses-apis";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Dialog,
   DialogContent,
@@ -20,8 +28,15 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
+import { formatRelativeDate } from "@/components/utiles";
 
-export default function Spaces() {
+export default function Spaces({
+  setParentRefresh,
+  refreshParent,
+}: {
+  setParentRefresh: any;
+  refreshParent: boolean;
+}) {
   const { i18n, t } = useTranslation();
   const isRTL = i18n.language === "ar";
   const navigate = useNavigate();
@@ -56,7 +71,7 @@ export default function Spaces() {
       setLoading(false);
     };
     fetchData();
-  }, []);
+  }, [refreshParent]);
 
   async function handleCreateSpace() {
     if (creating) return;
@@ -72,6 +87,7 @@ export default function Spaces() {
       setNewSpaceName("");
       setOpenAdd(false);
       fetchAllSpaces();
+      setParentRefresh(!refreshParent);
     } catch (error) {
       console.error("Failed to create space:", error);
     } finally {
@@ -135,19 +151,27 @@ export default function Spaces() {
                 type="button"
                 onClick={() => setOpenAdd(true)}
                 disabled={creating}
-                className={`group relative h-[88px] rounded-xl border-2 border-dashed border-zinc-200
-                   dark:border-zinc-700 flex flex-col items-center justify-center gap-2 transition-all duration-200
-                    hover:border-zinc-300 hover:bg-zinc-50/50 dark:hover:border-zinc-500 focus:outline-none focus:ring-2 
-                    focus:ring-zinc-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
-                      isRTL ? "text-right" : "text-left"
-                    }`}
+                className={`group relative flex h-[220px] flex-col overflow-hidden rounded-2xl border-2 border-dashed border-zinc-200 bg-white text-zinc-700 transition-all duration-200 hover:border-zinc-300 hover:bg-zinc-50/60 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-500 ${
+                  isRTL ? "text-right" : "text-left"
+                }`}
               >
-                <div className="h-10 w-10 rounded-full bg-zinc-100 dark:bg-zinc-700 flex items-center justify-center transition-colors group-hover:bg-zinc-100 dark:group-hover:bg-zinc-800">
-                  <Plus className="h-5 w-5 text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-400" />
+                <div className="flex h-28 w-full items-center justify-center bg-zinc-100 dark:bg-zinc-800/60">
+                  <ImageIcon className="h-8 w-8 text-zinc-400 dark:text-zinc-500" />
                 </div>
-                <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300 group-hover:text-zinc-700 dark:group-hover:text-zinc-300">
-                  {t("dashboard.spaces.newSpace")}
-                </span>
+                <div className="flex flex-1 flex-col items-center justify-center gap-3 p-4 text-center">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 transition-colors group-hover:bg-white group-hover:text-zinc-600 dark:bg-zinc-800 dark:group-hover:bg-zinc-700">
+                    <Plus className="h-5 w-5" />
+                  </div>
+                  <span className="text-sm font-semibold">
+                    {t("dashboard.spaces.newSpace")}
+                  </span>
+                  <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                    {t(
+                      "dashboard.spaces.newSpaceHint",
+                      "Create a fresh space to organize your work"
+                    )}
+                  </span>
+                </div>
               </button>
               {spaces
                 .filter(
@@ -283,23 +307,123 @@ export default function Spaces() {
   );
 }
 
-function SpaceItemSkeleton({ isRTL }: { isRTL: boolean }) {
+function SpaceCardFooter({ space, isRTL }: { space: Space; isRTL: boolean }) {
+  const { t } = useTranslation();
+  const totalMembers = space.memberCount ?? space.members?.length ?? 0;
+  const visibleMembers = (space.members ?? []).slice(0, 3);
+  const remainingMembers = Math.max(totalMembers - visibleMembers.length, 0);
+
+  const activitySource =
+    space.lastActivity ??
+    (space.updated_at as string | Date | undefined) ??
+    (space.created_at as string | Date | undefined);
+
+  const lastActivityLabel = activitySource
+    ? formatRelativeDate(activitySource)
+    : t("dashboard.spaces.activityUnknown", "Recently updated");
+
+  const membersLabel =
+    totalMembers === 0
+      ? t("dashboard.spaces.noMembers", "No members yet")
+      : totalMembers === 1
+      ? t("dashboard.spaces.singleMember", "1 member")
+      : t("dashboard.spaces.multiMember", "{{count}} members", {
+          count: totalMembers,
+        });
+
   return (
     <div
-      className={`h-[88px] rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 flex items-center${
-        isRTL ? "pr-5 pl-4" : "pl-5 pr-4"
+      className={`mt-auto flex items-center justify-between gap-3 pt-4 text-xs text-zinc-500 dark:text-zinc-400 ${
+        isRTL ? "flex-row-reverse" : ""
       }`}
     >
       <div
-        className={`grid h-10 w-10 place-items-center rounded-lg ${
-          isRTL ? "ml-3" : "mr-3"
+        className={`flex items-center gap-2 ${
+          isRTL ? "flex-row-reverse" : ""
         }`}
       >
-        <Skeleton className="h-10 w-10 rounded-lg" />
+        <div
+          className={`flex -space-x-2 ${
+            isRTL ? "space-x-reverse" : ""
+          }`}
+        >
+          {visibleMembers.length ? (
+            visibleMembers.map((member) => (
+              <Avatar
+                key={member.id}
+                className="h-8 w-8 border-2 border-white text-xs font-medium dark:border-zinc-900"
+              >
+                <AvatarFallback>
+                  {member.initials || member.displayName?.charAt(0) || "?"}
+                </AvatarFallback>
+              </Avatar>
+            ))
+          ) : (
+            <Avatar className="h-8 w-8 border-2 border-white text-zinc-500 dark:border-zinc-900">
+              <AvatarFallback>
+                <Users className="h-3.5 w-3.5" />
+              </AvatarFallback>
+            </Avatar>
+          )}
+          {remainingMembers > 0 && (
+            <Avatar className="h-8 w-8 border-2 border-dashed border-white bg-zinc-100 text-[11px] font-semibold text-zinc-500 dark:border-zinc-900 dark:bg-zinc-800 dark:text-zinc-300">
+              <AvatarFallback>+{remainingMembers}</AvatarFallback>
+            </Avatar>
+          )}
+        </div>
+        <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+          {membersLabel}
+        </span>
       </div>
-      <div className={`min-w-0 flex-1 ${isRTL ? "text-right" : "text-left"}`}>
-        <Skeleton className="h-4 w-[140px] mb-2" />
-        <Skeleton className="h-3 w-[80px]" />
+
+      <span className="text-xs text-zinc-400 dark:text-zinc-500">
+        {lastActivityLabel}
+      </span>
+    </div>
+  );
+}
+function SpaceItemSkeleton({ isRTL }: { isRTL: boolean }) {
+  return (
+    <div className="flex h-[220px] flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+      <Skeleton className="h-28 w-full rounded-none" />
+      <div
+        className={`flex flex-1 flex-col gap-4 p-4 ${
+          isRTL ? "text-right" : "text-left"
+        }`}
+      >
+        <div
+          className={`flex items-center gap-3 ${
+            isRTL ? "flex-row-reverse" : ""
+          }`}
+        >
+          <Skeleton className="h-10 w-10 rounded-xl" />
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-3 w-1/2" />
+          </div>
+        </div>
+        <div
+          className={`mt-auto flex items-center justify-between ${
+            isRTL ? "flex-row-reverse" : ""
+          }`}
+        >
+          <div
+            className={`flex items-center gap-2 ${
+              isRTL ? "flex-row-reverse" : ""
+            }`}
+          >
+            <div
+              className={`flex -space-x-2 ${
+                isRTL ? "space-x-reverse" : ""
+              }`}
+            >
+              <Skeleton className="h-8 w-8 rounded-full" />
+              <Skeleton className="h-8 w-8 rounded-full" />
+            </div>
+            <Skeleton className="h-3 w-20" />
+          </div>
+          <Skeleton className="h-3 w-16" />
+        </div>
       </div>
     </div>
   );
@@ -330,21 +454,20 @@ function SpaceItem({
           onOpen(id);
         }
       }}
-      className={`group relative flex h-[88px] items-center rounded-xl border border-zinc-200
-         dark:border-zinc-700 transition-all duration-200 hover:border-zinc-200 dark:hover:border-zinc-700 hover:-translate-y-0.5 cursor-pointer focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 ${
-           isRTL ? "pr-5 pl-4" : "pl-5 pr-4"
-         }`}
+      className={`group relative flex h-[220px] cursor-pointer flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:shadow-zinc-900/40 ${
+        isRTL ? "text-right" : "text-left"
+      }`}
     >
       <div
-        className={`absolute top-2 opacity-0 transition-all duration-200 group-hover:opacity-100 ${
-          isRTL ? "left-2" : "right-2"
+        className={`absolute top-3 z-20 opacity-0 transition-opacity duration-200 group-hover:opacity-100 ${
+          isRTL ? "left-3" : "right-3"
         }`}
       >
         <Button
           type="button"
           size="icon"
           variant="ghost"
-          className="h-8 w-8 rounded-full text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+          className="pointer-events-auto h-8 w-8 rounded-full text-zinc-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20"
           aria-label={t("dashboard.spaces.deleteSpace")}
           onClick={(e) => {
             e.stopPropagation();
@@ -355,27 +478,50 @@ function SpaceItem({
         </Button>
       </div>
 
-      {/* Icon */}
-      <div
-        className={`grid h-10 w-10 place-items-center rounded-lg bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-900/30 dark:to-zinc-800/30 text-zinc-600 dark:text-zinc-400 group-hover:from-zinc-100 group-hover:to-zinc-200 dark:group-hover:from-zinc-800/40 dark:group-hover:to-zinc-700/40 transition-all duration-200 ${
-          isRTL ? "ml-4" : "mr-4"
-        }`}
-      >
-        <Boxes className="h-5 w-5" />
+      <div className="relative h-28 w-full overflow-hidden bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-900/40 dark:to-zinc-800/40">
+        {space.coverImageUrl ? (
+          <img
+            src={space.coverImageUrl}
+            alt={t("dashboard.spaces.coverAlt", {
+              defaultValue: "Space cover image",
+            })}
+            className="h-full w-full object-cover"
+            loading="lazy"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-zinc-400 dark:text-zinc-500">
+            <ImageIcon className="h-9 w-9" />
+          </div>
+        )}
       </div>
 
-      {/* Content */}
-      <div className={`min-w-0 flex-1 ${isRTL ? "text-right" : "text-left"}`}>
-        <div className="truncate text-[15px] font-semibold text-zinc-900 dark:text-zinc-100 group-hover:text-zinc-900 dark:group-hover:text-zinc-100 transition-colors">
-          {name}
+      <div className="flex flex-1 flex-col px-5 pb-5 pt-4">
+        <div
+          className={`flex items-start gap-3 ${isRTL ? "flex-row-reverse" : ""}`}
+        >
+        <div className="grid h-10 w-10 place-items-center rounded-xl bg-white shadow-sm ring-1 ring-zinc-100 transition-colors group-hover:bg-zinc-50 dark:bg-zinc-800 dark:ring-zinc-700 dark:group-hover:bg-zinc-800/70">
+          {space.icon ? (
+            <span className="text-lg" aria-hidden="true">
+              {space.icon}
+            </span>
+          ) : (
+            <FileText className="h-5 w-5 text-zinc-600 dark:text-zinc-300" />
+          )}
         </div>
-        <div className="text-[13px] text-zinc-500 dark:text-zinc-400">
-          {t("dashboard.spaces.itemCount", { count: space.workspaces.length })}{" "}
+          <div className={`min-w-0 ${isRTL ? "text-right" : "text-left"}`}>
+            <div className="truncate text-[15px] font-semibold text-zinc-900 transition-colors group-hover:text-zinc-950 dark:text-zinc-100 dark:group-hover:text-white">
+              {name}
+            </div>
+            <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+              {t("dashboard.spaces.itemCount", {
+                count: space.workspaceCount ?? space.workspaces?.length ?? 0,
+              })}
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* Hover Ring Effect */}
-      <span className="pointer-events-none absolute inset-0 rounded-xl ring-0 group-hover:ring-1 group-hover:ring-zinc-200 dark:group-hover:ring-zinc-700/50 transition-all duration-200" />
+        <SpaceCardFooter space={space} isRTL={isRTL} />
+      </div>
     </div>
   );
 }

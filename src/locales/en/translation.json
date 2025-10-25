@@ -1,4 +1,13 @@
 {
+  "pageFit": "Page Fit",
+  "pageLoadFailed": "Failed to load page {{page}}",
+  "fileLoadError": "Failed to Load File",
+  "retry": "Retry",
+  "loadingFile": "Loading File",
+  "pleaseWait": "Please wait...",
+  "pdfLoadError": "Failed to load PDF file",
+  "explain": "Explain",
+  "copy": "Copy",
   "common": {
     "workspaceTitle": "Recent Playground",
     "creating": "Creating",
@@ -655,7 +664,11 @@
   "chat": {
     "auto_context_success": "Workspace context updated successfully.",
     "auto_context_failed": "Unable to generate context for this workspace.",
-    "auto_context_empty": "No context was generated for this workspace yet."
+    "auto_context_empty": "No context was generated for this workspace yet.",
+    "attachment": {
+      "uploading": "Uploading…",
+      "failed": "Failed to upload"
+    }
   },
   "modals": {
     "addContent": {

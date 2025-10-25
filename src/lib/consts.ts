@@ -1,7 +1,7 @@
 export const initialState: any = {
   tab: "chat",
-  workspaceType: "youtube",
-  src: "https://arxiv.org/pdf/1706.03762",
+  type: "",
+  src: "",
   page: 1,
   pageCount: null,
   zoom: 1,

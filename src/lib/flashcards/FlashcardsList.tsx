@@ -3,16 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Loader2, AlertTriangle } from "lucide-react";
+import { AlertTriangle, Loader2, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { DeleteModalState, Flashcard, FlashcardDeck } from "./types";
 import { GenerationStatus } from "../types";
 import { FlashCardsInputs, InputConfig } from "./consts";
@@ -22,11 +14,12 @@ import {
   QueuedStrip,
   StatusBadge,
 } from "@/pages/dashboard/utils";
+import Modal from "@/components/Modal";
 
 export const FlashcardsList: React.FC<{
   sets: FlashcardDeck[];
   onSelectSet: (set: FlashcardDeck) => void;
-  onDeleteSet?: (setId: string) => void; // parent removes set from its state
+  onDeleteSet?: (setId: string) => void;
 }> = ({ sets, onSelectSet, onDeleteSet }) => {
   const { t } = useTranslation();
 
@@ -56,7 +49,6 @@ export const FlashcardsList: React.FC<{
     const id = deleteModal.setToDelete.id;
     setDeleteError(null);
     setDeletingId(id);
-
     try {
       // await deleteFlashcardDeck(id);
       onDeleteSet?.(id);
@@ -79,8 +71,8 @@ export const FlashcardsList: React.FC<{
         exit={{ opacity: 0, y: 20 }}
         transition={{ duration: 0.25 }}
       >
-        <div className="px-6 py-4 mb-4 flex flex-col rounded-3xl justify-between space-y-3">
-          <h3 className="px-2 text-sm font-medium text-gray-700">
+        <div className="px-6 py-4 flex flex-col rounded-3xl justify-between space-y-3">
+          <h3 className="px-2 text-sm font-medium text-gray-700 dark:text-white">
             {t("common.myFlashcards", "My Flashcards")}
           </h3>
 
@@ -107,13 +99,13 @@ export const FlashcardsList: React.FC<{
                     className={`group relative overflow-hidden px-6 py-5 flex flex-col rounded-2xl justify-center shadow-sm border transition-all duration-200 cursor-pointer ${
                       failed
                         ? "bg-red-50/50 border-red-200 hover:border-red-300"
-                        : "bg-white hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100/80 border-gray-200/60 hover:border-gray-300/80"
+                        : "bg-white  border-gray-200/60 hover:border-gray-300/80"
                     } ${disabled ? "pointer-events-auto" : ""}`}
                   >
                     <div className="flex justify-between items-start gap-3">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-semibold text-lg text-gray-900 truncate">
+                          <h3 className="font-semibold text-lg text-gray-900 dark:text-white truncate">
                             {set.title}
                           </h3>
                           <StatusBadge status={set.status} />
@@ -167,7 +159,6 @@ export const FlashcardsList: React.FC<{
                       </div>
                     </div>
 
-                    {/* Failed banner */}
                     {failed && (
                       <div className="mt-3 w-full rounded-xl border border-red-200 bg-red-50 text-red-700 px-3 py-2 text-sm flex items-center gap-2">
                         <AlertTriangle className="w-4 h-4" />
@@ -180,12 +171,6 @@ export const FlashcardsList: React.FC<{
                       </div>
                     )}
 
-                    {/* Deleting overlay */}
-                    {isDeleting && (
-                      <div className="absolute inset-0 rounded-2xl bg-white/70 backdrop-blur-[1px] pointer-events-none" />
-                    )}
-
-                    {/* Status overlays */}
                     {set.status === GenerationStatus.PROCESSING && (
                       <ProgressStrip />
                     )}
@@ -198,81 +183,25 @@ export const FlashcardsList: React.FC<{
         </div>
       </motion.div>
 
-      {/* Delete confirm */}
-      <Dialog open={deleteModal.isOpen} onOpenChange={handleCancelDelete}>
-        <DialogContent className="sm:max-w-[425px] rounded-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-              <Trash2 className="h-5 w-5 text-red-500" />
-              {t("common.confirmDelete", "Confirm Delete")}
-            </DialogTitle>
-            <DialogDescription className="text-gray-600 mt-2">
-              {t(
-                "common.deleteWarning",
-                "Are you sure you want to delete this flashcard set? This action cannot be undone."
-              )}
-            </DialogDescription>
-          </DialogHeader>
-
-          {deleteModal.setToDelete && (
-            <div className="my-4 p-4 bg-gray-50 rounded-lg border-l-4 border-red-500">
-              <p className="font-medium text-gray-900">
-                {deleteModal.setToDelete.title}
-              </p>
-              {deleteModal.setToDelete.categories && (
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {deleteModal.setToDelete.categories.map((category) => (
-                    <Badge
-                      key={`${deleteModal.setToDelete!.id}-${category}`}
-                      variant="secondary"
-                      className="text-xs"
-                    >
-                      {category}
-                    </Badge>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* API error (if any) */}
-          {deleteError && (
-            <div className="mt-2 mb-1 rounded-md border border-red-200 bg-red-50 text-red-700 px-3 py-2 text-sm flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4" />
-              <span>{deleteError}</span>
-            </div>
-          )}
-
-          <DialogFooter className="gap-3">
-            <Button
-              variant="outline"
-              onClick={handleCancelDelete}
-              className="rounded-xl"
-              disabled={!!deletingId}
-            >
-              {t("common.cancel", "Cancel")}
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleConfirmDelete}
-              className="rounded-xl bg-red-600 hover:bg-red-700 disabled:opacity-60"
-              disabled={!!deletingId}
-            >
-              {deletingId ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {t("common.deleting", "Deleting…")}
-                </>
-              ) : (
-                <>
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  {t("common.delete", "Delete")}
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <Modal
+        description={t(
+          "common.deleteWarning",
+          "Are you sure you want to delete this flashcard set? This action cannot be undone."
+        )}
+        title={t("common.confirmDelete", "Confirm Delete")}
+        open={deleteModal.isOpen}
+        onOpenChange={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+        variant="danger"
+      >
+        {deleteError && (
+          <div className="mt-2 mb-1 rounded-md border border-red-200 bg-red-50 text-red-700 px-3 py-2 text-sm flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4" />
+            <span>{deleteError}</span>
+          </div>
+        )}
+      </Modal>
     </>
   );
 };

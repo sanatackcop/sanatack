@@ -30,6 +30,7 @@ export default function WorkspacesList({
 
   const handleReset = () => {
     setOpen(false);
+    refreshComponent();
   };
 
   return (

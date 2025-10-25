@@ -315,27 +315,40 @@ export const sendWorkspaceChatMessage = async (
     model?: string;
     contexts?: WorkspaceContextInput[];
     autoContext?: boolean;
+    attachments?: File[];
   } = {},
   onChunk?: (chunk: any) => void
 ): Promise<void> => {
   try {
     const auth: any = await getAuth();
 
+    const formData = new FormData();
+    formData.append("message", message);
+    formData.append("language", language);
+    formData.append("autoContext", options.autoContext ? "true" : "false");
+
+    if (options.model) {
+      formData.append("model", options.model);
+    }
+
+    if (options.contexts && options.contexts.length > 0) {
+      formData.append("contexts", JSON.stringify(options.contexts));
+    }
+
+    if (options.attachments && options.attachments.length > 0) {
+      options.attachments.forEach((file) => {
+        formData.append("files", file);
+      });
+    }
+
     const response = await fetch(
       `${baseURL}/study-ai/workspaces/${workspaceId}/chat`,
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           user_id: auth.user.id,
         },
-        body: JSON.stringify({
-          message,
-          language,
-          model: options.model,
-          contexts: options.contexts,
-          autoContext: options.autoContext,
-        }),
+        body: formData,
       }
     );
 
@@ -442,7 +455,7 @@ export const createFlashcard = async (
       data: {
         count,
         language,
-        focus,
+        ...(focus && focus?.length > 5 ? { focus } : null),
       },
       url: `study-ai/workspaces/${workspaceId}/generate/flashcards`,
     });

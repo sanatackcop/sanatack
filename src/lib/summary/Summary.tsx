@@ -17,7 +17,7 @@ import {
   getWorkSpaceContent,
 } from "@/utils/_apis/learnPlayground-api";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { AlertTriangle, ArrowLeft, Settings2 } from "lucide-react";
+import { AlertTriangle, ArrowLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { GenerationStatus } from "../types";
@@ -28,6 +28,7 @@ import {
   StatusBadge,
 } from "@/pages/dashboard/utils";
 import { toast } from "sonner";
+import GenerateContentComponent from "@/shared/workspaces/Generate";
 
 export interface MindMap {
   root: string;
@@ -293,7 +294,7 @@ export function SummaryList({ workspaceId }: SummaryListProps) {
           transition={{ duration: 0.25 }}
           className="px-6 mb-4 flex flex-col rounded-3xl justify-between space-y-3"
         >
-          <h3 className="px-2 text-sm font-medium text-gray-700">
+          <h3 className="px-2 text-sm font-medium text-gray-700 dark:text-white">
             {t("common.mySummary", "Summaries")}
           </h3>
           {loading ? (
@@ -365,38 +366,22 @@ export function SummaryList({ workspaceId }: SummaryListProps) {
               })}
             </div>
           )}
-          <Card className="relative z-0 py-2 flex flex-col justify-between overflow-hidden bg-gradient-to-br from-white to-zinc-50/60 dark:from-zinc-950/40 dark:to-zinc-900/40 border-2 border-dashed border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600 transition-colors duration-200">
-            <div className="relative z-10 flex items-start justify-between mx-2 px-4 py-6">
-              <div className="max-w-[65%]">
-                <h2 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mb-2">
-                  {t("summary.createTitle", "Create a Summary")}
-                </h2>
-                <p className="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed">
-                  {t(
-                    "common.createFlashCardDescription",
-                    "Create a Summary to summarize key points and generate a mind map for better understanding."
-                  )}
-                </p>
-              </div>
-              <div className="flex gap-2 shrink-0">
-                <Button
-                  disabled={generating || anyActive}
-                  className="rounded-2xl px-6 py-3 font-medium shadow-sm transition-all duration-200"
-                  onClick={createNewSummary}
-                >
-                  <Settings2 className="mr-2 h-4 w-4" />
-                  {t("common.generate", "Generate")}
-                </Button>
-              </div>
-            </div>
-          </Card>
         </motion.div>
+        <GenerateContentComponent
+          title={t("summary.createTitle", "Create a Summary")}
+          description={t(
+            "common.createFlashCardDescription",
+            "Create a Summary to summarize key points and generate a mind map for better understanding."
+          )}
+          buttonLabel="Generate"
+          onClick={createNewSummary}
+          disabled={generating || anyActive}
+        />
       </ScrollArea>
     </div>
   );
 }
 
-// ---------- SummaryView Component ----------
 export function SummaryView({ summary, onClose }: SummaryViewProps) {
   if (!summary.payload) {
     return (

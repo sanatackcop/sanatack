@@ -28,12 +28,12 @@ export interface Question {
 }
 
 export interface QuizPayload {
-  id: string;
-  title: string;
-  duration: number; // minutes
-  questions:       [];
-  description: string;
-  passing_score: number;
+  questions: Question[];
+  passing_score?: number | null;
+  total_points?: number | null;
+  duration?: number | null;
+  title?: string | null;
+  description?: string | null;
 }
 
 export interface QuizAttemptSummary {
@@ -56,19 +56,19 @@ export interface QuizAttemptSummary {
 
 export interface Quiz {
   id: string;
-  workspaceId: string;
-  videoId: string;
-  userId: string;
+  workspaceId?: string | null;
+  videoId?: string | null;
+  userId?: string | null;
   status: GenerationStatus;
-  title?: string;
-  durationMinutes?: number;
-  passingScore?: number;
-  description?: string;
-  questionCount?: number;
-  totalPoints?: number;
-  payload?: QuizPayload;
+  title?: string | null;
+  durationMinutes?: number | null;
+  passingScore?: number | null;
+  description?: string | null;
+  questionCount?: number | null;
+  totalPoints?: number | null;
+  payload?: QuizPayload | null;
   latestAttempt?: QuizAttemptSummary | null;
   failureReason?: string | null;
-  createdAt: string;
+  createdAt?: string;
   updatedAt?: string;
 }

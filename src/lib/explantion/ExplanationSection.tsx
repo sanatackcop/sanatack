@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { ExplanationPayload } from "./MindMap";
+import { ExplanationPayload } from "./DeepExplnation";
 
 export default function ExplanationSections({
   explanation,

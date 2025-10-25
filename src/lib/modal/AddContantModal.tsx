@@ -19,11 +19,6 @@ import {
   Image,
   Video,
   Music,
-  BookOpen,
-  Mic,
-  TestTube,
-  Spade,
-  PencilRulerIcon,
 } from "lucide-react";
 import {
   createNewWorkSpace,
@@ -341,6 +336,14 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
     }
   }
 
+  useEffect(() => {
+    if (activeModal === "upload") {
+      if (uploadState.status === "uploaded") {
+        handleClose();
+      }
+    }
+  }, [uploadState]);
+
   function handleClose() {
     onClose();
     clearPolling();
@@ -405,7 +408,7 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
                 isRTL={isRTL}
                 onClick={() => setActiveModal("paste")}
               />
-              <ContentTypeCard
+              {/* <ContentTypeCard
                 title={t(
                   "modals.addContent.createCourse.title",
                   "Create Course"
@@ -438,7 +441,6 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
                 isRTL={isRTL}
                 onClick={() => setActiveModal("recordAudio")}
               />
-
               <ContentTypeCard
                 title="Book Summary Workshop"
                 subtitle={t(
@@ -460,7 +462,7 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
                   isRTL={isRTL}
                   onClick={() => setActiveModal("recordAudio")}
                 />
-              </div>
+              </div> */}
             </div>
           </>
         )}
@@ -621,22 +623,6 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
                     value={uploadState.uploadProgress}
                     className="h-2"
                   />
-                  {uploadState.status === "uploaded" &&
-                    uploadState.downloadUrl && (
-                      <div className="text-sm text-center text-green-600 dark:text-green-400">
-                        <a
-                          href={uploadState.downloadUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="underline"
-                        >
-                          {t(
-                            "modals.addContent.upload.viewDocument",
-                            "View document"
-                          )}
-                        </a>
-                      </div>
-                    )}
                 </div>
               )}
 

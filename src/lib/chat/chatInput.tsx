@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   Popover,
   PopoverContent,
@@ -15,15 +21,44 @@ import {
   Image,
   ChevronDown,
   Paperclip,
-  Mic,
-  AudioWaveform,
   Video,
   BookOpen,
   Sparkles,
-  Search,
   Loader2,
+  AtSign,
 } from "lucide-react";
 import i18n from "@/i18n";
+import { toast } from "sonner";
+
+const MAX_UPLOAD_SIZE_BYTES = 2 * 1024 * 1024; // 2MB
+const ALLOWED_UPLOAD_MIME_TYPES = new Set([
+  "image/png",
+  "image/jpeg",
+  "text/plain",
+  "text/markdown",
+]);
+const ALLOWED_UPLOAD_EXTENSIONS = new Set([
+  ".png",
+  ".jpg",
+  ".jpeg",
+  ".txt",
+  ".md",
+]);
+
+export const formatFileSize = (bytes: number) => {
+  if (!bytes) return "0 KB";
+  const kb = bytes / 1024;
+  if (kb < 1024) {
+    return `${kb.toFixed(kb > 100 ? 0 : 1)} KB`;
+  }
+  const mb = kb / 1024;
+  return `${mb.toFixed(mb > 100 ? 0 : 1)} MB`;
+};
+
+const getFileExtension = (filename: string) => {
+  const lastDot = filename.lastIndexOf(".");
+  return lastDot >= 0 ? filename.slice(lastDot).toLowerCase() : "";
+};
 
 export type Model = {
   id: string;
@@ -55,6 +90,7 @@ export type Context = {
   metadata?: {
     [key: string]: any;
   };
+  file?: File;
 };
 
 export interface ChatInputProps {
@@ -194,7 +230,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
       },
     },
   ],
-  // onSearchContexts,
   hasAutoContext = true,
   autoContextCount = 3,
   onAutoContextClick,
@@ -202,9 +237,11 @@ const ChatInput: React.FC<ChatInputProps> = ({
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [isModelPopoverOpen, setIsModelPopoverOpen] = useState(false);
-  const [selectedContexts, setSelectedContexts] = useState<Context[]>(contexts);
+  const [selectedContexts, setSelectedContexts] = useState<Context[]>(
+    contexts ?? []
+  );
   const [showContextMenu, setShowContextMenu] = useState(false);
-  const [contextSearch, setContextSearch] = useState("");
+  const [, setContextSearch] = useState("");
   const [filteredContexts, setFilteredContexts] =
     useState<Context[]>(availableContexts);
   const [mentionTriggerPos, setMentionTriggerPos] = useState<number | null>(
@@ -216,6 +253,14 @@ const ChatInput: React.FC<ChatInputProps> = ({
   const activeModel = models.find((m) => m.isActive) ?? models[0];
   const [selectedModel, setSelectedModel] = useState<Model>(activeModel);
 
+  useEffect(() => {
+    setSelectedContexts(contexts ?? []);
+  }, [contexts]);
+
+  useEffect(() => {
+    setFilteredContexts(availableContexts ?? []);
+  }, [availableContexts]);
+
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const expandedContentRef = useRef<HTMLDivElement>(null);
@@ -224,6 +269,102 @@ const ChatInput: React.FC<ChatInputProps> = ({
   const contextItemRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   const isRTL = i18n.dir() === "rtl";
+
+  const processFiles = useCallback(
+    async (fileList: FileList | File[]) => {
+      const filesArray = Array.from(fileList as ArrayLike<File>);
+      if (!filesArray.length) return;
+
+      const contextsToAdd: Context[] = [];
+
+      for (const file of filesArray) {
+        const extension = getFileExtension(file.name);
+        const isAllowedType =
+          ALLOWED_UPLOAD_MIME_TYPES.has(file.type) ||
+          ALLOWED_UPLOAD_EXTENSIONS.has(extension);
+
+        if (!isAllowedType) {
+          toast.error(
+            isRTL
+              ? "نوع الملف غير مدعوم. الصيغ المسموح بها: PNG, JPG, JPEG, TXT, MD."
+              : "Unsupported file type. Allowed formats: PNG, JPG, JPEG, TXT, MD."
+          );
+          continue;
+        }
+
+        if (file.size > MAX_UPLOAD_SIZE_BYTES) {
+          toast.error(
+            isRTL
+              ? "حجم الملف يتجاوز 2 ميجا."
+              : "File size exceeds the 2MB limit."
+          );
+          continue;
+        }
+
+        const isTextFile =
+          file.type === "text/plain" ||
+          file.type === "text/markdown" ||
+          extension === ".txt" ||
+          extension === ".md";
+
+        let content = `[Attachment] ${file.name}`;
+        let preview: string | undefined;
+
+        if (isTextFile) {
+          try {
+            const textContent = await file.text();
+            const truncated =
+              textContent.length > 4000
+                ? `${textContent.slice(0, 4000)}…`
+                : textContent;
+            content = truncated;
+            preview = truncated.slice(0, 160);
+          } catch (error) {
+            console.error("Failed to read file content:", error);
+            toast.error(
+              isRTL
+                ? "تعذر قراءة الملف النصي."
+                : "Unable to read the text file."
+            );
+            continue;
+          }
+        } else {
+          content = `[Image Attachment: ${file.name}]`;
+          preview = content;
+        }
+
+        const contextId = `upload-${Date.now()}-${Math.random()
+          .toString(36)
+          .slice(2, 8)}`;
+
+        contextsToAdd.push({
+          id: contextId,
+          name: file.name,
+          content,
+          type: isTextFile ? "document" : "image",
+          size: formatFileSize(file.size),
+          preview,
+          metadata: {
+            fileId: contextId,
+            fileName: file.name,
+            fileType: file.type,
+            fileSize: file.size,
+            uploadedAt: new Date().toISOString(),
+          },
+          file,
+        });
+      }
+
+      if (!contextsToAdd.length) return;
+
+      setSelectedContexts((prev) => {
+        const updated = [...prev, ...contextsToAdd];
+        onContextsChange?.(updated);
+        return updated;
+      });
+    },
+    [isRTL, onContextsChange]
+  );
 
   const defaultPlaceholder = isRTL
     ? "اسأل الذكاء الاصطناعي أي شيء... (اكتب @ للسياق)"
@@ -330,6 +471,13 @@ const ChatInput: React.FC<ChatInputProps> = ({
     const trimmed = value?.trim();
     if (!trimmed) return;
     onSubmit?.(trimmed, selectedModel, selectedContexts);
+    const persistentContexts = selectedContexts.filter(
+      (ctx) => !(ctx.metadata?.fileId || ctx.file)
+    );
+    if (persistentContexts.length !== selectedContexts.length) {
+      setSelectedContexts(persistentContexts);
+      onContextsChange?.(persistentContexts);
+    }
     setIsFocused(false);
     setShowContextMenu(false);
   };
@@ -338,12 +486,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
     setSelectedModel(model);
     onModelChange?.(model);
     setIsModelPopoverOpen(false);
-  };
-
-  const removeContext = (contextId: string) => {
-    const newContexts = selectedContexts.filter((c) => c.id !== contextId);
-    setSelectedContexts(newContexts);
-    onContextsChange?.(newContexts);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -466,29 +608,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
     }
   };
 
-  const getContextColor = (type: Context["type"]) => {
-    switch (type) {
-      case "video":
-        return "bg-red-50 hover:bg-red-100 dark:bg-red-950 dark:hover:bg-red-900/60 text-red-700 dark:text-red-300 border-red-200/60 dark:border-red-800";
-      case "transcript":
-        return "bg-blue-50 hover:bg-blue-100 dark:bg-blue-950 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border-blue-200/60 dark:border-blue-800";
-      case "ai_generated":
-        return "bg-purple-50 hover:bg-purple-100 dark:bg-purple-950 dark:hover:bg-purple-900/60 text-purple-700 dark:text-purple-300 border-purple-200/60 dark:border-purple-800";
-      case "document":
-        return "bg-amber-50 hover:bg-amber-100 dark:bg-amber-950 dark:hover:bg-amber-900/60 text-amber-700 dark:text-amber-300 border-amber-200/60 dark:border-amber-800";
-      case "summary":
-        return "bg-purple-50 hover:bg-purple-100 dark:bg-purple-950 dark:hover:bg-purple-900/60 text-purple-700 dark:text-purple-300 border-purple-200/60 dark:border-purple-800";
-      case "file":
-        return "bg-blue-50 hover:bg-blue-100 dark:bg-blue-950 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border-blue-200/60 dark:border-blue-800";
-      case "image":
-        return "bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border-emerald-200/60 dark:border-emerald-800";
-      case "url":
-        return "bg-purple-50 hover:bg-purple-100 dark:bg-purple-950 dark:hover:bg-purple-900/60 text-purple-700 dark:text-purple-300 border-purple-200/60 dark:border-purple-800";
-      default:
-        return "bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-300 border-slate-200/60 dark:border-slate-700";
-    }
-  };
-
   const getModelColorClass = (color?: string) => {
     switch (color) {
       case "emerald":
@@ -502,43 +621,11 @@ const ChatInput: React.FC<ChatInputProps> = ({
     }
   };
 
-  const handleAttachClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
-
-  const handleRecordClick = () => {
-    alert(
-      isRTL
-        ? "تسجيل الصوت غير مدعوم حاليا"
-        : "Audio recording not supported yet"
-    );
-  };
-
-  const handleTalkClick = () => {
-    alert(
-      isRTL
-        ? "تحدث مع الذكاء الاصطناعي غير مدعوم حاليا"
-        : "Talk to AI not supported yet"
-    );
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
-    const newContexts = [...selectedContexts];
-    Array.from(files).forEach((file) => {
-      newContexts.push({
-        id: file.name + "-" + Date.now(),
-        name: file.name,
-        content: "",
-        type: "file",
-        size: (file.size / 1024).toFixed(2) + " KB",
-      });
-    });
-    setSelectedContexts(newContexts);
-    onContextsChange?.(newContexts);
+    await processFiles(files);
+    e.target.value = "";
   };
 
   const [isDragging, setIsDragging] = useState(false);
@@ -553,53 +640,30 @@ const ChatInput: React.FC<ChatInputProps> = ({
     setIsDragging(false);
   };
 
-  const handleDropFiles = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDropFiles = async (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(false);
     const droppedFiles = e.dataTransfer.files;
-    if (!droppedFiles) return;
-    const newContexts = [...selectedContexts];
-    Array.from(droppedFiles).forEach((file) => {
-      newContexts.push({
-        id: file.name + "-" + Date.now(),
-        name: file.name,
-        content: "",
-        type: "file",
-        size: (file.size / 1024).toFixed(2) + " KB",
-      });
-    });
-    setSelectedContexts(newContexts);
-    onContextsChange?.(newContexts);
+    if (!droppedFiles || droppedFiles.length === 0) return;
+    await processFiles(droppedFiles);
   };
+
+  const attachments = useMemo(
+    () => selectedContexts.filter((ctx) => ctx.metadata?.fileId || ctx.file),
+    [selectedContexts]
+  );
 
   return (
     <div
       className={`relative w-full mx-auto ${className}`}
       dir={isRTL ? "rtl" : "ltr"}
     >
-      {/* Context Mention Menu - Compact */}
       {showContextMenu && (
         <div
           ref={contextMenuRef}
-          className="absolute bottom-full left-0 right-0 mb-2 z-50 animate-in slide-in-from-bottom-2 fade-in-0 duration-200"
+          className="absolute bottom-full left-20 right-0 max-w-56 mb-2 z-50 animate-in slide-in-from-bottom-2 fade-in-0 duration-200"
         >
           <div className="bg-white dark:bg-zinc-900 rounded-xl  border border-zinc-200 dark:border-zinc-700 overflow-hidden max-w-md">
-            <div className="px-3 py-2 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50">
-              <div className="flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
-                <Search className="w-3.5 h-3.5" />
-                <span className="font-medium">
-                  {isRTL ? "السياق" : "Context"}
-                  {contextSearch && (
-                    <span className="text-zinc-900 dark:text-zinc-100 ml-1">
-                      : "{contextSearch}"
-                    </span>
-                  )}
-                </span>
-                <span className="ml-auto text-xs text-zinc-500">
-                  {filteredContexts.length}
-                </span>
-              </div>
-            </div>
             <div className="max-h-64 overflow-y-auto">
               {filteredContexts.length === 0 ? (
                 <div className="px-4 py-8 text-center text-zinc-500 dark:text-zinc-400">
@@ -637,9 +701,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                           </div>
                         ) : (
                           <div
-                            className={`w-9 h-9 rounded flex items-center justify-center flex-shrink-0 ${getContextColor(
-                              context.type
-                            )}`}
+                            className={`w-9 h-9 rounded flex items-center justify-center flex-shrink-0`}
                           >
                             <div className="w-3.5 h-3.5">
                               {getContextIcon(context.type)}
@@ -650,10 +712,10 @@ const ChatInput: React.FC<ChatInputProps> = ({
                           <div className="font-medium text-zinc-900 dark:text-zinc-100 line-clamp-1 text-xs">
                             {context.name}
                           </div>
-                          <div className="flex items-center gap-1.5 mt-0.5">
+                          <div className="flex items-center  mt-0.5">
                             <Badge
                               variant="outline"
-                              className="text-[10px] px-1.5 py-0 h-4 capitalize"
+                              className="text-[10px] font-medium py-0 h-4 capitalize"
                             >
                               {context.type.replace("_", " ")}
                             </Badge>
@@ -674,12 +736,9 @@ const ChatInput: React.FC<ChatInputProps> = ({
         </div>
       )}
 
-      {/* Main Input Container */}
       <div
         ref={containerRef}
-        className={`relative transition-all duration-300 ${
-          isDragging ? "scale-[1.02]" : "scale-100"
-        }`}
+        className={`relative transition-all duration-300`}
         onClick={handleContainerClick}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -692,6 +751,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
           hidden
           onChange={handleFileChange}
           aria-label={isRTL ? "اختر ملف" : "Choose file"}
+          accept=".png,.jpg,.jpeg,.txt,.md,image/png,image/jpeg,text/plain,text/markdown"
         />
 
         <div
@@ -711,7 +771,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
           {isDragging && (
             <div className="absolute inset-0 flex items-center justify-center bg-blue-50/90 dark:bg-blue-950/90 backdrop-blur-sm z-10 pointer-events-none">
               <div className="text-center">
-                <Paperclip className="w-12 h-12 mx-auto mb-2 text-blue-600 dark:text-blue-400 animate-bounce" />
+                <Paperclip className="w-12 h-12 mx-auto mb-2 text-blue-600 dark:text-blue-400" />
                 <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
                   {isRTL ? "أسقط الملفات هنا" : "Drop files here"}
                 </p>
@@ -719,47 +779,38 @@ const ChatInput: React.FC<ChatInputProps> = ({
             </div>
           )}
 
-          {/* Context Pills Above Input */}
-          {selectedContexts.length > 0 && (
-            <div className={`px-3 pt-3 pb-2`}>
-              <div className="flex flex-wrap gap-2">
-                {selectedContexts.map((context) => (
-                  <Badge
-                    key={context.id}
-                    variant="secondary"
-                    className={`
-                      ${getContextColor(context.type)} 
-                      px-2.5 py-1.5 text-xs font-medium rounded-lg border
-                      transition-all duration-200 cursor-default
-                      flex items-center gap-1.5 hover:scale-105
-                    `}
-                  >
-                    <div className="w-3.5 h-3.5 flex-shrink-0">
-                      {getContextIcon(context.type)}
-                    </div>
-                    <span className="max-w-[180px] truncate font-medium">
-                      {context.name}
+          {attachments.length > 0 && (
+            <div
+              className={`flex flex-wrap gap-2 px-4 pt-3 ${
+                isRTL ? "justify-end" : "justify-start"
+              }`}
+            >
+              {attachments.map((context) => (
+                <div
+                  key={context.id}
+                  className="group flex items-center gap-2 rounded-xl bg-zinc-100 px-3 py-1.5 text-xs text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+                >
+                  <span className="font-medium truncate max-w-[160px]">
+                    {context.name}
+                  </span>
+                  {context.size && (
+                    <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                      {context.size}
                     </span>
-                    {context.duration && (
-                      <span className="text-[10px] opacity-70 flex-shrink-0">
-                        {context.duration}
-                      </span>
-                    )}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeContext(context.id);
-                      }}
-                      className="p-0.5 rounded hover:bg-black/10 dark:hover:bg-white/10 transition-colors flex-shrink-0 ml-0.5"
-                      aria-label={`${isRTL ? "إزالة" : "Remove"} ${
-                        context.name
-                      }`}
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeContext(context.id);
+                    }}
+                    className="text-zinc-400 transition-colors hover:text-zinc-700 dark:hover:text-zinc-100"
+                    aria-label={isRTL ? "إزالة الملف" : "Remove attachment"}
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
             </div>
           )}
 
@@ -776,7 +827,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
               className={`
                 flex-1 text-base bg-transparent border-0 resize-none
                 outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus:border-transparent
-                rounded-full
                 ${isRTL ? "text-right pr-6 pl-16" : "text-left pl-4 pr-16"}
                 placeholder:text-zinc-400 dark:placeholder:text-zinc-500
                 text-zinc-900 dark:text-zinc-100
@@ -790,32 +840,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
               }}
               rows={1}
             />
-
-            <div
-              className={`absolute top-1/2 -translate-y-1/2 ${
-                isRTL ? "left-4" : "right-4"
-              }`}
-            >
-              <Button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  submit();
-                }}
-                disabled={!value?.trim()}
-                size="sm"
-                className={`
-                  size-9 rounded-xl font-medium
-                                    transition-all duration-300 ease-out
-                  ${
-                    value?.trim()
-                      ? "bg-zinc-800 hover:bg-zinc-900 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-white hover:scale-110 active:scale-95  dark:shadow-zinc-950"
-                      : "bg-zinc-200 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-600 cursor-not-allowed"
-                  }
-                `}
-              >
-                <ArrowUp className="w-4 h-4" />
-              </Button>
-            </div>
           </div>
 
           {expandSection && (
@@ -832,8 +856,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
               <div
                 ref={expandedContentRef}
                 className={`
-                  flex items-center justify-between px-4 py-3 border-t
-                  border-zinc-200 dark:border-zinc-800
+                  flex items-center justify-between px-4 py-3
                   transition-all duration-300 ease-out
                   ${
                     isExpanded || expandSection
@@ -846,6 +869,19 @@ const ChatInput: React.FC<ChatInputProps> = ({
               >
                 {!optionsToHide?.models && (
                   <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-9 rounded-xl bg-zinc-100 px-3 text-sm text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        fileInputRef.current?.click();
+                      }}
+                    >
+                      <Paperclip className="w-3.5 h-3.5" />
+                      <span>{isRTL ? "إرفاق" : "Attach"}</span>
+                    </Button>
                     <Popover
                       open={isModelPopoverOpen}
                       onOpenChange={setIsModelPopoverOpen}
@@ -858,7 +894,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                             e.stopPropagation();
                             setIsModelPopoverOpen(!isModelPopoverOpen);
                           }}
-                          className="h-9 px-3 text-sm bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 rounded-xl text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 transition-all duration-200 font-medium border border-zinc-200 dark:border-zinc-700 hover:scale-[1.02] active:scale-[0.98]"
+                          className="h-9 px-3 text-sm bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 rounded-xl text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 transition-all duration-200 font-medium border border-zinc-200 dark:border-zinc-700 "
                         >
                           <div className="flex items-center gap-2">
                             <div
@@ -902,7 +938,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
                                 className={`
                                   w-full p-3 text-sm rounded-lg font-medium text-left
                                   transition-all duration-200 ease-out
-                                  hover:scale-[1.01] active:scale-[0.99]
                                   ${
                                     isActive
                                       ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 "
@@ -933,70 +968,55 @@ const ChatInput: React.FC<ChatInputProps> = ({
                         </div>
                       </PopoverContent>
                     </Popover>
-
-                    {/* Auto Context Button */}
-                    {hasAutoContext && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-9 px-3 text-xs bg-blue-50 hover:bg-blue-100 dark:bg-blue-950 dark:hover:bg-blue-900 rounded-xl text-blue-700 dark:text-blue-300 transition-all duration-200 font-medium border border-blue-200 dark:border-blue-800 hover:scale-[1.02] active:scale-[0.98]"
-                        disabled={autoContextLoading}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onAutoContextClick?.();
-                        }}
-                      >
-                        <div className="flex items-center gap-1.5">
-                          {autoContextLoading ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          ) : (
-                            <Sparkles className="w-3.5 h-3.5" />
-                          )}
-                          <span>{isRTL ? "سياق تلقائي" : "Auto context"}</span>
-                          {autoContextCount > 0 && (
-                            <Badge className="ml-1 h-5 px-1.5 text-[10px] bg-blue-600 hover:bg-blue-600 dark:bg-blue-700 dark:hover:bg-blue-700 text-white">
-                              {autoContextCount}
-                            </Badge>
-                          )}
-                        </div>
-                      </Button>
-                    )}
                   </div>
+                )}
+                {hasAutoContext && (
+                  <Button
+                    variant="secondary"
+                    className="rounded-2xl"
+                    size="sm"
+                    disabled={autoContextLoading}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onAutoContextClick?.();
+                    }}
+                  >
+                    <div className="flex items-center gap-1.5">
+                      {autoContextLoading ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <AtSign className="w-3.5 h-3.5" />
+                      )}
+                      <span>{isRTL ? "سياق " : "Context"}</span>
+
+                      {autoContextCount}
+                    </div>
+                  </Button>
                 )}
 
                 <div
-                  className={`flex items-center gap-2 ${
-                    isRTL ? "flex-row-reverse" : "flex-row"
+                  className={`absolute top-1/2 -translate-y-1/2 ${
+                    isRTL ? "left-4" : "right-4"
                   }`}
                 >
                   <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label={isRTL ? "إرفاق ملف" : "Attach File"}
-                    className="rounded-full p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all duration-200 hover:scale-110 active:scale-95"
-                    onClick={handleAttachClick}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      submit();
+                    }}
+                    disabled={!value?.trim()}
+                    size="sm"
+                    className={`
+                  size-9 rounded-xl font-medium
+                                    transition-all duration-300 ease-out
+                  ${
+                    value?.trim()
+                      ? "bg-zinc-800 hover:bg-zinc-900 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-white   dark:shadow-zinc-950"
+                      : "bg-zinc-200 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-600 cursor-not-allowed"
+                  }
+                `}
                   >
-                    <Paperclip className="w-5 h-5 text-zinc-500 dark:text-zinc-400" />
-                  </Button>
-
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label={isRTL ? "تسجيل الصوت" : "Record Audio"}
-                    className="rounded-full p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all duration-200 hover:scale-110 active:scale-95"
-                    onClick={handleRecordClick}
-                  >
-                    <Mic className="w-5 h-5 text-zinc-500 dark:text-zinc-400" />
-                  </Button>
-
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label={isRTL ? "تحدث مع الذكاء" : "Talk to AI"}
-                    className="rounded-full p-2 bg-zinc-800 hover:bg-zinc-900 dark:bg-zinc-700 dark:hover:bg-zinc-600 transition-all duration-200 hover:scale-110 active:scale-95"
-                    onClick={handleTalkClick}
-                  >
-                    <AudioWaveform className="w-5 h-5 text-white" />
+                    <ArrowUp className="w-4 h-4" />
                   </Button>
                 </div>
               </div>

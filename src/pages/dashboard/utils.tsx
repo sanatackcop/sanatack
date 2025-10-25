@@ -1,5 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { GenerationStatus } from "@/lib/types";
+import { GenerationStatus, Status, Workspace } from "@/lib/types";
 import { AlertTriangle, Clock3, Loader2 } from "lucide-react";
 
 export const ContentSkeleton = () => (
@@ -65,22 +65,97 @@ export const ChatSkeleton = () => (
   </div>
 );
 
-export const reducer = (state: any, action: any): any => {
+interface State {
+  tab: string;
+  type: "video" | "document" | null;
+  src: string | null;
+  page: number;
+  pageCount: number | null;
+  status: { kind: string; message?: string; for?: string };
+  prompt: string;
+  notes: string;
+  zoom: number;
+  sidebarOpen: boolean;
+  highlights: any[];
+  selectedText: string | null;
+  youtubeVideoId: string | null;
+  youtubeCurrentTime: number;
+  youtubeDuration: number;
+  youtubeIsPlaying: boolean;
+  chatMessages: any;
+  chatInput: string;
+  chatLoading: boolean;
+  streamingMessage: string;
+  workspace: Workspace | null;
+  title: string | null;
+  transcript: string | null;
+  transcriptLoading: boolean;
+  isLoading: boolean;
+}
+
+type Action =
+  | { type: "SET_TAB"; tab: string }
+  | { type: "SET_WORKSPACE_TYPE"; workspaceType: "video" | "document" }
+  | { type: "SET_CONTENT"; contentType: string }
+  | { type: "SET_SRC"; src: string }
+  | { type: "SET_PAGE"; page: number }
+  | { type: "SET_PAGE_COUNT"; pageCount: number }
+  | { type: "NEXT_PAGE" }
+  | { type: "PREV_PAGE" }
+  | {
+      type: "SET_STATUS";
+      status: Status;
+    }
+  | { type: "SET_PROMPT"; prompt: string }
+  | { type: "SET_NOTES"; notes: string }
+  | { type: "ZOOM_IN" }
+  | { type: "ZOOM_OUT" }
+  | { type: "RESET_ZOOM" }
+  | { type: "TOGGLE_SIDEBAR" }
+  | { type: "ADD_HIGHLIGHT"; highlight: any }
+  | { type: "REMOVE_HIGHLIGHT"; id: string }
+  | { type: "SET_HIGHLIGHTS"; highlights: any[] }
+  | { type: "SET_SELECTED_TEXT"; text: string | null }
+  | { type: "ADD_TO_CHAT"; text: string }
+  | { type: "SET_YOUTUBE_VIDEO"; videoId: string }
+  | { type: "SET_YOUTUBE_TIME"; currentTime: number; duration: number }
+  | { type: "SET_YOUTUBE_PLAYING"; isPlaying: boolean }
+  | { type: "ADD_CHAT_MESSAGE"; message: any }
+  | { type: "SET_CHAT_INPUT"; input: string }
+  | { type: "CLEAR_CHAT" }
+  | { type: "SET_CHAT_LOADING"; loading: boolean }
+  | { type: "SET_STREAMING_MESSAGE"; content: string }
+  | { type: "ADD_STREAMING_CHUNK"; chunk: string }
+  | { type: "COMPLETE_STREAMING_MESSAGE"; content?: string }
+  | { type: "SET_WORKSPACE"; workspace: Workspace }
+  | { type: "SET_TITLE"; title: string }
+  | { type: "SET_TRANSCRIPT"; transcript: string }
+  | { type: "SET_TRANSCRIPT_LOADING"; loading: boolean };
+
+export const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case "SET_TAB":
       return { ...state, tab: action.tab };
+
+    case "SET_WORKSPACE_TYPE":
+      return { ...state, type: action.workspaceType };
+
     case "SET_CONTENT":
       return {
         ...state,
-        workspaceType: action.workspaceType,
-        status: { kind: "loading", for: action.workspaceType },
+        type: action.contentType as "video" | "document",
+        status: { kind: "loading", for: action.contentType },
       };
+
     case "SET_SRC":
       return { ...state, src: action.src };
+
     case "SET_PAGE":
       return { ...state, page: Math.max(1, action.page) };
+
     case "SET_PAGE_COUNT":
       return { ...state, pageCount: action.pageCount };
+
     case "NEXT_PAGE":
       return {
         ...state,
@@ -88,27 +163,37 @@ export const reducer = (state: any, action: any): any => {
           ? Math.min(state.pageCount, state.page + 1)
           : state.page + 1,
       };
+
     case "PREV_PAGE":
       return { ...state, page: Math.max(1, state.page - 1) };
+
     case "SET_STATUS":
       return { ...state, status: action.status };
+
     case "SET_PROMPT":
       return { ...state, prompt: action.prompt };
+
     case "SET_NOTES":
       return { ...state, notes: action.notes };
+
     case "ZOOM_IN":
       return { ...state, zoom: Math.min(3.0, +(state.zoom + 0.2).toFixed(2)) };
+
     case "ZOOM_OUT":
       return { ...state, zoom: Math.max(0.4, +(state.zoom - 0.2).toFixed(2)) };
+
     case "RESET_ZOOM":
       return { ...state, zoom: 1 };
+
     case "TOGGLE_SIDEBAR":
       return { ...state, sidebarOpen: !state.sidebarOpen };
+
     case "ADD_HIGHLIGHT":
       return {
         ...state,
         highlights: [...(state.highlights || []), action.highlight],
       };
+
     case "REMOVE_HIGHLIGHT":
       return {
         ...state,
@@ -116,52 +201,84 @@ export const reducer = (state: any, action: any): any => {
           (h: any) => h.id !== action.id
         ),
       };
+
     case "SET_HIGHLIGHTS":
       return { ...state, highlights: action.highlights || [] };
+
     case "SET_SELECTED_TEXT":
       return { ...state, selectedText: action.text };
+
     case "ADD_TO_CHAT":
       return {
         ...state,
         tab: "chat",
         prompt: action.text,
       };
+
     case "SET_YOUTUBE_VIDEO":
       return { ...state, youtubeVideoId: action.videoId };
+
     case "SET_YOUTUBE_TIME":
       return {
         ...state,
         youtubeCurrentTime: action.currentTime,
         youtubeDuration: action.duration,
       };
+
     case "SET_YOUTUBE_PLAYING":
       return { ...state, youtubeIsPlaying: action.isPlaying };
+
     case "ADD_CHAT_MESSAGE":
       return {
         ...state,
         chatMessages: [...(state.chatMessages || []), action.message],
         prompt: "",
       };
+
+    case "UPDATE_MESSAGE_ATTACHMENTS": {
+      const { messageId, attachments } = action;
+      if (!messageId) return state;
+      const updatedMessages = (state.chatMessages || []).map((msg: any) =>
+        msg.id === messageId
+          ? {
+              ...msg,
+              metadata: {
+                ...(msg.metadata || {}),
+                attachments,
+              },
+            }
+          : msg
+      );
+      return { ...state, chatMessages: updatedMessages };
+    }
+
     case "SET_CHAT_INPUT":
       return { ...state, chatInput: action.input };
+
     case "CLEAR_CHAT":
       return { ...state, chatMessages: [] };
+
     case "SET_CHAT_LOADING":
       return { ...state, chatLoading: action.loading };
+
     case "SET_STREAMING_MESSAGE":
       return { ...state, streamingMessage: action.content };
+
     case "ADD_STREAMING_CHUNK":
       return {
         ...state,
         streamingMessage: (state.streamingMessage || "") + action.chunk,
       };
-    case "COMPLETE_STREAMING_MESSAGE":
+
+    case "COMPLETE_STREAMING_MESSAGE": {
       const completedMessage: any = {
         id: Date.now().toString(),
         type: "assistant",
-        content: state.streamingMessage || action.content,
+        role: "assistant",
+        content: state.streamingMessage || action.content || "",
         timestamp: new Date(),
         isComplete: true,
+        metadata: action.metadata,
       };
       return {
         ...state,
@@ -169,29 +286,58 @@ export const reducer = (state: any, action: any): any => {
         streamingMessage: "",
         chatLoading: false,
       };
-    // Fixed workspace action - matches the dispatch call
-    case "SET_WORKSPACE":
+    }
+
+    case "SET_WORKSPACE": {
+      const rawMessages =
+        action.workspace?.chatMessages?.messages ?? [];
+      const normalizedMessages = (Array.isArray(rawMessages)
+        ? rawMessages
+        : Object.values(rawMessages)
+      ).map((msg: any) => ({
+        id: msg.id ?? `${Date.now()}-${Math.random()}`,
+        type: msg.type ?? msg.role ?? "assistant",
+        role: msg.role ?? msg.type ?? "assistant",
+        content: msg.content ?? "",
+        timestamp: msg.timestamp ? new Date(msg.timestamp) : new Date(),
+        metadata: msg.metadata
+          ? {
+              ...msg.metadata,
+              attachments: Array.isArray(msg.metadata.attachments)
+                ? msg.metadata.attachments.map((attachment: any) => ({
+                    ...attachment,
+                    status:
+                      attachment.status ??
+                      (attachment.url ? "uploaded" : undefined),
+                  }))
+                : undefined,
+            }
+          : undefined,
+      }));
+
       return {
         ...state,
         workspace: action.workspace,
-        chatMessages: [
-          ...Object.values(action.workspace?.chatMessages?.messages ?? {}),
-        ],
+        chatMessages: normalizedMessages,
         title:
           action.workspace?.workspaceName || action.workspace?.title || null,
-        youtubeVideoId: action.workspace?.video?.url
-          ? extractYouTubeId(action.workspace?.video.url)
-          : null,
-        workspaceType: "document",
-        src: action.workspace?.pdfUrl || state.src,
-        transcript: action.workspace?.video?.transcript,
+        type: action.workspace?.type || state.type,
+        src:
+          action.workspace?.documentUrl ||
+          action.workspace?.video?.url ||
+          state.src,
       };
+    }
+
     case "SET_TITLE":
       return { ...state, title: action.title };
+
     case "SET_TRANSCRIPT":
       return { ...state, transcript: action.transcript };
+
     case "SET_TRANSCRIPT_LOADING":
       return { ...state, transcriptLoading: action.loading };
+
     default:
       return state;
   }

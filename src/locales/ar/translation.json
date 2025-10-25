@@ -1,4 +1,13 @@
 {
+  "pageFit": "ملائمة الصفحة",
+  "pageLoadFailed": "فشل تحميل الصفحة {{page}}",
+  "fileLoadError": "فشل تحميل الملف",
+  "retry": "إعادة المحاولة",
+  "loadingFile": "جاري تحميل الملف",
+  "pleaseWait": "يرجى الانتظار...",
+  "pdfLoadError": "فشل في تحميل ملف PDF",
+  "explain": "شرح",
+  "copy": "نسخ",
   "common": {
     "workspaceTitle": "أحدث الساحات",
     "creating": "جارٍ الإنشاء…",
@@ -402,7 +411,7 @@
     "resetZoom": "إعادة تعيين التكبير"
   },
   "tabs": {
-    "transcript": "دردشة",
+    "transcript": "النص",
     "explanation": "بطاقات",
     "chat": "دردشة",
     "flashcards": "بطاقات",
@@ -656,7 +665,11 @@
   "chat": {
     "auto_context_success": "تم تحديث سياق مساحة العمل بنجاح.",
     "auto_context_failed": "تعذّر إنشاء سياق لهذه المساحة.",
-    "auto_context_empty": "لم يتم إنشاء أي سياق لهذه المساحة بعد."
+    "auto_context_empty": "لم يتم إنشاء أي سياق لهذه المساحة بعد.",
+    "attachment": {
+      "uploading": "جاري الرفع…",
+      "failed": "فشل الرفع"
+    }
   },
   "modals": {
     "addContent": {

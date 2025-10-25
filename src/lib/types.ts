@@ -1,10 +1,11 @@
 import { Space } from "@/types/courses";
 
-export type ContentType = "document" | "youtube";
+export type workspaceType = "document" | "video";
 
 export type Status =
   | { kind: "idle" }
-  | { kind: "loading"; for: ContentType }
+  | { kind: string; message?: string; for?: string }
+  | { kind: "loading"; for: workspaceType }
   | { kind: "error"; message: string };
 
 export type TabKey =
@@ -41,12 +42,23 @@ export interface Highlight {
 }
 
 // Chat Message Interface
+export interface ChatAttachment {
+  id?: string;
+  filename?: string;
+  mimetype?: string;
+  size?: number;
+  type?: 'text' | 'image' | 'file';
+  url?: string;
+  contentPreview?: string;
+  status?: 'uploading' | 'uploaded' | 'failed';
+}
+
 export interface ChatMessage {
   id: string;
-  type: "user" | "bot" | any;
+  type: 'user' | 'assistant' | 'system' | any;
   content: string;
   timestamp: Date;
-  metadata?: any;
+  metadata?: { [key: string]: any; attachments?: ChatAttachment[] };
 }
 
 export type WorkspaceContextType =
@@ -98,11 +110,12 @@ export interface YouTubeTranscript {
 export interface Workspace {
   id: string;
   workspaceName: string;
-  youtubeVideo?: {
+  video?: {
+    url: string;
     transcript?: { data?: { url?: string } };
   };
   documentUrl?: string;
-  workspaceType: "youtube" | "document" | "chat" | "other";
+  type: workspaceType;
   pdfUrl?: string;
   createdAt: string;
   updatedAt: string;
@@ -112,11 +125,13 @@ export interface Workspace {
   spaceId: string | null;
   space?: Space;
   contexts?: WorkspaceContext[];
+  chatMessages: any;
+  title: string;
 }
 
 export interface State {
   tab: TabKey;
-  workspaceType: ContentType;
+  type: workspaceType;
   src: string;
   page: number;
   pageCount: number | null;
@@ -129,7 +144,7 @@ export interface State {
   selectedText: string;
 
   // YouTube related
-  youtubeVideoId: string;
+  video: string;
   youtubeCurrentTime: number;
   youtubeDuration: number;
   youtubeIsPlaying: boolean;
@@ -149,7 +164,7 @@ export interface State {
 
 export type Action =
   | { type: "SET_TAB"; tab: TabKey }
-  | { type: "SET_CONTENT"; contentType: ContentType }
+  | { type: "SET_CONTENT"; workspaceType: workspaceType }
   | { type: "SET_SRC"; src: string }
   | { type: "SET_PAGE"; page: number }
   | { type: "SET_PAGE_COUNT"; pageCount: number | null }

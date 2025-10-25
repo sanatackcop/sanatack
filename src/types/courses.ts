@@ -227,6 +227,15 @@ export interface CodeCheckResponse {
   }[];
 }
 
+export type SpaceMember = {
+  id: string;
+  firstName: string | null;
+  lastName: string | null;
+  email: string | null;
+  displayName: string;
+  initials: string;
+};
+
 export type Space = {
   id: string;
   name: string;
@@ -235,5 +244,11 @@ export type Space = {
   created_at: string;
   updated_at: string;
   deletedAt?: Date | null;
+  coverImageUrl?: string | null;
+  icon?: string | null;
+  members?: SpaceMember[];
+  memberCount?: number;
+  workspaceCount?: number;
+  lastActivity?: string | null;
   workspaces: Workspace[];
 };

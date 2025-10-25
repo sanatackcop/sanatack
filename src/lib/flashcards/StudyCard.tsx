@@ -8,18 +8,9 @@ import React, {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useTranslation } from "react-i18next";
-import {
-  Lightbulb,
-  RotateCcw,
-  Sparkles,
-  X,
-  Check,
-  Trophy,
-  Target,
-} from "lucide-react";
+import { Lightbulb, Sparkles, X, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Flashcard } from "./types";
-import confetti from "canvas-confetti";
 
 const isTypingElement = (el: EventTarget | null) =>
   !!(
@@ -29,209 +20,6 @@ const isTypingElement = (el: EventTarget | null) =>
       el.tagName === "TEXTAREA" ||
       el.getAttribute("contenteditable") === "true")
   );
-
-// Elegant celebration popup component
-const CelebrationPopup: React.FC<{ type: "good" | "bad" }> = ({ type }) => {
-  const isGood = type === "good";
-
-  return (
-    <motion.div
-      initial={{ scale: 0, opacity: 0, y: 100 }}
-      animate={{
-        scale: 1,
-        opacity: 1,
-        y: 0,
-        transition: {
-          type: "spring",
-          stiffness: 200,
-          damping: 20,
-        },
-      }}
-      exit={{
-        scale: 0.8,
-        opacity: 0,
-        y: -50,
-        transition: {
-          duration: 0.3,
-        },
-      }}
-      className="fixed inset-0 flex items-center justify-center pointer-events-none z-50"
-    >
-      {/* Backdrop blur effect */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="absolute inset-0 bg-black/5 dark:bg-black/20 backdrop-blur-sm"
-      />
-
-      {/* Main card */}
-      <motion.div
-        initial={{ rotateY: -90 }}
-        animate={{
-          rotateY: 0,
-          transition: {
-            type: "spring",
-            stiffness: 100,
-            damping: 15,
-            delay: 0.1,
-          },
-        }}
-        className="relative"
-        style={{ transformStyle: "preserve-3d" }}
-      >
-        <div
-          className={`
-          relative overflow-hidden rounded-3xl shadow-2xl
-          ${
-            isGood
-              ? "bg-gradient-to-br from-emerald-400 via-green-500 to-teal-500"
-              : "bg-gradient-to-br from-rose-400 via-pink-500 to-red-500"
-          }
-          px-12 py-8 border-2 border-white/30
-        `}
-        >
-          {/* Animated background pattern */}
-          <motion.div
-            className="absolute inset-0 opacity-20"
-            animate={{
-              backgroundPosition: ["0% 0%", "100% 100%"],
-            }}
-            transition={{
-              duration: 3,
-              repeat: Infinity,
-              repeatType: "reverse",
-            }}
-            style={{
-              backgroundImage:
-                "radial-gradient(circle, white 1px, transparent 1px)",
-              backgroundSize: "20px 20px",
-            }}
-          />
-
-          <div className="relative flex flex-col items-center gap-3">
-            {/* Icon with glow */}
-            <motion.div
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{
-                scale: 1,
-                rotate: 0,
-                transition: {
-                  type: "spring",
-                  stiffness: 200,
-                  damping: 10,
-                  delay: 0.2,
-                },
-              }}
-              className="relative"
-            >
-              <motion.div
-                animate={{
-                  scale: [1, 1.2, 1],
-                  opacity: [0.5, 0.8, 0.5],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                }}
-                className="absolute inset-0 bg-white rounded-full blur-xl"
-              />
-              <div className="relative w-16 h-16 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
-                {isGood ? (
-                  <Trophy className="w-8 h-8 text-emerald-600" />
-                ) : (
-                  <Target className="w-8 h-8 text-rose-600" />
-                )}
-              </div>
-            </motion.div>
-
-            {/* Text content */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{
-                opacity: 1,
-                y: 0,
-                transition: { delay: 0.3 },
-              }}
-              className="text-center"
-            >
-              <div className="text-3xl font-bold text-white mb-1 drop-shadow-lg">
-                {isGood ? "Excellent!" : "Keep Going!"}
-              </div>
-              <div className="text-lg text-white/90 font-medium">
-                {isGood ? "You're on fire! 🔥" : "Practice makes perfect! 💪"}
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Shine effect */}
-          <motion.div
-            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-            animate={{
-              x: ["-100%", "200%"],
-            }}
-            transition={{
-              duration: 1.5,
-              delay: 0.2,
-              ease: "easeInOut",
-            }}
-          />
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-};
-
-// Trigger confetti effect
-const triggerConfetti = (isGood: boolean) => {
-  if (isGood) {
-    const count = 200;
-    const defaults = {
-      origin: { y: 0.7 },
-      zIndex: 9999,
-    };
-
-    function fire(particleRatio: number, opts: any) {
-      confetti({
-        ...defaults,
-        ...opts,
-        particleCount: Math.floor(count * particleRatio),
-      });
-    }
-
-    fire(0.25, {
-      spread: 26,
-      startVelocity: 55,
-      colors: ["#10b981", "#3b82f6", "#f59e0b", "#ec4899", "#8b5cf6"],
-    });
-
-    fire(0.2, {
-      spread: 60,
-      colors: ["#10b981", "#3b82f6", "#f59e0b", "#ec4899", "#8b5cf6"],
-    });
-
-    fire(0.35, {
-      spread: 100,
-      decay: 0.91,
-      scalar: 0.8,
-      colors: ["#10b981", "#3b82f6", "#f59e0b", "#ec4899", "#8b5cf6"],
-    });
-
-    fire(0.1, {
-      spread: 120,
-      startVelocity: 25,
-      decay: 0.92,
-      scalar: 1.2,
-      colors: ["#10b981", "#3b82f6", "#f59e0b", "#ec4899", "#8b5cf6"],
-    });
-
-    fire(0.1, {
-      spread: 120,
-      startVelocity: 45,
-      colors: ["#10b981", "#3b82f6", "#f59e0b", "#ec4899", "#8b5cf6"],
-    });
-  }
-};
 
 export const StudyCard: React.FC<{
   flashcard: Flashcard;
@@ -498,33 +286,24 @@ export const StudyNavigation: React.FC<{
   isLast: boolean;
   isRevealed: boolean;
   currentCard?: Flashcard;
-}> = ({ onDifficultySelect, onFinish, isLast, isRevealed }) => {
+}> = ({ onDifficultySelect, isRevealed }) => {
   const { t } = useTranslation();
-  const [showCelebration, setShowCelebration] = useState<"good" | "bad" | null>(
-    null
-  );
 
   const handleDifficulty = useCallback(
-    (difficulty: number, label: string, type: "good" | "bad") => {
-      triggerConfetti(type === "good");
-      setShowCelebration(type);
-      setTimeout(() => {
-        onDifficultySelect(difficulty, label);
-        setShowCelebration(null);
-      }, 1200);
+    (difficulty: number, label: string) => {
+      onDifficultySelect(difficulty, label);
     },
     [onDifficultySelect]
   );
 
-  // Handle keyboard shortcuts
   useEffect(() => {
     if (!isRevealed) return;
 
     const handleKeyPress = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft" || e.key === "1") {
-        handleDifficulty(3, "hard", "bad");
+        handleDifficulty(3, "hard");
       } else if (e.key === "ArrowRight" || e.key === "2") {
-        handleDifficulty(1, "good", "good");
+        handleDifficulty(1, "good");
       }
     };
 
@@ -537,60 +316,30 @@ export const StudyNavigation: React.FC<{
   }
 
   return (
-    <>
-      <AnimatePresence>
-        {showCelebration && <CelebrationPopup type={showCelebration} />}
-      </AnimatePresence>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-3xl flex items-center justify-center gap-4 px-4"
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="w-full flex items-center justify-center gap-4 px-4"
+    >
+      <Button
+        onClick={() => handleDifficulty(3, "hard")}
+        className="group bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-700 text-white rounded-xl px-6 py-3 font-medium shadow-lg hover:shadow-xl transition-all"
       >
-        {/* Bad Button - Left */}
-        <motion.button
-          onClick={() => handleDifficulty(3, "hard", "bad")}
-          className="group bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-700 text-white rounded-xl px-6 py-3 font-medium shadow-lg hover:shadow-xl transition-all"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <div className="flex items-center gap-2">
-            <X className="w-5 h-5" />
-            <span>{t("study.hard", "Bad")}</span>
-          </div>
-        </motion.button>
+        <div className="flex items-center gap-2">
+          <X className="w-5 h-5" />
+          <span>{t("study.hard", "Bad")}</span>
+        </div>
+      </Button>
 
-        {/* Good Button - Right */}
-        <motion.button
-          onClick={() => handleDifficulty(1, "good", "good")}
-          className="group bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white rounded-xl px-6 py-3 font-medium shadow-lg hover:shadow-xl transition-all"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <div className="flex items-center gap-2">
-            <Check className="w-5 h-5" />
-            <span>{t("study.good", "Good")}</span>
-          </div>
-        </motion.button>
-
-        {/* Finish Session Button */}
-        {isLast && (
-          <motion.button
-            onClick={onFinish}
-            className="ml-2 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-xl px-4 py-3 font-medium shadow-md hover:shadow-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2 }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <div className="flex items-center gap-2">
-              <RotateCcw className="w-4 h-4" />
-              {t("study.finishSession", "Finish")}
-            </div>
-          </motion.button>
-        )}
-      </motion.div>
-    </>
+      <Button
+        onClick={() => handleDifficulty(1, "good")}
+        className="group bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white rounded-xl px-6 py-3 font-medium shadow-lg hover:shadow-xl transition-all"
+      >
+        <div className="flex items-center gap-2">
+          <Check className="w-5 h-5" />
+          <span>{t("study.good", "Good")}</span>
+        </div>
+      </Button>
+    </motion.div>
   );
 };

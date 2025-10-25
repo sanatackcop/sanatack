@@ -3,7 +3,6 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   Crown,
-  Plus,
   Box,
   Play,
   BoxIcon,
@@ -23,6 +22,7 @@ import {
   Tablet,
   ChevronsLeft,
   ChevronsRight,
+  Search,
 } from "lucide-react";
 import clsx from "clsx";
 import {
@@ -45,7 +45,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -186,9 +185,15 @@ export function AppSidebar({ onCollapse }: AppSidebarProps) {
             icon: Box,
           },
           {
+            title: t("common.search"),
+            url: "/dashboard/search",
+            icon: Search,
+          },
+          {
             title: t("sidebar.items.discover"),
             url: "/dashboard/discover",
             icon: Globe,
+            comingSoon: true,
           },
           {
             title: t("sidebar.createMap"),
@@ -243,7 +248,7 @@ export function AppSidebar({ onCollapse }: AppSidebarProps) {
           },
           {
             title: t("sidebar.discord"),
-            url: "https://discord.com",
+            url: "https://discord.gg/WEJDkQS8",
             icon: FaDiscord,
           },
           {

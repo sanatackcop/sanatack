@@ -1,4 +1,4 @@
-import { TextIcon, Play } from "lucide-react";
+import { ArrowDown, ArrowUp, TextIcon } from "lucide-react";
 import React, {
   useCallback,
   useRef,
@@ -60,10 +60,6 @@ interface YouTubePlayerProps {
   onTranscriptLoad?: (transcript: any) => void;
   className?: string;
   transcript?: TranscriptData | null;
-  /**
-   * Adjusts when highlighting switches, in seconds. Positive leads the audio slightly,
-   * negative lags. Tweak if you feel a small desync.
-   */
   syncOffsetSec?: number;
 }
 
@@ -296,7 +292,6 @@ const YouTubeReader: React.FC<YouTubePlayerProps> = ({
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   }, []);
 
-  // Auto-load the YT iframe API
   useEffect(() => {
     if (typeof window !== "undefined" && window.YT && window.YT.Player) {
       setApiReady(true);
@@ -396,11 +391,8 @@ const YouTubeReader: React.FC<YouTubePlayerProps> = ({
 
   return (
     <div className={`flex flex-col h-full min-h-0 ${className}`}>
-      {/* Video */}
       <div
-        className={`w-full flex-shrink-0 mb-4 ${
-          hideYoutubeVideo ? "hidden" : ""
-        }`}
+        className={`w-full flex-shrink-0 ${hideYoutubeVideo ? "hidden" : ""}`}
       >
         <div className="bg-white dark:bg-zinc-950/60 border border-zinc-200 dark:border-zinc-800 overflow-hidden transition-all duration-300 hover:shadow-md dark:hover:shadow-zinc-900/40 rounded-3xl backdrop-blur-sm">
           <div
@@ -425,17 +417,15 @@ const YouTubeReader: React.FC<YouTubePlayerProps> = ({
         </div>
       </div>
 
-      {/* Tabs wrapper holds both header (TabsList) and content (TabsContent) to satisfy Radix */}
       <Tabs
         defaultValue="transcript"
         value={activeTab}
         onValueChange={setActiveTab}
-        className="flex flex-col h-full"
+        className="flex flex-col h-full mt-2"
       >
-        {/* Sticky header (inside Tabs) */}
-        <div className="sticky top-0 z-20 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60 shadow-sm dark:shadow-none py-3">
+        <div className="sticky top-0 z-20">
           <div className="flex items-center justify-between px-2 py-2">
-            <TabsList className="rounded-2xl border py-4">
+            <TabsList className="rounded-2xl border dark:border-zinc-200/20 py-4">
               {TABS_CONFIG.map((tab) => {
                 const IconComponent = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -443,7 +433,7 @@ const YouTubeReader: React.FC<YouTubePlayerProps> = ({
                   <TabsTrigger
                     key={tab.id}
                     value={tab.id}
-                    className={`relative flex items-center justify-center gap-2 rounded-lg py-1.5 px-3 transition-all duration-200 font-normal ${
+                    className={`relative flex items-center  dark:text-white justify-center gap-2 rounded-lg py-1.5 px-3 transition-all duration-200 font-normal ${
                       isActive
                         ? "text-green-700"
                         : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
@@ -470,18 +460,10 @@ const YouTubeReader: React.FC<YouTubePlayerProps> = ({
             <Button
               size="sm"
               variant="outline"
-              className="rounded-full"
+              className="rounded-full !py-4"
               onClick={() => setHideYoutubeVideo((v) => !v)}
-              title={
-                hideYoutubeVideo
-                  ? t("video.show", "Show video")
-                  : t("video.hide", "Hide video")
-              }
             >
-              <Play className="w-4 h-4 mr-2" />
-              {hideYoutubeVideo
-                ? t("video.show", "Show video")
-                : t("video.hide", "Hide video")}
+              {hideYoutubeVideo ? <ArrowDown /> : <ArrowUp />}
             </Button>
           </div>
         </div>
@@ -491,12 +473,10 @@ const YouTubeReader: React.FC<YouTubePlayerProps> = ({
           className="flex-1 min-h-0 m-0 data-[state=active]:flex data-[state=active]:flex-col"
         >
           <ScrollArea ref={transcriptScrollRootRef} className="h-full">
-            <div className="space-y-6 p-2">
+            <div className="space-y-6">
               {transcriptSections.length ? (
                 transcriptSections.map((section, sectionIndex) => (
                   <div key={`section-${sectionIndex}`} className="space-y-3">
-                    {/* Optional section heading */}
-                    {/* <div className="text-xs uppercase tracking-wide text-gray-500 ml-4">{section.title}</div> */}
                     <div className="space-y-2 ml-4">
                       {section.segments.map((segment) => {
                         const globalIndex = segment.__idx;

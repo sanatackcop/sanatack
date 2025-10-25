@@ -15,6 +15,7 @@ import {
 } from "@/pages/dashboard/utils";
 import { GenerationStatus } from "../types";
 import QuizModal from "./QuizModal";
+import { normalizeQuiz } from "./utils";
 
 export const QuizList: React.FC<{ workspaceId: string }> = ({
   workspaceId,
@@ -30,10 +31,9 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
       const data = await getWorkSpaceContent(workspaceId);
 
       // Adapt new schema: flatten attempts and map latestAttempt
-      const formattedQuizzes = (data?.quizzes || []).map((quiz: any) => ({
-        ...quiz,
-        latestAttempt: quiz.attempts?.[quiz.attempts.length - 1] || null,
-      }));
+      const formattedQuizzes = (
+        Array.isArray(data?.quizzes) ? data?.quizzes : []
+      ).map((quiz: any) => normalizeQuiz(quiz));
 
       setQuizzes(formattedQuizzes);
     } catch (error) {
@@ -95,7 +95,9 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
           transition={{ duration: 0.25 }}
           className="px-6 mb-4 flex flex-col rounded-3xl justify-between space-y-3"
         >
-          <h3 className="px-2 text-sm font-medium text-gray-700">My Quizzes</h3>
+          <h3 className="px-2 text-sm font-medium text-gray-700 dark:text-white">
+            My Quizzes
+          </h3>
 
           {loading ? (
             <div className="space-y-3">
@@ -156,7 +158,7 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
                   : "outline";
 
                 const questionCount =
-                  quiz.questionCount ?? quiz.payload?.length ?? 0;
+                  quiz.questionCount ?? quiz.payload?.questions?.length ?? 0;
 
                 return (
                   <Card
@@ -169,13 +171,13 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
                     className={`group relative overflow-hidden px-6 py-5 flex flex-col rounded-2xl justify-center transition-all duration-200 cursor-pointer ${
                       failed
                         ? "bg-red-50/50 border-red-200 hover:border-red-300"
-                        : "bg-white hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100/80 border-gray-200/60 hover:border-gray-300/80"
+                        : "border-gray-200/60 hover:border-gray-300/80 dark:hover:bg-opacity-5"
                     } ${disabled ? "pointer-events-auto" : ""}`}
                   >
                     <div className="flex justify-between items-start gap-3">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-medium text-lg text-gray-900 truncate">
+                          <h3 className="font-medium text-lg text-gray-900 truncate dark:text-white">
                             {quiz.title || "Generating quiz..."}
                           </h3>
                           <StatusBadge status={quiz.status} />

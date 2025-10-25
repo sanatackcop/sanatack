@@ -142,55 +142,56 @@ export const UserContextProvider: FC<Props> = ({ children }: Props) => {
 
   const login = ({ user, type, role, refresh_token }: LoginPayload) => {
     try {
-    const decodedAuth = decodeJWT(user, type, role);
-    const payloadUser: any = decodedAuth?.user || {};
+      const decodedAuth = decodeJWT(user, type, role);
+      const payloadUser: any = decodedAuth?.user || {};
 
-    const fullName = [
-      payloadUser.firstName,
-      payloadUser.lastName,
-    ]
-      .filter(Boolean)
-      .join(" ") || payloadUser.name || "";
+      const fullName =
+        [payloadUser.firstName, payloadUser.lastName]
+          .filter(Boolean)
+          .join(" ") ||
+        payloadUser.name ||
+        "";
 
-    const nameParts = fullName ? fullName.split(" ") : [];
-    const derivedFirstName = payloadUser.firstName || nameParts[0] || "";
-    const derivedLastName =
-      payloadUser.lastName || (nameParts.length > 1 ? nameParts.slice(1).join(" ") : "");
+      const nameParts = fullName ? fullName.split(" ") : [];
+      const derivedFirstName = payloadUser.firstName || nameParts[0] || "";
+      const derivedLastName =
+        payloadUser.lastName ||
+        (nameParts.length > 1 ? nameParts.slice(1).join(" ") : "");
 
-    const normalizedUser: User = {
-      id:
-        payloadUser.id ||
-        payloadUser.user_id ||
-        payloadUser.uid ||
-        payloadUser.sub ||
-        "",
-      email: payloadUser.email || "",
-      firstName: derivedFirstName,
-      lastName: derivedLastName,
-      mobile: payloadUser.mobile || payloadUser.phone_number || "",
-      avatar: payloadUser.avatar || payloadUser.picture || "",
-      isVerify:
-        payloadUser.isVerify ||
-        payloadUser.email_verified ||
-        payloadUser.emailVerified ||
-        false,
-    };
+      const normalizedUser: User = {
+        id:
+          payloadUser.id ||
+          payloadUser.user_id ||
+          payloadUser.uid ||
+          payloadUser.sub ||
+          "",
+        email: payloadUser.email || "",
+        firstName: derivedFirstName,
+        lastName: derivedLastName,
+        mobile: payloadUser.mobile || payloadUser.phone_number || "",
+        avatar: payloadUser.avatar || payloadUser.picture || "",
+        isVerify:
+          payloadUser.isVerify ||
+          payloadUser.email_verified ||
+          payloadUser.emailVerified ||
+          false,
+      };
 
-    Storage.set("refreshToken", refresh_token);
-    Storage.set("refresh_token", refresh_token);
-    Storage.set("access_token", user);
-    Storage.set("accessToken", user);
-    Storage.set("auth", {
-      user: normalizedUser,
-      role: role || "student",
-      type: type as ContextType,
-    });
+      Storage.set("refreshToken", refresh_token);
+      Storage.set("refresh_token", refresh_token);
+      Storage.set("access_token", user);
+      Storage.set("accessToken", user);
+      Storage.set("auth", {
+        user: normalizedUser,
+        role: role || "student",
+        type: type as ContextType,
+      });
 
-    setAuth({
-      user: normalizedUser,
-      role: role || "student",
-      type: type as ContextType,
-    });
+      setAuth({
+        user: normalizedUser,
+        role: role || "student",
+        type: type as ContextType,
+      });
 
       setRefreshAccess((prevState) => !prevState);
     } catch (error) {

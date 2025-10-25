@@ -52,12 +52,11 @@ export default function WorkspaceFolderItem({
   const { t } = useTranslation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [spaces, setSpaces] = useState<Space[]>([]);
-  const { youtubeVideo, workspaceName, createdAt, workspaceType, documentUrl } =
-    workspace;
+  const { video, workspaceName, createdAt, type, documentUrl } = workspace;
 
   function renderBanner() {
-    if (workspaceType === "youtube" && youtubeVideo?.transcript?.data?.url) {
-      const url = youtubeVideo.transcript.data.url;
+    if (type === "video" && video?.url) {
+      const url = video?.url;
       const match = url.match(
         /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|embed)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/
       );
@@ -79,7 +78,7 @@ export default function WorkspaceFolderItem({
       );
     }
 
-    if (workspaceType === "document" && documentUrl) {
+    if (type === "document" && documentUrl) {
       return (
         <div className="w-full h-28 overflow-hidden rounded-t-2xl border-b border-zinc-200 flex items-center justify-center bg-gray-50">
           <Document file={documentUrl} loading={<Loader2Icon />}>
@@ -178,7 +177,7 @@ export default function WorkspaceFolderItem({
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [refreshParentComponent]);
 
   return (
     <motion.div
@@ -211,16 +210,14 @@ export default function WorkspaceFolderItem({
 
         <CardContent className="flex flex-1 items-center justify-start gap-4 p-5 pb-4">
           <div className="flex items-center justify-center w-6 h-6">
-            {workspaceType === "youtube" && (
-              <PlayIcon className="h-4 w-4 text-zinc-700" />
-            )}
-            {workspaceType === "document" && (
+            {type === "video" && <PlayIcon className="h-4 w-4 text-zinc-700" />}
+            {type === "document" && (
               <FileTextIcon className="h-4 w-4 text-zinc-700" />
             )}
           </div>
 
           <div className={`min-w-0 ${isRTL ? "text-right" : "text-left"}`}>
-            <h3 className="w-full max-w-[210px] truncate select-none text-sm font-medium text-zinc-900 transition-colors group-hover:text-primary">
+            <h3 className="w-full max-w-[210px] truncate select-none text-sm font-medium text-zinc-900 dark:text-white transition-colors group-hover:text-primary">
               {workspaceName}
             </h3>
             <p className="mt-1 text-xs text-zinc-500">

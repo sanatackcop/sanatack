@@ -43,7 +43,7 @@ import ChatInput, {
 } from "@/lib/chat/chatInput";
 import ChatMessages from "@/lib/chat/ChatMessage";
 import { initialState } from "@/lib/consts";
-import MindMap from "@/lib/mindMap/MindMap";
+import MindMap from "@/lib/explantion/DeepExplnation";
 import PdfReader from "@/lib/PdfReader";
 import { QuizList } from "@/lib/quizzes/Quiz";
 import { SummaryList } from "@/lib/summary/Summary";
@@ -143,14 +143,16 @@ const LearnPlayground: React.FC = () => {
 
   const mapChatContextsToPayload = useCallback(
     (contexts: ChatContext[]): WorkspaceContextInput[] =>
-      contexts.map((ctx) => ({
-        id: ctx.id,
-        title: ctx.name,
-        content: ctx.content,
-        type: ctx.type,
-        source: ctx.metadata?.source,
-        metadata: ctx.metadata,
-      })),
+      contexts
+        .filter((ctx) => !(ctx.metadata?.fileId || ctx.file))
+        .map((ctx) => ({
+          id: ctx.id,
+          title: ctx.name,
+          content: ctx.content,
+          type: ctx.type,
+          source: ctx.metadata?.source,
+          metadata: ctx.metadata,
+        })),
     []
   );
 
@@ -189,11 +191,11 @@ const LearnPlayground: React.FC = () => {
         getWorkSpace(id),
         getWorkSpaceChatHistory(id),
       ]);
+
       const workspaceData = response.workspace;
       workspaceData.chatMessages = history;
 
-      let contextsList =
-        (workspaceData.contexts as WorkspaceContext[] | undefined) ?? [];
+      let contextsList = (workspaceData.contexts as WorkspaceContext[]) ?? [];
 
       if (!contextsList.length) {
         try {
@@ -209,26 +211,26 @@ const LearnPlayground: React.FC = () => {
       dispatch({ type: "SET_WORKSPACE", workspace: workspaceData });
       setWorkspace(workspaceData);
 
-      const youtubeUrl = workspaceData.youtubeVideo?.transcript?.data?.url;
-      if (youtubeUrl) {
-        dispatch({ type: "SET_WORKSPACE_TYPE", workspaceType: "youtube" });
-        const videoId = extractVideoId(youtubeUrl);
+      const url = workspaceData.video?.url;
+      if (url) {
+        dispatch({ type: "SET_WORKSPACE_TYPE", workspaceType: "video" });
+        dispatch({ type: "SET_SRC", src: url });
+
+        const videoId = extractVideoId(url);
         if (videoId) {
           dispatch({ type: "SET_YOUTUBE_VIDEO", videoId });
         }
-        if (workspaceData.transcript) {
+        if (workspaceData.video.transcript) {
           dispatch({
             type: "SET_TRANSCRIPT",
-            transcript: workspaceData.transcript,
+            transcript: workspaceData.video.transcript,
           });
         }
       }
-      if (
-        workspaceData.workspaceType === "document" &&
-        workspaceData.documentUrl
-      ) {
+
+      if (workspaceData.type === "document") {
         dispatch({ type: "SET_WORKSPACE_TYPE", workspaceType: "document" });
-        dispatch({ type: "SET_SRC", src: workspaceData.documentUrl });
+        dispatch({ type: "SET_SRC", src: workspaceData.document.url });
       }
     } catch (error) {
       console.error("Failed to fetch workspace:", error);
@@ -240,7 +242,7 @@ const LearnPlayground: React.FC = () => {
       setWorkspaceLoading(false);
       setTimeout(() => setContentLoading(false), 1000);
     }
-  }, [id, extractVideoId]);
+  }, [id]);
 
   useEffect(() => {
     fetchWorkspace();
@@ -252,6 +254,10 @@ const LearnPlayground: React.FC = () => {
       setAutoContextLoading(true);
       const contexts = await generateWorkspaceAutoContext(id, true);
       setWorkspaceContexts(contexts);
+      setWorkspace((prev) =>
+        prev ? { ...prev, contexts: contexts ?? [] } : prev
+      );
+      setSelectedContexts(mapWorkspaceContextsToChat(contexts));
 
       if (contexts.length > 0) {
         toast.success(
@@ -279,7 +285,7 @@ const LearnPlayground: React.FC = () => {
     } finally {
       setAutoContextLoading(false);
     }
-  }, [id, t]);
+  }, [id, mapWorkspaceContextsToChat, t]);
 
   const handleSendMessage = useCallback(
     async (
@@ -294,13 +300,36 @@ const LearnPlayground: React.FC = () => {
           ? contextsOverride
           : selectedContexts;
 
+      const attachmentContexts = contextsToSend.filter(
+        (ctx) => ctx.metadata?.fileId && ctx.file instanceof File
+      );
+
+      const attachmentFiles = attachmentContexts
+        .map((ctx) => ctx.file)
+        .filter((file): file is File => file instanceof File);
+
+      const userAttachmentMetadata = attachmentContexts.map((ctx) => ({
+        id: ctx.metadata?.fileId ?? ctx.id ?? `upload-${Date.now()}`,
+        filename: ctx.name,
+        mimetype: ctx.file?.type,
+        size: ctx.file?.size,
+        type: ctx.type === "image" ? "image" : "text",
+        status: "uploading",
+      }));
+
       const contextPayload = mapChatContextsToPayload(contextsToSend);
+      const hasAttachments = attachmentFiles.length > 0;
 
       const userMessage: ChatMessage = {
         id: Date.now().toString(),
         type: "user",
+        role: "user",
         content: message.trim(),
         timestamp: new Date(),
+        metadata:
+          userAttachmentMetadata.length > 0
+            ? { attachments: userAttachmentMetadata }
+            : undefined,
       };
 
       dispatch({ type: "ADD_CHAT_MESSAGE", message: userMessage });
@@ -315,9 +344,23 @@ const LearnPlayground: React.FC = () => {
           {
             model: model?.id,
             contexts: contextPayload,
-            autoContext: contextPayload.length > 0,
+            autoContext: contextPayload.length > 0 || hasAttachments,
+            attachments: attachmentFiles,
           },
           (chunk) => {
+            if (Array.isArray(chunk.metadata?.attachments)) {
+              const uploadedAttachments = chunk.metadata.attachments.map(
+                (attachment: any) => ({
+                  ...attachment,
+                  status: "uploaded",
+                })
+              );
+              dispatch({
+                type: "UPDATE_MESSAGE_ATTACHMENTS",
+                messageId: userMessage.id,
+                attachments: uploadedAttachments,
+              });
+            }
             if (chunk.chunk) {
               dispatch({ type: "ADD_STREAMING_CHUNK", chunk: chunk.chunk });
             }
@@ -325,6 +368,7 @@ const LearnPlayground: React.FC = () => {
               dispatch({
                 type: "COMPLETE_STREAMING_MESSAGE",
                 content: chunk.chunk || "",
+                metadata: chunk.metadata,
               });
             }
             if (chunk.metadata?.error) {
@@ -343,9 +387,21 @@ const LearnPlayground: React.FC = () => {
         );
       } catch (error) {
         console.error("Failed to send message:", error);
+        if (userAttachmentMetadata.length > 0) {
+          const failedAttachments = userAttachmentMetadata.map((attachment) => ({
+            ...attachment,
+            status: "failed",
+          }));
+          dispatch({
+            type: "UPDATE_MESSAGE_ATTACHMENTS",
+            messageId: userMessage.id,
+            attachments: failedAttachments,
+          });
+        }
         const errorMessage: ChatMessage = {
           id: Date.now().toString(),
           type: "assistant",
+          role: "assistant",
           content: t(
             "chat.error_occurred",
             "An error occurred while sending your message."
@@ -441,15 +497,14 @@ const LearnPlayground: React.FC = () => {
       return <ContentSkeleton />;
     }
 
-
-    if (state.workspaceType === "document") {
+    if (state.type === "document") {
       return (
         <PdfReader
-          src={state.src}
+          src={state.src || ""}
           page={state.page}
           zoom={state.zoom}
           status={state.status}
-          selectedText={state.selectedText}
+          selectedText={state.selectedText || ""}
           onLoaded={(pageCount) => {
             dispatch({ type: "SET_PAGE_COUNT", pageCount });
             dispatch({ type: "SET_STATUS", status: { kind: "idle" } });
@@ -475,10 +530,10 @@ const LearnPlayground: React.FC = () => {
       );
     }
 
-    if (state.workspaceType === "youtube") {
+    if (state.type === "video") {
       return (
         <YouTubeReader
-          videoId={state.youtubeVideoId}
+          videoId={state.youtubeVideoId || ""}
           transcript={state.workspace?.video?.transcript?.data as any}
           onVideoSelect={(videoId) =>
             dispatch({ type: "SET_YOUTUBE_VIDEO", videoId })
@@ -504,7 +559,6 @@ const LearnPlayground: React.FC = () => {
     return null;
   };
 
-  // Loading state
   if (workspaceLoading) {
     return (
       <section
@@ -527,7 +581,7 @@ const LearnPlayground: React.FC = () => {
 
   return (
     <section
-      style={{ height: "calc(100vh - 3rem)" }}
+      style={{ height: "calc(100vh)" }}
       dir={isRTL ? "rtl" : "ltr"}
       className="flex flex-col"
     >
@@ -537,7 +591,7 @@ const LearnPlayground: React.FC = () => {
             <Skeleton className="h-10 w-full rounded-2xl" />
           ) : (
             <Input
-              className="rounded-2xl shadow-none border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 text-zinc-900 dark:text-zinc-100 w-full"
+              className="rounded-2xl shadow-none border-none text-zinc-900 dark:text-zinc-100 w-full"
               value={getDisplayTitle()}
               readOnly
             />
@@ -579,7 +633,6 @@ const LearnPlayground: React.FC = () => {
                   }
                   className="h-full flex flex-col min-h-0"
                 >
-                  {/* Tabs Header - Clean version for fullscreen */}
                   <div className="relative pb-4 flex-shrink-0">
                     {canScrollLeft && (
                       <div
@@ -775,7 +828,7 @@ const LearnPlayground: React.FC = () => {
                 initial={{ x: 20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ type: "spring", stiffness: 260, damping: 30 }}
-                className="h-full p-4 pt-0 flex flex-col min-h-0"
+                className="h-full p-2  pt-0 flex flex-col min-h-0"
               >
                 {renderContent()}
               </motion.div>
@@ -925,8 +978,8 @@ const LearnPlayground: React.FC = () => {
                               <ChatInput
                                 className="flex-shrink-0 p-2 px-20 pb-2"
                                 value={state.prompt}
-                                expandSection={false}
                                 hasAutoContext={true}
+                                expandSection={true}
                                 contexts={selectedContexts}
                                 availableContexts={availableContexts}
                                 autoContextCount={autoContextCount}
@@ -946,6 +999,9 @@ const LearnPlayground: React.FC = () => {
                                   "chat.placeholder",
                                   `Ask anything about ${getDisplayTitle()}...`
                                 )}
+                                optionsToHide={{
+                                  models: true,
+                                }}
                               />
                             </>
                           )}

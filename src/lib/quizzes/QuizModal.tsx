@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/tooltip";
 import { LANGUAGES } from "../types";
 import { QuizType } from "./types";
+import GenerateContentComponent from "@/shared/workspaces/Generate";
 
 type Props = {
   workspaceId: string;
@@ -162,47 +163,15 @@ export default function QuizModal({
 
   return (
     <>
-      <Card className="relative z-0 mx-5 px-4 py-2 flex flex-col justify-between overflow-hidden bg-gradient-to-br from-white to-gray-50/50 border-2 border-dashed border-gray-200 hover:border-gray-300 transition-colors duration-200">
-        <div className="relative z-10 flex items-start justify-between mx-2 px-4 py-6">
-          <div className="max-w-[65%]">
-            <h2 className="text-2xl font-bold tracking-tight text-gray-900 mb-2">
-              {t("quiz.createTitle", "Create Quiz")}
-            </h2>
-            <p className="text-gray-600 text-sm leading-relaxed">
-              {t(
-                "quiz.createSubtitle",
-                "Create quiz sets with preferred types, difficulty, and focus."
-              )}
-            </p>
-          </div>
-          <div className="flex gap-2 shrink-0">
-            <TooltipProvider delayDuration={150}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span>
-                    <Button
-                      disabled={generating || anyActive}
-                      className="rounded-2xl px-6 py-3 font-medium shadow-sm transition-all duration-200"
-                      onClick={() => setIsModalOpen(true)}
-                    >
-                      <Settings2 className="mr-2 h-4 w-4" />
-                      {t("generate", "Generate")}
-                    </Button>
-                  </span>
-                </TooltipTrigger>
-                {anyActive && (
-                  <TooltipContent>
-                    {t(
-                      "quiz.activeBlock",
-                      "Please finish the active generation first"
-                    )}
-                  </TooltipContent>
-                )}
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-        </div>
-      </Card>
+      <GenerateContentComponent
+        title={t("quiz.createTitle", "Create Quiz")}
+        description={t(
+          "quiz.createSubtitle",
+          "Create quiz sets with preferred types, difficulty, and focus."
+        )}
+        buttonLabel="Generate"
+        onClick={() => setIsModalOpen(true)}
+      />
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="sm:max-w-lg">
