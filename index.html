@@ -5,10 +5,16 @@
       async
       src="https://www.googletagmanager.com/gtag/js?id=G-PF61E1LWRM"
     ></script>
-    <!-- <script
-      crossorigin="anonymous"
-      src="//unpkg.com/react-scan/dist/auto.global.js"
-    ></script> -->
+
+    <script>
+      if (localStorage.getItem("darkMode") === "true") {
+        document.documentElement.classList.add("dark");
+      }
+      const lang = localStorage.getItem("language") || "ar";
+      document.documentElement.lang = lang;
+      document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+    </script>
+
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag() {

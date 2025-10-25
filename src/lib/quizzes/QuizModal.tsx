@@ -2,11 +2,8 @@ import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Settings2 } from "lucide-react";
-
 import { createNewQuizApi } from "@/utils/_apis/learnPlayground-api";
 import { getErrorMessage } from "@/pages/dashboard/utils";
-
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -29,12 +26,6 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { LANGUAGES } from "../types";
 import { QuizType } from "./types";
 import GenerateContentComponent from "@/shared/workspaces/Generate";

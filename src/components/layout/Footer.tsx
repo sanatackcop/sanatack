@@ -43,7 +43,7 @@ const Footer: React.FC = () => {
               <div className="absolute inset-0 bg-gradient-to-br from-gray-100/50 via-transparent to-zinc-200/50 dark:from-zinc-700/30 dark:via-transparent dark:to-zinc-600/30"></div>
 
               <div className="relative z-10">
-                <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 tracking-tight">
+                <h2 className="text-xl text-gray-900 dark:text-white mb-4 tracking-tight">
                   {t("cta.title")}
                 </h2>
                 <p className="text-gray-600 dark:text-gray-300 text-lg mb-10 max-w-2xl mx-auto">

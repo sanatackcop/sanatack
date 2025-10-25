@@ -57,6 +57,7 @@ import { useUserContext } from "@/context/UserContext";
 import { FaChrome, FaDiscord } from "react-icons/fa6";
 import LogoDark from "@/assets/dark_logo.svg";
 import { useSettings } from "@/context/SettingsContexts";
+import { SearchCommand } from "@/pages/dashboard/search/Index";
 
 type MenuItem =
   | {
@@ -65,6 +66,7 @@ type MenuItem =
       comingSoon?: boolean;
       url: string;
       type?: "link";
+      onClick?: any;
     }
   | {
       title: string;
@@ -174,6 +176,10 @@ export function AppSidebar({ onCollapse }: AppSidebarProps) {
     }
   };
 
+  const [openSerach, setOpenSearch] = useState(false);
+
+  const openSearchCommand = () => setOpenSearch(!openSerach);
+
   const topItemGroups: MenuGroup[] = useMemo(
     () => [
       {
@@ -188,6 +194,7 @@ export function AppSidebar({ onCollapse }: AppSidebarProps) {
             title: t("common.search"),
             url: "/dashboard/search",
             icon: Search,
+            onClick: openSearchCommand,
           },
           {
             title: t("sidebar.items.discover"),
@@ -355,10 +362,19 @@ export function AppSidebar({ onCollapse }: AppSidebarProps) {
     const currentPathname = location.pathname;
     const isActive = item.url === currentPathname;
 
+    const onClick = item.onClick
+      ? item.onClick
+      : (e: any) => {
+          if (item.comingSoon) {
+            e.preventDefault();
+          }
+        };
+
+    const to = !item.onClick ? (item.comingSoon ? "#" : item.url) : "#";
     const content = (
       <NavLink
-        to={item.comingSoon ? "#" : item.url}
-        onClick={(e) => item.comingSoon && e.preventDefault()}
+        to={to}
+        onClick={onClick}
         className={clsx(
           "w-full flex items-center gap-2.5 px-2 py-1.5 rounded-md transition-colors duration-150 group relative",
           item.comingSoon && "opacity-60",
@@ -608,6 +624,8 @@ export function AppSidebar({ onCollapse }: AppSidebarProps) {
       className="h-full flex flex-col border-r bg-zinc-50
        dark:bg-zinc-950 dark:border-zinc-800"
     >
+      <SearchCommand open={openSerach} setOpen={setOpenSearch} />
+
       <div className="flex flex-col h-full py-2 pl-3 pr-2">
         <div className="flex items-center justify-between">
           <div
@@ -909,7 +927,7 @@ export function AppSidebar({ onCollapse }: AppSidebarProps) {
 
         <div className="flex-shrink-0">
           <div
-            className="relative user-dropdown-container bg-white dark:bg-zinc-800/60 backdrop-blur-sm rounded-xl border border-zinc-200/50
+            className="relative user-dropdown-container bg-white dark:bg-zinc-800 backdrop-blur-sm rounded-xl border border-zinc-200/50
            dark:border-zinc-700/30"
           >
             <button
@@ -942,7 +960,7 @@ export function AppSidebar({ onCollapse }: AppSidebarProps) {
             {showUserDropdown && (
               <div
                 className="absolute bottom-full left-0 right-0 mb-2 bg-white 
-              dark:bg-zinc-900/90 backdrop-blur-xl border border-white/20 dark:border-zinc-700/30 rounded-2xl p-2 z-50"
+              dark:bg-zinc-900 backdrop-blur-xl border border-white/20 dark:border-zinc-700/30 rounded-2xl p-2 z-50"
               >
                 <button
                   onClick={toggleDarkMode}
@@ -980,8 +998,6 @@ export function AppSidebar({ onCollapse }: AppSidebarProps) {
                     })}
                   </span>
                 </button>
-
-                <div className="my-1 border-t border-sidebar-border" />
 
                 <button
                   className={clsx(

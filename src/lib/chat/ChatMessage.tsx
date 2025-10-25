@@ -19,7 +19,7 @@ type Attachment = {
   type?: string;
   url?: string;
   contentPreview?: string;
-  status?: "uploading" | "uploaded";
+  status?: any;
 };
 
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";

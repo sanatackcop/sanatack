@@ -193,9 +193,9 @@ export default function SpaceView() {
                         t("dashboard.spaceView.untitled", "Untitled space")}
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                      {t("dashboard.spaceView.itemCount", "{{count}} items", {
+                      {/* {t("dashboard.spaceView.itemCount", "{{count}} items", {
                         count: formatNum.format(itemCount),
-                      })}
+                      })} */}
                     </p>
                   </>
                 )}
@@ -275,10 +275,7 @@ export default function SpaceView() {
 
                   <div className="grid gap-2">
                     <Label htmlFor="spaceCover">
-                      {t(
-                        "dashboard.spaceView.form.cover",
-                        "Cover image URL"
-                      )}
+                      {t("dashboard.spaceView.form.cover", "Cover image URL")}
                     </Label>
                     <Input
                       id="spaceCover"
@@ -294,10 +291,7 @@ export default function SpaceView() {
 
                   <div className="grid gap-2">
                     <Label htmlFor="spaceDescription">
-                      {t(
-                        "dashboard.spaceView.form.description",
-                        "Description"
-                      )}
+                      {t("dashboard.spaceView.form.description", "Description")}
                     </Label>
                     <Textarea
                       id="spaceDescription"
@@ -393,14 +387,8 @@ export default function SpaceView() {
               <div className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
                 <span>
-                  {t(
-                    "dashboard.spaceView.meta.members",
-                    "{{count}} members",
-                    {
-                      count: formatNum.format(
-                        space?.memberCount ?? space?.members?.length ?? 0
-                      ),
-                    }
+                  {formatNum.format(
+                    space?.memberCount ?? space?.members?.length ?? 0
                   )}
                 </span>
               </div>
@@ -432,9 +420,7 @@ export default function SpaceView() {
           {loading ? (
             <Skeleton className="h-4 w-20" />
           ) : (
-            t("dashboard.spaceView.itemCount", "{{count}} items", {
-              count: formatNum.format(itemCount),
-            })
+            formatNum.format(itemCount)
           )}
         </div>
       </div>

@@ -802,7 +802,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      removeContext(context.id);
+                      // removeContext(context.id);
                     }}
                     className="text-zinc-400 transition-colors hover:text-zinc-700 dark:hover:text-zinc-100"
                     aria-label={isRTL ? "إزالة الملف" : "Remove attachment"}

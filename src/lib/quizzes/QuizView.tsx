@@ -43,9 +43,7 @@ const createDefaultPayload = (): QuizPayload => ({
 const ensurePayload = (payload?: QuizPayload | null): QuizPayload => {
   if (!payload) return createDefaultPayload();
   const base = createDefaultPayload();
-  const questions = Array.isArray(payload.questions)
-    ? payload.questions
-    : [];
+  const questions = Array.isArray(payload.questions) ? payload.questions : [];
   return {
     ...base,
     ...payload,
@@ -485,7 +483,7 @@ export const QuizView: React.FC<QuizViewProps> = ({
   const pendingAnswer = currentQuestion
     ? localAnswers[currentQuestion.id]
     : undefined;
-  const currentAnswer: AnswerEntry | undefined = useMemo(() => {
+  const currentAnswer: any = useMemo(() => {
     if (!currentQuestion) return undefined;
     if (serverAnswer) {
       const derivedCorrect =
@@ -555,11 +553,7 @@ export const QuizView: React.FC<QuizViewProps> = ({
     const isAutoGradable =
       expected !== undefined && expected !== null && expected !== "";
     const isCorrect =
-      option === null
-        ? null
-        : isAutoGradable
-        ? option === expected
-        : null;
+      option === null ? null : isAutoGradable ? option === expected : null;
     const answeredAt = new Date().toISOString();
     setLocalAnswers((prev) => ({
       ...prev,

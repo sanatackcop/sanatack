@@ -216,7 +216,21 @@
       "openWorkspace": "Open workspace {{name}}",
       "moveTo": "Move to",
       "noSpaces": "No spaces available. Create a space first.",
-      "deleteAlert": "Delete {{name}}"
+      "deleteAlert": "Delete {{name}}",
+      "thumbnailAlt": "YouTube thumbnail",
+      "moreActions": "More actions",
+      "delete": "Delete",
+      "errors": {
+        "loadSpaces": "Failed to load spaces. Please try again later.",
+        "linkWorkspace": "Unable to move the workspace. Please try again.",
+        "unlinkWorkspace": "Unable to remove the workspace from this space. Please try again.",
+        "deleteWorkspace": "Failed to delete the workspace. Please try again later."
+      },
+      "success": {
+        "moved": "Workspace moved successfully",
+        "unlinked": "Workspace removed from space",
+        "deleted": "Workspace deleted successfully"
+      }
     }
   },
   "aiActions": {

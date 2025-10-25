@@ -6,7 +6,6 @@ import CollagesSupported from "./Bannar";
 import { AITutorFeatures } from "./CourseFeature";
 import LightRays from "./LightRays";
 import { MagicAiFeatures } from "./MagaicAiFeatures";
-import { UseCases } from "./Cases";
 import FAQs from "./FAQs";
 import { Pricing } from "./Pricing";
 import Footer from "@/components/layout/Footer";
@@ -66,7 +65,7 @@ export default function LandingPage() {
         <CollagesSupported />
         <AITutorFeatures />
         <MagicAiFeatures />
-        <UseCases />
+        {/* <UseCases /> */}
         <Pricing />
         <FAQs />
       </main>

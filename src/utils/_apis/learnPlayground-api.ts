@@ -126,7 +126,7 @@ export const createNewQuizApi = async ({
   question_types?: string[];
   count?: number;
   difficulty?: string;
-  focus: string;
+  focus: string | null;
 }): Promise<GenerationJobResponse> => {
   try {
     const response = await Api<GenerationJobResponse>({

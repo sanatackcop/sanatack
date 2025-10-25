@@ -93,7 +93,7 @@ interface State {
   isLoading: boolean;
 }
 
-type Action =
+export type Action =
   | { type: "SET_TAB"; tab: string }
   | { type: "SET_WORKSPACE_TYPE"; workspaceType: "video" | "document" }
   | { type: "SET_CONTENT"; contentType: string }
@@ -130,9 +130,10 @@ type Action =
   | { type: "SET_WORKSPACE"; workspace: Workspace }
   | { type: "SET_TITLE"; title: string }
   | { type: "SET_TRANSCRIPT"; transcript: string }
-  | { type: "SET_TRANSCRIPT_LOADING"; loading: boolean };
+  | { type: "SET_TRANSCRIPT_LOADING"; loading: boolean }
+  | { type: "UPDATE_MESSAGE_ATTACHMENTS" };
 
-export const reducer = (state: State, action: Action): State => {
+export const reducer = (state: State, action: any): State => {
   switch (action.type) {
     case "SET_TAB":
       return { ...state, tab: action.tab };
@@ -278,7 +279,7 @@ export const reducer = (state: State, action: Action): State => {
         content: state.streamingMessage || action.content || "",
         timestamp: new Date(),
         isComplete: true,
-        metadata: action.metadata,
+        metadata: action?.metadata,
       };
       return {
         ...state,
@@ -289,11 +290,9 @@ export const reducer = (state: State, action: Action): State => {
     }
 
     case "SET_WORKSPACE": {
-      const rawMessages =
-        action.workspace?.chatMessages?.messages ?? [];
-      const normalizedMessages = (Array.isArray(rawMessages)
-        ? rawMessages
-        : Object.values(rawMessages)
+      const rawMessages = action.workspace?.chatMessages?.messages ?? [];
+      const normalizedMessages = (
+        Array.isArray(rawMessages) ? rawMessages : Object.values(rawMessages)
       ).map((msg: any) => ({
         id: msg.id ?? `${Date.now()}-${Math.random()}`,
         type: msg.type ?? msg.role ?? "assistant",

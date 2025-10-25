@@ -8,7 +8,6 @@ import {
 } from "react";
 import i18n from "@/i18n";
 
-// ================== Types ==================
 export declare type VideoCheck = {
   id: string;
   type: MaterialType.VIDEO;
@@ -55,30 +54,31 @@ const SettingsContext = createContext<SettingsContextProps | undefined>(
 );
 
 export const SettingsProvider = ({ children }: { children: ReactNode }) => {
-  // dark mode
+  // Initialize dark mode from localStorage (default: false)
   const [darkMode, setDarkMode] = useState(() => {
-    return localStorage.getItem("darkMode") === "true";
+    const saved = localStorage.getItem("darkMode");
+    return saved === "true";
   });
 
-  // ✅ language: default Arabic if nothing saved
+  // Initialize language from localStorage (default: Arabic)
   const [language, setLanguageState] = useState(() => {
     return localStorage.getItem("language") || "ar";
   });
 
-  // current material
+  // Current material check
   const [currentCheck, setCurrentCheck] = useState<MaterialCheckInfo>();
 
-  // sync dark mode
+  // Sync dark mode to DOM and localStorage
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add("dark");
     } else {
       document.documentElement.classList.remove("dark");
     }
-    localStorage.setItem("darkMode", darkMode.toString());
+    localStorage.setItem("darkMode", String(darkMode));
   }, [darkMode]);
 
-  // ✅ sync language with i18n + save to localStorage + set dir
+  // Sync language to i18n, DOM, and localStorage
   useEffect(() => {
     i18n.changeLanguage(language);
     document.documentElement.dir = i18n.dir(language);
@@ -87,15 +87,11 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   }, [language]);
 
   const toggleDarkMode = () => {
-    setDarkMode((prev) => {
-      const newMode = !prev;
-      localStorage.setItem("darkMode", newMode.toString());
-      return newMode;
-    });
+    setDarkMode((prev) => !prev);
   };
 
   const updateCurrentMaterial = (material: MaterialCheckInfo) => {
-    setCurrentCheck(() => material);
+    setCurrentCheck(material);
   };
 
   const setLanguage = (lng: string) => {
@@ -113,7 +109,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
         updateCurrentCheck: updateCurrentMaterial,
       }}
     >
-      <div>{children}</div>
+      {children}
     </SettingsContext.Provider>
   );
 };

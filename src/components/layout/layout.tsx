@@ -17,21 +17,47 @@ const CONFIG = {
   MAIN_MIN_SIZE: 55,
 } as const;
 
+const STORAGE_KEYS = {
+  SIDEBAR_COLLAPSED: "sidebarCollapsed",
+  SIDEBAR_SIZE: "sidebarSize",
+} as const;
+
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const { i18n } = useTranslation();
-  const [isCollapsed, setIsCollapsed] = React.useState(false);
+
+  const [isCollapsed, setIsCollapsed] = React.useState(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.SIDEBAR_COLLAPSED);
+    return saved === "true";
+  });
+
   const [isDragging, setIsDragging] = React.useState(false);
 
-  const lastViableSize = React.useRef<number>(CONFIG.DEFAULT_SIZE);
+  const getInitialSize = () => {
+    const saved = localStorage.getItem(STORAGE_KEYS.SIDEBAR_SIZE);
+    return saved ? parseFloat(saved) : CONFIG.DEFAULT_SIZE;
+  };
+
+  const lastViableSize = React.useRef<number>(getInitialSize());
+
   const panelRef = React.useRef<any>(null);
   const autoCollapseTimeoutRef = React.useRef<number | null>(null);
 
   const currentDir = i18n.dir();
   const isRTL = currentDir === "rtl";
+
+  React.useEffect(() => {
+    if (panelRef.current && isCollapsed) {
+      panelRef.current.collapse();
+    }
+  }, []);
+
+  React.useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.SIDEBAR_COLLAPSED, String(isCollapsed));
+  }, [isCollapsed]);
 
   React.useEffect(() => {
     return () => {
@@ -57,6 +83,7 @@ export default function DashboardLayout({
 
       if (size >= CONFIG.MIN_SIZE) {
         lastViableSize.current = size;
+        localStorage.setItem(STORAGE_KEYS.SIDEBAR_SIZE, String(size));
       }
 
       if (size < CONFIG.AUTO_COLLAPSE_THRESHOLD && size > 1 && !isDragging) {
@@ -122,7 +149,7 @@ export default function DashboardLayout({
         >
           <ResizablePanel
             ref={panelRef}
-            defaultSize={CONFIG.DEFAULT_SIZE}
+            defaultSize={lastViableSize.current}
             minSize={CONFIG.MIN_SIZE}
             maxSize={CONFIG.MAX_SIZE}
             collapsible={true}
@@ -160,7 +187,7 @@ export default function DashboardLayout({
           />
 
           <ResizablePanel
-            defaultSize={100 - CONFIG.DEFAULT_SIZE}
+            defaultSize={100 - lastViableSize.current}
             minSize={CONFIG.MAIN_MIN_SIZE}
             className="min-w-0"
           >

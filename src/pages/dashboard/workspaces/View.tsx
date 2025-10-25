@@ -320,7 +320,7 @@ const LearnPlayground: React.FC = () => {
       const contextPayload = mapChatContextsToPayload(contextsToSend);
       const hasAttachments = attachmentFiles.length > 0;
 
-      const userMessage: ChatMessage = {
+      const userMessage: any = {
         id: Date.now().toString(),
         type: "user",
         role: "user",
@@ -388,17 +388,19 @@ const LearnPlayground: React.FC = () => {
       } catch (error) {
         console.error("Failed to send message:", error);
         if (userAttachmentMetadata.length > 0) {
-          const failedAttachments = userAttachmentMetadata.map((attachment) => ({
-            ...attachment,
-            status: "failed",
-          }));
+          const failedAttachments = userAttachmentMetadata.map(
+            (attachment) => ({
+              ...attachment,
+              status: "failed",
+            })
+          );
           dispatch({
             type: "UPDATE_MESSAGE_ATTACHMENTS",
             messageId: userMessage.id,
             attachments: failedAttachments,
           });
         }
-        const errorMessage: ChatMessage = {
+        const errorMessage: any = {
           id: Date.now().toString(),
           type: "assistant",
           role: "assistant",
@@ -504,7 +506,7 @@ const LearnPlayground: React.FC = () => {
           page={state.page}
           zoom={state.zoom}
           status={state.status}
-          selectedText={state.selectedText || ""}
+          // selectedText={state.selectedText || ""}
           onLoaded={(pageCount) => {
             dispatch({ type: "SET_PAGE_COUNT", pageCount });
             dispatch({ type: "SET_STATUS", status: { kind: "idle" } });
@@ -517,8 +519,8 @@ const LearnPlayground: React.FC = () => {
             });
             setContentLoading(false);
           }}
-          onNext={() => dispatch({ type: "NEXT_PAGE" })}
-          onPrev={() => dispatch({ type: "PREV_PAGE" })}
+          // onNext={() => dispatch({ type: "NEXT_PAGE" })}
+          // onPrev={() => dispatch({ type: "PREV_PAGE" })}
           onGoto={(p) => dispatch({ type: "SET_PAGE", page: p })}
           onZoomIn={() => dispatch({ type: "ZOOM_IN" })}
           onZoomOut={() => dispatch({ type: "ZOOM_OUT" })}

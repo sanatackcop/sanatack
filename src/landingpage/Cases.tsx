@@ -88,10 +88,7 @@ export function UseCases() {
   };
 
   return (
-    <section
-      id="use-cases"
-      className="relative py-24 px-4 sm:px-6 lg:px-8"
-    >
+    <section id="use-cases" className="relative py-24 px-4 sm:px-6 lg:px-8">
       <div className="relative mx-auto max-w-6xl text-center space-y-6 mb-10">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
