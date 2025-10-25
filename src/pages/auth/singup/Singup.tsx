@@ -112,6 +112,7 @@ const SignupPage = () => {
       navigate("/dashboard");
     } catch (error) {
       if (error instanceof FirebaseError) {
+        console.log({ error });
         toast.error(mapFirebaseError(error.code));
       } else if (error instanceof Error) {
         toast.error(error.message);
@@ -132,6 +133,8 @@ const SignupPage = () => {
       navigate("/dashboard");
     } catch (error) {
       if (error instanceof FirebaseError) {
+        console.log({ error });
+
         if (error.code === "auth/popup-closed-by-user") {
           toast.info(mapFirebaseError(error.code));
         } else {
