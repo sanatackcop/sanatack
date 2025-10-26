@@ -79,10 +79,29 @@ export default function WorkspaceFolderItem({
       );
     }
 
-    if (type === "document" && documentUrl) {
+    if (type === "document") {
       return (
         <div className="w-full h-28 overflow-hidden rounded-t-2xl border-b border-zinc-200 dark:border-zinc-700 flex items-center justify-center bg-gray-50 dark:bg-zinc-800">
-          <Document file={documentUrl} loading={<Loader2Icon />}>
+          <Document
+            file={documentUrl}
+            loading={
+              <Loader2Icon className="h-6 w-6 animate-spin text-zinc-400" />
+            }
+            error={
+              <div className="flex flex-col items-center gap-1 text-zinc-500 text-xs">
+                <FileTextIcon className="h-6 w-6" />
+                <span>
+                  {t(
+                    "dashboard.workspaces.errors.previewUnavailable",
+                    "Preview unavailable"
+                  )}
+                </span>
+              </div>
+            }
+            onLoadError={(err) =>
+              console.error("Failed to load PDF preview:", err)
+            }
+          >
             <Page
               pageNumber={1}
               scale={0.5}
