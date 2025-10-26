@@ -3,8 +3,11 @@ import { UserContextProvider } from "./context/UserContext";
 import ErrorBoundary from "./utils/ErrorBoundary";
 import Router from "./utils/router";
 import { DASHBOARDTYPE } from "./utils/types/platfrom";
-
 import { Toaster } from "sonner";
+import * as pdfjsLib from "pdfjs-dist";
+import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
 
 function App({ switch_dashboard }: { switch_dashboard: DASHBOARDTYPE }) {
   const { i18n } = useTranslation();
