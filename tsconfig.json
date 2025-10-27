@@ -7,7 +7,6 @@
     "module": "ESNext",
     "skipLibCheck": true,
     /* Shcdn */
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     },
@@ -20,7 +19,7 @@
     "jsx": "react-jsx",
     /* Linting */
     "strict": true,
-    "ignoreDeprecations": "6.0",
+    "ignoreDeprecations": "5.0",
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true

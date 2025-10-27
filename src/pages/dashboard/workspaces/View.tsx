@@ -201,6 +201,7 @@ const LearnPlayground: React.FC = () => {
         try {
           contextsList = await getWorkspaceContexts(id);
         } catch (contextError) {
+          console.log({ contextError });
           console.error("Failed to load workspace contexts:", contextError);
         }
       }
