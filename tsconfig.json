@@ -1,23 +1,15 @@
 {
   "compilerOptions": {
     "target": "es2023",
-    "types": [
-      "vite/client"
-    ],
+    "types": ["vite/client"],
     "useDefineForClassFields": true,
-    "lib": [
-      "es2023",
-      "DOM",
-      "DOM.Iterable"
-    ],
+    "lib": ["es2023", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
     /* Shcdn */
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"]
     },
     /* Bundler mode */
     "moduleResolution": "bundler",
@@ -28,13 +20,12 @@
     "jsx": "react-jsx",
     /* Linting */
     "strict": true,
+    "ignoreDeprecations": "6.0",
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": [
-    "src"
-  ],
+  "include": ["src"],
   "references": [
     {
       "path": "./tsconfig.node.json"
