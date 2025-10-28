@@ -5,28 +5,8 @@ import React, {
   useRef,
   useState,
 } from "react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  ArrowUp,
-  File,
-  X,
-  FileText,
-  Link,
-  Image,
-  ChevronDown,
-  Paperclip,
-  Video,
-  BookOpen,
-  Sparkles,
-  Loader2,
-  AtSign,
-} from "lucide-react";
+import { ArrowUp, X, Paperclip, Loader2, AtSign } from "lucide-react";
 import i18n from "@/i18n";
 import { toast } from "sonner";
 
@@ -113,6 +93,7 @@ export interface ChatInputProps {
   autoContextCount?: number;
   onAutoContextClick?: () => void;
   autoContextLoading?: boolean;
+  selectedModel?: Model;
 }
 
 const ChatInput: React.FC<ChatInputProps> = ({
@@ -121,152 +102,32 @@ const ChatInput: React.FC<ChatInputProps> = ({
   onSubmit,
   placeholder,
   expandSection,
-  models = [
-    {
-      id: "gemini-2.5-flash",
-      name: "Gemini 2.5 Flash",
-      isActive: true,
-      color: "emerald",
-      description: "Fast and efficient for most tasks",
-      speed: "fast",
-    },
-    {
-      id: "gpt-4o",
-      name: "GPT-4o",
-      color: "blue",
-      description: "Advanced reasoning and analysis",
-      speed: "balanced",
-    },
-    {
-      id: "claude-3.5",
-      name: "Claude 3.5 Sonnet",
-      color: "purple",
-      description: "Creative and detailed responses",
-      speed: "precise",
-    },
-  ],
-  onModelChange,
   contexts = [],
   onContextsChange,
   className = "",
-  optionsToHide,
-  availableContexts = [
-    {
-      id: "1",
-      name: "Introduction to React Hooks",
-      content:
-        "Complete transcript of React Hooks tutorial covering useState, useEffect, and custom hooks...",
-      type: "video",
-      thumbnail:
-        "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&h=300&fit=crop",
-      duration: "15:30",
-      preview:
-        "Learn about React Hooks including useState, useEffect, useContext, and how to create custom hooks...",
-      metadata: {
-        views: "125K",
-        author: "React Mastery",
-        uploadedAt: "2 days ago",
-      },
-    },
-    {
-      id: "2",
-      name: "Machine Learning Basics - Full Transcript",
-      content: "Complete transcript from ML fundamentals course...",
-      type: "transcript",
-      preview:
-        "Understanding supervised and unsupervised learning, neural networks, and practical applications in real-world scenarios...",
-      metadata: {
-        author: "AI Academy",
-      },
-    },
-    {
-      id: "3",
-      name: "Python Course - AI Summary",
-      content:
-        "AI-generated comprehensive notes from Python programming course",
-      type: "ai_generated",
-      preview:
-        "Key concepts: Variables, Data Types, Functions, Classes, OOP principles, File handling, Exception handling, and best practices...",
-      metadata: {
-        author: "AI Generated",
-      },
-    },
-    {
-      id: "4",
-      name: "Web Development Full Stack Tutorial",
-      content: "Complete full stack web development course transcript",
-      type: "video",
-      thumbnail:
-        "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=300&fit=crop",
-      duration: "2:15:45",
-      preview:
-        "Master HTML, CSS, JavaScript, React, Node.js, Express, MongoDB, and deploy your applications...",
-      metadata: {
-        views: "340K",
-        author: "Dev Academy",
-        uploadedAt: "1 week ago",
-      },
-    },
-    {
-      id: "5",
-      name: "Data Structures & Algorithms",
-      content: "DSA comprehensive course transcript",
-      type: "transcript",
-      preview:
-        "Arrays, Linked Lists, Stacks, Queues, Trees, Graphs, Sorting, Searching, Dynamic Programming...",
-      metadata: {
-        author: "CS Fundamentals",
-      },
-    },
-    {
-      id: "6",
-      name: "TypeScript Deep Dive - AI Notes",
-      content: "AI-generated study material from TypeScript course",
-      type: "ai_generated",
-      preview:
-        "Type annotations, interfaces, generics, advanced types, decorators, modules, and TypeScript best practices...",
-      metadata: {
-        author: "AI Generated",
-      },
-    },
-  ],
   hasAutoContext = true,
-  autoContextCount = 3,
   onAutoContextClick,
   autoContextLoading = false,
+  selectedModel,
 }) => {
   const [isFocused, setIsFocused] = useState(false);
-  const [isModelPopoverOpen, setIsModelPopoverOpen] = useState(false);
   const [selectedContexts, setSelectedContexts] = useState<Context[]>(
     contexts ?? []
   );
-  const [showContextMenu, setShowContextMenu] = useState(false);
   const [, setContextSearch] = useState("");
-  const [filteredContexts, setFilteredContexts] =
-    useState<Context[]>(availableContexts);
-  const [mentionTriggerPos, setMentionTriggerPos] = useState<number | null>(
-    null
-  );
-  const [cursorPosition, setCursorPosition] = useState(0);
-  const [selectedContextIndex, setSelectedContextIndex] = useState(0);
-
-  const activeModel = models.find((m) => m.isActive) ?? models[0];
-  const [selectedModel, setSelectedModel] = useState<Model>(activeModel);
+  const [, setCursorPosition] = useState(0);
+  const [, setMentionTriggerPos] = useState<number | null>(null);
+  const [showContextMenu, setShowContextMenu] = useState(false);
+  const [, setSelectedContextIndex] = useState(0);
 
   useEffect(() => {
     setSelectedContexts(contexts ?? []);
   }, [contexts]);
 
-  useEffect(() => {
-    setFilteredContexts(availableContexts ?? []);
-  }, [availableContexts]);
-
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const expandedContentRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const contextMenuRef = useRef<HTMLDivElement>(null);
-  const contextItemRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   const isRTL = i18n.dir() === "rtl";
 
@@ -371,9 +232,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
     : "Ask AI anything... (type @ for context)";
   const actualPlaceholder = placeholder || defaultPlaceholder;
 
-  const isExpanded =
-    isFocused || selectedContexts.length > 0 || isModelPopoverOpen;
-
   // Auto-resize textarea
   const adjustTextareaHeight = useCallback(() => {
     const textarea = textAreaRef.current;
@@ -397,7 +255,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
     setSelectedContexts(contexts);
   }, [contexts]);
 
-  // Handle @ mention detection
   const handleInputChange = (newValue: string) => {
     onChange(newValue);
 
@@ -422,12 +279,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
         setSelectedContextIndex(0);
 
         // Filter contexts based on search
-        const filtered = availableContexts.filter(
-          (ctx) =>
-            ctx.name.toLowerCase().includes(textAfterAt.toLowerCase()) ||
-            ctx.preview?.toLowerCase().includes(textAfterAt.toLowerCase())
-        );
-        setFilteredContexts(filtered);
       } else {
         setShowContextMenu(false);
         setMentionTriggerPos(null);
@@ -438,39 +289,18 @@ const ChatInput: React.FC<ChatInputProps> = ({
     }
   };
 
-  // Handle context selection from menu
-  const handleContextSelect = (context: Context) => {
-    if (mentionTriggerPos === null) return;
-
-    // Add to selected contexts
-    if (!selectedContexts.find((c) => c.id === context.id)) {
-      const newContexts = [...selectedContexts, context];
-      setSelectedContexts(newContexts);
-      onContextsChange?.(newContexts);
-    }
-
-    // Replace @mention with context name
-    const beforeMention = value.substring(0, mentionTriggerPos);
-    const afterCursor = value.substring(cursorPosition);
-    const newValue = `${beforeMention}@${context.name} ${afterCursor}`;
-
-    onChange(newValue);
-    setShowContextMenu(false);
-    setMentionTriggerPos(null);
-    setContextSearch("");
-
-    // Focus back on textarea
-    setTimeout(() => {
-      textAreaRef.current?.focus();
-      const newCursorPos = mentionTriggerPos + context.name.length + 2;
-      textAreaRef.current?.setSelectionRange(newCursorPos, newCursorPos);
-    }, 0);
-  };
-
   const submit = () => {
     const trimmed = value?.trim();
     if (!trimmed) return;
-    onSubmit?.(trimmed, selectedModel, selectedContexts);
+
+    // Create a default model if not provided
+    const defaultModel: Model = {
+      id: "default",
+      name: "Default Model",
+    };
+
+    onSubmit?.(trimmed, selectedModel || defaultModel, selectedContexts);
+
     const persistentContexts = selectedContexts.filter(
       (ctx) => !(ctx.metadata?.fileId || ctx.file)
     );
@@ -482,52 +312,12 @@ const ChatInput: React.FC<ChatInputProps> = ({
     setShowContextMenu(false);
   };
 
-  const handleModelSelect = (model: Model) => {
-    setSelectedModel(model);
-    onModelChange?.(model);
-    setIsModelPopoverOpen(false);
-  };
-
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (showContextMenu) {
       if (e.key === "Escape") {
         e.preventDefault();
         setShowContextMenu(false);
         setMentionTriggerPos(null);
-        return;
-      }
-      if (e.key === "ArrowDown") {
-        e.preventDefault();
-        setSelectedContextIndex((prev) =>
-          Math.min(prev + 1, filteredContexts.length - 1)
-        );
-        contextItemRefs.current[selectedContextIndex + 1]?.scrollIntoView({
-          block: "nearest",
-          behavior: "smooth",
-        });
-        return;
-      }
-      if (e.key === "ArrowUp") {
-        e.preventDefault();
-        setSelectedContextIndex((prev) => Math.max(prev - 1, 0));
-        contextItemRefs.current[selectedContextIndex - 1]?.scrollIntoView({
-          block: "nearest",
-          behavior: "smooth",
-        });
-        return;
-      }
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        if (filteredContexts[selectedContextIndex]) {
-          handleContextSelect(filteredContexts[selectedContextIndex]);
-        }
-        return;
-      }
-      if (e.key === "Tab") {
-        e.preventDefault();
-        if (filteredContexts[selectedContextIndex]) {
-          handleContextSelect(filteredContexts[selectedContextIndex]);
-        }
         return;
       }
     }
@@ -543,81 +333,11 @@ const ChatInput: React.FC<ChatInputProps> = ({
     }
   };
 
-  const handleFocus = () => {
-    setIsFocused(true);
-  };
-
-  const handleBlur = () => {
-    setTimeout(() => {
-      if (!isModelPopoverOpen && !showContextMenu) {
-        setIsFocused(false);
-      }
-    }, 150);
-  };
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node) &&
-        contextMenuRef.current &&
-        !contextMenuRef.current.contains(event.target as Node)
-      ) {
-        if (!isModelPopoverOpen) {
-          setIsFocused(false);
-          setShowContextMenu(false);
-        }
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isModelPopoverOpen]);
-
   const handleContainerClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!isFocused) {
       setIsFocused(true);
       textAreaRef.current?.focus();
-    }
-  };
-
-  const getContextIcon = (type: Context["type"]) => {
-    const iconClass = "w-4 h-4";
-    switch (type) {
-      case "video":
-        return <Video className={iconClass} />;
-      case "transcript":
-        return <FileText className={iconClass} />;
-      case "ai_generated":
-        return <Sparkles className={iconClass} />;
-      case "document":
-        return <BookOpen className={iconClass} />;
-      case "summary":
-        return <Sparkles className={iconClass} />;
-      case "file":
-        return <FileText className={iconClass} />;
-      case "image":
-        return <Image className={iconClass} />;
-      case "url":
-        return <Link className={iconClass} />;
-      default:
-        return <File className={iconClass} />;
-    }
-  };
-
-  const getModelColorClass = (color?: string) => {
-    switch (color) {
-      case "emerald":
-        return "bg-emerald-500";
-      case "blue":
-        return "bg-blue-500";
-      case "purple":
-        return "bg-purple-500";
-      default:
-        return "bg-emerald-500";
     }
   };
 
@@ -653,89 +373,19 @@ const ChatInput: React.FC<ChatInputProps> = ({
     [selectedContexts]
   );
 
+  const removeAttachment = (contextId: string) => {
+    setSelectedContexts((prev) => {
+      const updated = prev.filter((ctx) => ctx.id !== contextId);
+      onContextsChange?.(updated);
+      return updated;
+    });
+  };
+
   return (
     <div
       className={`relative w-full mx-auto ${className}`}
       dir={isRTL ? "rtl" : "ltr"}
     >
-      {showContextMenu && (
-        <div
-          ref={contextMenuRef}
-          className="absolute bottom-full left-20 right-0 max-w-56 mb-2 z-50 animate-in slide-in-from-bottom-2 fade-in-0 duration-200"
-        >
-          <div className="bg-white dark:bg-zinc-900 rounded-xl  border border-zinc-200 dark:border-zinc-700 overflow-hidden max-w-md">
-            <div className="max-h-64 overflow-y-auto">
-              {filteredContexts.length === 0 ? (
-                <div className="px-4 py-8 text-center text-zinc-500 dark:text-zinc-400">
-                  <BookOpen className="w-8 h-8 mx-auto mb-2 opacity-40" />
-                  <p className="text-xs">
-                    {isRTL ? "لم يتم العثور على سياقات" : "No contexts found"}
-                  </p>
-                </div>
-              ) : (
-                <div className="p-1.5 space-y-0.5">
-                  {filteredContexts.map((context, index) => (
-                    <button
-                      key={context.id}
-                      ref={(el) => (contextItemRefs.current[index] = el)}
-                      onClick={() => handleContextSelect(context)}
-                      className={`w-full p-2 rounded-lg transition-all duration-150 text-left group ${
-                        index === selectedContextIndex
-                          ? "bg-zinc-100 dark:bg-zinc-800"
-                          : "hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        {context.thumbnail ? (
-                          <div className="relative flex-shrink-0">
-                            <img
-                              src={context.thumbnail}
-                              alt={context.name}
-                              className="w-12 h-9 object-cover rounded"
-                            />
-                            {context.duration && (
-                              <div className="absolute bottom-0.5 right-0.5 bg-black/80 text-white text-[10px] px-1 py-0 rounded">
-                                {context.duration}
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          <div
-                            className={`w-9 h-9 rounded flex items-center justify-center flex-shrink-0`}
-                          >
-                            <div className="w-3.5 h-3.5">
-                              {getContextIcon(context.type)}
-                            </div>
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-zinc-900 dark:text-zinc-100 line-clamp-1 text-xs">
-                            {context.name}
-                          </div>
-                          <div className="flex items-center  mt-0.5">
-                            <Badge
-                              variant="outline"
-                              className="text-[10px] font-medium py-0 h-4 capitalize"
-                            >
-                              {context.type.replace("_", " ")}
-                            </Badge>
-                            {context.metadata?.author && (
-                              <span className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">
-                                {context.metadata.author}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
       <div
         ref={containerRef}
         className={`relative transition-all duration-300`}
@@ -756,7 +406,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
 
         <div
           className={`
-            relative rounded-3xl border-2 overflow-hidden
+            relative rounded-3xl border overflow-hidden
             transition-all duration-300 ease-out
             ${
               isDragging
@@ -802,7 +452,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      // removeContext(context.id);
+                      removeAttachment(context.id);
                     }}
                     className="text-zinc-400 transition-colors hover:text-zinc-700 dark:hover:text-zinc-100"
                     aria-label={isRTL ? "إزالة الملف" : "Remove attachment"}
@@ -814,29 +464,26 @@ const ChatInput: React.FC<ChatInputProps> = ({
             </div>
           )}
 
-          <div className="relative flex items-center min-h-[56px] px-3">
+          <div className="relative flex items-center min-h-[56px]">
             <textarea
               ref={textAreaRef}
               value={value}
               onChange={(e) => handleInputChange(e.target.value)}
-              onFocus={handleFocus}
-              onBlur={handleBlur}
               onKeyDown={handleKeyDown}
               placeholder={actualPlaceholder}
               dir={isRTL ? "rtl" : "ltr"}
               className={`
-                flex-1 text-base bg-transparent border-0 resize-none
+                flex-1 text-base bg-transparent border-0 resize-none 
                 outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus:border-transparent
                 ${isRTL ? "text-right pr-6 pl-16" : "text-left pl-4 pr-16"}
                 placeholder:text-zinc-400 dark:placeholder:text-zinc-500
                 text-zinc-900 dark:text-zinc-100
-                leading-relaxed transition-all duration-200
-                py-4
+                leading-relaxed transition-all duration-200 
+                py-4 truncate text-nowrap
               `}
               style={{
                 minHeight: "56px",
-                maxHeight: "160px",
-                lineHeight: "1.6",
+                maxHeight: "60px",
               }}
               rows={1}
             />
@@ -845,180 +492,72 @@ const ChatInput: React.FC<ChatInputProps> = ({
           {expandSection && (
             <div
               className={`
-                overflow-hidden transition-all duration-500 ease-out
-                ${
-                  isExpanded || expandSection
-                    ? "max-h-32 opacity-100"
-                    : "max-h-0 opacity-0"
-                }
+                overflow-hidden transition-all duration-500 ease-out px-3 pb-1
               `}
             >
               <div
                 ref={expandedContentRef}
                 className={`
-                  flex items-center justify-between px-4 py-3
+                  flex items-center justify-between pb-1
                   transition-all duration-300 ease-out
-                  ${
-                    isExpanded || expandSection
-                      ? "transform translate-y-0"
-                      : "transform -translate-y-2"
-                  }
-                  ${isRTL ? "flex-row-reverse" : "flex-row"}
                 `}
                 onClick={(e) => e.stopPropagation()}
               >
-                {!optionsToHide?.models && (
-                  <div className="flex items-center gap-2">
+                <div className="space-x-2">
+                  {hasAutoContext && (
                     <Button
-                      type="button"
-                      variant="ghost"
+                      variant="outline"
+                      className="rounded-2xl"
                       size="sm"
-                      className="h-9 rounded-xl bg-zinc-100 px-3 text-sm text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+                      disabled={autoContextLoading}
                       onClick={(e) => {
                         e.stopPropagation();
-                        fileInputRef.current?.click();
+                        onAutoContextClick?.();
                       }}
                     >
-                      <Paperclip className="w-3.5 h-3.5" />
-                      <span>{isRTL ? "إرفاق" : "Attach"}</span>
+                      <div className="flex items-center gap-1.5 text-zinc-900/50  transition-all duration-100 hover:text-black">
+                        {autoContextLoading ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <AtSign className="w-3.5 h-3.5" />
+                        )}
+                        <span>{isRTL ? "سياق " : "Add Context"}</span>
+                      </div>
                     </Button>
-                    <Popover
-                      open={isModelPopoverOpen}
-                      onOpenChange={setIsModelPopoverOpen}
-                    >
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setIsModelPopoverOpen(!isModelPopoverOpen);
-                          }}
-                          className="h-9 px-3 text-sm bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 rounded-xl text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 transition-all duration-200 font-medium border border-zinc-200 dark:border-zinc-700 "
-                        >
-                          <div className="flex items-center gap-2">
-                            <div
-                              className={`w-2 h-2 rounded-full transition-all duration-200 ${getModelColorClass(
-                                selectedModel.color
-                              )}`}
-                            />
-                            <span>{selectedModel.name}</span>
-                            <ChevronDown
-                              className={`w-3.5 h-3.5 opacity-60 transition-transform duration-200 ${
-                                isModelPopoverOpen ? "rotate-180" : "rotate-0"
-                              }`}
-                            />
-                          </div>
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent
-                        className="w-80 p-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-900  backdrop-blur-sm animate-in slide-in-from-bottom-2 fade-in-0 duration-300"
-                        align={isRTL ? "end" : "start"}
-                        side="top"
-                        sideOffset={8}
-                        onOpenAutoFocus={(e) => e.preventDefault()}
-                        onCloseAutoFocus={(e) => e.preventDefault()}
-                      >
-                        <div
-                          className="space-y-1"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <div className="px-3 py-2 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
-                            {isRTL ? "اختر النموذج" : "Select Model"}
-                          </div>
-                          {models.map((model) => {
-                            const isActive = selectedModel.id === model.id;
-                            return (
-                              <button
-                                key={model.id}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleModelSelect(model);
-                                }}
-                                className={`
-                                  w-full p-3 text-sm rounded-lg font-medium text-left
-                                  transition-all duration-200 ease-out
-                                  ${
-                                    isActive
-                                      ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 "
-                                      : "hover:bg-zinc-50 dark:hover:bg-zinc-800/50 text-zinc-700 dark:text-zinc-300"
-                                  }
-                                `}
-                              >
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-3">
-                                    <div>
-                                      <div className="font-semibold">
-                                        {model.name}
-                                      </div>
-                                      <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                                        {model.description}
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <div
-                                    className={`w-2 h-2 rounded-full transition-all duration-200 ${getModelColorClass(
-                                      model.color
-                                    )}`}
-                                  />
-                                </div>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                )}
-                {hasAutoContext && (
+                  )}
                   <Button
-                    variant="secondary"
+                    variant="outline"
                     className="rounded-2xl"
                     size="sm"
-                    disabled={autoContextLoading}
                     onClick={(e) => {
                       e.stopPropagation();
-                      onAutoContextClick?.();
+                      fileInputRef.current?.click();
                     }}
                   >
-                    <div className="flex items-center gap-1.5">
-                      {autoContextLoading ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      ) : (
-                        <AtSign className="w-3.5 h-3.5" />
-                      )}
-                      <span>{isRTL ? "سياق " : "Context"}</span>
-
-                      {autoContextCount}
+                    <div className="flex items-center gap-1.5 text-zinc-900/50  transition-all duration-100 group-hover:text-black">
+                      <Paperclip className="size-3" />
                     </div>
                   </Button>
-                )}
+                </div>
 
-                <div
-                  className={`absolute top-1/2 -translate-y-1/2 ${
-                    isRTL ? "left-4" : "right-4"
-                  }`}
-                >
-                  <Button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      submit();
-                    }}
-                    disabled={!value?.trim()}
-                    size="sm"
-                    className={`
-                  size-9 rounded-xl font-medium
-                                    transition-all duration-300 ease-out
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    submit();
+                  }}
+                  disabled={!value?.trim()}
+                  size="sm"
+                  className={`
+                  size-8 rounded-2xl font-medium transition-all duration-300 ease-out
                   ${
                     value?.trim()
                       ? "bg-zinc-800 hover:bg-zinc-900 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-white   dark:shadow-zinc-950"
                       : "bg-zinc-200 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-600 cursor-not-allowed"
                   }
                 `}
-                  >
-                    <ArrowUp className="w-4 h-4" />
-                  </Button>
-                </div>
+                >
+                  <ArrowUp className="w-4 h-4" />
+                </Button>
               </div>
             </div>
           )}

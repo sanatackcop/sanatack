@@ -57,6 +57,7 @@ import {
 import YouTubeReader from "@/lib/YoutubeReader";
 import { ChatSkeleton, ContentSkeleton, reducer, TabsSkeleton } from "../utils";
 import { toast } from "sonner";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const TABS_CONFIG = [
   { id: "chat", labelKey: "tabs.chat", icon: MessageCircle },
@@ -82,14 +83,36 @@ const LearnPlayground: React.FC = () => {
   const [selectedContexts, setSelectedContexts] = useState<ChatContext[]>([]);
   const [autoContextLoading, setAutoContextLoading] = useState(false);
 
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const tabsListRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [, setCanScrollRight] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  const [startX, setStartX] = useState(0);
-  const [scrollLeft, setScrollLeft] = useState(0);
+  // Separate refs for fullscreen and split mode
+  const fullscreenScrollRef = useRef<HTMLDivElement>(null);
+  const splitScrollRef = useRef<HTMLDivElement>(null);
+
+  // Separate states for fullscreen and split mode
+  const [fullscreenScroll, setFullscreenScroll] = useState({
+    canScrollLeft: false,
+    canScrollRight: false,
+    isDragging: false,
+    startX: 0,
+    scrollLeft: 0,
+    velocity: 0,
+    lastMoveTime: 0,
+    lastX: 0,
+  });
+
+  const [splitScroll, setSplitScroll] = useState({
+    canScrollLeft: false,
+    canScrollRight: false,
+    isDragging: false,
+    startX: 0,
+    scrollLeft: 0,
+    velocity: 0,
+    lastMoveTime: 0,
+    lastX: 0,
+  });
+
   const isRTL = i18n.language === "ar";
+  const [isResizing, setIsResizing] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const autoContextCount = useMemo(() => {
     if (!workspaceContexts.length) return 0;
@@ -426,65 +449,339 @@ const LearnPlayground: React.FC = () => {
     [handleSendMessage, selectedContexts]
   );
 
-  const checkScrollability = useCallback(() => {
-    if (scrollContainerRef.current) {
+  // Fullscreen scroll functions
+  const checkFullscreenScroll = useCallback(() => {
+    if (fullscreenScrollRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } =
-        scrollContainerRef.current;
-      setCanScrollLeft(scrollLeft > 5);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5);
+        fullscreenScrollRef.current;
+      const maxScroll = scrollWidth - clientWidth;
+      setFullscreenScroll((prev) => ({
+        ...prev,
+        canScrollLeft: scrollLeft > 10,
+        canScrollRight: scrollLeft < maxScroll - 10,
+      }));
     }
   }, []);
 
-  const [isResizing, setIsResizing] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
+  // Split mode scroll functions
+  const checkSplitScroll = useCallback(() => {
+    if (splitScrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = splitScrollRef.current;
+      const maxScroll = scrollWidth - clientWidth;
+      setSplitScroll((prev) => ({
+        ...prev,
+        canScrollLeft: scrollLeft > 10,
+        canScrollRight: scrollLeft < maxScroll - 10,
+      }));
+    }
+  }, []);
 
+  // Setup scroll listeners for fullscreen
   useEffect(() => {
-    checkScrollability();
-    const container = scrollContainerRef.current;
+    if (!fullScreen) return;
+
+    checkFullscreenScroll();
+    const container = fullscreenScrollRef.current;
     if (!container) return;
 
-    const handleScroll = () => checkScrollability();
-    const handleResize = () => checkScrollability();
+    const handleScroll = () => checkFullscreenScroll();
+    const handleResize = () => checkFullscreenScroll();
 
-    container.addEventListener("scroll", handleScroll);
+    container.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("resize", handleResize);
+
+    const resizeObserver = new ResizeObserver(() => {
+      checkFullscreenScroll();
+    });
+
+    if (container) {
+      resizeObserver.observe(container);
+    }
+
+    const timeout = setTimeout(checkFullscreenScroll, 100);
 
     return () => {
       container.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleResize);
+      resizeObserver.disconnect();
+      clearTimeout(timeout);
     };
-  }, [checkScrollability]);
+  }, [checkFullscreenScroll, fullScreen, state.tab]);
 
-  const handleDragStart = useCallback((clientX: number) => {
-    if (!scrollContainerRef.current) return;
-    setIsDragging(true);
-    setStartX(clientX - scrollContainerRef.current.offsetLeft);
-    setScrollLeft(scrollContainerRef.current.scrollLeft);
-  }, []);
+  // Setup scroll listeners for split mode
+  useEffect(() => {
+    if (fullScreen) return;
 
-  const handleDragMove = useCallback(
-    (clientX: number) => {
-      if (!isDragging || !scrollContainerRef.current) return;
-      const x = clientX - scrollContainerRef.current.offsetLeft;
-      const walk = (x - startX) * 2;
-      scrollContainerRef.current.scrollLeft = scrollLeft - walk;
-    },
-    [isDragging, startX, scrollLeft]
-  );
+    checkSplitScroll();
+    const container = splitScrollRef.current;
+    if (!container) return;
 
-  const handleDragEnd = useCallback(() => {
-    setIsDragging(false);
-  }, []);
+    const handleScroll = () => checkSplitScroll();
+    const handleResize = () => checkSplitScroll();
 
-  const handleMouseDown = (e: React.MouseEvent) => handleDragStart(e.pageX);
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (isDragging) e.preventDefault();
-    handleDragMove(e.pageX);
+    container.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleResize);
+
+    const resizeObserver = new ResizeObserver(() => {
+      checkSplitScroll();
+    });
+
+    if (container) {
+      resizeObserver.observe(container);
+    }
+
+    const timeout = setTimeout(checkSplitScroll, 100);
+
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleResize);
+      resizeObserver.disconnect();
+      clearTimeout(timeout);
+    };
+  }, [checkSplitScroll, fullScreen, state.tab]);
+
+  // Fullscreen drag handlers with improved UX
+  const handleFullscreenMouseDown = (e: React.MouseEvent) => {
+    if (!fullscreenScrollRef.current) return;
+    const container = fullscreenScrollRef.current;
+    setFullscreenScroll((prev) => ({
+      ...prev,
+      isDragging: true,
+      startX: e.clientX,
+      scrollLeft: container.scrollLeft,
+      velocity: 0,
+      lastMoveTime: Date.now(),
+      lastX: e.clientX,
+    }));
   };
-  const handleTouchStart = (e: React.TouchEvent) =>
-    handleDragStart(e.touches[0].pageX);
-  const handleTouchMove = (e: React.TouchEvent) =>
-    handleDragMove(e.touches[0].pageX);
+
+  const handleFullscreenMouseMove = (e: React.MouseEvent) => {
+    if (!fullscreenScroll.isDragging || !fullscreenScrollRef.current) return;
+    e.preventDefault();
+
+    const container = fullscreenScrollRef.current;
+    const now = Date.now();
+    const deltaTime = now - fullscreenScroll.lastMoveTime;
+    const deltaX = e.clientX - fullscreenScroll.lastX;
+
+    // Calculate velocity for momentum
+    const velocity = deltaTime > 0 ? deltaX / deltaTime : 0;
+
+    // Smooth drag with higher sensitivity
+    const walk = (fullscreenScroll.startX - e.clientX) * 1.2;
+    container.scrollLeft = fullscreenScroll.scrollLeft + walk;
+
+    setFullscreenScroll((prev) => ({
+      ...prev,
+      velocity,
+      lastMoveTime: now,
+      lastX: e.clientX,
+    }));
+  };
+
+  const handleFullscreenMouseUp = () => {
+    if (!fullscreenScrollRef.current) return;
+
+    // Apply momentum scrolling
+    const container = fullscreenScrollRef.current;
+    let momentum = fullscreenScroll.velocity * -150; // Convert velocity to pixels
+    const friction = 0.92; // Friction coefficient
+
+    const animate = () => {
+      if (Math.abs(momentum) < 0.5) return;
+
+      momentum *= friction;
+      container.scrollLeft += momentum;
+      requestAnimationFrame(animate);
+    };
+
+    if (Math.abs(momentum) > 1) {
+      requestAnimationFrame(animate);
+    }
+
+    setFullscreenScroll((prev) => ({
+      ...prev,
+      isDragging: false,
+      velocity: 0,
+    }));
+  };
+
+  const handleFullscreenTouchStart = (e: React.TouchEvent) => {
+    if (!fullscreenScrollRef.current) return;
+    const container = fullscreenScrollRef.current;
+    setFullscreenScroll((prev) => ({
+      ...prev,
+      isDragging: true,
+      startX: e.touches[0].clientX,
+      scrollLeft: container.scrollLeft,
+      velocity: 0,
+      lastMoveTime: Date.now(),
+      lastX: e.touches[0].clientX,
+    }));
+  };
+
+  const handleFullscreenTouchMove = (e: React.TouchEvent) => {
+    if (!fullscreenScroll.isDragging || !fullscreenScrollRef.current) return;
+
+    const container = fullscreenScrollRef.current;
+    const now = Date.now();
+    const deltaTime = now - fullscreenScroll.lastMoveTime;
+    const deltaX = e.touches[0].clientX - fullscreenScroll.lastX;
+
+    const velocity = deltaTime > 0 ? deltaX / deltaTime : 0;
+
+    const walk = (fullscreenScroll.startX - e.touches[0].clientX) * 1.2;
+    container.scrollLeft = fullscreenScroll.scrollLeft + walk;
+
+    setFullscreenScroll((prev) => ({
+      ...prev,
+      velocity,
+      lastMoveTime: now,
+      lastX: e.touches[0].clientX,
+    }));
+  };
+
+  const handleFullscreenTouchEnd = () => {
+    if (!fullscreenScrollRef.current) return;
+
+    const container = fullscreenScrollRef.current;
+    let momentum = fullscreenScroll.velocity * -150;
+    const friction = 0.92;
+
+    const animate = () => {
+      if (Math.abs(momentum) < 0.5) return;
+
+      momentum *= friction;
+      container.scrollLeft += momentum;
+      requestAnimationFrame(animate);
+    };
+
+    if (Math.abs(momentum) > 1) {
+      requestAnimationFrame(animate);
+    }
+
+    setFullscreenScroll((prev) => ({
+      ...prev,
+      isDragging: false,
+      velocity: 0,
+    }));
+  };
+
+  // Split mode drag handlers with improved UX
+  const handleSplitMouseDown = (e: React.MouseEvent) => {
+    if (!splitScrollRef.current) return;
+    const container = splitScrollRef.current;
+    setSplitScroll((prev) => ({
+      ...prev,
+      isDragging: true,
+      startX: e.clientX,
+      scrollLeft: container.scrollLeft,
+      velocity: 0,
+      lastMoveTime: Date.now(),
+      lastX: e.clientX,
+    }));
+  };
+
+  const handleSplitMouseMove = (e: React.MouseEvent) => {
+    if (!splitScroll.isDragging || !splitScrollRef.current) return;
+    e.preventDefault();
+
+    const container = splitScrollRef.current;
+    const now = Date.now();
+    const deltaTime = now - splitScroll.lastMoveTime;
+    const deltaX = e.clientX - splitScroll.lastX;
+
+    const velocity = deltaTime > 0 ? deltaX / deltaTime : 0;
+
+    const walk = (splitScroll.startX - e.clientX) * 1.2;
+    container.scrollLeft = splitScroll.scrollLeft + walk;
+
+    setSplitScroll((prev) => ({
+      ...prev,
+      velocity,
+      lastMoveTime: now,
+      lastX: e.clientX,
+    }));
+  };
+
+  const handleSplitMouseUp = () => {
+    if (!splitScrollRef.current) return;
+
+    const container = splitScrollRef.current;
+    let momentum = splitScroll.velocity * -150;
+    const friction = 0.92;
+
+    const animate = () => {
+      if (Math.abs(momentum) < 0.5) return;
+
+      momentum *= friction;
+      container.scrollLeft += momentum;
+      requestAnimationFrame(animate);
+    };
+
+    if (Math.abs(momentum) > 1) {
+      requestAnimationFrame(animate);
+    }
+
+    setSplitScroll((prev) => ({ ...prev, isDragging: false, velocity: 0 }));
+  };
+
+  const handleSplitTouchStart = (e: React.TouchEvent) => {
+    if (!splitScrollRef.current) return;
+    const container = splitScrollRef.current;
+    setSplitScroll((prev) => ({
+      ...prev,
+      isDragging: true,
+      startX: e.touches[0].clientX,
+      scrollLeft: container.scrollLeft,
+      velocity: 0,
+      lastMoveTime: Date.now(),
+      lastX: e.touches[0].clientX,
+    }));
+  };
+
+  const handleSplitTouchMove = (e: React.TouchEvent) => {
+    if (!splitScroll.isDragging || !splitScrollRef.current) return;
+
+    const container = splitScrollRef.current;
+    const now = Date.now();
+    const deltaTime = now - splitScroll.lastMoveTime;
+    const deltaX = e.touches[0].clientX - splitScroll.lastX;
+
+    const velocity = deltaTime > 0 ? deltaX / deltaTime : 0;
+
+    const walk = (splitScroll.startX - e.touches[0].clientX) * 1.2;
+    container.scrollLeft = splitScroll.scrollLeft + walk;
+
+    setSplitScroll((prev) => ({
+      ...prev,
+      velocity,
+      lastMoveTime: now,
+      lastX: e.touches[0].clientX,
+    }));
+  };
+
+  const handleSplitTouchEnd = () => {
+    if (!splitScrollRef.current) return;
+
+    const container = splitScrollRef.current;
+    let momentum = splitScroll.velocity * -150;
+    const friction = 0.92;
+
+    const animate = () => {
+      if (Math.abs(momentum) < 0.5) return;
+
+      momentum *= friction;
+      container.scrollLeft += momentum;
+      requestAnimationFrame(animate);
+    };
+
+    if (Math.abs(momentum) > 1) {
+      requestAnimationFrame(animate);
+    }
+
+    setSplitScroll((prev) => ({ ...prev, isDragging: false, velocity: 0 }));
+  };
 
   const getDisplayTitle = useCallback(() => {
     return (
@@ -507,7 +804,6 @@ const LearnPlayground: React.FC = () => {
           page={state.page}
           zoom={state.zoom}
           status={state.status}
-          // selectedText={state.selectedText || ""}
           onLoaded={(pageCount) => {
             dispatch({ type: "SET_PAGE_COUNT", pageCount });
             dispatch({ type: "SET_STATUS", status: { kind: "idle" } });
@@ -520,8 +816,6 @@ const LearnPlayground: React.FC = () => {
             });
             setContentLoading(false);
           }}
-          // onNext={() => dispatch({ type: "NEXT_PAGE" })}
-          // onPrev={() => dispatch({ type: "PREV_PAGE" })}
           onGoto={(p) => dispatch({ type: "SET_PAGE", page: p })}
           onZoomIn={() => dispatch({ type: "ZOOM_IN" })}
           onZoomOut={() => dispatch({ type: "ZOOM_OUT" })}
@@ -624,7 +918,7 @@ const LearnPlayground: React.FC = () => {
               initial={{ x: 20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ type: "spring", stiffness: 260, damping: 30 }}
-              className="h-full flex flex-col min-h-0 px-6 mx-4"
+              className="h-full flex flex-col min-h-0 px-2 sm:px-6 mx-2 sm:mx-4"
             >
               {workspaceLoading ? (
                 <TabsSkeleton />
@@ -636,92 +930,129 @@ const LearnPlayground: React.FC = () => {
                   }
                   className="h-full flex flex-col min-h-0"
                 >
-                  <div className="relative pb-4 flex-shrink-0">
-                    {canScrollLeft && (
-                      <div
-                        className={`absolute ${
-                          isRTL ? "right-0" : "left-0"
-                        } top-0 bottom-4 w-8 z-20 pointer-events-none`}
-                        style={{
-                          background: `linear-gradient(to ${
-                            isRTL ? "left" : "right"
-                          }, rgba(255,255,255,0.8) 0%, transparent 100%)`,
-                          backdropFilter: "blur(1px)",
-                        }}
-                      />
+                  <div className="relative pb-4 flex-shrink-0 flex justify-center">
+                    {fullscreenScroll.canScrollLeft && (
+                      <>
+                        <div
+                          className="absolute left-0 top-0 bottom-4 w-24 z-30 pointer-events-none"
+                          style={{
+                            background:
+                              "linear-gradient(to right, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0) 100%)",
+                          }}
+                        />
+                        <div
+                          className="absolute left-0 top-0 bottom-4 w-24 z-30 pointer-events-none dark:block hidden"
+                          style={{
+                            background:
+                              "linear-gradient(to right, rgba(9, 9, 11, 0.95) 0%, rgba(9, 9, 11, 0) 100%)",
+                          }}
+                        />
+                      </>
+                    )}
+
+                    {fullscreenScroll.canScrollRight && (
+                      <>
+                        <div
+                          className="absolute right-0 top-0 bottom-4 w-24 z-30 pointer-events-none"
+                          style={{
+                            background:
+                              "linear-gradient(to left, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0) 100%)",
+                          }}
+                        />
+                        <div
+                          className="absolute right-0 top-0 bottom-4 w-24 z-30 pointer-events-none dark:block hidden"
+                          style={{
+                            background:
+                              "linear-gradient(to left, rgba(9, 9, 11, 0.95) 0%, rgba(9, 9, 11, 0) 100%)",
+                          }}
+                        />
+                      </>
                     )}
 
                     <div
-                      ref={scrollContainerRef}
-                      className="overflow-x-auto scrollbar-hide flex w-full items-center gap-3 justify-center relative touch-pan-x"
-                      onMouseDown={handleMouseDown}
-                      onMouseMove={handleMouseMove}
-                      onMouseUp={handleDragEnd}
-                      onMouseLeave={handleDragEnd}
-                      onTouchStart={handleTouchStart}
-                      onTouchMove={handleTouchMove}
-                      onTouchEnd={handleDragEnd}
+                      ref={fullscreenScrollRef}
+                      className="overflow-x-scroll scrollbar-hide w-full select-none"
+                      onMouseDown={handleFullscreenMouseDown}
+                      onMouseMove={handleFullscreenMouseMove}
+                      onMouseUp={handleFullscreenMouseUp}
+                      onMouseLeave={handleFullscreenMouseUp}
+                      onTouchStart={handleFullscreenTouchStart}
+                      onTouchMove={handleFullscreenTouchMove}
+                      onTouchEnd={handleFullscreenTouchEnd}
                       style={{
-                        cursor: isDragging ? "grabbing" : "grab",
+                        cursor: fullscreenScroll.isDragging
+                          ? "grabbing"
+                          : "grab",
+                        userSelect: "none",
+                        WebkitUserSelect: "none",
+                        MozUserSelect: "none",
+                        msUserSelect: "none",
+                        overflowX: "scroll",
+                        scrollbarWidth: "none",
+                        msOverflowStyle: "none",
                         WebkitOverflowScrolling: "touch",
                       }}
                     >
-                      <TabsList
-                        ref={tabsListRef}
-                        className="relative !space-x-0 !p-1.5 flex items-center gap-2 h-12 min-w-max rounded-2xl border border-zinc-200/60 dark:border-zinc-800/60 bg-white/90 dark:bg-zinc-900/50 shadow-sm dark:shadow-zinc-950/20 backdrop-blur-md w-fit"
-                        style={{ direction: isRTL ? "rtl" : "ltr" }}
-                      >
-                        {TABS_CONFIG.map((tab) => {
-                          const IconComponent = tab.icon;
-                          const isActive = state.tab === tab.id;
-                          return (
-                            <TabsTrigger
-                              key={tab.id}
-                              value={tab.id}
-                              className={`px-4 py-2 relative z-20 flex-shrink-0 transition-all duration-200 
-                        hover:bg-zinc-50 dark:hover:bg-zinc-800/40 
-                        data-[state=active]:bg-zinc-100 dark:data-[state=active]:bg-zinc-800/60 
-                        rounded-xl h-9 flex flex-row items-center 
-                        justify-center select-none cursor-pointer gap-2`}
-                              style={{
-                                minWidth: "fit-content",
-                              }}
-                            >
-                              {isActive ? (
-                                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full flex-shrink-0" />
-                              ) : (
-                                <IconComponent className="size-4 flex-shrink-0 text-zinc-600 dark:text-zinc-400" />
-                              )}
-                              <span
-                                className={`text-sm font-medium transition-colors duration-200 whitespace-nowrap ${
-                                  isActive
-                                    ? "text-zinc-900 dark:text-zinc-100"
-                                    : "text-zinc-700 dark:text-zinc-300"
-                                }`}
+                      <div className="flex items-center gap-3 w-max mx-auto">
+                        <TabsList
+                          className="relative !space-x-0 !p-1 sm:!p-1.5 flex items-center gap-1 sm:gap-2 h-10 sm:h-12 rounded-2xl border border-zinc-200/60 dark:border-zinc-800/60 bg-white/90 dark:bg-zinc-900/50 shadow-sm dark:shadow-zinc-950/20 backdrop-blur-md flex-shrink-0"
+                          style={{ direction: isRTL ? "rtl" : "ltr" }}
+                        >
+                          {TABS_CONFIG.map((tab) => {
+                            const IconComponent = tab.icon;
+                            const isActive = state.tab === tab.id;
+                            return (
+                              <TabsTrigger
+                                key={tab.id}
+                                value={tab.id}
+                                className={`px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 relative z-20 flex-shrink-0 transition-all duration-200 
+                          hover:bg-zinc-50 dark:hover:bg-zinc-800/40 
+                          data-[state=active]:bg-zinc-100 dark:data-[state=active]:bg-zinc-800/60 
+                          rounded-lg sm:rounded-xl h-7 sm:h-9 flex flex-row items-center 
+                          justify-center select-none cursor-pointer gap-1 sm:gap-1.5 md:gap-2`}
+                                onMouseDown={(e) => e.stopPropagation()}
+                                onTouchStart={(e) => e.stopPropagation()}
                               >
-                                {t(tab.labelKey as any)}
-                              </span>
-                            </TabsTrigger>
-                          );
-                        })}
-                      </TabsList>
+                                {isActive ? (
+                                  <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-emerald-500 rounded-full flex-shrink-0" />
+                                ) : (
+                                  <IconComponent className="size-3 sm:size-3.5 md:size-4 flex-shrink-0 text-zinc-600 dark:text-zinc-400" />
+                                )}
+                                <span
+                                  className={`text-[10px] sm:text-xs md:text-sm font-medium transition-colors duration-200 whitespace-nowrap ${
+                                    isActive
+                                      ? "text-zinc-900 dark:text-zinc-100"
+                                      : "text-zinc-700 dark:text-zinc-300"
+                                  }`}
+                                >
+                                  {t(tab.labelKey as any)}
+                                </span>
+                              </TabsTrigger>
+                            );
+                          })}
+                        </TabsList>
 
-                      <Tooltip
-                        title={t(
-                          "workspace.exitFullScreen",
-                          "Exit Full Screen"
-                        )}
-                        className="cursor-pointer"
-                      >
-                        <div className="p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors duration-200">
-                          <Scan
-                            className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors duration-200 size-5"
-                            onClick={() => {
-                              setFullScreen(!fullScreen);
-                            }}
-                          />
-                        </div>
-                      </Tooltip>
+                        <Tooltip
+                          title={t(
+                            "workspace.exitFullScreen",
+                            "Exit Full Screen"
+                          )}
+                          className="cursor-pointer flex-shrink-0"
+                        >
+                          <div
+                            className="p-1.5 sm:p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors duration-200"
+                            onMouseDown={(e) => e.stopPropagation()}
+                            onTouchStart={(e) => e.stopPropagation()}
+                          >
+                            <Scan
+                              className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors duration-200 size-4 sm:size-5"
+                              onClick={() => {
+                                setFullScreen(!fullScreen);
+                              }}
+                            />
+                          </div>
+                        </Tooltip>
+                      </div>
                     </div>
                   </div>
 
@@ -729,7 +1060,7 @@ const LearnPlayground: React.FC = () => {
                     {state.tab === "chat" && (
                       <TabsContent
                         value="chat"
-                        className="m-0 flex-1 relative items-end justify-end min-h-0 overflow-hidden"
+                        className="m-0 flex-1 relative items-end justify-end min-h-0 overflow-hidden w-full max-w-full"
                         style={{ maxHeight: "100%" }}
                       >
                         {state.isLoading ? (
@@ -738,16 +1069,18 @@ const LearnPlayground: React.FC = () => {
                           </div>
                         ) : (
                           <>
-                            <div className="w-full flex-1 flex flex-col justify-end items-center overflow-y-auto min-h-0">
-                              <ChatMessages
-                                messages={state.chatMessages || []}
-                                isLoading={state.chatLoading}
-                                streamingMessage={state.streamingMessage}
-                                onSendMessage={handleQuickSend}
-                              />
+                            <div>
+                              <ScrollArea>
+                                <ChatMessages
+                                  messages={state.chatMessages || []}
+                                  isLoading={state.chatLoading}
+                                  streamingMessage={state.streamingMessage}
+                                  onSendMessage={handleQuickSend}
+                                />
+                              </ScrollArea>
                             </div>
                             <ChatInput
-                              className="flex-shrink-0 p-2 px-20 pb-2"
+                              className="flex-shrink-0 p-2 px-4 sm:px-20 pb-2 w-full"
                               value={state.prompt}
                               hasAutoContext={true}
                               expandSection={true}
@@ -776,7 +1109,7 @@ const LearnPlayground: React.FC = () => {
                     {state.tab === "flashcards" && workspace && (
                       <TabsContent
                         value="flashcards"
-                        className="m-0 h-full"
+                        className="m-0 h-full w-full max-w-full"
                         style={{ maxHeight: "100%" }}
                       >
                         <FlashCards workspaceId={workspace.id} />
@@ -786,7 +1119,7 @@ const LearnPlayground: React.FC = () => {
                     {state.tab === "quizzes" && workspace && (
                       <TabsContent
                         value="quizzes"
-                        className="m-0 h-full p-4 text-zinc-500 dark:text-zinc-400"
+                        className="m-0 h-full p-4 text-zinc-500 dark:text-zinc-400 w-full max-w-full"
                       >
                         <QuizList
                           workspaceId={(workspace && workspace.id) || ""}
@@ -797,7 +1130,7 @@ const LearnPlayground: React.FC = () => {
                     {state.tab === "summary" && workspace?.id && (
                       <TabsContent
                         value="summary"
-                        className="m-0 h-full p-4 text-zinc-500 dark:text-zinc-400"
+                        className="m-0 h-full p-4 text-zinc-500 dark:text-zinc-400 w-full max-w-full"
                         style={{ maxHeight: "100%" }}
                       >
                         <SummaryList workspaceId={String(workspace.id)} />
@@ -807,7 +1140,7 @@ const LearnPlayground: React.FC = () => {
                     {state.tab === "deepExplanation" && (
                       <TabsContent
                         value="deepExplanation"
-                        className="m-0 h-full p-4 text-zinc-500 dark:text-zinc-400 flex flex-col"
+                        className="m-0 h-full p-4 text-zinc-500 dark:text-zinc-400 flex flex-col w-full max-w-full"
                         style={{ maxHeight: "100%" }}
                       >
                         <MindMap
@@ -831,7 +1164,7 @@ const LearnPlayground: React.FC = () => {
                 initial={{ x: 20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ type: "spring", stiffness: 260, damping: 30 }}
-                className="h-full p-2  pt-0 flex flex-col min-h-0"
+                className="h-full p-2 pt-0 flex flex-col min-h-0"
               >
                 {renderContent()}
               </motion.div>
@@ -873,87 +1206,118 @@ const LearnPlayground: React.FC = () => {
                     }
                     className="h-full flex flex-col min-h-0"
                   >
-                    <div className="relative p-2 pt-0 flex-shrink-0">
-                      {canScrollLeft && (
-                        <div
-                          className={`absolute ${
-                            isRTL ? "right-2 sm:right-4" : "left-2 sm:left-4"
-                          } top-2 sm:top-4 bottom-2 sm:bottom-4 w-4 sm:w-8 z-20 pointer-events-none`}
-                          style={{
-                            background: `linear-gradient(to ${
-                              isRTL ? "left" : "right"
-                            }, rgba(255,255,255,0.8), transparent)`,
-                            backdropFilter: "blur(1px)",
-                          }}
-                        />
+                    <div className="relative p-2 pt-0 flex-shrink-0 flex justify-center">
+                      {splitScroll.canScrollLeft && (
+                        <>
+                          <div
+                            className="absolute left-2 top-0 bottom-0 w-20 z-30 pointer-events-none"
+                            style={{
+                              background:
+                                "linear-gradient(to right, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0) 100%)",
+                            }}
+                          />
+                          <div
+                            className="absolute left-2 top-0 bottom-0 w-20 z-30 pointer-events-none dark:block hidden"
+                            style={{
+                              background:
+                                "linear-gradient(to right, rgba(9, 9, 11, 0.95) 0%, rgba(9, 9, 11, 0) 100%)",
+                            }}
+                          />
+                        </>
+                      )}
+
+                      {splitScroll.canScrollRight && (
+                        <>
+                          <div
+                            className="absolute right-2 top-0 bottom-0 w-20 z-30 pointer-events-none"
+                            style={{
+                              background:
+                                "linear-gradient(to left, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0) 100%)",
+                            }}
+                          />
+                          <div
+                            className="absolute right-2 top-0 bottom-0 w-20 z-30 pointer-events-none dark:block hidden"
+                            style={{
+                              background:
+                                "linear-gradient(to left, rgba(9, 9, 11, 0.95) 0%, rgba(9, 9, 11, 0) 100%)",
+                            }}
+                          />
+                        </>
                       )}
 
                       <div
-                        ref={scrollContainerRef}
-                        className="overflow-x-auto scrollbar-hide flex w-full items-center gap-2 justify-center relative touch-pan-x"
-                        onMouseDown={handleMouseDown}
-                        onMouseMove={handleMouseMove}
-                        onMouseUp={handleDragEnd}
-                        onMouseLeave={handleDragEnd}
-                        onTouchStart={handleTouchStart}
-                        onTouchMove={handleTouchMove}
-                        onTouchEnd={handleDragEnd}
+                        ref={splitScrollRef}
+                        className="overflow-x-scroll scrollbar-hide w-full select-none px-1"
+                        onMouseDown={handleSplitMouseDown}
+                        onMouseMove={handleSplitMouseMove}
+                        onMouseUp={handleSplitMouseUp}
+                        onMouseLeave={handleSplitMouseUp}
+                        onTouchStart={handleSplitTouchStart}
+                        onTouchMove={handleSplitTouchMove}
+                        onTouchEnd={handleSplitTouchEnd}
                         style={{
-                          cursor: isDragging ? "grabbing" : "grab",
+                          cursor: splitScroll.isDragging ? "grabbing" : "grab",
+                          userSelect: "none",
+                          WebkitUserSelect: "none",
+                          MozUserSelect: "none",
+                          msUserSelect: "none",
+                          overflowX: "scroll",
+                          scrollbarWidth: "none",
+                          msOverflowStyle: "none",
                           WebkitOverflowScrolling: "touch",
                         }}
                       >
-                        <TabsList
-                          ref={tabsListRef}
-                          className="relative !space-x-0 !p-1 flex items-center gap-4 h-11 min-w-max rounded-2xl border border-zinc-200/60 dark:border-zinc-800/60 bg-white/80 dark:bg-zinc-950/40 shadow-sm dark:shadow-none backdrop-blur-sm w-fit"
-                          style={{ direction: isRTL ? "rtl" : "ltr" }}
-                        >
-                          {TABS_CONFIG.map((tab) => {
-                            const IconComponent = tab.icon;
-                            const isActive = state.tab === tab.id;
-                            return (
-                              <TabsTrigger
-                                key={tab.id}
-                                value={tab.id}
-                                className={`px-2 sm:px-3 py-1.5 sm:py-2 relative z-20 flex-shrink-0 transition-all duration-150 
-                          hover:bg-transparent data-[state=active]:bg-zinc-100 dark:data-[state=active]:bg-zinc-800/60 rounded-xl h-7 sm:h-9 flex flex-row items-center 
-                          justify-center select-none cursor-pointer gap-1.5`}
-                                style={{
-                                  minWidth: "fit-content",
-                                  padding: "0 8px",
-                                  margin: "0 1px",
-                                }}
-                              >
-                                {isActive ? (
-                                  <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full flex-shrink-0" />
-                                ) : (
-                                  <IconComponent className="size-4 flex-shrink-0 text-zinc-600 dark:text-zinc-400" />
-                                )}
-                                <span
-                                  className={`text-xs font-normal sm:text-sm transition-colors duration-150 whitespace-nowrap ${
-                                    isActive
-                                      ? "text-zinc-900 dark:text-zinc-100"
-                                      : "text-zinc-700 dark:text-zinc-300"
-                                  }`}
+                        <div className="flex items-center gap-2 w-max mx-auto">
+                          <TabsList
+                            className="relative !space-x-0 !p-0.5 sm:!p-1 flex items-center gap-0.5 sm:gap-1 md:gap-2 h-9 sm:h-10 md:h-11 rounded-xl sm:rounded-2xl border border-zinc-200/60 dark:border-zinc-800/60 bg-white/80 dark:bg-zinc-950/40 shadow-sm dark:shadow-none backdrop-blur-sm flex-shrink-0"
+                            style={{ direction: isRTL ? "rtl" : "ltr" }}
+                          >
+                            {TABS_CONFIG.map((tab) => {
+                              const IconComponent = tab.icon;
+                              const isActive = state.tab === tab.id;
+                              return (
+                                <TabsTrigger
+                                  key={tab.id}
+                                  value={tab.id}
+                                  className={`px-1.5 sm:px-2 md:px-3 py-1 sm:py-1.5 md:py-2 relative z-20 flex-shrink-0 transition-all duration-150 
+                            hover:bg-transparent data-[state=active]:bg-zinc-100 dark:data-[state=active]:bg-zinc-800/60 rounded-lg sm:rounded-xl h-6 sm:h-7 md:h-9 flex flex-row items-center 
+                            justify-center select-none cursor-pointer gap-1 sm:gap-1.5`}
+                                  onMouseDown={(e) => e.stopPropagation()}
+                                  onTouchStart={(e) => e.stopPropagation()}
                                 >
-                                  {t(tab.labelKey as any)}
-                                </span>
-                              </TabsTrigger>
-                            );
-                          })}
-                        </TabsList>
+                                  {isActive ? (
+                                    <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-emerald-500 rounded-full flex-shrink-0" />
+                                  ) : (
+                                    <IconComponent className="size-3 sm:size-3.5 md:size-4 flex-shrink-0 text-zinc-600 dark:text-zinc-400" />
+                                  )}
+                                  <span
+                                    className={`text-[10px] sm:text-xs md:text-sm font-normal transition-colors duration-150 whitespace-nowrap ${
+                                      isActive
+                                        ? "text-zinc-900 dark:text-zinc-100"
+                                        : "text-zinc-700 dark:text-zinc-300"
+                                    }`}
+                                  >
+                                    {t(tab.labelKey as any)}
+                                  </span>
+                                </TabsTrigger>
+                              );
+                            })}
+                          </TabsList>
 
-                        <Tooltip
-                          title={t("workspace.fullScreen", "Full Screen")}
-                          className="cursor-pointer"
-                        >
-                          <Scan
-                            className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-all ease-linear duration-200 size-5"
-                            onClick={() => {
-                              setFullScreen(!fullScreen);
-                            }}
-                          />
-                        </Tooltip>
+                          <Tooltip
+                            title={t("workspace.fullScreen", "Full Screen")}
+                            className="cursor-pointer flex-shrink-0"
+                          >
+                            <Scan
+                              className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-all ease-linear duration-200 size-4 sm:size-5"
+                              onClick={() => {
+                                setFullScreen(!fullScreen);
+                              }}
+                              onMouseDown={(e) => e.stopPropagation()}
+                              onTouchStart={(e) => e.stopPropagation()}
+                            />
+                          </Tooltip>
+                        </div>
                       </div>
                     </div>
 
@@ -961,7 +1325,7 @@ const LearnPlayground: React.FC = () => {
                       {state.tab === "chat" && (
                         <TabsContent
                           value="chat"
-                          className="m-0 flex-1 flex flex-col relative items-end justify-end min-h-0"
+                          className="m-0 flex-1 flex flex-col relative items-end justify-end min-h-0 w-full max-w-full"
                           style={{ maxHeight: "100%" }}
                         >
                           {state.isLoading ? (
@@ -970,16 +1334,16 @@ const LearnPlayground: React.FC = () => {
                             </div>
                           ) : (
                             <>
-                              <div className="w-full  flex-1 flex flex-col justify-end items-center overflow-y-auto min-h-0">
+                              <ScrollArea>
                                 <ChatMessages
                                   messages={state.chatMessages || []}
                                   isLoading={state.chatLoading}
                                   streamingMessage={state.streamingMessage}
                                   onSendMessage={handleQuickSend}
                                 />
-                              </div>
+                              </ScrollArea>
                               <ChatInput
-                                className="flex-shrink-0 p-2 px-20 pb-2"
+                                className="flex-shrink-0 w-full p-5"
                                 value={state.prompt}
                                 hasAutoContext={true}
                                 expandSection={true}
@@ -998,10 +1362,7 @@ const LearnPlayground: React.FC = () => {
                                 }
                                 onContextsChange={setSelectedContexts}
                                 onAutoContextClick={handleAutoContext}
-                                placeholder={t(
-                                  "chat.placeholder",
-                                  `Ask anything about ${getDisplayTitle()}...`
-                                )}
+                                placeholder={t("aiActions.chatPlaceholder")}
                                 optionsToHide={{
                                   models: true,
                                 }}
@@ -1014,7 +1375,7 @@ const LearnPlayground: React.FC = () => {
                       {state.tab === "flashcards" && workspace && (
                         <TabsContent
                           value="flashcards"
-                          className="m-0 h-full flex flex-col"
+                          className="m-0 h-full flex flex-col w-full max-w-full"
                           style={{ maxHeight: "100%" }}
                         >
                           <FlashCards workspaceId={workspace.id} />
@@ -1024,7 +1385,7 @@ const LearnPlayground: React.FC = () => {
                       {state.tab === "quizzes" && (
                         <TabsContent
                           value="quizzes"
-                          className="m-0 h-full p-4 text-zinc-500 dark:text-zinc-400 flex flex-col"
+                          className="m-0 h-full p-4 text-zinc-500 dark:text-zinc-400 flex flex-col w-full max-w-full"
                         >
                           <QuizList
                             workspaceId={(workspace && workspace.id) || ""}
@@ -1035,7 +1396,7 @@ const LearnPlayground: React.FC = () => {
                       {state.tab === "summary" && (
                         <TabsContent
                           value="summary"
-                          className="m-0 h-full p-4 text-zinc-500 dark:text-zinc-400 flex flex-col"
+                          className="m-0 h-full p-4 text-zinc-500 dark:text-zinc-400 flex flex-col w-full max-w-full"
                           style={{ maxHeight: "100%" }}
                         >
                           <SummaryList
@@ -1049,7 +1410,7 @@ const LearnPlayground: React.FC = () => {
                       {state.tab === "deepExplanation" && (
                         <TabsContent
                           value="deepExplanation"
-                          className="m-0 h-full p-4 text-zinc-500 dark:text-zinc-400 flex flex-col"
+                          className="m-0 h-full p-4 text-zinc-500 dark:text-zinc-400 flex flex-col w-full max-w-full"
                           style={{ maxHeight: "100%" }}
                         >
                           <MindMap

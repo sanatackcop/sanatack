@@ -621,7 +621,7 @@ export function AppSidebar({ onCollapse }: AppSidebarProps) {
     <div
       dir={isRTL ? "rtl" : "ltr"}
       lang={i18n.language}
-      className="h-full flex flex-col border-r bg-zinc-50
+      className="h-full flex flex-col border-r bg-zinc-50 border
        dark:bg-zinc-950 dark:border-zinc-800"
     >
       <SearchCommand open={openSerach} setOpen={setOpenSearch} />
