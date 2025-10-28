@@ -29,6 +29,7 @@ import {
 } from "@/pages/dashboard/utils";
 import { toast } from "sonner";
 import GenerateContentComponent from "@/shared/workspaces/Generate";
+import { cn } from "@/lib/utils";
 
 export interface MindMap {
   root: string;
@@ -232,7 +233,9 @@ export function SummaryList({ workspaceId }: SummaryListProps) {
   const [refetch, setRefetch] = useState<boolean>(false);
   const [selectedSummary, setSelectedSummary] = useState<Summary | null>(null);
   const [generating, setGenerating] = useState(false);
-  const { t } = useTranslation();
+  const [error, setError] = useState<string | null>(null);
+  const { t, i18n } = useTranslation();
+  const direction = i18n.dir();
 
   const createNewSummary = async () => {
     setGenerating(true);
@@ -263,16 +266,32 @@ export function SummaryList({ workspaceId }: SummaryListProps) {
   );
 
   useEffect(() => {
-    setLoading(true);
-    getWorkSpaceContent(workspaceId).then((data: any) => {
-      setSummaries(data.summaries ?? []);
-      setLoading(false);
-    });
+    let isMounted = true;
+    const load = async () => {
+      setLoading(true);
+      try {
+        const data = await getWorkSpaceContent(workspaceId);
+        if (!isMounted) return;
+        setSummaries(data.summaries ?? []);
+        setError(null);
+      } catch (err) {
+        if (!isMounted) return;
+        console.error("Failed to fetch summaries:", err);
+        setSummaries([]);
+        setError("summary.fetchError");
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    load();
+    return () => {
+      isMounted = false;
+    };
   }, [workspaceId, refetch]);
 
   if (selectedSummary) {
     return (
-      <div className="flex-1 min-h-0">
+      <div className="flex-1 min-h-0" dir={direction}>
         <ScrollArea className="h-full">
           <SummaryView
             summary={selectedSummary}
@@ -284,7 +303,7 @@ export function SummaryList({ workspaceId }: SummaryListProps) {
   }
 
   return (
-    <div className="flex-1 min-h-0">
+    <div className="flex-1 min-h-0" dir={direction}>
       <ScrollArea className="h-full">
         <motion.div
           key="list"
@@ -295,7 +314,7 @@ export function SummaryList({ workspaceId }: SummaryListProps) {
           className="px-6 mb-4 flex flex-col rounded-3xl justify-between space-y-3"
         >
           <h3 className="px-2 text-sm font-medium text-gray-700 dark:text-white">
-            {t("common.mySummary", "Summaries")}
+            {t("summary.list.title", "Summaries")}
           </h3>
           {loading ? (
             <div className="space-y-3">
@@ -305,6 +324,10 @@ export function SummaryList({ workspaceId }: SummaryListProps) {
                   className="p-4 h-32 animate-pulse bg-zinc-100 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800"
                 />
               ))}
+            </div>
+          ) : error ? (
+            <div className="text-sm text-destructive px-2">
+              {t(error, "Failed to fetch summaries. Please try again.")}
             </div>
           ) : summaries.length === 0 ? (
             <></>
@@ -339,7 +362,8 @@ export function SummaryList({ workspaceId }: SummaryListProps) {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-2">
                           <h3 className="font-semibold text-lg text-gray-900 truncate">
-                            {summary.payload?.title ?? "Generating summary..."}
+                            {summary.payload?.title ??
+                              t("summary.list.generating", "Generating summary...")}
                           </h3>
                           <StatusBadge status={summary.status} />
                         </div>
@@ -350,7 +374,11 @@ export function SummaryList({ workspaceId }: SummaryListProps) {
                       <div className="mt-3 w-full rounded-xl border border-red-200 bg-red-50 text-red-700 px-3 py-2 text-sm flex items-center gap-2">
                         <AlertTriangle className="w-4 h-4" />
                         <span>
-                          Generation failed. You can delete and try again.
+                          {summary.failureReason ||
+                            t(
+                              "summary.list.failure",
+                              "Generation failed. You can delete and try again."
+                            )}
                         </span>
                       </div>
                     )}
@@ -368,12 +396,12 @@ export function SummaryList({ workspaceId }: SummaryListProps) {
           )}
         </motion.div>
         <GenerateContentComponent
-          title={t("summary.createTitle", "Create a Summary")}
+          title={t("summary.generate.title", "Create a Summary")}
           description={t(
-            "common.createFlashCardDescription",
+            "summary.generate.description",
             "Create a Summary to summarize key points and generate a mind map for better understanding."
           )}
-          buttonLabel="Generate"
+          buttonLabel={t("summary.generate.button", "Generate")}
           onClick={createNewSummary}
           disabled={generating || anyActive}
         />
@@ -383,12 +411,18 @@ export function SummaryList({ workspaceId }: SummaryListProps) {
 }
 
 export function SummaryView({ summary, onClose }: SummaryViewProps) {
+  const { t, i18n } = useTranslation();
+  const direction = i18n.dir();
+  const isRTL = direction === "rtl";
+
   if (!summary.payload) {
     return (
-      <div className="p-6">
-        <p className="text-gray-700">No summary data available.</p>
+      <div className="p-6" dir={direction}>
+        <p className="text-gray-700">
+          {t("summary.view.noData", "No summary data available.")}
+        </p>
         <Button className="mt-4" onClick={onClose}>
-          Back
+          {t("common.back", "Back")}
         </Button>
       </div>
     );
@@ -397,14 +431,27 @@ export function SummaryView({ summary, onClose }: SummaryViewProps) {
   const { nodes, edges } = mapMindMapRootToFlowData(summary.payload.mind_map);
 
   return (
-    <Card className="flex flex-col gap-4 px-2 md:px-6 w-full min-h-[600px] border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/60 overflow-visible">
+    <Card
+      className="flex flex-col gap-4 px-2 md:px-6 w-full min-h-[600px] border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/60 overflow-visible"
+      dir={direction}
+    >
       <div className="flex flex-col items-start w-full max-w-5xl mx-auto gap-4">
         <div
-          className="flex group items-center text-zinc-400/70 cursor-pointer hover:bg-zinc-100/60 dark:hover:bg-zinc-900/60 drop-shadow-sm hover:text-zinc-700 dark:hover:text-zinc-200 rounded-2xl py-2 px-3 transition-all ease-linear duration-100"
+          className={cn(
+            "flex group items-center text-zinc-400/70 cursor-pointer hover:bg-zinc-100/60 dark:hover:bg-zinc-900/60 drop-shadow-sm hover:text-zinc-700 dark:hover:text-zinc-200 rounded-2xl py-2 px-3 transition-all ease-linear duration-100",
+            isRTL ? "flex-row-reverse" : "flex-row"
+          )}
           onClick={onClose}
         >
-          <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-all ease-out duration-200" />
-          <span className="text-sm">Back</span>
+          <ArrowLeft
+            className={cn(
+              "w-4 h-4 transition-all ease-out duration-200",
+              isRTL
+                ? "ml-2 group-hover:translate-x-1"
+                : "mr-2 group-hover:-translate-x-1"
+            )}
+          />
+          <span className="text-sm">{t("common.back", "Back")}</span>
         </div>
         <h2 className="text-2xl font-bold text-gray-900">
           {summary.payload.title}
@@ -412,7 +459,9 @@ export function SummaryView({ summary, onClose }: SummaryViewProps) {
         <p className="text-gray-600 mb-2">{summary.payload.overview}</p>
       </div>
       <div className="flex flex-col w-full max-w-5xl mx-auto mt-2">
-        <div className="font-semibold mb-1">Main Points:</div>
+        <div className="font-semibold mb-1">
+          {t("summary.view.mainPoints", "Main Points:")}
+        </div>
         <ul className="mb-4 list-disc list-inside text-gray-700 px-2">
           {summary.payload.main_points.map((pt, idx) => (
             <li key={idx}>{pt}</li>
@@ -421,7 +470,7 @@ export function SummaryView({ summary, onClose }: SummaryViewProps) {
       </div>
       <div className="w-full max-w-5xl mx-auto mt-2 flex flex-col">
         <div className="font-semibold mb-2 text-zinc-800 dark:text-zinc-200">
-          Mind Map
+          {t("summary.view.mindMap", "Mind Map")}
         </div>
         <div
           className="w-full relative bg-zinc-100 dark:bg-zinc-900/60 rounded-xl border border-zinc-200 dark:border-zinc-800"

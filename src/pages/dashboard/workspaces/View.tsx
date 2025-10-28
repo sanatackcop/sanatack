@@ -996,7 +996,7 @@ const LearnPlayground: React.FC = () => {
                       <div className="flex items-center gap-3 w-max mx-auto">
                         <TabsList
                           className="relative !space-x-0 !p-1 sm:!p-1.5 flex items-center gap-1 sm:gap-2 h-10 sm:h-12 rounded-2xl border border-zinc-200/60 dark:border-zinc-800/60 bg-white/90
-                           dark:bg-zinc-900/50 shadow-sm dark:shadow-zinc-950/20 backdrop-blur-md flex-shrink-0"
+                 dark:bg-zinc-900/50 shadow-sm dark:shadow-zinc-950/20 backdrop-blur-md flex-shrink-0"
                           style={{ direction: isRTL ? "rtl" : "ltr" }}
                         >
                           {TABS_CONFIG.map((tab) => {
@@ -1007,10 +1007,10 @@ const LearnPlayground: React.FC = () => {
                                 key={tab.id}
                                 value={tab.id}
                                 className={`px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 relative z-20 flex-shrink-0 transition-all duration-200 
-                          hover:bg-zinc-50 dark:hover:bg-zinc-800/40 
-                          data-[state=active]:bg-zinc-100 dark:data-[state=active]:bg-zinc-800/60 
-                          rounded-lg sm:rounded-xl h-7 sm:h-9 flex flex-row items-center 
-                          justify-center select-none cursor-pointer gap-1 sm:gap-1.5 md:gap-2`}
+                hover:bg-zinc-50 dark:hover:bg-zinc-800/40 
+                data-[state=active]:bg-zinc-100 dark:data-[state=active]:bg-zinc-800/60 
+                rounded-lg sm:rounded-xl h-7 sm:h-9 flex flex-row items-center 
+                justify-center select-none cursor-pointer gap-1 sm:gap-1.5 md:gap-2`}
                                 onMouseDown={(e) => e.stopPropagation()}
                                 onTouchStart={(e) => e.stopPropagation()}
                               >
@@ -1057,12 +1057,11 @@ const LearnPlayground: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+                  <div className="flex-1 flex flex-col min-h-0">
                     {state.tab === "chat" && (
                       <TabsContent
                         value="chat"
-                        className="m-0 flex-1 relative items-end justify-end min-h-0 overflow-hidden w-full max-w-full"
-                        style={{ maxHeight: "100%" }}
+                        className="m-0 flex-1 relative flex flex-col min-h-0 w-full max-w-full"
                       >
                         {state.isLoading ? (
                           <div className="w-full flex-1">
@@ -1070,38 +1069,48 @@ const LearnPlayground: React.FC = () => {
                           </div>
                         ) : (
                           <>
-                            <div>
-                              <ScrollArea>
+                            {/* Scrollable Messages Area */}
+                            <ScrollArea className="flex-1 w-full h-full pb-32 sm:pb-36">
+                              <div className="w-full px-2 sm:px-4">
                                 <ChatMessages
                                   messages={state.chatMessages || []}
                                   isLoading={state.chatLoading}
                                   streamingMessage={state.streamingMessage}
                                   onSendMessage={handleQuickSend}
                                 />
-                              </ScrollArea>
+                              </div>
+                            </ScrollArea>
+
+                            {/* Fixed Chat Input at Bottom Center */}
+                            <div className="absolute bottom-0 left-0 right-0 flex justify-center bg-gradient-to-t from-white dark:from-zinc-950 via-white/95 dark:via-zinc-950/95 to-transparent pt-4 pb-2 sm:pb-4">
+                              <div className="w-full max-w-4xl px-2 sm:px-6">
+                                <ChatInput
+                                  className="w-full"
+                                  value={state.prompt}
+                                  hasAutoContext={true}
+                                  expandSection={true}
+                                  contexts={selectedContexts}
+                                  availableContexts={availableContexts}
+                                  autoContextCount={autoContextCount}
+                                  autoContextLoading={autoContextLoading}
+                                  onChange={(value: string) =>
+                                    dispatch({
+                                      type: "SET_PROMPT",
+                                      prompt: value,
+                                    })
+                                  }
+                                  onSubmit={(value, model, contexts) =>
+                                    handleSendMessage(value, model, contexts)
+                                  }
+                                  onContextsChange={setSelectedContexts}
+                                  onAutoContextClick={handleAutoContext}
+                                  placeholder={t(
+                                    "chat.placeholder",
+                                    `Ask anything about ${getDisplayTitle()}...`
+                                  )}
+                                />
+                              </div>
                             </div>
-                            <ChatInput
-                              className="flex-shrink-0 p-2 px-4 sm:px-20 pb-2 w-full"
-                              value={state.prompt}
-                              hasAutoContext={true}
-                              expandSection={true}
-                              contexts={selectedContexts}
-                              availableContexts={availableContexts}
-                              autoContextCount={autoContextCount}
-                              autoContextLoading={autoContextLoading}
-                              onChange={(value: string) =>
-                                dispatch({ type: "SET_PROMPT", prompt: value })
-                              }
-                              onSubmit={(value, model, contexts) =>
-                                handleSendMessage(value, model, contexts)
-                              }
-                              onContextsChange={setSelectedContexts}
-                              onAutoContextClick={handleAutoContext}
-                              placeholder={t(
-                                "chat.placeholder",
-                                `Ask anything about ${getDisplayTitle()}...`
-                              )}
-                            />
                           </>
                         )}
                       </TabsContent>

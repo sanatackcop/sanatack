@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Settings2 } from "lucide-react";
@@ -103,9 +103,7 @@ export default function QuizModal({
     }
     const n = Number(raw);
     if (!Number.isFinite(n)) {
-      setCountError(
-        t("quizzes.modal.count.invalid", "Enter a valid number")
-      );
+      setCountError(t("quizzes.modal.count.invalid", "Enter a valid number"));
       return;
     }
     const c = clamp(n);
@@ -177,6 +175,7 @@ export default function QuizModal({
     difficulty,
     focus,
     workspaceId,
+    language,
     t,
     setRefresh,
   ]);
@@ -203,14 +202,11 @@ export default function QuizModal({
               {t("quizzes.modal.title", "Create Quiz Options")}
             </DialogTitle>
             <DialogDescription>
-              {t(
-                "quizzes.modal.description",
-                "Set options for the new quiz."
-              )}
+              {t("quizzes.modal.description", "Set options for the new quiz.")}
             </DialogDescription>
           </DialogHeader>
 
-          {/* Question Types */}
+          {/* Question Types with Dark Mode */}
           <div className="space-y-2">
             <Label>{t("quizzes.modal.types.label", "Question Types")}</Label>
             <div className="flex flex-wrap gap-2">
@@ -219,11 +215,12 @@ export default function QuizModal({
                 return (
                   <label
                     key={qt.value}
-                    className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 cursor-pointer select-none transition-colors ${
+                    className={cn(
+                      "inline-flex items-center gap-2 rounded-xl border px-3 py-2 cursor-pointer select-none transition-colors",
                       checked
-                        ? "border-emerald-400 bg-emerald-50"
-                        : "border-gray-200 hover:bg-gray-50"
-                    }`}
+                        ? "border-emerald-400 bg-emerald-50 dark:border-emerald-500 dark:bg-emerald-950/50 dark:text-emerald-100"
+                        : "border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-200"
+                    )}
                   >
                     <Checkbox
                       checked={checked}
@@ -285,10 +282,7 @@ export default function QuizModal({
 
             <div className="space-y-2">
               <Label htmlFor="count-input">
-                {t(
-                  "quizzes.modal.count.label",
-                  "Number of questions"
-                )}
+                {t("quizzes.modal.count.label", "Number of questions")}
               </Label>
               <Input
                 id="count-input"
@@ -305,7 +299,9 @@ export default function QuizModal({
                 disabled={generating}
               />
               {countError && (
-                <p className="text-xs text-red-600">{countError}</p>
+                <p className="text-xs text-red-600 dark:text-red-400">
+                  {countError}
+                </p>
               )}
             </div>
           </div>

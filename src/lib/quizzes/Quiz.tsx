@@ -28,7 +28,6 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
   const [error, setError] = useState<string | null>(null);
   const { t, i18n } = useTranslation();
   const direction = i18n.dir();
-  const isRTL = direction === "rtl";
 
   const fetchWorkspaceContent = useCallback(async () => {
     setLoading(true);

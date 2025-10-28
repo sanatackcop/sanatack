@@ -106,6 +106,119 @@
       "hintDetail": "زوّدنا بالمدخلات المطلوبة للمتابعة"
     }
   },
+  "quizzes": {
+    "fetchError": "تعذّر جلب الاختبارات. حاول مرة أخرى.",
+    "list": {
+      "title": "اختباراتي",
+      "generating": "جارٍ توليد الاختبار...",
+      "questions": "{{count}} سؤال",
+      "failure": "فشل توليد الاختبار. يمكنك إعادة توليده أو حذفه.",
+      "progress": "التقدم",
+      "noAttempt": "لم تبدأ بعد",
+      "scoreLine": "{{earned}}/{{total}} نقطة{{statusSuffix}}",
+      "scoreSuffix": {
+        "passed": " • ناجح",
+        "failed": " • غير ناجح"
+      },
+      "answeredLine": "{{answered}}/{{total}} سؤالًا مجابًا",
+      "status": {
+        "notStarted": "لم يبدأ",
+        "graded": "مصحح",
+        "passed": "ناجح",
+        "failed": "راسب",
+        "in_progress": "قيد التقدم",
+        "pending_review": "بانتظار المراجعة",
+        "submitted": "مُرسل"
+      }
+    },
+    "generate": {
+      "title": "إنشاء اختبار",
+      "description": "أنشئ مجموعات اختبار بالأنماط والصعوبة والتركيز المفضل.",
+      "button": "إنشاء"
+    },
+    "modal": {
+      "title": "خيارات إنشاء الاختبار",
+      "description": "حدّد خيارات الاختبار الجديد.",
+      "selectAtLeastOneType": "اختر نوعًا واحدًا على الأقل من الأسئلة",
+      "generating": "جارٍ التوليد…",
+      "create": "إنشاء",
+      "types": {
+        "label": "أنواع الأسئلة",
+        "help": "اختر نوعًا أو أكثر (مثلاً اختيار من متعدد، صح/خطأ، سيناريو).",
+        "multiple_choice": "اختيار من متعدد",
+        "true_false": "صح / خطأ",
+        "scenario": "سيناريو"
+      },
+      "difficulties": {
+        "easy": "سهل",
+        "medium": "متوسط",
+        "hard": "صعب"
+      },
+      "difficulty": {
+        "label": "درجة الصعوبة"
+      },
+      "count": {
+        "label": "عدد الأسئلة",
+        "invalid": "أدخل رقمًا صالحًا",
+        "range": "يرجى الاختيار بين {{min}} و {{max}}"
+      },
+      "language": {
+        "label": "اللغة",
+        "placeholder": "اختر اللغة"
+      },
+      "focus": {
+        "label": "التركيز (اختياري)",
+        "placeholder": "مثال: المصفوفات، المؤشرات، معالجة الأخطاء",
+        "help": "أخبرنا بما يجب التركيز عليه. اتركه فارغًا لاختبار عام."
+      }
+    }
+  },
+  "summary": {
+    "fetchError": "تعذّر جلب الملخصات. حاول مرة أخرى.",
+    "list": {
+      "title": "الملخصات",
+      "generating": "جارٍ توليد الملخص...",
+      "failure": "فشل التوليد. يمكنك الحذف والمحاولة مجددًا."
+    },
+    "generate": {
+      "title": "إنشاء ملخص",
+      "description": "أنشئ ملخصًا لتجميع النقاط الرئيسية ورسم خريطة ذهنية لفهم أفضل.",
+      "button": "إنشاء"
+    },
+    "view": {
+      "noData": "لا توجد بيانات للملخص.",
+      "mainPoints": "النقاط الرئيسية:",
+      "mindMap": "الخريطة الذهنية"
+    }
+  },
+  "explanations": {
+    "fetchError": "تعذّر جلب الشروحات. حاول مرة أخرى.",
+    "list": {
+      "title": "شروحاتي",
+      "untitled": "شرح",
+      "createdAt": "تم الإنشاء في {{date}}",
+      "failure": "فشل التوليد. يمكنك المحاولة مرة أخرى."
+    },
+    "generate": {
+      "title": "شرح متعمق",
+      "description": "قسّم الموضوعات المعقدة إلى رؤى منظمة وسهلة الفهم.",
+      "button": "إنشاء"
+    },
+    "detail": {
+      "queued": "في قائمة الانتظار…",
+      "processing": "جارٍ المعالجة…",
+      "noContent": "لا توجد محتويات للشرح."
+    },
+    "view": {
+      "mainSections": "الأقسام الرئيسية",
+      "examples": "أمثلة",
+      "keyPoints": "أهم النقاط",
+      "comprehensiveAnalysis": "تحليل شامل",
+      "coreThemes": "المحاور الأساسية",
+      "practicalApplications": "تطبيقات عملية",
+      "keyTakeaways": "الخلاصات الرئيسية"
+    }
+  },
   "theme": {
     "light": "فاتح",
     "dark": "داكن",

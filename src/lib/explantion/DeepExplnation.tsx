@@ -19,6 +19,7 @@ import ExplanationSections from "./ExplanationSection";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import GenerateContentComponent from "@/shared/workspaces/Generate";
+import { cn } from "@/lib/utils";
 
 export type Explanation = {
   id: string;
@@ -80,7 +81,10 @@ export default function MindMap({ workspaceId }: { workspaceId: string }) {
   const [activeId, setActiveId] = useState<string | null>(null); // null => show LIST first
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
-  const { t } = useTranslation();
+  const [error, setError] = useState<string | null>(null);
+  const { t, i18n } = useTranslation();
+  const direction = i18n.dir();
+  const isRTL = direction === "rtl";
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -95,7 +99,12 @@ export default function MindMap({ workspaceId }: { workspaceId: string }) {
             new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         );
       setItems(list);
+      setError(null);
       // IMPORTANT: do NOT auto-select anything; list first like FlashcardsList
+    } catch (err) {
+      console.error("Failed to load explanations:", err);
+      setItems([]);
+      setError("explanations.fetchError");
     } finally {
       setLoading(false);
     }
@@ -132,6 +141,7 @@ export default function MindMap({ workspaceId }: { workspaceId: string }) {
         closeButton: true,
       });
       console.error("Failed Creating Explanation: ", err);
+      setError("explanations.fetchError");
     } finally {
       setGenerating(false);
     }
@@ -149,7 +159,7 @@ export default function MindMap({ workspaceId }: { workspaceId: string }) {
   const active = items.find((x) => x.id === activeId) ?? null;
 
   return (
-    <div className="flex-1 min-h-0">
+    <div className="flex-1 min-h-0" dir={direction}>
       <ScrollArea className="h-full">
         {!active ? (
           <motion.div
@@ -161,13 +171,23 @@ export default function MindMap({ workspaceId }: { workspaceId: string }) {
             className="py-4 flex flex-col rounded-3xl justify-between space-y-3"
           >
             <h3 className="text-sm font-medium text-gray-700 dark:text-white mx-6">
-              My Explanations
+              {t("explanations.list.title", "My Explanations")}
             </h3>
+
+            {error && (
+              <div className="text-sm text-destructive mx-6">
+                {t(error, "Failed to fetch explanations. Please try again.")}
+              </div>
+            )}
 
             {items.map((it) => {
               const disabled =
                 it.status === "pending" || it.status === "processing";
               const isFailed = it.status === "failed";
+              const createdLabel = t("explanations.list.createdAt", {
+                date: new Date(it.created_at).toLocaleString(),
+                defaultValue: "Created {{date}}",
+              });
               return (
                 <Card
                   key={it.id}
@@ -184,16 +204,17 @@ export default function MindMap({ workspaceId }: { workspaceId: string }) {
                             : "bg-white hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100/80 border-gray-200/60 hover:border-gray-300/80"
                         }`}
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h3 className="font-semibold text-lg text-gray-900 truncate">
-                          {it.payload?.title || "Explanation"}
-                        </h3>
-                        <StatusBadge status={toGen(it.status)} />
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        Created {new Date(it.created_at).toLocaleString()}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className="font-semibold text-lg text-gray-900 truncate">
+                          {it.payload?.title ||
+                            t("explanations.list.untitled", "Explanation")}
+                          </h3>
+                          <StatusBadge status={toGen(it.status)} />
+                        </div>
+                        <div className="text-xs text-gray-500">
+                        {createdLabel}
                       </div>
                     </div>
                   </div>
@@ -203,7 +224,10 @@ export default function MindMap({ workspaceId }: { workspaceId: string }) {
                       <AlertTriangle className="w-4 h-4" />
                       <span>
                         {it.failureReason ||
-                          "Generation failed. You can try again."}
+                          t(
+                            "explanations.list.failure",
+                            "Generation failed. You can try again."
+                          )}
                       </span>
                     </div>
                   )}
@@ -215,10 +239,12 @@ export default function MindMap({ workspaceId }: { workspaceId: string }) {
             })}
 
             <GenerateContentComponent
-              title={"Deep Explanation"}
-              description={"Detailed concept broken down"}
-              buttonLabel="Generate"
-              createNewSummary
+              title={t("explanations.generate.title", "Deep Explanation")}
+              description={t(
+                "explanations.generate.description",
+                "Break down complex topics into structured, accessible insights."
+              )}
+              buttonLabel={t("explanations.generate.button", "Generate")}
               onClick={handleGenerate}
               disabled={generating || anyActive}
             />
@@ -234,11 +260,21 @@ export default function MindMap({ workspaceId }: { workspaceId: string }) {
           >
             <div className="flex items-center gap-4 px-14 py-4 flex-shrink-0">
               <div
-                className="flex group items-center text-gray-400/50 cursor-pointer hover:bg-gray-50/50 rounded-2xl py-2 px-3"
+                className={cn(
+                  "flex group items-center text-gray-400/50 cursor-pointer hover:bg-gray-50/50 rounded-2xl py-2 px-3 transition-all",
+                  isRTL ? "flex-row-reverse" : "flex-row"
+                )}
                 onClick={() => setActiveId(null)}
               >
-                <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition" />
-                <span className="text-sm">Back</span>
+                <ArrowLeft
+                  className={cn(
+                    "w-4 h-4 transition",
+                    isRTL
+                      ? "ml-2 group-hover:translate-x-1"
+                      : "mr-2 group-hover:-translate-x-1"
+                  )}
+                />
+                <span className="text-sm">{t("common.back", "Back")}</span>
               </div>
             </div>
 
@@ -251,8 +287,8 @@ export default function MindMap({ workspaceId }: { workspaceId: string }) {
                       <Loader2 className="h-4 w-4 animate-spin" />
                       <span>
                         {active.status === "pending"
-                          ? "Queued…"
-                          : "Processing…"}
+                          ? t("explanations.detail.queued", "Queued…")
+                          : t("explanations.detail.processing", "Processing…")}
                       </span>
                     </Card>
                     <Skeleton className="h-[480px] w-full rounded-xl" />
@@ -266,7 +302,10 @@ export default function MindMap({ workspaceId }: { workspaceId: string }) {
                         ) : (
                           <Card className="p-4">
                             <div className="text-sm text-gray-600">
-                              No explanation content available.
+                              {t(
+                                "explanations.detail.noContent",
+                                "No explanation content available."
+                              )}
                             </div>
                           </Card>
                         )}

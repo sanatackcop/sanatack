@@ -106,6 +106,119 @@
       "hintDetail": "Provide required inputs to proceed"
     }
   },
+  "quizzes": {
+    "fetchError": "Failed to fetch quizzes. Please try again.",
+    "list": {
+      "title": "My Quizzes",
+      "generating": "Generating quiz...",
+      "questions": "{{count}} Questions",
+      "failure": "Generation failed. You can regenerate or delete this quiz.",
+      "progress": "Progress",
+      "noAttempt": "No attempt yet",
+      "scoreLine": "{{earned}}/{{total}} pts{{statusSuffix}}",
+      "scoreSuffix": {
+        "passed": " • Passed",
+        "failed": " • Failed"
+      },
+      "answeredLine": "{{answered}}/{{total}} answered",
+      "status": {
+        "notStarted": "Not started",
+        "graded": "Graded",
+        "passed": "Passed",
+        "failed": "Failed",
+        "in_progress": "In progress",
+        "pending_review": "Pending review",
+        "submitted": "Submitted"
+      }
+    },
+    "generate": {
+      "title": "Create Quiz",
+      "description": "Create quiz sets with preferred types, difficulty, and focus.",
+      "button": "Generate"
+    },
+    "modal": {
+      "title": "Create Quiz Options",
+      "description": "Set options for the new quiz.",
+      "selectAtLeastOneType": "Select at least one question type",
+      "generating": "Generating…",
+      "create": "Create",
+      "types": {
+        "label": "Question Types",
+        "help": "Choose one or more types (e.g., Multiple Choice, True/False, Scenario).",
+        "multiple_choice": "Multiple Choice",
+        "true_false": "True / False",
+        "scenario": "Scenario"
+      },
+      "difficulties": {
+        "easy": "Easy",
+        "medium": "Medium",
+        "hard": "Hard"
+      },
+      "difficulty": {
+        "label": "Difficulty"
+      },
+      "count": {
+        "label": "Number of questions",
+        "invalid": "Enter a valid number",
+        "range": "Please choose between {{min}} and {{max}}"
+      },
+      "language": {
+        "label": "Language",
+        "placeholder": "Select language"
+      },
+      "focus": {
+        "label": "Focus (optional)",
+        "placeholder": "e.g. arrays, pointers, error handling",
+        "help": "Tell us what to prioritize. Leave empty for a general quiz."
+      }
+    }
+  },
+  "summary": {
+    "fetchError": "Failed to fetch summaries. Please try again.",
+    "list": {
+      "title": "Summaries",
+      "generating": "Generating summary...",
+      "failure": "Generation failed. You can delete and try again."
+    },
+    "generate": {
+      "title": "Create a Summary",
+      "description": "Create a Summary to summarize key points and generate a mind map for better understanding.",
+      "button": "Generate"
+    },
+    "view": {
+      "noData": "No summary data available.",
+      "mainPoints": "Main Points:",
+      "mindMap": "Mind Map"
+    }
+  },
+  "explanations": {
+    "fetchError": "Failed to fetch explanations. Please try again.",
+    "list": {
+      "title": "My Explanations",
+      "untitled": "Explanation",
+      "createdAt": "Created {{date}}",
+      "failure": "Generation failed. You can try again."
+    },
+    "generate": {
+      "title": "Deep Explanation",
+      "description": "Break down complex topics into structured, accessible insights.",
+      "button": "Generate"
+    },
+    "detail": {
+      "queued": "Queued…",
+      "processing": "Processing…",
+      "noContent": "No explanation content available."
+    },
+    "view": {
+      "mainSections": "Main Sections",
+      "examples": "Examples",
+      "keyPoints": "Key Points",
+      "comprehensiveAnalysis": "Comprehensive Analysis",
+      "coreThemes": "Core Themes",
+      "practicalApplications": "Practical Applications",
+      "keyTakeaways": "Key Takeaways"
+    }
+  },
   "theme": {
     "light": "Light",
     "dark": "Dark",

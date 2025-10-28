@@ -443,7 +443,10 @@ const PdfReader: React.FC<{
     <Card className="flex h-full overflow-hidden">
       <div className="flex-1 flex flex-col overflow-hidden">
         <div ref={containerRef} className="flex-1 overflow-hidden">
-          <div className="sticky -top-1 z-20 flex items-center justify-between bg-white dark:border-zinc-200/20 dark:bg-zinc-950 px-3 py-2 border-b backdrop-blur-sm">
+          <div
+            className="sticky -top-1 z-20 flex items-center justify-between bg-white dark:border-zinc-200/20 dark:bg-zinc-950 
+          px-3 py-2 border-b backdrop-blur-sm"
+          >
             <div className="flex items-center gap-2">
               <Button
                 variant="ghost"
