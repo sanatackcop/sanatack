@@ -159,7 +159,7 @@ export default function MindMap({ workspaceId }: { workspaceId: string }) {
   const active = items.find((x) => x.id === activeId) ?? null;
 
   return (
-    <div className="flex-1 min-h-0" dir={direction}>
+    <div className="flex-1 min-h-0">
       <ScrollArea className="h-full">
         {!active ? (
           <motion.div
@@ -169,6 +169,7 @@ export default function MindMap({ workspaceId }: { workspaceId: string }) {
             exit={{ opacity: 0, y: 20 }}
             transition={{ duration: 0.25 }}
             className="py-4 flex flex-col rounded-3xl justify-between space-y-3"
+            dir={direction}
           >
             <h3 className="text-sm font-medium text-gray-700 dark:text-white mx-6">
               {t("explanations.list.title", "My Explanations")}
@@ -204,16 +205,16 @@ export default function MindMap({ workspaceId }: { workspaceId: string }) {
                             : "bg-white hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100/80 border-gray-200/60 hover:border-gray-300/80"
                         }`}
                 >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-semibold text-lg text-gray-900 truncate">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h3 className="font-semibold text-lg text-gray-900 truncate">
                           {it.payload?.title ||
                             t("explanations.list.untitled", "Explanation")}
-                          </h3>
-                          <StatusBadge status={toGen(it.status)} />
-                        </div>
-                        <div className="text-xs text-gray-500">
+                        </h3>
+                        <StatusBadge status={toGen(it.status)} />
+                      </div>
+                      <div className="text-xs text-gray-500">
                         {createdLabel}
                       </div>
                     </div>
@@ -247,6 +248,7 @@ export default function MindMap({ workspaceId }: { workspaceId: string }) {
               buttonLabel={t("explanations.generate.button", "Generate")}
               onClick={handleGenerate}
               disabled={generating || anyActive}
+              dir={direction}
             />
           </motion.div>
         ) : (

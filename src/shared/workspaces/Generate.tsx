@@ -8,9 +8,11 @@ const GenerateContentComponent = ({
   buttonLabel = "Generate",
   onClick,
   disabled = false,
+  dir,
 }: any) => {
   return (
     <Card
+      dir={dir}
       className="relative z-0 mx-5 justify-between overflow-hidden flex  p-5
     borde-2 border-dashed border-gray-200 hover:border-gray-300 transition-colors duration-200"
     >

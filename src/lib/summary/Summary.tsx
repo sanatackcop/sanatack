@@ -303,7 +303,7 @@ export function SummaryList({ workspaceId }: SummaryListProps) {
   }
 
   return (
-    <div className="flex-1 min-h-0" dir={direction}>
+    <div className="flex-1 min-h-0">
       <ScrollArea className="h-full">
         <motion.div
           key="list"
@@ -312,6 +312,7 @@ export function SummaryList({ workspaceId }: SummaryListProps) {
           exit={{ opacity: 0, y: 20 }}
           transition={{ duration: 0.25 }}
           className="px-6 mb-4 flex flex-col rounded-3xl justify-between space-y-3"
+          dir={direction}
         >
           <h3 className="px-2 text-sm font-medium text-gray-700 dark:text-white">
             {t("summary.list.title", "Summaries")}
@@ -363,7 +364,10 @@ export function SummaryList({ workspaceId }: SummaryListProps) {
                         <div className="flex items-center gap-2 mb-2">
                           <h3 className="font-semibold text-lg text-gray-900 truncate">
                             {summary.payload?.title ??
-                              t("summary.list.generating", "Generating summary...")}
+                              t(
+                                "summary.list.generating",
+                                "Generating summary..."
+                              )}
                           </h3>
                           <StatusBadge status={summary.status} />
                         </div>
@@ -404,6 +408,7 @@ export function SummaryList({ workspaceId }: SummaryListProps) {
           buttonLabel={t("summary.generate.button", "Generate")}
           onClick={createNewSummary}
           disabled={generating || anyActive}
+          dir={direction}
         />
       </ScrollArea>
     </div>

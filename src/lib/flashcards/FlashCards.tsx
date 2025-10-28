@@ -381,7 +381,12 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
                           <div className="flex items-center justify-between pt-2">
                             <div className="flex items-center">
                               <span className="text-sm font-medium text-opacity-75 text-zinc-800 dark:text-white flex items-center gap-2">
-                                <span>{t("flashcards.cardNumber", { number: idx + 1, defaultValue: "Card {{number}}" })}</span>
+                                <span>
+                                  {t("flashcards.cardNumber", {
+                                    number: idx + 1,
+                                    defaultValue: "Card {{number}}",
+                                  })}
+                                </span>
                                 <Badge
                                   variant={"outline"}
                                   className="rounded-2xl"
@@ -422,6 +427,7 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
                 )}
                 buttonLabel={t("flashcards.generate.button", "Generate")}
                 onClick={handleCreatingNewFlashcard}
+                dir={direction}
               />
             </ScrollArea>
           </div>

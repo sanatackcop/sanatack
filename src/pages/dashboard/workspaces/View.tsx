@@ -147,9 +147,18 @@ const LearnPlayground: React.FC = () => {
     (contexts: WorkspaceContext[] = []): ChatContext[] =>
       contexts.map((context) => {
         const content = context.content ?? "";
+        const rawTitle =
+          (context.title ?? "").trim() ||
+          (context.metadata?.title as string | undefined)?.trim() ||
+          (context.metadata?.fileName as string | undefined)?.trim() ||
+          (context.source ?? "").trim();
+        const name =
+          rawTitle && rawTitle.length > 0
+            ? rawTitle
+            : `Context ${(context.id || "").slice(0, 6) || ""}`;
         return {
           id: context.id,
-          name: context.title,
+          name,
           content,
           type: mapContextType(context.type),
           preview: content.length > 160 ? `${content.slice(0, 160)}…` : content,

@@ -190,13 +190,11 @@ export default function QuizModal({
         )}
         buttonLabel={t("quizzes.generate.button", "Generate")}
         onClick={() => setIsModalOpen(true)}
+        dir={direction}
       />
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent
-          dir={direction}
-          className={cn("sm:max-w-lg", isRTL && "text-right")}
-        >
+        <DialogContent className={cn("sm:max-w-lg")}>
           <DialogHeader>
             <DialogTitle>
               {t("quizzes.modal.title", "Create Quiz Options")}

@@ -91,7 +91,7 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
   }
 
   return (
-    <div className="flex-1 min-h-0" dir={direction}>
+    <div className="flex-1 min-h-0">
       <ScrollArea className="h-full">
         <motion.div
           key="list"
@@ -100,6 +100,7 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
           exit={{ opacity: 0, y: 20 }}
           transition={{ duration: 0.25 }}
           className="px-6 mb-4 flex flex-col rounded-3xl justify-between space-y-3"
+          dir={direction}
         >
           <h3 className="px-2 text-sm font-medium text-gray-700 dark:text-white">
             {t("quizzes.list.title", "My Quizzes")}
@@ -199,57 +200,57 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
                         : "border-gray-200/60 hover:border-gray-300/80 dark:hover:bg-opacity-5"
                     } ${disabled ? "pointer-events-auto" : ""}`}
                   >
-                      <div className="flex justify-between items-start gap-3">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-2">
-                            <h3 className="font-medium text-lg text-gray-900 truncate dark:text-white">
-                              {quiz.title ||
-                                t(
-                                  "quizzes.list.generating",
-                                  "Generating quiz..."
-                                )}
-                            </h3>
-                            <StatusBadge status={quiz.status} />
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Badge
-                              variant={statusVariant}
-                              className="text-xs capitalize"
-                            >
-                              {statusLabel}
-                            </Badge>
+                    <div className="flex justify-between items-start gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className="font-medium text-lg text-gray-900 truncate dark:text-white">
+                            {quiz.title ||
+                              t(
+                                "quizzes.list.generating",
+                                "Generating quiz..."
+                              )}
+                          </h3>
+                          <StatusBadge status={quiz.status} />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge
+                            variant={statusVariant}
+                            className="text-xs capitalize"
+                          >
+                            {statusLabel}
+                          </Badge>
                           <p className="text-sm text-gray-500">
                             {t("quizzes.list.questions", {
                               count: questionCount,
                               defaultValue: "{{count}} Questions",
                             })}
                           </p>
-                          </div>
                         </div>
                       </div>
+                    </div>
 
-                      {failed && (
-                        <div className="mt-3 w-full rounded-xl border border-red-200 bg-red-50 text-red-700 px-3 py-2 text-sm flex items-center gap-2">
-                          <AlertTriangle className="w-4 h-4" />
-                          <span>
-                            {quiz.failureReason ||
-                              t(
-                                "quizzes.list.failure",
-                                "Generation failed. You can regenerate or delete this quiz."
-                              )}
-                          </span>
-                        </div>
-                      )}
+                    {failed && (
+                      <div className="mt-3 w-full rounded-xl border border-red-200 bg-red-50 text-red-700 px-3 py-2 text-sm flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4" />
+                        <span>
+                          {quiz.failureReason ||
+                            t(
+                              "quizzes.list.failure",
+                              "Generation failed. You can regenerate or delete this quiz."
+                            )}
+                        </span>
+                      </div>
+                    )}
 
-                      <div className="mt-3">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs font-medium text-gray-500">
-                            {t("quizzes.list.progress", "Progress")}
-                          </span>
-                          <span className="text-xs font-semibold text-gray-700">
-                            {Math.round(progress)}%
-                          </span>
-                        </div>
+                    <div className="mt-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-medium text-gray-500">
+                          {t("quizzes.list.progress", "Progress")}
+                        </span>
+                        <span className="text-xs font-semibold text-gray-700">
+                          {Math.round(progress)}%
+                        </span>
+                      </div>
                       <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                         <div
                           className="h-full bg-green-500 rounded-full transition-all duration-300"

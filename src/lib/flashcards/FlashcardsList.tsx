@@ -74,11 +74,9 @@ export const FlashcardsList: React.FC<{
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 20 }}
         transition={{ duration: 0.25 }}
+        dir={direction}
       >
-        <div
-          className="px-6 py-4 flex flex-col rounded-3xl justify-between space-y-3"
-          dir={direction}
-        >
+        <div className="px-6 py-4 flex flex-col rounded-3xl justify-between space-y-3">
           <h3 className="px-2 text-sm font-medium text-gray-700 dark:text-white">
             {t("flashcards.list.title", "My Flashcards")}
           </h3>
@@ -135,7 +133,10 @@ export const FlashcardsList: React.FC<{
                           ))}
                           {completed && set.flashcards && (
                             <span
-                              className={cn("text-xs text-gray-500", isRTL ? "mr-1" : "ml-1")}
+                              className={cn(
+                                "text-xs text-gray-500",
+                                isRTL ? "mr-1" : "ml-1"
+                              )}
                             >
                               {set.flashcards.length}{" "}
                               {t("flashcards.cardsLabel", "cards")}
@@ -193,8 +194,6 @@ export const FlashcardsList: React.FC<{
       </motion.div>
 
       <Modal
-        dir={direction}
-        className={isRTL ? "text-right" : undefined}
         description={t(
           "flashcards.list.deleteWarning",
           "Are you sure you want to delete this flashcard set? This action cannot be undone."

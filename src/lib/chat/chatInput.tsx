@@ -6,7 +6,16 @@ import React, {
   useState,
 } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowUp, X, Paperclip, Loader2, AtSign } from "lucide-react";
+import {
+  ArrowUp,
+  X,
+  Paperclip,
+  // FileText,
+  // Image as ImageIcon,
+  // Video,
+  // Globe,
+  // File,
+} from "lucide-react";
 import i18n from "@/i18n";
 import { toast } from "sonner";
 
@@ -105,20 +114,26 @@ const ChatInput: React.FC<ChatInputProps> = ({
   contexts = [],
   onContextsChange,
   className = "",
-  hasAutoContext = true,
   onAutoContextClick,
-  autoContextLoading = false,
+  // hasAutoContext = true,
+  // autoContextLoading = false,
   selectedModel,
+  availableContexts = [],
+  onSearchContexts,
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [selectedContexts, setSelectedContexts] = useState<Context[]>(
     contexts ?? []
   );
-  const [, setContextSearch] = useState("");
+  const [contextSearch, setContextSearch] = useState("");
   const [, setCursorPosition] = useState(0);
   const [, setMentionTriggerPos] = useState<number | null>(null);
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [, setSelectedContextIndex] = useState(0);
+  const [contextMenuOpen] = useState(false);
+  const [, setSearchResults] = useState<Context[]>(availableContexts);
+  const [, setIsSearching] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     setSelectedContexts(contexts ?? []);
@@ -130,6 +145,90 @@ const ChatInput: React.FC<ChatInputProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isRTL = i18n.dir() === "rtl";
+
+  useEffect(() => {
+    if (contextMenuOpen && onAutoContextClick) {
+      onAutoContextClick();
+    }
+  }, [contextMenuOpen, onAutoContextClick]);
+
+  useEffect(() => {
+    const searchContextsDebounced = async () => {
+      if (!contextSearch.trim()) {
+        setSearchResults(availableContexts);
+        setIsSearching(false);
+        return;
+      }
+
+      if (onSearchContexts) {
+        setIsSearching(true);
+        try {
+          const results = await onSearchContexts(contextSearch);
+          setSearchResults(results);
+        } catch (error) {
+          console.error("Failed to search contexts:", error);
+          toast.error(
+            isRTL ? "فشل البحث عن السياقات" : "Failed to search contexts"
+          );
+        } finally {
+          setIsSearching(false);
+        }
+      } else {
+        // Local filtering if no search callback provided
+        const filtered = availableContexts.filter((ctx) =>
+          ctx.name.toLowerCase().includes(contextSearch.toLowerCase())
+        );
+        setSearchResults(filtered);
+        setIsSearching(false);
+      }
+    };
+
+    const timeoutId = setTimeout(searchContextsDebounced, 300);
+    return () => clearTimeout(timeoutId);
+  }, [contextSearch, availableContexts, onSearchContexts, isRTL]);
+
+  // Update search results when availableContexts changes
+  useEffect(() => {
+    if (!contextSearch.trim()) {
+      setSearchResults(availableContexts);
+    }
+  }, [availableContexts, contextSearch]);
+
+  // Get icon based on context type
+  // const getContextIcon = (type: Context["type"]) => {
+  //   switch (type) {
+  //     case "image":
+  //       return <ImageIcon className="w-4 h-4" />;
+  //     case "video":
+  //       return <Video className="w-4 h-4" />;
+  //     case "url":
+  //       return <Globe className="w-4 h-4" />;
+  //     case "document":
+  //       return <FileText className="w-4 h-4" />;
+  //     case "file":
+  //       return <File className="w-4 h-4" />;
+  //     case "transcript":
+  //       return <FileText className="w-4 h-4" />;
+  //     case "summary":
+  //       return <FileText className="w-4 h-4" />;
+  //     default:
+  //       return <FileText className="w-4 h-4" />;
+  //   }
+  // };
+
+  // const addContext = (context: Context) => {
+  //   setSelectedContexts((prev) => {
+  //     if (prev.some((ctx) => ctx.id === context.id)) {
+  //       toast.info(isRTL ? "السياق مضاف بالفعل" : "Context already added");
+  //       return prev;
+  //     }
+  //     const updated = [...prev, context];
+  //     onContextsChange?.(updated);
+  //     return updated;
+  //   });
+  //   setContextMenuOpen(false);
+  //   setContextSearch("");
+  // };
 
   const processFiles = useCallback(
     async (fileList: FileList | File[]) => {
@@ -277,8 +376,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
         setContextSearch(textAfterAt);
         setShowContextMenu(true);
         setSelectedContextIndex(0);
-
-        // Filter contexts based on search
       } else {
         setShowContextMenu(false);
         setMentionTriggerPos(null);
@@ -348,8 +445,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
     e.target.value = "";
   };
 
-  const [isDragging, setIsDragging] = useState(false);
-
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(true);
@@ -373,7 +468,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
     [selectedContexts]
   );
 
-  const removeAttachment = (contextId: string) => {
+  const removeContext = (contextId: string) => {
     setSelectedContexts((prev) => {
       const updated = prev.filter((ctx) => ctx.id !== contextId);
       onContextsChange?.(updated);
@@ -452,7 +547,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      removeAttachment(context.id);
+                      removeContext(context.id);
                     }}
                     className="text-zinc-400 transition-colors hover:text-zinc-700 dark:hover:text-zinc-100"
                     aria-label={isRTL ? "إزالة الملف" : "Remove attachment"}
@@ -479,11 +574,11 @@ const ChatInput: React.FC<ChatInputProps> = ({
                 placeholder:text-zinc-400 dark:placeholder:text-zinc-500
                 text-zinc-900 dark:text-zinc-100
                 leading-relaxed transition-all duration-200 
-                py-4 truncate text-nowrap
+                py-4
               `}
               style={{
                 minHeight: "56px",
-                maxHeight: "60px",
+                maxHeight: "160px",
               }}
               rows={1}
             />
@@ -504,27 +599,129 @@ const ChatInput: React.FC<ChatInputProps> = ({
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex items-center gap-1 w-full">
-                  {hasAutoContext && (
-                    <Button
-                      variant="outline"
-                      className="rounded-2xl dark:bg-transparent"
-                      size="sm"
-                      disabled={autoContextLoading}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onAutoContextClick?.();
-                      }}
+                  {/* {hasAutoContext && (
+                    <Popover
+                      open={contextMenuOpen}
+                      onOpenChange={setContextMenuOpen}
+                      modal={true}
                     >
-                      <div className="flex items-center gap-1.5  text-zinc-900/50 dark:text-gray-100  transition-all duration-100 hover:text-black">
-                        {autoContextLoading ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        ) : (
-                          <AtSign className="w-3.5 h-3.5" />
-                        )}
-                        <span>{isRTL ? "سياق " : "Add Context"}</span>
-                      </div>
-                    </Button>
-                  )}
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="rounded-2xl dark:bg-transparent"
+                          size="sm"
+                          disabled={autoContextLoading}
+                        >
+                          <div className="flex items-center gap-1.5 text-zinc-900/50 dark:text-gray-100 transition-all duration-100 hover:text-black">
+                            {autoContextLoading ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <AtSign className="w-3.5 h-3.5" />
+                            )}
+                            <span>{isRTL ? "إضافة سياق" : "Add Context"}</span>
+                          </div>
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        className="w-72 p-0"
+                        align={isRTL ? "end" : "start"}
+                        side="top"
+                        onWheel={(e) => e.stopPropagation()}
+                        onTouchMove={(e) => e.stopPropagation()}
+                      >
+                        <div className="flex flex-col">
+                          <ScrollArea className="h-[300px]">
+                            {isSearching ? (
+                              <div className="flex items-center justify-center py-8">
+                                <Loader2 className="w-6 h-6 animate-spin text-zinc-400" />
+                              </div>
+                            ) : searchResults.length === 0 ? (
+                              <div className="flex flex-col items-center justify-center py-8 text-center px-4">
+                                <FileText className="w-8 h-8 text-zinc-300 dark:text-zinc-700 mb-2" />
+                                <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                                  {isRTL
+                                    ? "لم يتم العثور على سياقات"
+                                    : "No contexts found"}
+                                </p>
+                                {contextSearch && (
+                                  <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-1">
+                                    {isRTL
+                                      ? `لا توجد نتائج لـ "${contextSearch}"`
+                                      : `No results for "${contextSearch}"`}
+                                  </p>
+                                )}
+                              </div>
+                            ) : (
+                              <div className="p-5 space-y-5">
+                                {searchResults.map((context) => (
+                                  <button
+                                    key={context.id}
+                                    onClick={() => addContext(context)}
+                                    disabled={selectedContexts.some(
+                                      (ctx) => ctx.id === context.id
+                                    )}
+                                    className={`
+                                      w-full flex items-start gap-3 p-2.5 rounded-lg 
+                                      transition-colors text-left
+                                      ${
+                                        selectedContexts.some(
+                                          (ctx) => ctx.id === context.id
+                                        )
+                                          ? "bg-zinc-100/50 dark:bg-zinc-800/50 cursor-not-allowed opacity-60"
+                                          : "hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                                      }
+                                    `}
+                                  >
+                                    <div className="mt-0.5 text-zinc-500 dark:text-zinc-400 flex-shrink-0">
+                                      {getContextIcon(context.type)}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <div className="font-medium text-sm text-zinc-900 dark:text-zinc-100 truncate">
+                                        {context.name}
+                                      </div>
+                                      {context.preview && (
+                                        <div className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 mt-0.5">
+                                          {context.preview}
+                                        </div>
+                                      )}
+                                      <div className="flex items-center gap-2 mt-1.5">
+                                        <span className="text-xs text-zinc-400 dark:text-zinc-500 capitalize">
+                                          {context.type}
+                                        </span>
+                                        {context.size && (
+                                          <>
+                                            <span className="text-zinc-300 dark:text-zinc-700">
+                                              •
+                                            </span>
+                                            <span className="text-xs text-zinc-400 dark:text-zinc-500">
+                                              {context.size}
+                                            </span>
+                                          </>
+                                        )}
+                                        {selectedContexts.some(
+                                          (ctx) => ctx.id === context.id
+                                        ) && (
+                                          <>
+                                            <span className="text-zinc-300 dark:text-zinc-700">
+                                              •
+                                            </span>
+                                            <span className="text-xs text-green-600 dark:text-green-500 font-medium">
+                                              {isRTL ? "مضاف" : "Added"}
+                                            </span>
+                                          </>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </ScrollArea>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  )} */}
+
                   <Button
                     variant="outline"
                     disabled
@@ -535,7 +732,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                       fileInputRef.current?.click();
                     }}
                   >
-                    <div className="flex items-center gap-1.5 text-zinc-900/50 dark:text-gray-100  transition-all duration-100 group-hover:text-black">
+                    <div className="flex items-center gap-1.5 text-zinc-900/50 dark:text-gray-100 transition-all duration-100 group-hover:text-black">
                       <Paperclip className="size-3" />
                     </div>
                   </Button>
@@ -549,13 +746,13 @@ const ChatInput: React.FC<ChatInputProps> = ({
                   disabled={!value?.trim()}
                   size="sm"
                   className={`
-                  size-8 rounded-2xl font-medium transition-all duration-300 ease-out
-                  ${
-                    value?.trim()
-                      ? "bg-zinc-800 hover:bg-zinc-900 dark:bg-gray-200 dark:hover:bg-zinc-600 text-white   dark:shadow-zinc-950"
-                      : "bg-zinc-200 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-600 cursor-not-allowed"
-                  }
-                `}
+                    size-8 rounded-2xl font-medium transition-all duration-300 ease-out
+                    ${
+                      value?.trim()
+                        ? "bg-zinc-800 hover:bg-zinc-900 dark:bg-gray-200 dark:hover:bg-zinc-600 text-white dark:shadow-zinc-950"
+                        : "bg-zinc-200 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-600 cursor-not-allowed"
+                    }
+                  `}
                 >
                   <ArrowUp className="w-4 h-4" />
                 </Button>
