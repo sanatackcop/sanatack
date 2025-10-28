@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { Progress } from "@/components/ui/progress";
 import { getWorkSpaceContent } from "@/utils/_apis/learnPlayground-api";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { LoadingSkeleton, CARD_VARIANTS, ProgressIndicator } from "./consts";
@@ -12,6 +12,8 @@ import GenerateContentComponent from "@/shared/workspaces/Generate";
 import FlashcardModal from "@/shared/workspaces/modals/flashcardModal";
 import { Badge } from "@/components/ui/badge";
 import Card from "@mui/material/Card";
+import { useTranslation } from "react-i18next";
+import { cn } from "@/lib/utils";
 
 const trackCardFlip = async (/*cardId: string, setId: string*/) => {
   try {
@@ -79,7 +81,7 @@ const useFlashcards = (workspaceId: string) => {
       setError(null);
       setLoading(false);
     } catch (err) {
-      setError("Failed to fetch flashcards");
+      setError("flashcards.fetchError");
       console.error("Error fetching flashcards:", err);
       setFlashcardSets([]);
     } finally {
@@ -104,6 +106,10 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set());
   const [flipAttempts, setFlipAttempts] = useState<Record<string, number>>({});
   const [, setAnswerFeedback] = useState<any | null>(null);
+  const { t, i18n } = useTranslation();
+  const direction = i18n.dir();
+  const isRTL = direction === "rtl";
+  const BackIcon = isRTL ? ArrowRight : ArrowLeft;
 
   const handleSetSelect = useCallback((set: FlashcardDeck) => {
     setActiveSet(set);
@@ -266,14 +272,19 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
   );
 
   if (loading) return <LoadingSkeleton />;
-  if (error) return <div className="text-center text-destructive">{error}</div>;
+  if (error)
+    return (
+      <div className="text-center text-destructive" dir={direction}>
+        {t(error, "Failed to fetch flashcards")}
+      </div>
+    );
 
   const totalCards = activeSet?.flashcards?.length || 0;
   const reviewedCount =
     activeSet?.flashcards?.filter((fc) => fc.reviewed || fc.due)?.length || 0;
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col" dir={direction}>
       <AnimatePresence mode="wait">
         {activeSet ? (
           <motion.div
@@ -284,15 +295,26 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
             exit="exit"
             className="h-full flex flex-col w-full"
           >
-            <div className="flex items-center gap-4 px-14 py-4 flex-shrink-0 ">
-              <div
-                className="flex group items-center  dark:hover:bg-zinc-100
-                text-gray-400/50 cursor-pointer hover:bg-gray-50/50 drop-shadow-sm hover:text-zinc-700 rounded-2xl py-2 px-3 transition-all ease-linear duration-100"
+            <div className="flex items-center gap-4 px-14 py-4 flex-shrink-0">
+              <button
+                type="button"
                 onClick={() => setActiveSet(null)}
+                className={cn(
+                  "flex items-center rounded-2xl py-2 px-3 transition-all ease-linear duration-100 text-gray-400/50 hover:text-zinc-700 hover:bg-gray-50/50 drop-shadow-sm dark:hover:bg-zinc-100",
+                  "group",
+                  isRTL ? "flex-row-reverse" : ""
+                )}
               >
-                <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-all ease-out duration-200" />
-                <span className="text-sm">Back</span>
-              </div>
+                <BackIcon
+                  className={cn(
+                    "w-4 h-4 transition-all ease-out duration-200",
+                    isRTL
+                      ? "ml-2 group-hover:translate-x-1"
+                      : "mr-2 group-hover:-translate-x-1"
+                  )}
+                />
+                <span className="text-sm">{t("common.back", "Back")}</span>
+              </button>
             </div>
 
             {studyMode && totalCards > 0 && (
@@ -343,8 +365,10 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
                   <div className="space-y-2 px-16 sm:px-0 flex-col flex justify-center align-baseline">
                     <div className="flex w-full items-center justify-between">
                       <h2 className="text-[18px] text-zinc-900 font-medium dark:text-white">
-                        Flashcards{" "}
-                        <span className="text-sm">({totalCards})</span>
+                        {t("flashcards.titleWithCount", {
+                          count: totalCards,
+                          defaultValue: "Flashcards ({{count}})",
+                        })}
                       </h2>
                     </div>
 
@@ -357,7 +381,7 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
                           <div className="flex items-center justify-between pt-2">
                             <div className="flex items-center">
                               <span className="text-sm font-medium text-opacity-75 text-zinc-800 dark:text-white flex items-center gap-2">
-                                <span>Card {idx + 1} </span>
+                                <span>{t("flashcards.cardNumber", { number: idx + 1, defaultValue: "Card {{number}}" })}</span>
                                 <Badge
                                   variant={"outline"}
                                   className="rounded-2xl"
@@ -391,9 +415,12 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
                 onDeleteSet={handleDeleteSet}
               />
               <GenerateContentComponent
-                title="Flashcards"
-                description="Quickly generate a flashcard based on your topic of interest."
-                buttonLabel="Generate"
+                title={t("flashcards.generate.title", "Create Flashcards")}
+                description={t(
+                  "flashcards.generate.description",
+                  "Quickly generate a flashcard set based on your topic of interest."
+                )}
+                buttonLabel={t("flashcards.generate.button", "Generate")}
                 onClick={handleCreatingNewFlashcard}
               />
             </ScrollArea>

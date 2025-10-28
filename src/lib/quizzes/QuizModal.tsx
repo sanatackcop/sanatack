@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Settings2 } from "lucide-react";
@@ -29,6 +29,7 @@ import { Badge } from "@/components/ui/badge";
 import { LANGUAGES } from "../types";
 import { QuizType } from "./types";
 import GenerateContentComponent from "@/shared/workspaces/Generate";
+import { cn } from "@/lib/utils";
 
 type Props = {
   workspaceId: string;
@@ -38,10 +39,10 @@ type Props = {
 
 const MIN_Q = 5;
 const MAX_Q = 16;
-const QUIZ_TYPES: { value: QuizType; label: string }[] = [
-  { value: "multiple_choice", label: "Multiple Choice" },
-  { value: "true_false", label: "True / False" },
-  { value: "scenario", label: "Scenario" },
+const QUIZ_TYPES: { value: QuizType; defaultLabel: string }[] = [
+  { value: "multiple_choice", defaultLabel: "Multiple Choice" },
+  { value: "true_false", defaultLabel: "True / False" },
+  { value: "scenario", defaultLabel: "Scenario" },
 ];
 const DIFFICULTIES = ["easy", "medium", "hard"] as const;
 
@@ -58,9 +59,28 @@ export default function QuizModal({
   const [count, setCount] = useState<number>(8);
   const [focus, setFocus] = useState<string | null>(null);
   const [countError, setCountError] = useState<string | null>(null);
-  const [language, setLanguage] = useState<"en" | "ar">("ar");
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const direction = i18n.dir();
+  const isRTL = direction === "rtl";
+  const initialLanguage = i18n.language?.startsWith("ar") ? "ar" : "en";
+  const [language, setLanguage] = useState<"en" | "ar">(initialLanguage);
   const disabled = generating || anyActive || !workspaceId;
+
+  const typeLabel = useCallback(
+    (value: QuizType) => {
+      const fallback =
+        QUIZ_TYPES.find((qt) => qt.value === value)?.defaultLabel ??
+        value.replace(/_/g, " ");
+      return t(`quizzes.modal.types.${value}`, fallback);
+    },
+    [t]
+  );
+
+  const difficultyLabel = useCallback(
+    (value: (typeof DIFFICULTIES)[number]) =>
+      t(`quizzes.modal.difficulties.${value}`, value),
+    [t]
+  );
 
   const toggleType = (qt: QuizType, checked: boolean | string) => {
     const isChecked = checked === true || checked === "indeterminate";
@@ -83,14 +103,20 @@ export default function QuizModal({
     }
     const n = Number(raw);
     if (!Number.isFinite(n)) {
-      setCountError(t("quiz.countInvalid", "Enter a valid number"));
+      setCountError(
+        t("quizzes.modal.count.invalid", "Enter a valid number")
+      );
       return;
     }
     const c = clamp(n);
     setCount(c);
     setCountError(
       c !== n
-        ? t("quiz.countRange", `Please choose between ${MIN_Q} and ${MAX_Q}`)
+        ? t("quizzes.modal.count.range", {
+            min: MIN_Q,
+            max: MAX_Q,
+            defaultValue: `Please choose between ${MIN_Q} and ${MAX_Q}`,
+          })
         : null
     );
   };
@@ -107,7 +133,10 @@ export default function QuizModal({
 
     if (selectedTypes.length === 0) {
       toast.error(
-        t("quiz.selectAtLeastOneType", "Select at least one question type")
+        t(
+          "quizzes.modal.selectAtLeastOneType",
+          "Select at least one question type"
+        )
       );
       return;
     }
@@ -155,29 +184,35 @@ export default function QuizModal({
   return (
     <>
       <GenerateContentComponent
-        title={t("quiz.createTitle", "Create Quiz")}
+        title={t("quizzes.generate.title", "Create Quiz")}
         description={t(
-          "quiz.createSubtitle",
+          "quizzes.generate.description",
           "Create quiz sets with preferred types, difficulty, and focus."
         )}
-        buttonLabel="Generate"
+        buttonLabel={t("quizzes.generate.button", "Generate")}
         onClick={() => setIsModalOpen(true)}
       />
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent
+          dir={direction}
+          className={cn("sm:max-w-lg", isRTL && "text-right")}
+        >
           <DialogHeader>
             <DialogTitle>
-              {t("quiz.optionsTitle", "Create Quiz Options")}
+              {t("quizzes.modal.title", "Create Quiz Options")}
             </DialogTitle>
             <DialogDescription>
-              {t("quiz.optionsDesc", "Set options for the new quiz.")}
+              {t(
+                "quizzes.modal.description",
+                "Set options for the new quiz."
+              )}
             </DialogDescription>
           </DialogHeader>
 
           {/* Question Types */}
           <div className="space-y-2">
-            <Label>{t("quiz.types", "Question Types")}</Label>
+            <Label>{t("quizzes.modal.types.label", "Question Types")}</Label>
             <div className="flex flex-wrap gap-2">
               {QUIZ_TYPES.map((qt) => {
                 const checked = selectedTypes.includes(qt.value);
@@ -193,9 +228,9 @@ export default function QuizModal({
                     <Checkbox
                       checked={checked}
                       onCheckedChange={(v) => toggleType(qt.value, v)}
-                      aria-label={qt.label}
+                      aria-label={typeLabel(qt.value)}
                     />
-                    <span className="text-sm">{qt.label}</span>
+                    <span className="text-sm">{typeLabel(qt.value)}</span>
                   </label>
                 );
               })}
@@ -204,14 +239,14 @@ export default function QuizModal({
               <div className="flex flex-wrap gap-1">
                 {selectedTypes.map((tkey) => (
                   <Badge key={tkey} variant="secondary" className="capitalize">
-                    {tkey.replace("_", " ")}
+                    {typeLabel(tkey)}
                   </Badge>
                 ))}
               </div>
             ) : (
               <p className="text-xs text-muted-foreground">
                 {t(
-                  "quiz.typesHelp",
+                  "quizzes.modal.types.help",
                   "Choose one or more types (e.g., Multiple Choice, True/False, Scenario)."
                 )}
               </p>
@@ -223,7 +258,7 @@ export default function QuizModal({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="difficulty-select">
-                {t("quiz.difficulty", "Difficulty")}
+                {t("quizzes.modal.difficulty.label", "Difficulty")}
               </Label>
               <Select
                 value={difficulty}
@@ -241,7 +276,7 @@ export default function QuizModal({
                 <SelectContent>
                   {DIFFICULTIES.map((d) => (
                     <SelectItem key={d} value={d}>
-                      {d[0].toUpperCase() + d.slice(1)}
+                      {difficultyLabel(d)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -250,7 +285,10 @@ export default function QuizModal({
 
             <div className="space-y-2">
               <Label htmlFor="count-input">
-                {t("quiz.questionsCount", "Number of questions")}
+                {t(
+                  "quizzes.modal.count.label",
+                  "Number of questions"
+                )}
               </Label>
               <Input
                 id="count-input"
@@ -275,19 +313,22 @@ export default function QuizModal({
           <Separator />
           <div className="space-y-2">
             <Label htmlFor="language-select">
-              {t("language.label", "Language")}
+              {t("quizzes.modal.language.label", "Language")}
             </Label>
             <Select
               value={language}
               onValueChange={(val: any) => setLanguage(val)}
               disabled={generating}
             >
-              <SelectTrigger id="language-select">
+              <SelectTrigger id="language-select" dir={direction}>
                 <SelectValue
-                  placeholder={t("language.placeholder", "Select language")}
+                  placeholder={t(
+                    "quizzes.modal.language.placeholder",
+                    "Select language"
+                  )}
                 />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent dir={direction}>
                 {LANGUAGES.map((lang, ind) => (
                   <SelectItem key={ind} value={lang.value}>
                     {lang.name}
@@ -301,13 +342,13 @@ export default function QuizModal({
 
           <div className="space-y-1">
             <Label htmlFor="focus-input">
-              {t("quiz.focus", "Focus (optional)")}
+              {t("quizzes.modal.focus.label", "Focus (optional)")}
             </Label>
             <Textarea
               id="focus-input"
               value={focus || ""}
               placeholder={t(
-                "quiz.focusPlaceholder",
+                "quizzes.modal.focus.placeholder",
                 "e.g. arrays, pointers, error handling"
               )}
               onChange={(e) => setFocus(e.target.value)}
@@ -317,22 +358,28 @@ export default function QuizModal({
                 }
               }}
               disabled={generating}
+              dir={direction}
             />
             <p className="text-xs text-muted-foreground">
               {t(
-                "quiz.focusHelp",
+                "quizzes.modal.focus.help",
                 "Tell us what to prioritize. Leave empty for a general quiz."
               )}
             </p>
           </div>
 
-          <DialogFooter className="flex items-center justify-end gap-2">
+          <DialogFooter
+            className={cn(
+              "flex items-center justify-end gap-2",
+              isRTL && "flex-row-reverse"
+            )}
+          >
             <Button
               variant="outline"
               onClick={() => setIsModalOpen(false)}
               disabled={generating}
             >
-              {t("cancel", "Cancel")}
+              {t("common.cancel", "Cancel")}
             </Button>
             <Button
               onClick={handleCreateQuiz}
@@ -342,12 +389,12 @@ export default function QuizModal({
               {generating ? (
                 <>
                   <Settings2 className="h-4 w-4 animate-spin" />
-                  {t("generating", "Generating…")}
+                  {t("quizzes.modal.generating", "Generating…")}
                 </>
               ) : (
                 <>
                   <Settings2 className="h-4 w-4" />
-                  {t("create", "Create")}
+                  {t("quizzes.modal.create", "Create")}
                 </>
               )}
             </Button>

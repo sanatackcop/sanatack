@@ -48,6 +48,64 @@
     "moreActions": "More actions",
     "back": "Back"
   },
+  "flashcards": {
+    "fetchError": "Failed to fetch flashcards. Please try again.",
+    "titleWithCount": "Flashcards ({{count}})",
+    "cardNumber": "Card {{number}}",
+    "of": "of",
+    "studyButton": "Study Cards",
+    "showMoreOptions": "Show more options",
+    "hideOptions": "Hide options",
+    "cardsLabel": "cards",
+    "generate": {
+      "title": "Create Flashcards",
+      "description": "Quickly generate a flashcard set based on your topic of interest.",
+      "button": "Generate"
+    },
+    "inputs": {
+      "term": {
+        "label": "Term",
+        "placeholder": "Enter term..."
+      },
+      "definition": {
+        "label": "Definition",
+        "placeholder": "Enter definition..."
+      },
+      "example": {
+        "label": "Example",
+        "placeholder": "Add context or example..."
+      }
+    },
+    "list": {
+      "title": "My Flashcards",
+      "deleteFailed": "Failed to delete the set.",
+      "deleteWarning": "Are you sure you want to delete this flashcard set? This action cannot be undone.",
+      "failed": "Generation failed. You can delete this set and try again."
+    },
+    "modal": {
+      "title": "Create Flashcard Set",
+      "description": "Select specific concepts and customize your flashcard set.",
+      "generating": "Generating…",
+      "focus": {
+        "label": "Focus (optional)",
+        "placeholder": "e.g. pointers, memory management, or dynamic arrays",
+        "help": "Tell us what to prioritize. Leave empty for a general deck."
+      },
+      "count": {
+        "label": "Number of cards",
+        "invalid": "Enter a valid number",
+        "range": "Please choose between {{min}} and {{max}}"
+      },
+      "language": {
+        "label": "Language",
+        "placeholder": "Select language"
+      },
+      "created": "Flashcard deck created",
+      "activeBlock": "Please finish the active generation first",
+      "hint": "Fill the form to enable generation",
+      "hintDetail": "Provide required inputs to proceed"
+    }
+  },
   "theme": {
     "light": "Light",
     "dark": "Dark",

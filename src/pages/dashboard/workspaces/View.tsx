@@ -995,7 +995,8 @@ const LearnPlayground: React.FC = () => {
                     >
                       <div className="flex items-center gap-3 w-max mx-auto">
                         <TabsList
-                          className="relative !space-x-0 !p-1 sm:!p-1.5 flex items-center gap-1 sm:gap-2 h-10 sm:h-12 rounded-2xl border border-zinc-200/60 dark:border-zinc-800/60 bg-white/90 dark:bg-zinc-900/50 shadow-sm dark:shadow-zinc-950/20 backdrop-blur-md flex-shrink-0"
+                          className="relative !space-x-0 !p-1 sm:!p-1.5 flex items-center gap-1 sm:gap-2 h-10 sm:h-12 rounded-2xl border border-zinc-200/60 dark:border-zinc-800/60 bg-white/90
+                           dark:bg-zinc-900/50 shadow-sm dark:shadow-zinc-950/20 backdrop-blur-md flex-shrink-0"
                           style={{ direction: isRTL ? "rtl" : "ltr" }}
                         >
                           {TABS_CONFIG.map((tab) => {
@@ -1209,39 +1210,19 @@ const LearnPlayground: React.FC = () => {
                     <div className="relative p-2 pt-0 flex-shrink-0 flex justify-center">
                       {splitScroll.canScrollLeft && (
                         <>
-                          <div
-                            className="absolute left-2 top-0 bottom-0 w-20 z-30 pointer-events-none"
-                            style={{
-                              background:
-                                "linear-gradient(to right, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0) 100%)",
-                            }}
-                          />
-                          <div
-                            className="absolute left-2 top-0 bottom-0 w-20 z-30 pointer-events-none dark:block hidden"
-                            style={{
-                              background:
-                                "linear-gradient(to right, rgba(9, 9, 11, 0.95) 0%, rgba(9, 9, 11, 0) 100%)",
-                            }}
-                          />
+                          {/* Light mode gradient */}
+                          <div className="absolute left-2 top-0 bottom-0 w-20 z-30 pointer-events-none bg-gradient-to-r from-white/95 to-white/0 dark:hidden" />
+                          {/* Dark mode gradient */}
+                          <div className="absolute left-2 top-0 bottom-0 w-20 z-30 pointer-events-none hidden dark:block bg-gradient-to-r from-zinc-900/95 to-zinc-900/0" />
                         </>
                       )}
 
                       {splitScroll.canScrollRight && (
                         <>
-                          <div
-                            className="absolute right-2 top-0 bottom-0 w-20 z-30 pointer-events-none"
-                            style={{
-                              background:
-                                "linear-gradient(to left, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0) 100%)",
-                            }}
-                          />
-                          <div
-                            className="absolute right-2 top-0 bottom-0 w-20 z-30 pointer-events-none dark:block hidden"
-                            style={{
-                              background:
-                                "linear-gradient(to left, rgba(9, 9, 11, 0.95) 0%, rgba(9, 9, 11, 0) 100%)",
-                            }}
-                          />
+                          {/* Light mode gradient */}
+                          <div className="absolute right-2 top-0 bottom-0 w-20 z-30 pointer-events-none bg-gradient-to-l from-white/95 to-white/0 dark:hidden" />
+                          {/* Dark mode gradient */}
+                          <div className="absolute right-2 top-0 bottom-0 w-20 z-30 pointer-events-none hidden dark:block bg-gradient-to-l from-zinc-900/95 to-zinc-900/0" />
                         </>
                       )}
 

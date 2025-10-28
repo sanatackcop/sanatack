@@ -16,6 +16,7 @@ import {
 import { GenerationStatus } from "../types";
 import QuizModal from "./QuizModal";
 import { normalizeQuiz } from "./utils";
+import { useTranslation } from "react-i18next";
 
 export const QuizList: React.FC<{ workspaceId: string }> = ({
   workspaceId,
@@ -24,6 +25,10 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
   const [refresh, setRefresh] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { t, i18n } = useTranslation();
+  const direction = i18n.dir();
+  const isRTL = direction === "rtl";
 
   const fetchWorkspaceContent = useCallback(async () => {
     setLoading(true);
@@ -36,9 +41,11 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
       ).map((quiz: any) => normalizeQuiz(quiz));
 
       setQuizzes(formattedQuizzes);
+      setError(null);
     } catch (error) {
       console.error("Failed to fetch workspace content:", error);
       setQuizzes([]);
+      setError("quizzes.fetchError");
     } finally {
       setLoading(false);
     }
@@ -85,7 +92,7 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
   }
 
   return (
-    <div className="flex-1 min-h-0">
+    <div className="flex-1 min-h-0" dir={direction}>
       <ScrollArea className="h-full">
         <motion.div
           key="list"
@@ -96,7 +103,7 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
           className="px-6 mb-4 flex flex-col rounded-3xl justify-between space-y-3"
         >
           <h3 className="px-2 text-sm font-medium text-gray-700 dark:text-white">
-            My Quizzes
+            {t("quizzes.list.title", "My Quizzes")}
           </h3>
 
           {loading ? (
@@ -108,6 +115,10 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
                   <Skeleton className="h-4 w-3/4" />
                 </Card>
               ))}
+            </div>
+          ) : error ? (
+            <div className="text-sm text-destructive px-2">
+              {t(error, "Failed to fetch quizzes. Please try again.")}
             </div>
           ) : quizzes.length === 0 ? (
             <></>
@@ -127,26 +138,41 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
                   Math.max(0, Number.isFinite(percent) ? percent : 0)
                 );
 
+                const scoreSuffix =
+                  attempt?.status === "graded"
+                    ? attempt.passed === true
+                      ? t("quizzes.list.scoreSuffix.passed", " • Passed")
+                      : attempt.passed === false
+                      ? t("quizzes.list.scoreSuffix.failed", " • Failed")
+                      : ""
+                    : "";
+
                 const infoLine = attempt
                   ? attempt.status === "graded"
-                    ? `${attempt.scoreEarned}/${attempt.scoreTotal} pts${
-                        attempt.passed === true
-                          ? " • Passed"
-                          : attempt.passed === false
-                          ? " • Failed"
-                          : ""
-                      }`
-                    : `${attempt.answeredCount}/${attempt.totalCount} answered`
-                  : "No attempt yet";
+                    ? t("quizzes.list.scoreLine", {
+                        earned: attempt.scoreEarned,
+                        total: attempt.scoreTotal,
+                        statusSuffix: scoreSuffix,
+                      })
+                    : t("quizzes.list.answeredLine", {
+                        answered: attempt.answeredCount,
+                        total: attempt.totalCount,
+                      })
+                  : t("quizzes.list.noAttempt", "No attempt yet");
 
                 const statusLabel = (() => {
-                  if (!attempt) return "Not started";
+                  if (!attempt)
+                    return t("quizzes.list.status.notStarted", "Not started");
                   if (attempt.status === "graded") {
-                    if (attempt.passed === true) return "Passed";
-                    if (attempt.passed === false) return "Failed";
-                    return "Graded";
+                    if (attempt.passed === true)
+                      return t("quizzes.list.status.passed", "Passed");
+                    if (attempt.passed === false)
+                      return t("quizzes.list.status.failed", "Failed");
+                    return t("quizzes.list.status.graded", "Graded");
                   }
-                  return attempt.status.replace(/_/g, " ");
+                  const key = attempt.status.replace(/-/g, "_");
+                  const fallback = attempt.status.replace(/_/g, " ");
+                  return t(`quizzes.list.status.${key}`, fallback);
                 })();
 
                 const statusVariant = !attempt
@@ -174,47 +200,57 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
                         : "border-gray-200/60 hover:border-gray-300/80 dark:hover:bg-opacity-5"
                     } ${disabled ? "pointer-events-auto" : ""}`}
                   >
-                    <div className="flex justify-between items-start gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-medium text-lg text-gray-900 truncate dark:text-white">
-                            {quiz.title || "Generating quiz..."}
-                          </h3>
-                          <StatusBadge status={quiz.status} />
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge
-                            variant={statusVariant}
-                            className="text-xs capitalize"
-                          >
-                            {statusLabel}
-                          </Badge>
+                      <div className="flex justify-between items-start gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className="font-medium text-lg text-gray-900 truncate dark:text-white">
+                              {quiz.title ||
+                                t(
+                                  "quizzes.list.generating",
+                                  "Generating quiz..."
+                                )}
+                            </h3>
+                            <StatusBadge status={quiz.status} />
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge
+                              variant={statusVariant}
+                              className="text-xs capitalize"
+                            >
+                              {statusLabel}
+                            </Badge>
                           <p className="text-sm text-gray-500">
-                            {questionCount} Questions
+                            {t("quizzes.list.questions", {
+                              count: questionCount,
+                              defaultValue: "{{count}} Questions",
+                            })}
                           </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    {failed && (
-                      <div className="mt-3 w-full rounded-xl border border-red-200 bg-red-50 text-red-700 px-3 py-2 text-sm flex items-center gap-2">
-                        <AlertTriangle className="w-4 h-4" />
-                        <span>
-                          {quiz.failureReason ||
-                            "Generation failed. You can regenerate or delete this quiz."}
-                        </span>
-                      </div>
-                    )}
+                      {failed && (
+                        <div className="mt-3 w-full rounded-xl border border-red-200 bg-red-50 text-red-700 px-3 py-2 text-sm flex items-center gap-2">
+                          <AlertTriangle className="w-4 h-4" />
+                          <span>
+                            {quiz.failureReason ||
+                              t(
+                                "quizzes.list.failure",
+                                "Generation failed. You can regenerate or delete this quiz."
+                              )}
+                          </span>
+                        </div>
+                      )}
 
-                    <div className="mt-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-medium text-gray-500">
-                          Progress
-                        </span>
-                        <span className="text-xs font-semibold text-gray-700">
-                          {Math.round(progress)}%
-                        </span>
-                      </div>
+                      <div className="mt-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs font-medium text-gray-500">
+                            {t("quizzes.list.progress", "Progress")}
+                          </span>
+                          <span className="text-xs font-semibold text-gray-700">
+                            {Math.round(progress)}%
+                          </span>
+                        </div>
                       <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                         <div
                           className="h-full bg-green-500 rounded-full transition-all duration-300"

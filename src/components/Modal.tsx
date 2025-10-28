@@ -37,6 +37,8 @@ export interface ModalProps {
   disableBackdropClose?: boolean;
   /** Custom classes for DialogContent */
   className?: string;
+  /** Text direction */
+  dir?: "ltr" | "rtl";
   /** Modal body */
   children?: React.ReactNode;
 }
@@ -68,6 +70,7 @@ export const Modal: React.FC<ModalProps> = ({
   showCancel = true,
   disableBackdropClose = false,
   className,
+  dir,
   children,
 }) => {
   const handleClose = React.useCallback(
@@ -110,18 +113,27 @@ export const Modal: React.FC<ModalProps> = ({
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent
-        className={cn("sm:max-w-lg", className)}
+        dir={dir}
+        className={cn(
+          "sm:max-w-lg",
+          dir === "rtl" && "text-right",
+          className
+        )}
         onInteractOutside={preventIfDisabled}
         onEscapeKeyDown={preventIfDisabled}
       >
         <DialogHeader>
           {title ? (
-            <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-white">
+            <DialogTitle
+              className={cn("text-xl font-semibold text-gray-900 dark:text-white", dir === "rtl" && "text-right")}
+            >
               {title}
             </DialogTitle>
           ) : null}
           {description ? (
-            <DialogDescription className="text-gray-600 text-sm">
+            <DialogDescription
+              className={cn("text-gray-600 text-sm", dir === "rtl" && "text-right")}
+            >
               {description}
             </DialogDescription>
           ) : null}
@@ -129,7 +141,12 @@ export const Modal: React.FC<ModalProps> = ({
 
         {children ? <div className="mt-4">{children}</div> : null}
 
-        <DialogFooter className="flex justify-end gap-3 mt-6">
+        <DialogFooter
+          className={cn(
+            "flex justify-end gap-3 mt-6",
+            dir === "rtl" && "flex-row-reverse"
+          )}
+        >
           {showCancel && (
             <Button
               type="button"

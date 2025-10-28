@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useTranslation } from "react-i18next";
@@ -7,7 +7,7 @@ import { AlertTriangle, Loader2, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { DeleteModalState, Flashcard, FlashcardDeck } from "./types";
 import { GenerationStatus } from "../types";
-import { FlashCardsInputs, InputConfig } from "./consts";
+import { getFlashCardInputs, InputConfig } from "./consts";
 import { Textarea } from "@/components/ui/textarea";
 import {
   ProgressStrip,
@@ -15,13 +15,16 @@ import {
   StatusBadge,
 } from "@/pages/dashboard/utils";
 import Modal from "@/components/Modal";
+import { cn } from "@/lib/utils";
 
 export const FlashcardsList: React.FC<{
   sets: FlashcardDeck[];
   onSelectSet: (set: FlashcardDeck) => void;
   onDeleteSet?: (setId: string) => void;
 }> = ({ sets, onSelectSet, onDeleteSet }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const direction = i18n.dir();
+  const isRTL = direction === "rtl";
 
   const [deleteModal, setDeleteModal] = useState<DeleteModalState>({
     isOpen: false,
@@ -55,7 +58,8 @@ export const FlashcardsList: React.FC<{
       setDeleteModal({ isOpen: false, setToDelete: null });
     } catch (err: any) {
       setDeleteError(
-        err?.message || t("common.deleteFailed", "Failed to delete the set.")
+        err?.message ||
+          t("flashcards.list.deleteFailed", "Failed to delete the set.")
       );
     } finally {
       setDeletingId(null);
@@ -71,9 +75,12 @@ export const FlashcardsList: React.FC<{
         exit={{ opacity: 0, y: 20 }}
         transition={{ duration: 0.25 }}
       >
-        <div className="px-6 py-4 flex flex-col rounded-3xl justify-between space-y-3">
+        <div
+          className="px-6 py-4 flex flex-col rounded-3xl justify-between space-y-3"
+          dir={direction}
+        >
           <h3 className="px-2 text-sm font-medium text-gray-700 dark:text-white">
-            {t("common.myFlashcards", "My Flashcards")}
+            {t("flashcards.list.title", "My Flashcards")}
           </h3>
 
           {isEmpty ? (
@@ -127,9 +134,11 @@ export const FlashcardsList: React.FC<{
                             </Badge>
                           ))}
                           {completed && set.flashcards && (
-                            <span className="text-xs text-gray-500 ml-1">
+                            <span
+                              className={cn("text-xs text-gray-500", isRTL ? "mr-1" : "ml-1")}
+                            >
                               {set.flashcards.length}{" "}
-                              {t("common.cards", "cards")}
+                              {t("flashcards.cardsLabel", "cards")}
                             </span>
                           )}
                         </div>
@@ -164,7 +173,7 @@ export const FlashcardsList: React.FC<{
                         <AlertTriangle className="w-4 h-4" />
                         <span>
                           {t(
-                            "flashcards.failed",
+                            "flashcards.list.failed",
                             "Generation failed. You can delete this set and try again."
                           )}
                         </span>
@@ -184,8 +193,10 @@ export const FlashcardsList: React.FC<{
       </motion.div>
 
       <Modal
+        dir={direction}
+        className={isRTL ? "text-right" : undefined}
         description={t(
-          "common.deleteWarning",
+          "flashcards.list.deleteWarning",
           "Are you sure you want to delete this flashcard set? This action cannot be undone."
         )}
         title={t("common.confirmDelete", "Confirm Delete")}
@@ -210,6 +221,8 @@ export const FlashcardEditForm: React.FC<{
   flashcard: Flashcard;
   onUpdate: (updates: Partial<Flashcard>) => void;
 }> = ({ flashcard, onUpdate }) => {
+  const { t } = useTranslation();
+  const inputs = useMemo(() => getFlashCardInputs(t), [t]);
   const [showOptions, setShowOptions] = useState(false);
 
   const renderField = (field: InputConfig) => (
@@ -228,8 +241,8 @@ export const FlashcardEditForm: React.FC<{
     </div>
   );
 
-  const requiredFields = FlashCardsInputs.filter((f) => !f.optional);
-  const optionalFields = FlashCardsInputs.filter((f) => f.optional);
+  const requiredFields = inputs.filter((f) => !f.optional);
+  const optionalFields = inputs.filter((f) => f.optional);
 
   return (
     <div className="grid gap-4">
@@ -242,7 +255,9 @@ export const FlashcardEditForm: React.FC<{
           className="justify-start w-fit px-0 muted-foreground hover:text-foreground rounded-xl text-xs text-zinc-400/70 hover:text-zinc-800"
           onClick={() => setShowOptions(true)}
         >
-          <span className="px-2">Show more options</span>
+          <span className="px-2">
+            {t("flashcards.showMoreOptions", "Show more options")}
+          </span>
         </Button>
       ) : (
         <div className="grid gap-4">
@@ -254,7 +269,7 @@ export const FlashcardEditForm: React.FC<{
               className="justify-start w-fit bg-transparent !shadow-none muted-foreground hover:text-foreground rounded-xl text-xs text-zinc-400/70 hover:text-zinc-800"
               onClick={() => setShowOptions(false)}
             >
-              Hide options
+              {t("flashcards.hideOptions", "Hide options")}
             </Button>
           </div>
         </div>

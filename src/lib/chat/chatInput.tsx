@@ -503,11 +503,11 @@ const ChatInput: React.FC<ChatInputProps> = ({
                 `}
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="space-x-2">
+                <div className="flex items-center gap-1 w-full">
                   {hasAutoContext && (
                     <Button
                       variant="outline"
-                      className="rounded-2xl"
+                      className="rounded-2xl dark:bg-transparent"
                       size="sm"
                       disabled={autoContextLoading}
                       onClick={(e) => {
@@ -515,7 +515,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                         onAutoContextClick?.();
                       }}
                     >
-                      <div className="flex items-center gap-1.5 text-zinc-900/50  transition-all duration-100 hover:text-black">
+                      <div className="flex items-center gap-1.5  text-zinc-900/50 dark:text-gray-100  transition-all duration-100 hover:text-black">
                         {autoContextLoading ? (
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
                         ) : (
@@ -527,14 +527,15 @@ const ChatInput: React.FC<ChatInputProps> = ({
                   )}
                   <Button
                     variant="outline"
-                    className="rounded-2xl"
+                    disabled
+                    className="rounded-2xl dark:bg-transparent"
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
                       fileInputRef.current?.click();
                     }}
                   >
-                    <div className="flex items-center gap-1.5 text-zinc-900/50  transition-all duration-100 group-hover:text-black">
+                    <div className="flex items-center gap-1.5 text-zinc-900/50 dark:text-gray-100  transition-all duration-100 group-hover:text-black">
                       <Paperclip className="size-3" />
                     </div>
                   </Button>
@@ -551,7 +552,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                   size-8 rounded-2xl font-medium transition-all duration-300 ease-out
                   ${
                     value?.trim()
-                      ? "bg-zinc-800 hover:bg-zinc-900 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-white   dark:shadow-zinc-950"
+                      ? "bg-zinc-800 hover:bg-zinc-900 dark:bg-gray-200 dark:hover:bg-zinc-600 text-white   dark:shadow-zinc-950"
                       : "bg-zinc-200 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-600 cursor-not-allowed"
                   }
                 `}

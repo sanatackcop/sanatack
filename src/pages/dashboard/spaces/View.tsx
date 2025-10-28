@@ -135,7 +135,10 @@ export default function SpaceView() {
       lang={language}
     >
       <div className="grid gap-8 lg:grid-cols-[minmax(0,360px),minmax(0,1fr)]">
-        <div className="relative overflow-hidden rounded-3xl border border-zinc-200 bg-gradient-to-br from-zinc-50 to-zinc-100 shadow-sm dark:border-zinc-800 dark:from-zinc-900/50 dark:to-zinc-900">
+        <div
+          className="relative overflow-hidden rounded-3xl border border-zinc-200 bg-gradient-to-br
+         from-zinc-50 to-zinc-100 shadow-sm dark:border-zinc-800 dark:from-zinc-900/50 dark:to-zinc-900"
+        >
           {loading ? (
             <Skeleton className="aspect-[4/3] w-full rounded-3xl" />
           ) : space?.coverImageUrl ? (

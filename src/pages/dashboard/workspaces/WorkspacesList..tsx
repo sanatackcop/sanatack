@@ -35,7 +35,7 @@ export default function WorkspacesList({
 
   return (
     <section>
-      <div className="flex gap-4 flex-wrap">
+      <div className="flex flex-wrap w-full gap-10 xl:gap-2">
         <Card
           onClick={() => setOpen(true)}
           className="
@@ -68,6 +68,7 @@ export default function WorkspacesList({
             </span>
           </div>
         </Card>
+
         {workspaces.length !== 0 &&
           workspaces.map((workspace) => (
             <WorkspaceFolderItem

@@ -26,7 +26,6 @@ import {
 
 import Modal from "@/components/Modal";
 import { LANGUAGES } from "@/lib/types";
-import i18n from "@/i18n";
 
 export type FlashcardModalProps = {
   open: boolean;
@@ -44,13 +43,15 @@ export default function FlashcardModal({
   workspaceId,
   anyActive,
 }: FlashcardModalProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const direction = i18n.dir();
+  const isRTL = direction === "rtl";
+  const initialLanguage = i18n.language?.startsWith("ar") ? "ar" : "en";
 
   const [generating, setGenerating] = useState(false);
   const [count, setCount] = useState<number>(8);
-  const [language, setLanguage] = useState<"en" | "ar">(
-    i18n.dir() ? "en" : "ar"
-  );
+  const [language, setLanguage] =
+    useState<"en" | "ar">(initialLanguage);
   const [focus, setFocus] = useState<string | null>(null);
   const [countError, setCountError] = useState<string | null>(null);
 
@@ -65,16 +66,21 @@ export default function FlashcardModal({
     }
     const n = Number(raw);
     if (!Number.isFinite(n)) {
-      setCountError(t("flashcards.countInvalid", "Enter a valid number"));
+      setCountError(
+        t("flashcards.modal.count.invalid", {
+          defaultValue: "Enter a valid number",
+        })
+      );
       return;
     }
     const clamped = clampCount(n);
     if (n !== clamped) {
       setCountError(
-        t(
-          "flashcards.countRange",
-          `Please choose between ${MIN_CARDS} and ${MAX_CARDS}`
-        )
+        t("flashcards.modal.count.range", {
+          min: MIN_CARDS,
+          max: MAX_CARDS,
+          defaultValue: "Please choose between {{min}} and {{max}}",
+        })
       );
     } else {
       setCountError(null);
@@ -100,7 +106,9 @@ export default function FlashcardModal({
     setGenerating(true);
     try {
       await createFlashcard(workspaceId, finalCount, language, focus);
-      toast.success(t("flashcards.created", "Flashcard deck created"));
+      toast.success(
+        t("flashcards.modal.created", "Flashcard deck created")
+      );
       onClose(true);
     } catch (err) {
       const fallbackMessage = t(
@@ -122,28 +130,30 @@ export default function FlashcardModal({
 
   return (
     <Modal
+      dir={direction}
+      className={isRTL ? "text-right" : undefined}
       open={open}
       onOpenChange={onOpenChange}
-      title={t("createFlashcardSet", "Create Flashcard Set")}
+      title={t("flashcards.modal.title", "Create Flashcard Set")}
       description={t(
-        "selectCustomizeFlashcardSet",
-        "Select specific concepts and customize your flashcard set"
+        "flashcards.modal.description",
+        "Select specific concepts and customize your flashcard set."
       )}
       variant="default"
       confirmLabel={
         generating ? (
           <span className="inline-flex items-center gap-2">
             <RefreshCcw className="h-4 w-4 animate-spin" />
-            {t("generating", "Generating…")}
+            {t("flashcards.modal.generating", "Generating…")}
           </span>
         ) : (
           <span className="inline-flex items-center gap-2">
             <Settings2 className="h-4 w-4" />
-            {t("generate", "Generate")}
+            {t("common.generate", "Generate")}
           </span>
         )
       }
-      cancelLabel={t("cancel", "Cancel")}
+      cancelLabel={t("common.cancel", "Cancel")}
       onConfirm={handleCreate}
       onCancel={() => onClose()}
       isConfirmLoading={generating}
@@ -151,13 +161,13 @@ export default function FlashcardModal({
       {/* Focus / Topic */}
       <div className="space-y-1">
         <Label htmlFor="focus-input">
-          {t("focus.label", "Focus (optional)")}
+          {t("flashcards.modal.focus.label", "Focus (optional)")}
         </Label>
         <Textarea
           id="focus-input"
           value={focus || ""}
           placeholder={t(
-            "focus.placeholder",
+            "flashcards.modal.focus.placeholder",
             "e.g. pointers, memory management, or dynamic arrays"
           )}
           onChange={(e) => setFocus(e.target.value)}
@@ -167,10 +177,11 @@ export default function FlashcardModal({
             }
           }}
           disabled={generating}
+          dir={direction}
         />
         <p className="text-xs text-muted-foreground">
           {t(
-            "focus.help",
+            "flashcards.modal.focus.help",
             "Tell us what to prioritize. Leave empty for a general deck."
           )}
         </p>
@@ -181,7 +192,7 @@ export default function FlashcardModal({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="count-input">
-            {t("count.label", "Number of cards")}
+            {t("flashcards.modal.count.label", "Number of cards")}
           </Label>
           <Input
             id="count-input"
@@ -202,19 +213,19 @@ export default function FlashcardModal({
         {/* Language */}
         <div className="space-y-2">
           <Label htmlFor="language-select">
-            {t("language.label", "Language")}
+            {t("flashcards.modal.language.label", "Language")}
           </Label>
           <Select
             value={language}
             onValueChange={(val: any) => setLanguage(val)}
             disabled={generating}
           >
-            <SelectTrigger id="language-select">
+            <SelectTrigger id="language-select" dir={direction}>
               <SelectValue
-                placeholder={t("language.placeholder", "Select language")}
+                placeholder={t("flashcards.modal.language.placeholder", "Select language")}
               />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent dir={direction}>
               {LANGUAGES.map((lang, ind) => (
                 <SelectItem key={ind} value={lang.value}>
                   {lang.name}
@@ -230,7 +241,7 @@ export default function FlashcardModal({
           <Info className="h-4 w-4 mt-0.5" />
           <span>
             {t(
-              "flashcards.activeBlock",
+              "flashcards.modal.activeBlock",
               "Please finish the active generation first"
             )}
           </span>
@@ -243,11 +254,14 @@ export default function FlashcardModal({
             <TooltipTrigger asChild>
               <span className="inline-flex items-center gap-2 text-xs text-muted-foreground">
                 <Info className="h-4 w-4" />
-                {t("flashcards.hint", "Fill the form to enable generation")}
+                {t("flashcards.modal.hint", "Fill the form to enable generation")}
               </span>
             </TooltipTrigger>
-            <TooltipContent>
-              {t("flashcards.hintDetail", "Provide required inputs to proceed")}
+            <TooltipContent dir={direction}>
+              {t(
+                "flashcards.modal.hintDetail",
+                "Provide required inputs to proceed"
+              )}
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>

@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { CircularProgressProps, Flashcard } from "./types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 
 export const updateFlashcardDifficulty = async (
   flashcardId: string,
@@ -62,6 +64,16 @@ export const CARD_VARIANTS = {
   exit: { opacity: 0, y: -20 },
 };
 
+export interface InputConfig {
+  key: string;
+  label: string;
+  getValue: (f: Flashcard) => string;
+  onChange: (val: string) => Partial<Flashcard>;
+  placeholder: string;
+  optional: boolean;
+  required?: boolean;
+}
+
 export const CircularProgress: React.FC<CircularProgressProps> = ({
   reviewed,
   total,
@@ -69,6 +81,7 @@ export const CircularProgress: React.FC<CircularProgressProps> = ({
   strokeWidth = 12,
   className,
 }) => {
+  const { t } = useTranslation();
   const percentage = total > 0 ? (reviewed / total) * 100 : 0;
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
@@ -116,7 +129,7 @@ export const CircularProgress: React.FC<CircularProgressProps> = ({
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="text-4xl font-bold text-foreground">{reviewed}</span>
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
-          <span>of</span>
+          <span>{t("flashcards.of", "of")}</span>
           <span className="font-medium">{total}</span>
         </div>
       </div>
@@ -129,10 +142,16 @@ export const ProgressIndicator: React.FC<{
   total: number;
   onStartStudy: () => void;
 }> = ({ /* reviewed, */ total, onStartStudy }) => {
+  const { t, i18n } = useTranslation();
+  const direction = i18n.dir();
+
   // const toReview = total - reviewed;
 
   return (
-    <div className="flex flex-col items-center space-y-6 py-8">
+    <div
+      className="flex flex-col items-center space-y-6 py-8"
+      dir={direction}
+    >
       {/* <CircularProgress
         reviewed={reviewed}
         total={total}
@@ -167,44 +186,51 @@ export const ProgressIndicator: React.FC<{
           onClick={onStartStudy}
           disabled={total === 0}
         >
-          Study Cards
+          {t("flashcards.studyButton", "Study Cards")}
         </Button>
       </div>
     </div>
   );
 };
 
-export const FlashCardsInputs = [
+export const getFlashCardInputs = (t: TFunction): InputConfig[] => [
   {
     key: "term",
-    label: "Term",
+    label: t("flashcards.inputs.term.label", "Term"),
     getValue: (f: Flashcard) => f.term || f.front || "",
     onChange: (val: string) => ({ term: val, front: val }),
-    placeholder: "Enter term...",
+    placeholder: t("flashcards.inputs.term.placeholder", "Enter term..."),
     optional: false,
     required: true,
   },
   {
     key: "definition",
     required: true,
-    label: "Definition",
+    label: t("flashcards.inputs.definition.label", "Definition"),
     getValue: (f: Flashcard) => f.definition || f.back || "",
     onChange: (val: string) => ({ definition: val, back: val }),
-    placeholder: "Enter definition...",
+    placeholder: t(
+      "flashcards.inputs.definition.placeholder",
+      "Enter definition..."
+    ),
     optional: false,
   },
   {
     key: "example",
-    label: "Example",
-    getValue: (f: Flashcard) => f.examples || f.examples?.[0] || "",
+    label: t("flashcards.inputs.example.label", "Example"),
+    getValue: (f: Flashcard) => {
+      const examples = Array.isArray(f.examples) ? f.examples[0] : f.examples;
+      return examples || "";
+    },
     onChange: (val: string) => ({ explanation: val, examples: [val] }),
-    placeholder: "Add context or example...",
+    placeholder: t(
+      "flashcards.inputs.example.placeholder",
+      "Add context or example..."
+    ),
     optional: true,
     required: false,
   },
-] as const;
-
-export type InputConfig = (typeof FlashCardsInputs)[number];
+];
 
 export const LoadingSkeleton: React.FC = () => (
   <div className="space-y-4">

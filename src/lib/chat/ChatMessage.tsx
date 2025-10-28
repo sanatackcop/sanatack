@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import {
-  MessageCircle,
   Clipboard,
   ClipboardCheck,
   Link as LinkIcon,
@@ -126,7 +125,6 @@ const CodeBlock: React.FC<{
   );
 };
 
-// ---------- Message bubble ----------
 const MessageBubble: React.FC<{
   message: ChatMessage;
   isStreaming?: boolean;
@@ -155,7 +153,6 @@ const MessageBubble: React.FC<{
     ? (message.metadata?.attachments as Attachment[])
     : [];
 
-  // layout helpers
   const containerJustify = isUser
     ? isRtl
       ? "justify-start"
@@ -163,13 +160,6 @@ const MessageBubble: React.FC<{
     : isRtl
     ? "justify-end"
     : "justify-start";
-  const innerDirection = isUser
-    ? isRtl
-      ? "flex-row"
-      : "flex-row-reverse"
-    : isRtl
-    ? "flex-row-reverse"
-    : "flex-row";
 
   return (
     <motion.div
@@ -177,9 +167,9 @@ const MessageBubble: React.FC<{
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -14, scale: 0.98 }}
       transition={{ type: "spring", stiffness: 380, damping: 28, mass: 0.7 }}
-      className={`flex ${containerJustify} mb-5`}
+      className={`flex ${containerJustify} mb-5 w-full flex-1`}
     >
-      <div className={`flex max-w-[85%] ${innerDirection} items-start gap-3`}>
+      <div className={`flex max-w-[85%] items-start gap-3`}>
         {/* bubble */}
         <div
           className={`group relative overflow-hidden rounded-2xl px-4 py-3 transition-colors duration-200  ${
@@ -200,20 +190,8 @@ const MessageBubble: React.FC<{
             className="pointer-events-none absolute -z-10 size-40 blur-2xl opacity-20 rounded-full bg-gradient-to-br from-blue-500/25 via-transparent to-transparent -top-14 -left-14 dark:from-blue-400/15"
           />
 
-          {/* bubble toolbar */}
-          <BubbleToolbar
-            message={message}
-            content={displayContent}
-            isUser={!!isUser}
-          />
-
           {/* content */}
-          <div
-            className={`text-[0.95rem] leading-relaxed ${
-              isRtl ? "text-right" : "text-left"
-            }`}
-            dir={isRtl ? "rtl" : "ltr"}
-          >
+          <div className={`text-[0.95rem] leading-relaxed`}>
             {isUser ? (
               <div className="whitespace-pre-wrap break-words">
                 {displayContent}
@@ -444,8 +422,6 @@ const MessageBubble: React.FC<{
               </div>
             )}
           </div>
-
-          {/* timestamp */}
           <div
             className={`mt-2 text-[11px] ${
               isUser
@@ -470,29 +446,6 @@ const MessageBubble: React.FC<{
   );
 };
 
-const BubbleToolbar: React.FC<{
-  message: ChatMessage;
-  content: string;
-  isUser: boolean;
-}> = ({ /*content, */ isUser }) => {
-  // const [copied, setCopied] = useState(false);
-  // const onCopy = async () => {
-  //   try {
-  //     await navigator.clipboard.writeText(content);
-  //     setCopied(true);
-  //     setTimeout(() => setCopied(false), 1200);
-  //   } catch {}
-  // };
-
-  return (
-    <div
-      className={`absolute ${
-        isUser ? "top-1.5 left-2" : "top-1.5 right-2"
-      } flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity`}
-    ></div>
-  );
-};
-
 export default function ChatMessages({
   messages,
   isLoading = false,
@@ -510,33 +463,9 @@ export default function ChatMessages({
   const failedLabel = t("chat.attachment.failed", "Failed to upload");
 
   return (
-    <div
-      className={`flex-1 w-10/12 h-full p-4 ${isRtl ? "rtl" : "ltr"}`}
-      dir={isRtl ? "rtl" : "ltr"}
-    >
+    <div className={"px-4 py-3"}>
       {!hasMessages && !isLoading ? (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="flex items-center justify-center text-center h-full"
-        >
-          <div className="space-y-4">
-            <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-zinc-500 to-zinc-600 flex items-center justify-center shadow-lg dark:shadow-zinc-900/40">
-              <MessageCircle className="w-8 h-8 text-white" />
-            </div>
-            <div className="space-y-2">
-              <h3 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-                {t("chat.welcome", "تعلم مع المدرس الذكي")}
-              </h3>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-sm">
-                {t(
-                  "chat.welcome_message",
-                  "اسأل أي سؤال عن المحتوى أو احصل على المساعدة فيما تحتاجه."
-                )}
-              </p>
-            </div>
-          </div>
-        </motion.div>
+        <></>
       ) : (
         <div className="flex flex-col">
           {messages.map((message) => (
