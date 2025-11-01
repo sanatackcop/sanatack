@@ -18,7 +18,6 @@ import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
 
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 type Attachment = {
   id?: string;
@@ -129,7 +128,6 @@ const CodeBlock: React.FC<{
       </div>
       <SyntaxHighlighter
         language={lang}
-        style={vscDarkPlus}
         customStyle={{
           margin: 0,
           borderRadius: 0,
@@ -559,10 +557,7 @@ const MessageBubble: React.FC<{
               </div>
 
               {isAssistant && !isStreaming && (
-                <MessageActions
-                  content={displayContent}
-                  isRtl={isRtl}
-                />
+                <MessageActions content={displayContent} isRtl={isRtl} />
               )}
             </div>
           )}

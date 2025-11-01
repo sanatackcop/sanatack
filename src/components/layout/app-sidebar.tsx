@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, FormEvent } from "react";
+import { useState, useEffect, useMemo, FormEvent, useRef } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -31,11 +31,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { createSpacesApi, getAllSpacesApi } from "@/utils/_apis/courses-apis";
 import { getAllWorkSpace } from "@/utils/_apis/learnPlayground-api";
 import Skeleton from "@mui/material/Skeleton";
@@ -439,103 +434,117 @@ export function AppSidebar({ onCollapse }: AppSidebarProps) {
 
   const FeedbackMenuEntry = ({ item }: { item: FeedbackMenuItem }) => {
     const ItemIcon = item.icon;
+    const subjectInputRef = useRef<HTMLInputElement | null>(null);
+
+    useEffect(() => {
+      if (!feedbackOpen) {
+        return;
+      }
+      const id = setTimeout(() => {
+        subjectInputRef.current?.focus();
+      }, 0);
+
+      return () => clearTimeout(id);
+    }, [feedbackOpen]);
 
     return (
-      <Popover
-        open={feedbackOpen}
-        onOpenChange={(open) => {
-          setFeedbackOpen(open);
-          if (!open) {
-            setFeedbackError(null);
-          }
-        }}
-      >
-        <PopoverTrigger asChild>
-          <button
-            type="button"
-            className={clsx(
-              "w-full flex items-center gap-2.5 px-2 py-1.5 rounded-md transition-colors duration-150 group relative focus:outline-none",
-              "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
-            )}
-          >
-            <ItemIcon
-              size={16}
-              strokeWidth={1.75}
-              className="flex-shrink-0 transition-colors text-sidebar-foreground/60 group-hover:text-sidebar-accent-foreground"
-            />
-            <span
-              className={clsx(
-                "text-[13px] font-normal flex-1",
-                getTextAlignment()
-              )}
-            >
-              {item.title}
-            </span>
-          </button>
-        </PopoverTrigger>
-        <PopoverContent
-          side={isRTL ? "left" : "right"}
-          align={isRTL ? "end" : "start"}
-          className="w-80 p-4 space-y-3"
-          dir={isRTL ? "rtl" : "ltr"}
-          onOpenAutoFocus={(e) => e.preventDefault()}
+      <>
+        <button
+          type="button"
+          onClick={() => setFeedbackOpen(true)}
+          className={clsx(
+            "w-full flex items-center gap-2.5 px-2 py-1.5 rounded-md transition-colors duration-150 group relative focus:outline-none",
+            "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+          )}
         >
-          <form className="space-y-3" onSubmit={handleFeedbackSubmit}>
-            <div className="space-y-1">
-              <Label htmlFor="feedback-subject">
-                {t("sidebar.feedbackForm.subject")}
-              </Label>
-              <Input
-                id="feedback-subject"
-                value={feedbackSubject}
-                maxLength={120}
-                placeholder={t("sidebar.feedbackForm.placeholderSubject")}
-                onChange={(event) => {
-                  setFeedbackSubject(event.target.value);
-                  if (feedbackError) {
-                    setFeedbackError(null);
-                  }
-                }}
-                required
-                autoFocus
-              />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="feedback-message">
-                {t("sidebar.feedbackForm.message")}
-              </Label>
-              <Textarea
-                id="feedback-message"
-                value={feedbackMessage}
-                placeholder={t("sidebar.feedbackForm.placeholderMessage")}
-                onChange={(event) => {
-                  setFeedbackMessage(event.target.value);
-                  if (feedbackError) {
-                    setFeedbackError(null);
-                  }
-                }}
-                required
-                rows={4}
-              />
-            </div>
-            {feedbackError && (
-              <p className="text-xs text-red-500">{feedbackError}</p>
-            )}
-            <div
-              className={clsx(
-                "flex items-center",
-                isRTL ? "justify-start" : "justify-end"
+          <ItemIcon
+            size={16}
+            strokeWidth={1.75}
+            className="flex-shrink-0 transition-colors text-sidebar-foreground/60 group-hover:text-sidebar-accent-foreground"
+          />
+          <span
+            className={clsx("text-[13px] font-normal flex-1", getTextAlignment())}
+          >
+            {item.title}
+          </span>
+        </button>
+        <Dialog
+          open={feedbackOpen}
+          onOpenChange={(open) => {
+            if (!open) {
+              setFeedbackOpen(false);
+              setFeedbackError(null);
+            }
+          }}
+        >
+          <DialogContent
+            className="sm:max-w-[420px]"
+            dir={isRTL ? "rtl" : "ltr"}
+            onOpenAutoFocus={(event) => event.preventDefault()}
+          >
+            <DialogHeader className={getTextAlignment()}>
+              <DialogTitle>{t("sidebar.feedback")}</DialogTitle>
+              <DialogDescription>
+                {t("sidebar.feedbackForm.placeholderMessage")}
+              </DialogDescription>
+            </DialogHeader>
+            <form className="space-y-3 pt-2" onSubmit={handleFeedbackSubmit}>
+              <div className="space-y-1">
+                <Label htmlFor="feedback-subject">
+                  {t("sidebar.feedbackForm.subject")}
+                </Label>
+                <Input
+                  id="feedback-subject"
+                  ref={subjectInputRef}
+                  value={feedbackSubject}
+                  maxLength={120}
+                  placeholder={t("sidebar.feedbackForm.placeholderSubject")}
+                  onChange={(event) => {
+                    setFeedbackSubject(event.target.value);
+                    if (feedbackError) {
+                      setFeedbackError(null);
+                    }
+                  }}
+                  required
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="feedback-message">
+                  {t("sidebar.feedbackForm.message")}
+                </Label>
+                <Textarea
+                  id="feedback-message"
+                  value={feedbackMessage}
+                  placeholder={t("sidebar.feedbackForm.placeholderMessage")}
+                  onChange={(event) => {
+                    setFeedbackMessage(event.target.value);
+                    if (feedbackError) {
+                      setFeedbackError(null);
+                    }
+                  }}
+                  required
+                  rows={4}
+                />
+              </div>
+              {feedbackError && (
+                <p className="text-xs text-red-500">{feedbackError}</p>
               )}
-            >
-              <Button type="submit" size="sm" disabled={feedbackLoading}>
-                {feedbackLoading
-                  ? t("common.loading")
-                  : t("sidebar.feedbackForm.submit")}
-              </Button>
-            </div>
-          </form>
-        </PopoverContent>
-      </Popover>
+              <div
+                className={clsx(
+                  "flex items-center",
+                  isRTL ? "justify-start" : "justify-end"
+                )}
+              >
+                <Button type="submit" size="sm" disabled={feedbackLoading}>
+                  {feedbackLoading
+                    ? t("common.loading")
+                    : t("sidebar.feedbackForm.submit")}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </>
     );
   };
   const MenuGroupEntry = ({ group }: { group: MenuGroup }) => {
