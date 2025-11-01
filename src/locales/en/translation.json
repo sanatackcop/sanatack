@@ -189,6 +189,19 @@
       "noData": "No summary data available.",
       "mainPoints": "Main Points:",
       "mindMap": "Mind Map"
+    },
+    "modal": {
+      "title": "Create Summary",
+      "description": "Select options of your new summary.",
+      "generating": "Generating…",
+      "language": {
+        "label": "Language",
+        "placeholder": "Select language"
+      },
+      "created": "Summary created",
+      "activeBlock": "Please finish the active generation first",
+      "hint": "Fill the form to enable generation",
+      "hintDetail": "Provide required inputs to proceed"
     }
   },
   "explanations": {
@@ -217,6 +230,19 @@
       "coreThemes": "Core Themes",
       "practicalApplications": "Practical Applications",
       "keyTakeaways": "Key Takeaways"
+    },
+    "modal": {
+      "title": "Create Explanations",
+      "description": "Select options of your new Explanations.",
+      "generating": "Generating…",
+      "language": {
+        "label": "Language",
+        "placeholder": "Select language"
+      },
+      "created": "Explanations created",
+      "activeBlock": "Please finish the active generation first",
+      "hint": "Fill the form to enable generation",
+      "hintDetail": "Provide required inputs to proceed"
     }
   },
   "theme": {
@@ -368,10 +394,12 @@
     "dialogs": {
       "createSpace": {
         "title": "Create New Space",
-        "description": "Add a name for your space to organize related files and lessons.",
-        "nameLabel": "Space Name",
+        "description": "Description",
+        "nameLabel": "Name",
         "placeholder": "Example: Math Space",
-        "create": "Create"
+        "descriptionPlaceholder": "Example: A space to organize my math learning materials",
+        "create": "Create",
+        "icon": "Icon"
       },
       "deleteSpace": {
         "title": "Delete Space",

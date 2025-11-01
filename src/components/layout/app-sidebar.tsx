@@ -51,14 +51,14 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import LogoLight from "@/assets/logo.svg";
 import { submitFeedback } from "@/utils/_apis/feedback-api";
 import { toast } from "sonner";
 import { useUserContext } from "@/context/UserContext";
 import { FaChrome, FaDiscord } from "react-icons/fa6";
-import LogoDark from "@/assets/dark_logo.svg";
 import { useSettings } from "@/context/SettingsContexts";
 import { SearchCommand } from "@/pages/dashboard/search/Index";
+import LogoLight from "@/assets/logo.svg";
+import LogoDark from "@/assets/dark_logo.svg";
 
 type MenuItem =
   | {
@@ -79,7 +79,7 @@ type LinkMenuItem = Extract<MenuItem, { url: string }>;
 type FeedbackMenuItem = Extract<MenuItem, { type: "feedback" }>;
 
 type MenuGroup = {
-  id: string; // NEW: stable key
+  id: string;
   groupTitle: string;
   menuItems: Array<LinkMenuItem | FeedbackMenuItem>;
 };
@@ -135,10 +135,22 @@ export function AppSidebar({ onCollapse }: AppSidebarProps) {
     setNewName(t("sidebar.newSpace"));
   }, [t]);
 
-  const toggleLanguage = () => {
+  const toggleLanguage = async () => {
     const newLang = language === "ar" ? "en" : "ar";
-    setLanguage(newLang);
-    toast.success(t("languages.changed", { lang: t(`languages.${newLang}`) }));
+    try {
+      await i18n.changeLanguage(newLang);
+      setLanguage(newLang);
+      const newDir = i18n.dir(newLang);
+      document.documentElement.setAttribute("dir", newDir);
+      document.documentElement.setAttribute("lang", newLang);
+      toast.success(
+        t("languages.changed", { lang: t(`languages.${newLang}`) })
+      );
+    } catch {
+      const newDir = newLang === "ar" ? "rtl" : "ltr";
+      document.documentElement.setAttribute("dir", newDir);
+      document.documentElement.setAttribute("lang", newLang);
+    }
   };
 
   const handleFeedbackSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -179,7 +191,6 @@ export function AppSidebar({ onCollapse }: AppSidebarProps) {
   };
 
   const [openSerach, setOpenSearch] = useState(false);
-
   const openSearchCommand = () => setOpenSearch(!openSerach);
 
   const topItemGroups: MenuGroup[] = useMemo(
@@ -274,9 +285,7 @@ export function AppSidebar({ onCollapse }: AppSidebarProps) {
     [t]
   );
 
-  const allItemGroups = useMemo(() => {
-    return topItemGroups;
-  }, [topItemGroups]);
+  const allItemGroups = useMemo(() => topItemGroups, [topItemGroups]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -362,7 +371,7 @@ export function AppSidebar({ onCollapse }: AppSidebarProps) {
       );
       const withDefaults: Record<string, boolean> = { ...saved };
       topItemGroups.forEach((g) => {
-        if (withDefaults[g.id] === undefined) withDefaults[g.id] = true; // default open
+        if (withDefaults[g.id] === undefined) withDefaults[g.id] = true;
       });
       setOpenGroups(withDefaults);
     } catch {
@@ -707,7 +716,6 @@ export function AppSidebar({ onCollapse }: AppSidebarProps) {
               }`}
             />
 
-            {/* Collapse button - appears on hover */}
             <button
               onClick={onCollapse}
               className={clsx(

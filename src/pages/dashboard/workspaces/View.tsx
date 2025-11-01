@@ -840,7 +840,7 @@ const LearnPlayground: React.FC = () => {
       return (
         <YouTubeReader
           videoId={state.youtubeVideoId || ""}
-          transcript={state.workspace?.video?.transcript?.data as any}
+          transcript={state.workspace?.video?.transcript as any}
           onVideoSelect={(videoId) =>
             dispatch({ type: "SET_YOUTUBE_VIDEO", videoId })
           }

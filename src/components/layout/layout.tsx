@@ -50,6 +50,10 @@ export default function DashboardLayout({
   const isRTL = currentDir === "rtl";
 
   React.useEffect(() => {
+    document.documentElement.setAttribute("dir", currentDir);
+  }, [currentDir]);
+
+  React.useEffect(() => {
     if (panelRef.current && isCollapsed) {
       panelRef.current.collapse();
     }
@@ -77,9 +81,7 @@ export default function DashboardLayout({
       const panelCollapsed = size <= 1;
       setIsCollapsed(panelCollapsed);
 
-      if (panelCollapsed) {
-        return;
-      }
+      if (panelCollapsed) return;
 
       if (size >= CONFIG.MIN_SIZE) {
         lastViableSize.current = size;
@@ -87,7 +89,7 @@ export default function DashboardLayout({
       }
 
       if (size < CONFIG.AUTO_COLLAPSE_THRESHOLD && size > 1 && !isDragging) {
-        autoCollapseTimeoutRef.current = setTimeout(() => {
+        autoCollapseTimeoutRef.current = window.setTimeout(() => {
           if (panelRef.current) {
             panelRef.current.collapse();
           }
@@ -108,7 +110,7 @@ export default function DashboardLayout({
     if (!dragging && panelRef.current) {
       const currentSize = panelRef.current.getSize();
       if (currentSize < CONFIG.AUTO_COLLAPSE_THRESHOLD && currentSize > 1) {
-        autoCollapseTimeoutRef.current = setTimeout(() => {
+        autoCollapseTimeoutRef.current = window.setTimeout(() => {
           if (panelRef.current) {
             panelRef.current.collapse();
           }
@@ -144,8 +146,9 @@ export default function DashboardLayout({
         dir={currentDir}
       >
         <ResizablePanelGroup
+          key={currentDir}
           direction="horizontal"
-          className={isRTL ? "flex-row-reverse" : ""}
+          dir={currentDir}
         >
           <ResizablePanel
             ref={panelRef}
