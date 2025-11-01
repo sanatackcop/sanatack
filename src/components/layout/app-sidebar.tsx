@@ -49,7 +49,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import LogoLight from "@/assets/logo.svg";
 import { submitFeedback } from "@/utils/_apis/feedback-api";
 import { toast } from "sonner";
 import { useUserContext } from "@/context/UserContext";
