@@ -20,6 +20,7 @@ export default function LearningDashboard() {
             {t("common.workspaceTitle")}
           </h2>
         </header>
+        {/* <UsageSummary /> */}
         <Recent setParentRefresh={setRefresh} refreshParent={refresh} />
         <Spaces setParentRefresh={setRefresh} refreshParent={refresh} />
       </section>

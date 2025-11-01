@@ -29,7 +29,8 @@ const Navbar = () => {
   return (
     <nav
       dir={direction}
-      className="sticky top-0 z-50 w-full border-b border-gray-200/80 bg-white/80 backdrop-blur-sm dark:border-zinc-800 dark:bg-[#09090b]"
+      className="sticky top-0 z-50 w-full border-b
+       border-gray-200/80 bg-white/80 backdrop-blur-sm dark:border-zinc-800 dark:bg-[#09090b]"
     >
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-5">

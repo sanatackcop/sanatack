@@ -19,12 +19,12 @@ const Footer: React.FC = () => {
   const socialLinks = [
     {
       icon: <FaXTwitter className="w-5 h-5" />,
-      href: "https://twitter.com/youlearn",
+      href: "https://twitter.com/sanatack",
       label: t("footer.twitter"),
     },
     {
       icon: <FaLinkedin className="w-5 h-5" />,
-      href: "https://linkedin.com/company/youlearn",
+      href: "https://linkedin.com/company/sanatack",
       label: t("footer.linkedin"),
     },
     {
@@ -37,26 +37,6 @@ const Footer: React.FC = () => {
   return (
     <>
       <div className="dark:bg-zinc-950 bg-zinc-50">
-        <section className="pb-20 px-6">
-          <div className="max-w-4xl mx-auto">
-            <div className="relative overflow-hidden backdrop-blur-xl bg-white/70 dark:bg-zinc-800/70 border border-gray-200/50 dark:border-zinc-700/50 rounded-2xl p-12 md:p-16 text-center shadow-xl">
-              <div className="absolute inset-0 bg-gradient-to-br from-gray-100/50 via-transparent to-zinc-200/50 dark:from-zinc-700/30 dark:via-transparent dark:to-zinc-600/30"></div>
-
-              <div className="relative z-10">
-                <h2 className="text-xl text-gray-900 dark:text-white mb-4 tracking-tight">
-                  {t("cta.title")}
-                </h2>
-                <p className="text-gray-600 dark:text-gray-300 text-lg mb-10 max-w-2xl mx-auto">
-                  {t("cta.subtitle")}
-                </p>
-                <button className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-8 py-3.5 rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all duration-300">
-                  {t("cta.button")}
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
-
         <footer id="footer" className="dark:bg-zinc-95">
           <div className="max-w-7xl mx-auto px-6">
             <div className="flex flex-col lg:flex-row items-center justify-around gap-6 lg:gap-8">
@@ -70,7 +50,7 @@ const Footer: React.FC = () => {
                 </div>
               </div>
 
-              <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+              <nav className="flex-wrap hidden items-center justify-center gap-x-6 gap-y-2">
                 {links.map(({ label, href }) => (
                   <a
                     key={label}
@@ -90,7 +70,7 @@ const Footer: React.FC = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={label}
-                    className={`p-2.5 rounded-lg transition-all duration-300 ${
+                    className={`p-2.5 rounded-lg  duration-300 transition-all ease-linear${
                       darkMode
                         ? "bg-zinc-800 hover:bg-zinc-600 text-gray-300"
                         : "bg-gray-100 hover:bg-zinc-500 text-gray-700 hover:text-white"

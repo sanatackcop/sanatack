@@ -46,7 +46,9 @@
     "featuresTitle": "Learn efficiently Succeed effortlessly",
     "createFlashCard": "Create Flashcard",
     "moreActions": "More actions",
-    "back": "Back"
+    "back": "Back",
+    "feature": "Feature",
+    "admin": "Admin"
   },
   "flashcards": {
     "fetchError": "Failed to fetch flashcards. Please try again.",
@@ -329,6 +331,19 @@
       "validation": "Please add both a subject and a message.",
       "success": "Thanks for sharing your feedback!",
       "error": "Failed to send feedback."
+    },
+    "settingsModal": {
+      "title": "Workspace settings",
+      "description": "Adjust how Sanatack looks and the language you prefer.",
+      "appearance": {
+        "title": "Appearance",
+        "description": "Toggle dark mode to switch between light and dark themes.",
+        "ariaLabel": "Toggle dark mode"
+      },
+      "language": {
+        "title": "Language",
+        "description": "Choose the language used across the interface."
+      }
     }
   },
   "languages": {
@@ -429,6 +444,25 @@
         "moved": "Workspace moved successfully",
         "unlinked": "Workspace removed from space",
         "deleted": "Workspace deleted successfully"
+      }
+    },
+    "usage": {
+      "title": "Usage & Limits",
+      "currentPlan": "Current plan",
+      "perDay": "per day",
+      "limitReached": "Limit reached",
+      "usageSummary": "{{used}} / {{limit}} credits",
+      "unlimited": "Unlimited",
+      "loading": "Loading usage data...",
+      "error": "Unable to load usage data",
+      "planComparison": "Plan comparison",
+      "perDayLabel": "Credits per day",
+      "resets": "Resets {{time}}",
+      "categories": {
+        "ai": "AI Assistants",
+        "content": "Content generation",
+        "ingest": "Content ingestion",
+        "default": "Usage"
       }
     }
   },
@@ -656,6 +690,7 @@
   "nav": {
     "features": "Features",
     "pricing": "Pricing",
+    "faqs": "FAQs",
     "careers": "Careers",
     "getStarted": "Get Started",
     "blog": "Blog",
@@ -765,7 +800,7 @@
       "period": "/ month",
       "subtitle": "Billed Annually",
       "description": "Learn at the highest level.",
-      "button": "Select Plan",
+      "button": "Get Started",
       "features": {
         "unlimitedUploads": "Unlimited uploads, pastes, and records",
         "unlimited": "Unlimited",
@@ -825,8 +860,9 @@
     }
   },
   "footer": {
-    "logoAlt": "YouLearn logo",
-    "copyright": "© {{year}} YouLearn Inc. All rights reserved.",
+    "logoAlt": "Sanatack logo",
+    "madeWith": "Made with ❤️ in Saudi Arabia",
+    "copyright": "© {{year}} Sanatack Inc. All rights reserved.",
     "blogs": "Blogs",
     "inviteEarn": "Invite & Earn",
     "careers": "Careers",
@@ -976,6 +1012,74 @@
       "noResults": "No videos found for this search.",
       "requestFailedWith": "We could not load videos: {{message}}",
       "generic": "Something went wrong while fetching videos. Please try again."
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Sign in",
+      "subtitle": "Welcome back! Please sign in to continue.",
+      "submitButton": "Sign in",
+      "forgotPassword": "Forgot password?",
+      "noAccount": "Don't have an account?",
+      "signUp": "Create account",
+      "googleButton": "Continue with Google",
+      "googleSuccess": "Signed in with Google",
+      "success": "Signed in successfully"
+    },
+    "signup": {
+      "title": "Create your account",
+      "subtitle": "Join Sanatack to unlock personalised learning.",
+      "submitButton": "Create account",
+      "hasAccount": "Already have an account?",
+      "signIn": "Sign in",
+      "googleButton": "Sign up with Google",
+      "success": "Account created successfully"
+    },
+    "divider": "Or continue with email",
+    "comingSoon": "Coming soon",
+    "loading": "Processing...",
+    "fields": {
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm password"
+    },
+    "placeholders": {
+      "email": "name@example.com",
+      "password": "Enter your password",
+      "confirmPassword": "Re-enter your password"
+    },
+    "validation": {
+      "emailRequired": "Email is required",
+      "emailInvalid": "Enter a valid email address",
+      "passwordRequired": "Password is required",
+      "passwordLength": "Password must be at least 6 characters",
+      "confirmPasswordRequired": "Please confirm your password",
+      "passwordMismatch": "Passwords do not match"
+    },
+    "errors": {
+      "googleGeneral": "We couldn't complete the sign in. Please try again.",
+      "googleFallback": "Something went wrong. Please try again.",
+      "tooManyAttempts": "Too many attempts. Please wait and try again later.",
+      "unexpectedError": "An unexpected error occurred. Please try again.",
+      "noEmail": "We couldn't retrieve your email from Google.",
+      "googleUnexpected": "Google sign in failed. Please try again.",
+      "firebase": {
+        "popup-closed-by-user": "The sign in window was closed before we could finish.",
+        "popup-blocked": "Your browser blocked the sign in window. Please allow popups and try again.",
+        "account-exists-with-different-credential": "An account with this email already exists using a different sign in method.",
+        "credential-already-in-use": "This credential is already linked to another account.",
+        "email-already-in-use": "This email is already registered. Try signing in instead.",
+        "invalid-credential": "The credential provided is invalid or has expired.",
+        "operation-not-allowed": "This sign in method is currently disabled.",
+        "user-disabled": "This account has been disabled.",
+        "user-not-found": "We couldn't find an account with these details.",
+        "wrong-password": "Incorrect password. Please try again.",
+        "network-request-failed": "Network error. Check your connection and try again."
+      }
+    },
+    "accessibility": {
+      "showPassword": "Show password",
+      "hidePassword": "Hide password"
     }
   }
 }
