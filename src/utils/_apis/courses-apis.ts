@@ -291,8 +291,14 @@ export const getAllSpacesApi = async (): Promise<{ data: Space[] }> => {
 
 export const createSpacesApi = async ({
   name,
+  description,
+  icon,
+  coverImageUrl,
 }: {
   name: string;
+  description?: string;
+  icon?: string;
+  coverImageUrl?: string;
 }): Promise<any> => {
   try {
     const response = await trackPromise(
@@ -301,6 +307,9 @@ export const createSpacesApi = async ({
         url: "spaces/",
         data: {
           name,
+          ...(description && { description }),
+          ...(icon && { icon }),
+          ...(coverImageUrl && { coverImageUrl }),
         },
         withCredentials: false,
       }) as Promise<{ data: Space[] }>

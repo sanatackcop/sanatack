@@ -5,26 +5,23 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, Loader2, AlertTriangle } from "lucide-react";
 import { GenerationStatus } from "../types";
+import { getWorkSpaceContent } from "@/utils/_apis/learnPlayground-api";
 import {
-  createNewDeepExplanationApi,
-  getWorkSpaceContent,
-} from "@/utils/_apis/learnPlayground-api";
-import {
-  getErrorMessage,
   ProgressStrip,
   QueuedStrip,
   StatusBadge,
 } from "@/pages/dashboard/utils";
 import ExplanationSections from "./ExplanationSection";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import GenerateContentComponent from "@/shared/workspaces/Generate";
 import { cn } from "@/lib/utils";
+import ExplanationModal from "./ExplanationModal";
 
 export type Explanation = {
   id: string;
   created_at: string;
   updated_at: string;
+  language: "ar" | "en";
   status: "pending" | "processing" | "failed" | "completed";
   payload: ExplanationPayload | null;
   failureReason?: string | null;
@@ -80,11 +77,21 @@ export default function MindMap({ workspaceId }: { workspaceId: string }) {
   const [items, setItems] = useState<Explanation[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null); // null => show LIST first
   const [loading, setLoading] = useState(true);
-  const [generating, setGenerating] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [refresh, setRefresh] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { t, i18n } = useTranslation();
   const direction = i18n.dir();
   const isRTL = direction === "rtl";
+
+  const handleCreateExplanation = useCallback(() => {
+    setModalOpen(true);
+  }, []);
+
+  function handleClosingModalExplanationCreate(created?: boolean) {
+    setModalOpen(false);
+    if (created) setRefresh(!refresh);
+  }
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -125,27 +132,6 @@ export default function MindMap({ workspaceId }: { workspaceId: string }) {
     const t = setInterval(load, POLL_MS);
     return () => clearInterval(t);
   }, [anyActive, load]);
-
-  const handleGenerate = useCallback(async () => {
-    setGenerating(true);
-    try {
-      await createNewDeepExplanationApi({ id: workspaceId });
-      await load();
-    } catch (err) {
-      const fallbackMessage = t(
-        "dashboard.errors.loadSpaces",
-        "Failed Creating Explanation Deck."
-      );
-      const msg = getErrorMessage(err, fallbackMessage);
-      toast.error(msg, {
-        closeButton: true,
-      });
-      console.error("Failed Creating Explanation: ", err);
-      setError("explanations.fetchError");
-    } finally {
-      setGenerating(false);
-    }
-  }, [workspaceId, load]);
 
   if (loading && items.length === 0) {
     return (
@@ -246,9 +232,14 @@ export default function MindMap({ workspaceId }: { workspaceId: string }) {
                 "Break down complex topics into structured, accessible insights."
               )}
               buttonLabel={t("explanations.generate.button", "Generate")}
-              onClick={handleGenerate}
-              disabled={generating || anyActive}
+              onClick={handleCreateExplanation}
               dir={direction}
+            />
+            <ExplanationModal
+              open={modalOpen}
+              onClose={handleClosingModalExplanationCreate}
+              workspaceId={workspaceId}
+              anyActive={anyActive}
             />
           </motion.div>
         ) : (
@@ -300,7 +291,10 @@ export default function MindMap({ workspaceId }: { workspaceId: string }) {
                     <div className="px-6">
                       <ScrollArea className="h-full">
                         {active.payload ? (
-                          <ExplanationSections explanation={active.payload} />
+                          <ExplanationSections
+                            explanation={active.payload}
+                            language={active.language}
+                          />
                         ) : (
                           <Card className="p-4">
                             <div className="text-sm text-gray-600">

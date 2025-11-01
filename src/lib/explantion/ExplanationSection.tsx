@@ -4,8 +4,10 @@ import { useTranslation } from "react-i18next";
 
 export default function ExplanationSections({
   explanation,
+  language,
 }: {
   explanation: ExplanationPayload;
+  language: "ar" | "en";
 }) {
   const { t } = useTranslation();
   const hasSections =
@@ -19,7 +21,7 @@ export default function ExplanationSections({
     explanation.key_takeaways && explanation.key_takeaways.length > 0;
 
   return (
-    <div className="space-y-6 h-full">
+    <div className="space-y-6 h-full" dir={language == "ar" ? "rtl" : "ltr"}>
       <section>
         <h2 className="text-2xl font-semibold text-gray-900 mb-2">
           {explanation.title}
@@ -86,7 +88,10 @@ export default function ExplanationSections({
       {hasAnalysis && (
         <section className="space-y-4">
           <h3 className="text-xl font-semibold text-gray-900">
-            {t("explanations.view.comprehensiveAnalysis", "Comprehensive Analysis")}
+            {t(
+              "explanations.view.comprehensiveAnalysis",
+              "Comprehensive Analysis"
+            )}
           </h3>
           {explanation.comprehensive_analysis?.core_themes && (
             <Card className="p-4">
@@ -128,7 +133,10 @@ export default function ExplanationSections({
       {hasApplications && (
         <section className="space-y-3">
           <h3 className="text-xl font-semibold text-gray-900">
-            {t("explanations.view.practicalApplications", "Practical Applications")}
+            {t(
+              "explanations.view.practicalApplications",
+              "Practical Applications"
+            )}
           </h3>
           <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
             {explanation.practical_applications!.map((item, idx) => (

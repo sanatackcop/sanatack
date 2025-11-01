@@ -1,35 +1,20 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import ReactFlow, {
-  Node,
-  Edge,
-  ReactFlowProvider,
-  NodeProps,
-  Position,
-  ReactFlowInstance,
-  Background,
-  Controls,
-} from "reactflow";
 import "reactflow/dist/style.css";
-import {
-  createNewSummaryApi,
-  getWorkSpaceContent,
-} from "@/utils/_apis/learnPlayground-api";
+import { getWorkSpaceContent } from "@/utils/_apis/learnPlayground-api";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { AlertTriangle, ArrowLeft } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { GenerationStatus } from "../types";
 import {
-  getErrorMessage,
   ProgressStrip,
   QueuedStrip,
   StatusBadge,
 } from "@/pages/dashboard/utils";
-import { toast } from "sonner";
 import GenerateContentComponent from "@/shared/workspaces/Generate";
-import { cn } from "@/lib/utils";
+import SummaryModal from "./SummaryModal";
+import { SummaryView } from "./SummaryView";
 
 export interface MindMap {
   root: string;
@@ -86,176 +71,24 @@ export interface SummaryViewProps {
   onClose: () => void;
 }
 
-// ---------- Node Component ----------
-function KeyPointNode({ data }: NodeProps<any>) {
-  return (
-    <div className="bg-blue-100 border-2 border-blue-500 text-blue-900 rounded-lg p-4 min-w-[180px] max-w-xs whitespace-normal shadow-lg select-none font-medium">
-      {data.label}
-    </div>
-  );
-}
-
-const nodeTypes = {
-  keyPoint: KeyPointNode,
-};
-
-// ---------- Mapping Function ----------
-function mapMindMapRootToFlowData(mindMap: MindMap): {
-  nodes: Node[];
-  edges: Edge[];
-} {
-  const nodes: Node[] = [];
-  const edges: Edge[] = [];
-  let idCounter = 0;
-  const horizontalSpace = 350;
-  const verticalSpace = 120;
-  const rootId = "root-node";
-
-  function getTreeHeight(node: MindMapNode): number {
-    if (!node.children || node.children.length === 0) return 1;
-    return node.children.reduce((sum, child) => sum + getTreeHeight(child), 0);
-  }
-
-  const totalHeight = mindMap.nodes.reduce(
-    (sum, node) => sum + getTreeHeight(node),
-    0
-  );
-
-  nodes.push({
-    id: rootId,
-    data: { label: mindMap.root },
-    position: { x: 0, y: (totalHeight * verticalSpace) / 2 },
-    type: "keyPoint",
-    sourcePosition: Position.Right,
-    targetPosition: Position.Left,
-  });
-
-  function recurse(
-    node: MindMapNode,
-    level: number,
-    offsetY: number,
-    parentId: string
-  ): number {
-    const nodeId = node.id || `node-${idCounter++}`;
-    const posX = level * horizontalSpace;
-    const childHeight = node.children
-      ? node.children.reduce((sum, child) => sum + getTreeHeight(child), 0)
-      : 1;
-    const posY = offsetY + (childHeight * verticalSpace) / 2;
-
-    nodes.push({
-      id: nodeId,
-      data: { label: node.label },
-      position: { x: posX, y: posY },
-      type: "keyPoint",
-      sourcePosition: Position.Right,
-      targetPosition: Position.Left,
-    });
-
-    // Let React Flow handle all edges; no custom styling or type
-    edges.push({
-      id: `e${parentId}-${nodeId}`,
-      source: parentId,
-      target: nodeId,
-    });
-
-    let currentOffset = offsetY;
-    if (node.children && node.children.length > 0) {
-      node.children.forEach((child) => {
-        const childTreeHeight = getTreeHeight(child);
-        recurse(child, level + 1, currentOffset, nodeId);
-        currentOffset += childTreeHeight * verticalSpace;
-      });
-    }
-    return childHeight;
-  }
-
-  let currentOffset = 0;
-  if (mindMap.nodes && mindMap.nodes.length > 0) {
-    mindMap.nodes.forEach((topNode) => {
-      const treeHeight = getTreeHeight(topNode);
-      recurse(topNode, 1, currentOffset, rootId);
-      currentOffset += treeHeight * verticalSpace;
-    });
-  }
-
-  return { nodes, edges };
-}
-
-interface FlowChartProps {
-  initialNodes: Node[];
-  initialEdges: Edge[];
-}
-
-function FlowChart({ initialNodes, initialEdges }: FlowChartProps) {
-  const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>(null);
-  const onInit = useCallback((instance: ReactFlowInstance) => {
-    setRfInstance(instance);
-    setTimeout(() => {
-      instance.fitView({ padding: 0.2, duration: 200 });
-    }, 50);
-  }, []);
-
-  useEffect(() => {
-    if (rfInstance) {
-      rfInstance.fitView({ padding: 0.2, duration: 200 });
-    }
-  }, [rfInstance]);
-
-  const initialNodes2 = initialNodes.map((node) => {
-    const { type, ...fil } = node;
-    return fil;
-  });
-
-  return (
-    <ReactFlow
-      nodes={initialNodes2}
-      edges={initialEdges}
-      nodeTypes={nodeTypes}
-      onInit={onInit}
-      fitView
-      minZoom={0.1}
-      maxZoom={2}
-      nodesConnectable={false}
-      nodesDraggable={true}
-      zoomOnScroll={true}
-      panOnScroll={false}
-    >
-      <Background color="#94a3b8" gap={20} />
-      <Controls />
-    </ReactFlow>
-  );
-}
-
 export function SummaryList({ workspaceId }: SummaryListProps) {
   const [summaries, setSummaries] = useState<Summary[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [refetch, setRefetch] = useState<boolean>(false);
+  const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [refresh, setRefresh] = useState(false);
   const [selectedSummary, setSelectedSummary] = useState<Summary | null>(null);
-  const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { t, i18n } = useTranslation();
   const direction = i18n.dir();
 
-  const createNewSummary = async () => {
-    setGenerating(true);
-    try {
-      await createNewSummaryApi({ id: workspaceId });
-      setRefetch(!refetch);
-    } catch (err) {
-      const fallbackMessage = t(
-        "dashboard.errors.loadSpaces",
-        "Failed Creating Summary."
-      );
-      const msg = getErrorMessage(err, fallbackMessage);
-      toast.error(msg, {
-        closeButton: true,
-      });
-      console.error("Failed Creating Summary: ", err);
-    } finally {
-      setGenerating(false);
-    }
-  };
+  const handleCreateSummary = useCallback(() => {
+    setModalOpen(true);
+  }, []);
+
+  function handleClosingModalSummaryCreate(created?: boolean) {
+    setModalOpen(false);
+    if (created) setRefresh(!refresh);
+  }
 
   const anyActive = useMemo(
     () =>
@@ -287,7 +120,7 @@ export function SummaryList({ workspaceId }: SummaryListProps) {
     return () => {
       isMounted = false;
     };
-  }, [workspaceId, refetch]);
+  }, [workspaceId, refresh]);
 
   if (selectedSummary) {
     return (
@@ -406,86 +239,17 @@ export function SummaryList({ workspaceId }: SummaryListProps) {
             "Create a Summary to summarize key points and generate a mind map for better understanding."
           )}
           buttonLabel={t("summary.generate.button", "Generate")}
-          onClick={createNewSummary}
-          disabled={generating || anyActive}
+          onClick={handleCreateSummary}
           dir={direction}
         />
       </ScrollArea>
+
+      <SummaryModal
+        open={modalOpen}
+        onClose={handleClosingModalSummaryCreate}
+        workspaceId={workspaceId}
+        anyActive={anyActive}
+      />
     </div>
-  );
-}
-
-export function SummaryView({ summary, onClose }: SummaryViewProps) {
-  const { t, i18n } = useTranslation();
-  const direction = i18n.dir();
-  const isRTL = direction === "rtl";
-
-  if (!summary.payload) {
-    return (
-      <div className="p-6" dir={direction}>
-        <p className="text-gray-700">
-          {t("summary.view.noData", "No summary data available.")}
-        </p>
-        <Button className="mt-4" onClick={onClose}>
-          {t("common.back", "Back")}
-        </Button>
-      </div>
-    );
-  }
-
-  const { nodes, edges } = mapMindMapRootToFlowData(summary.payload.mind_map);
-
-  return (
-    <Card
-      className="flex flex-col gap-4 px-2 md:px-6 w-full min-h-[600px] border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/60 overflow-visible"
-      dir={direction}
-    >
-      <div className="flex flex-col items-start w-full max-w-5xl mx-auto gap-4">
-        <div
-          className={cn(
-            "flex group items-center text-zinc-400/70 cursor-pointer hover:bg-zinc-100/60 dark:hover:bg-zinc-900/60 drop-shadow-sm hover:text-zinc-700 dark:hover:text-zinc-200 rounded-2xl py-2 px-3 transition-all ease-linear duration-100",
-            isRTL ? "flex-row-reverse" : "flex-row"
-          )}
-          onClick={onClose}
-        >
-          <ArrowLeft
-            className={cn(
-              "w-4 h-4 transition-all ease-out duration-200",
-              isRTL
-                ? "ml-2 group-hover:translate-x-1"
-                : "mr-2 group-hover:-translate-x-1"
-            )}
-          />
-          <span className="text-sm">{t("common.back", "Back")}</span>
-        </div>
-        <h2 className="text-2xl font-bold text-gray-900">
-          {summary.payload.title}
-        </h2>
-        <p className="text-gray-600 mb-2">{summary.payload.overview}</p>
-      </div>
-      <div className="flex flex-col w-full max-w-5xl mx-auto mt-2">
-        <div className="font-semibold mb-1">
-          {t("summary.view.mainPoints", "Main Points:")}
-        </div>
-        <ul className="mb-4 list-disc list-inside text-gray-700 px-2">
-          {summary.payload.main_points.map((pt, idx) => (
-            <li key={idx}>{pt}</li>
-          ))}
-        </ul>
-      </div>
-      <div className="w-full max-w-5xl mx-auto mt-2 flex flex-col">
-        <div className="font-semibold mb-2 text-zinc-800 dark:text-zinc-200">
-          {t("summary.view.mindMap", "Mind Map")}
-        </div>
-        <div
-          className="w-full relative bg-zinc-100 dark:bg-zinc-900/60 rounded-xl border border-zinc-200 dark:border-zinc-800"
-          style={{ height: 500 }}
-        >
-          <ReactFlowProvider>
-            <FlowChart initialNodes={nodes} initialEdges={edges} />
-          </ReactFlowProvider>
-        </div>
-      </div>
-    </Card>
   );
 }
