@@ -184,7 +184,6 @@ export function Pricing() {
             "pricing.team.features.teamWord",
           ],
         },
-
         {
           key: "pricing.team.minSeats",
           boldKeys: [
@@ -220,7 +219,7 @@ export function Pricing() {
         parts.push(
           <span
             key={`bold-${partIndex++}`}
-            className="font-semibold text-zinc-900 dark:text-zinc-100"
+            className="text-zinc-900 dark:text-zinc-100"
           >
             {boldText}
           </span>
@@ -243,205 +242,251 @@ export function Pricing() {
   return (
     <section
       id="pricing"
-      className="relative min-h-screen dark:bg-zinc-950 py-20 px-4 overflow-hidden transition-colors"
+      className="relative min-h-screen bg-gradient-to-br from-zinc-50 via-white to-zinc-50 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950 py-24 px-4 overflow-hidden transition-colors"
       dir={direction}
     >
-      {/* <Hyperspeed
-        effectOptions={{
-          onSpeedUp: () => {},
-          onSlowDown: () => {},
-          distortion: "turbulentDistortion",
-          length: 400,
-          roadWidth: 10,
-          islandWidth: 2,
-          lanesPerRoad: 4,
-          fov: 90,
-          fovSpeedUp: 150,
-          speedUp: 2,
-          carLightsFade: 0.4,
-          totalSideLightSticks: 20,
-          lightPairsPerRoadWay: 40,
-          shoulderLinesWidthPercentage: 0.05,
-          brokenLinesWidthPercentage: 0.1,
-          brokenLinesLengthPercentage: 0.5,
-          lightStickWidth: [0.12, 0.5],
-          lightStickHeight: [1.3, 1.7],
-          movingAwaySpeed: [60, 80],
-          movingCloserSpeed: [-120, -160],
-          carLightsLength: [400 * 0.03, 400 * 0.2],
-          carLightsRadius: [0.05, 0.14],
-          carWidthPercentage: [0.3, 0.5],
-          carShiftX: [-0.8, 0.8],
-          carFloorSeparation: [0, 5],
-          colors: {
-            roadColor: 0x080808,
-            islandColor: 0x0a0a0a,
-            background: 0x000000,
-            shoulderLines: 0xffffff,
-            brokenLines: 0xffffff,
-            leftCars: [0xd856bf, 0x6750a2, 0xc247ac],
-            rightCars: [0x03b3c3, 0x0e5ea5, 0x324555],
-            sticks: 0x03b3c3,
-          },
-        }}
-      /> */}
-
       <div className="max-w-7xl mx-auto">
-        <div className="relative mx-auto max-w-6xl text-center space-y-6 mb-10">
+        {/* Header Section */}
+        <div className="relative mx-auto max-w-4xl text-center space-y-8 mb-16">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-4xl tracking-tight text-gray-900 dark:text-white leading-tight mt-6">
+            <h2 className="text-5xl tracking-tight text-gray-900 dark:text-white leading-tight">
               {t("pricing.title")}
             </h2>
 
-            <p className="text-md text-gray-600 dark:text-gray-400 mt-3 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-lg text-gray-600 dark:text-gray-400 mt-5 max-w-2xl mx-auto leading-relaxed">
               {t("pricing.subtitle")}
             </p>
           </motion.div>
+
+          {/* Global Billing Toggle */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            viewport={{ once: true }}
+            className="inline-flex items-center gap-4 bg-white dark:bg-zinc-800 rounded-full p-2 shadow-lg border border-zinc-200 dark:border-zinc-700"
+          >
+            <span
+              className={`px-4 py-2 rounded-full transition-all text-sm ${
+                !isYearly
+                  ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900"
+                  : "text-zinc-600 dark:text-zinc-400"
+              }`}
+            >
+              {t("pricing.billedMonthly")}
+            </span>
+            <Switch
+              checked={isYearly}
+              onChange={(e) => setIsYearly(e.target.checked)}
+              sx={{
+                "& .MuiSwitch-switchBase.Mui-checked": {
+                  color: "#10b981",
+                },
+                "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                  backgroundColor: "#10b981",
+                },
+              }}
+            />
+            <span
+              className={`px-4 py-2 rounded-full transition-all text-sm flex items-center gap-2 ${
+                isYearly
+                  ? "bg-emerald-500 text-white"
+                  : "text-zinc-600 dark:text-zinc-400"
+              }`}
+            >
+              {t("pricing.pro.subtitle")}
+              {isYearly && (
+                <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full">
+                  -20%
+                </span>
+              )}
+            </span>
+          </motion.div>
         </div>
 
-        <div className="max-w-[1300px] mx-auto relative">
-          {/* Shadow wrapper for Pro card */}
-          <div className="absolute inset-0 hidden md:flex items-center justify-center pointer-events-none">
-            <div className="w-[33.333%] h-full shadow-[0_20px_60px_-15px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.6)] rounded-2xl" />
-          </div>
-
-          <div className="relative grid grid-cols-1 md:grid-cols-3 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden bg-white dark:bg-zinc-900">
+        {/* Floating Pricing Cards */}
+        <div className="max-w-[1400px] mx-auto pt-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 items-center">
             {plans.map((plan, index) => (
-              <div
+              <motion.div
                 key={index}
-                className={`flex flex-col relative ${
-                  index !== plans.length - 1
-                    ? `${
-                        isRTL ? "border-l" : "border-r"
-                      } border-zinc-200 dark:border-zinc-800`
-                    : ""
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                viewport={{ once: true }}
+                className={`relative transform transition-all duration-300 ${
+                  plan.isPopular
+                    ? "md:scale-110 z-10"
+                    : "md:scale-90 hover:scale-95"
                 }`}
+                style={{ transformOrigin: "center" }}
               >
-                {/* Plan Header */}
-                <div className="p-8 pb-6 border-b border-zinc-200 dark:border-zinc-800">
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-2xl  text-zinc-900 dark:text-zinc-50">
-                      {t(plan.nameKey as any)}
-                    </h2>
-                    {plan.isPopular && (
-                      <span className="px-3 py-1 bg-emerald-500 text-white text-xs font-medium rounded-full">
+                <div
+                  className={`flex flex-col rounded-3xl overflow-visible h-full ${
+                    plan.isPopular
+                      ? "bg-white dark:bg-zinc-900 shadow-2xl shadow-emerald-500/20 dark:shadow-emerald-500/30 border-2 border-emerald-500/30"
+                      : "bg-white dark:bg-zinc-900 shadow-xl hover:shadow-2xl border border-zinc-200 dark:border-zinc-800"
+                  }`}
+                >
+                  {/* Popular Badge */}
+                  {plan.isPopular && (
+                    <div className="absolute -top-5 left-0 right-0 flex justify-center z-20">
+                      <span className="px-6 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-sm rounded-full shadow-lg">
                         {t("pricing.popularBadge")}
                       </span>
-                    )}
-                  </div>
-
-                  <div className="mb-4">
-                    <div className="flex items-baseline gap-1 mb-2">
-                      <span className="text-4xl font-medium tracking-tight text-zinc-900 dark:text-zinc-50">
-                        <AnimatedPrice
-                          value={getPrice(plan)}
-                          currency={
-                            typeof plan.yearlyPrice === "number" &&
-                            plan.yearlyPrice === 0
-                              ? "$"
-                              : "SR"
-                          }
-                        />
-                      </span>
-                      <span className="text-sm text-zinc-500 dark:text-zinc-400">
-                        {t(plan.periodKey as any)}
-                      </span>
                     </div>
-                  </div>
-
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                    {t(plan.descriptionKey as any)}
-                  </p>
-                </div>
-
-                <div className="px-8 py-6 min-h-[80px] flex items-center border-b border-zinc-200 dark:border-zinc-800">
-                  {plan.billingToggle ? (
-                    <div className="flex items-center gap-3">
-                      <Switch
-                        value={isYearly}
-                        onClick={() => setIsYearly(!isYearly)}
-                      />
-                      <span className="text-sm text-zinc-600 dark:text-zinc-400">
-                        {isYearly
-                          ? t(plan.subtitleKey! as any)
-                          : t("pricing.billedMonthly")}
-                      </span>
-                    </div>
-                  ) : (
-                    <span className="text-sm text-zinc-600 dark:text-zinc-400">
-                      {t("pricing.free.freeForEveryone")}
-                    </span>
                   )}
-                </div>
 
-                {/* Features List */}
-                <div className="px-8 py-7 flex-grow">
-                  <ul className="space-y-4">
-                    {plan.features.map((feature, idx) => (
-                      <li
-                        key={idx}
-                        className={`flex items-start gap-3 ${
-                          isRTL ? "flex-row-reverse" : ""
-                        }`}
+                  {/* Card Content */}
+                  <div className="flex flex-col h-full">
+                    {/* Header */}
+                    <div className="p-8 pb-6">
+                      <h3 className="text-2xl text-zinc-900 dark:text-zinc-50 mb-2">
+                        {t(plan.nameKey as any)}
+                      </h3>
+
+                      <div className="mt-6 mb-4">
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-5xl tracking-tight text-zinc-900 dark:text-zinc-50">
+                            <AnimatedPrice
+                              value={getPrice(plan)}
+                              currency={
+                                typeof plan.yearlyPrice === "number" &&
+                                plan.yearlyPrice === 0
+                                  ? "$"
+                                  : "SR"
+                              }
+                            />
+                          </span>
+                          <span className="text-base text-zinc-500 dark:text-zinc-400">
+                            {t(plan.periodKey as any)}
+                          </span>
+                        </div>
+                        {plan.billingToggle && isYearly && (
+                          <p className="text-sm text-emerald-600 dark:text-emerald-500 mt-2">
+                            {t("pricing.savingsText", {
+                              defaultValue: `Save SR${
+                                (plan.monthlyPrice as number) * 12 -
+                                (plan.yearlyPrice as number) * 12
+                              } annually`,
+                            })}
+                          </p>
+                        )}
+                      </div>
+
+                      <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                        {t(plan.descriptionKey as any)}
+                      </p>
+                    </div>
+
+                    {/* Billing Info */}
+                    <div
+                      className={`px-8 py-4 ${
+                        plan.isPopular
+                          ? "bg-emerald-50 dark:bg-emerald-950/20"
+                          : "bg-zinc-50 dark:bg-zinc-800/50"
+                      }`}
+                    >
+                      {plan.billingToggle ? (
+                        <div className="flex items-center gap-2">
+                          <svg
+                            className={`w-4 h-4 ${
+                              plan.isPopular
+                                ? "text-emerald-600 dark:text-emerald-500"
+                                : "text-blue-600 dark:text-blue-500"
+                            }`}
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                            {isYearly
+                              ? t(plan.subtitleKey! as any)
+                              : t("pricing.billedMonthly")}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                          {t("pricing.free.freeForEveryone")}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Features */}
+                    <div className="px-8 py-8 flex-grow">
+                      <ul className="space-y-4">
+                        {plan.features.map((feature, idx) => (
+                          <li
+                            key={idx}
+                            className={`flex items-start gap-3 ${
+                              isRTL ? "flex-row-reverse" : ""
+                            }`}
+                          >
+                            <svg
+                              className={`w-5 h-5 mt-0.5 flex-shrink-0 ${
+                                plan.isPopular
+                                  ? "text-emerald-500"
+                                  : "text-blue-600 dark:text-blue-500"
+                              }`}
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                            <span
+                              className={`text-sm leading-relaxed ${
+                                isRTL ? "text-right" : "text-left"
+                              } text-zinc-700 dark:text-zinc-300`}
+                            >
+                              {renderFeatureText(feature)}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* CTA Button */}
+                    <div className="p-8 pt-0">
+                      <button
+                        className={`w-full py-4 px-6 rounded-2xl text-sm transition-all duration-200 ${
+                          plan.buttonVariant === "primary"
+                            ? "bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white shadow-lg hover:shadow-xl hover:-translate-y-1"
+                            : "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-50 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                        } flex items-center justify-center gap-2`}
                       >
+                        {t(plan.buttonTextKey as any)}
                         <svg
-                          className={`w-5 h-5 mt-0.5 flex-shrink-0 ${
-                            plan.isPopular
-                              ? "text-emerald-500 dark:text-emerald-500"
-                              : "text-blue-600 dark:text-blue-500"
-                          }`}
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
+                          className={`w-4 h-4 ${isRTL ? "rotate-180" : ""}`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
                         >
                           <path
-                            fillRule="evenodd"
-                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                            clipRule="evenodd"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
                           />
                         </svg>
-                        <span
-                          className={`text-sm leading-relaxed ${
-                            isRTL ? "text-right" : "text-left"
-                          } text-zinc-700 dark:text-zinc-300`}
-                        >
-                          {renderFeatureText(feature)}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
+                      </button>
+                    </div>
+                  </div>
                 </div>
-
-                {/* CTA Button */}
-                <div className="p-8 pt-6 border-t border-zinc-200 dark:border-zinc-800">
-                  <button
-                    className={`w-full py-3 px-4 rounded-xl font-semibold text-sm transition-all ${
-                      plan.buttonVariant === "primary"
-                        ? "bg-zinc-900 dark:bg-zinc-100 text-zinc-50 dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 shadow-sm"
-                        : "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-50 hover:bg-zinc-200 dark:hover:bg-zinc-700"
-                    } flex items-center justify-center gap-2`}
-                  >
-                    {t(plan.buttonTextKey as any)}
-                    <svg
-                      className={`w-4 h-4 ${isRTL ? "rotate-180" : ""}`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>

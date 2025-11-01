@@ -3,6 +3,7 @@ import {
   BrickWall,
   Building2,
   Cuboid,
+  Gauge,
   House,
   LucideProps,
   School,
@@ -63,6 +64,11 @@ const items: SidebarItem[] = [
     title: "Materials",
     url: "/materials",
     icon: Blocks,
+  },
+  {
+    title: "Usage & Limits",
+    url: "/usage",
+    icon: Gauge,
   },
 ];
 

@@ -1,177 +1,238 @@
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   loginApi,
   LoginResult,
   firebaseSignInApi,
+  signupApi,
 } from "@/utils/_apis/auth-apis";
-import { useNavigate } from "react-router-dom";
-import UserContext, { ContextType } from "@/context/UserContext";
-import { ChangeEvent, useContext, useState, FormEvent } from "react";
-import { Eye, EyeOff, Github } from "lucide-react";
+import UserContext from "@/context/UserContext";
+import {
+  ChangeEvent,
+  FormEvent,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "@/lib/firebase";
 import { FirebaseError } from "firebase/app";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
-interface LoginFormProps {}
+interface LoginFormProps {
+  useSignup?: boolean;
+}
 
-const Input: React.FC<InputProps> = ({
-  className = "",
-  type = "text",
-  ...props
-}) => {
+const Input: React.FC<
+  React.InputHTMLAttributes<HTMLInputElement> & { label?: string }
+> = ({ className = "", type = "text", label, ...props }) => {
   return (
-    <input
-      type={type}
-      className={`flex h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-base placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-400 transition-all duration-200 ${className}`}
-      {...props}
-    />
+    <div className="space-y-2">
+      {label ? (
+        <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+          {label}
+        </label>
+      ) : null}
+      <input
+        type={type}
+        className={`flex h-11 w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-base placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder:text-zinc-400 transition-all duration-200 ${className}`}
+        {...props}
+      />
+    </div>
   );
 };
-
-interface InputProps {
-  className?: string;
-  type?: string;
-  placeholder?: string;
-  dir?: string;
-  value?: string;
-  onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
-}
 
 interface FormData {
   email: string;
   password: string;
+  confirmPassword: string;
 }
 
 interface FormErrors {
   email?: string;
   password?: string;
+  confirmPassword?: string;
   general?: string;
 }
 
-const firebaseErrorMessages: Record<string, string> = {
-  "auth/popup-closed-by-user": "تم إغلاق نافذة Google قبل إكمال العملية.",
-  "auth/cancelled-popup-request": "تم إلغاء نافذة تسجيل الدخول السابقة.",
-  "auth/popup-blocked": "يرجى السماح بالنوافذ المنبثقة لإكمال تسجيل الدخول.",
-  "auth/network-request-failed": "فشل الاتصال بالشبكة. حاول مرة أخرى.",
+const INITIAL_DATA: FormData = {
+  email: "",
+  password: "",
+  confirmPassword: "",
 };
 
-const mapFirebaseError = (code?: string) => {
-  if (!code) return "تعذر تسجيل الدخول باستخدام Google حالياً.";
-  return (
-    firebaseErrorMessages[code] ||
-    "تعذر تسجيل الدخول باستخدام Google. حاول مرة أخرى."
-  );
-};
-
-export const LoginForm: React.FC<LoginFormProps> = () => {
-  const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [formData, setFormData] = useState<FormData>({
-    email: "",
-    password: "",
-  });
-  const [errors, setErrors] = useState<FormErrors>({});
+export const LoginForm: React.FC<LoginFormProps> = ({ useSignup = false }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const userContext = useContext(UserContext);
   const login = userContext?.login;
 
-  const validateForm = (): boolean => {
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState<FormData>(INITIAL_DATA);
+  const [errors, setErrors] = useState<FormErrors>({});
+
+  // Firebase error mapping with translations
+  const getFirebaseErrorMessage = useCallback(
+    (code?: string) => {
+      if (!code) return t("auth.errors.googleGeneral");
+      const errorKey = `auth.errors.firebase.${code.replace("auth/", "")}`;
+      return t(errorKey, { defaultValue: t("auth.errors.googleFallback") });
+    },
+    [t]
+  );
+
+  const copy = useMemo(() => {
+    return useSignup
+      ? {
+          title: t("auth.signup.title"),
+          subtitle: t("auth.signup.subtitle"),
+          primaryCta: t("auth.signup.submitButton"),
+          switchPrompt: t("auth.signup.hasAccount"),
+          switchAction: t("auth.signup.signIn"),
+          switchHref: "/login",
+          googleCta: t("auth.signup.googleButton"),
+          successMessage: t("auth.signup.success"),
+        }
+      : {
+          title: t("auth.login.title"),
+          subtitle: t("auth.login.subtitle"),
+          primaryCta: t("auth.login.submitButton"),
+          switchPrompt: t("auth.login.noAccount"),
+          switchAction: t("auth.login.signUp"),
+          switchHref: "/signup",
+          googleCta: t("auth.login.googleButton"),
+          successMessage: t("auth.login.googleSuccess"),
+        };
+  }, [useSignup, t]);
+
+  const resetFieldError = useCallback(
+    (field: keyof FormErrors) => {
+      if (!errors[field]) return;
+      setErrors((prev) => ({
+        ...prev,
+        [field]: undefined,
+      }));
+    },
+    [errors]
+  );
+
+  const handleInputChange = useCallback(
+    (field: keyof FormData) => (event: ChangeEvent<HTMLInputElement>) => {
+      const value = event.target.value;
+      setFormData((prev) => ({ ...prev, [field]: value }));
+      resetFieldError(field as keyof FormErrors);
+      if (errors.general) {
+        setErrors((prev) => ({ ...prev, general: undefined }));
+      }
+    },
+    [errors.general, resetFieldError]
+  );
+
+  const validateForm = useCallback((): boolean => {
     const newErrors: FormErrors = {};
 
     if (!formData.email.trim()) {
-      newErrors.email = "البريد الإلكتروني مطلوب";
+      newErrors.email = t("auth.validation.emailRequired");
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "البريد الإلكتروني غير صحيح";
+      newErrors.email = t("auth.validation.emailInvalid");
     }
 
     if (!formData.password) {
-      newErrors.password = "كلمة المرور مطلوبة";
+      newErrors.password = t("auth.validation.passwordRequired");
     } else if (formData.password.length < 6) {
-      newErrors.password = "كلمة المرور يجب أن تكون 6 أحرف على الأقل";
+      newErrors.password = t("auth.validation.passwordLength");
+    }
+
+    if (useSignup) {
+      if (!formData.confirmPassword) {
+        newErrors.confirmPassword = t(
+          "auth.validation.confirmPasswordRequired"
+        );
+      } else if (formData.confirmPassword !== formData.password) {
+        newErrors.confirmPassword = t("auth.validation.passwordMismatch");
+      }
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
+  }, [formData, useSignup, t]);
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const persistSession = useCallback(
+    (result: LoginResult | (LoginResult & { accessToken?: string })) => {
+      if (!login) return;
+      login({
+        role: result.role,
+        type: result.type,
+        user: result.user,
+        refresh_token: result.refresh_token,
+      });
+      navigate("/dashboard", { replace: true });
+    },
+    [login, navigate]
+  );
 
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     if (!validateForm()) return;
 
     setIsLoading(true);
     setErrors({});
 
     try {
-      const result = (await loginApi({
-        email: formData.email,
-        password: formData.password,
-      })) as unknown as LoginResult;
-
-      if (result.role && login) {
-        login({
-          role: result.role,
-          type: result.type as ContextType,
-          user: result.user,
-          refresh_token: result.refresh_token,
+      if (useSignup) {
+        const nameSeed = formData.email.split("@")[0] ?? "";
+        const signupResult = await signupApi({
+          email: formData.email,
+          password: formData.password,
+          first_name: nameSeed || "user",
+          last_name: "",
+          phone: "",
+          interests: [],
+          userType: "student",
         });
-        navigate("/dashboard", { replace: true });
+
+        persistSession(signupResult as LoginResult);
+        toast.success(t("auth.signup.success"));
       } else {
-        setErrors({ general: "فشل في تسجيل الدخول. يرجى المحاولة مرة أخرى." });
+        const result = (await loginApi({
+          email: formData.email,
+          password: formData.password,
+        })) as LoginResult;
+
+        persistSession(result);
+        toast.success(t("auth.login.success"));
       }
     } catch (error: any) {
-      console.error("Login error:", error);
+      console.error("Auth form submission error:", error);
 
       if (error?.error?.type === "validationError") {
         setErrors({ general: error.error.body });
-      } else if (error?.error?.type === "network") {
-        setErrors({ general: "مشكلة في الاتصال. يرجى التحقق من الإنترنت." });
-      } else if (error?.response?.status === 401) {
-        setErrors({ general: "البريد الإلكتروني أو كلمة المرور غير صحيحة." });
       } else if (error?.response?.status === 429) {
-        setErrors({ general: "محاولات كثيرة. يرجى المحاولة لاحقاً." });
+        setErrors({ general: t("auth.errors.tooManyAttempts") });
+      } else if (error instanceof Error) {
+        setErrors({ general: error.message });
       } else {
-        setErrors({ general: "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى." });
+        setErrors({ general: t("auth.errors.unexpectedError") });
       }
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleInputChange =
-    (field: keyof FormData) =>
-    (e: ChangeEvent<HTMLInputElement>): void => {
-      setFormData((prev) => ({
-        ...prev,
-        [field]: e.target.value,
-      }));
-
-      if (errors[field]) {
-        setErrors((prev) => ({
-          ...prev,
-          [field]: undefined,
-        }));
-      }
-
-      if (errors.general) {
-        setErrors((prev) => ({
-          ...prev,
-          general: undefined,
-        }));
-      }
-    };
-
-  const handleGoogleLogin = async () => {
+  const handleGoogleAuth = async () => {
     setIsLoading(true);
     setErrors({});
+
     try {
       const credential = await signInWithPopup(auth, googleProvider);
       const firebaseUser = credential.user;
 
       if (!firebaseUser.email) {
-        throw new Error("لا يوجد بريد إلكتروني مرتبط بهذا الحساب.");
+        throw new Error(t("auth.errors.noEmail"));
       }
 
       const idToken = await firebaseUser.getIdToken(true);
@@ -193,66 +254,61 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
         idToken,
       });
 
-      if (login) {
-        login({
-          role: result.role,
-          type: result.type as ContextType,
-          user: result.user,
-          refresh_token: result.refresh_token,
-        });
-      }
-
-      toast.success("تم تسجيل الدخول باستخدام Google");
-      navigate("/dashboard", { replace: true });
-    } catch (error) {
-      console.error("Google login error:", error);
+      persistSession(result);
+      toast.success(copy.successMessage);
+    } catch (error: unknown) {
+      console.error("Google auth error:", error);
       if (error instanceof FirebaseError) {
         if (error.code === "auth/popup-closed-by-user") {
-          toast.info(mapFirebaseError(error.code));
+          toast.info(getFirebaseErrorMessage(error.code));
         } else {
-          toast.error(mapFirebaseError(error.code));
+          toast.error(getFirebaseErrorMessage(error.code));
         }
+      } else if (
+        typeof error === "object" &&
+        error !== null &&
+        "response" in error &&
+        typeof (error as any).response?.data?.message === "string"
+      ) {
+        toast.error((error as any).response.data.message);
       } else if (error instanceof Error) {
         toast.error(error.message);
       } else {
-        toast.error("حدث خطأ غير متوقع أثناء تسجيل الدخول بواسطة Google.");
+        toast.error(t("auth.errors.googleUnexpected"));
       }
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleOAuthLogin = (provider: string) => {
+  const handleOAuth = (provider: string) => {
     if (provider === "google") {
-      void handleGoogleLogin();
+      void handleGoogleAuth();
       return;
     }
-    toast.info("سيتم دعم هذا الخيار قريباً.");
+    toast.info(t("auth.comingSoon"));
   };
 
   return (
     <div className="w-full space-y-6 ">
       <div className="text-center space-y-3">
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
-          أهلاً وسهلاً بك
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">
+          {copy.title}
         </h1>
-        <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 leading-relaxed">
-          سجّل دخولك للوصول إلى حسابك
+        <p className="text-sm md:text-base text-zinc-600 dark:text-zinc-400 leading-relaxed">
+          {copy.subtitle}
         </p>
       </div>
 
       <div className="space-y-3 text-black">
         <Button
           variant="outline"
-          className=" !bg-white w-full h-11 text-sm font-medium transition-all hover:scale-[1.01] hover:shadow-md"
+          className="!bg-white w-full h-11 text-sm font-medium transition-all hover:shadow-sm"
           type="button"
-          onClick={() => handleOAuthLogin("google")}
+          onClick={() => handleOAuth("google")}
           disabled={isLoading}
         >
-          <svg
-            className="w-5 h-5 ml-3 drop-shadow-[0_1px_1px_rgba(0,0,0,2.8)] "
-            viewBox="0 0 24 24"
-          >
+          <svg className="w-5 h-5 ml-3" viewBox="0 0 24 24" aria-hidden="true">
             <path
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
               fill="#4285F4"
@@ -270,28 +326,17 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
               fill="#EA4335"
             />
           </svg>
-          المتابعة باستخدام جوجل
-        </Button>
-
-        <Button
-          variant="outline"
-          className="!bg-white w-full h-11 text-sm font-medium transition-all hover:scale-[1.01] hover:shadow-md"
-          type="button"
-          onClick={() => handleOAuthLogin("github")}
-          disabled={isLoading}
-        >
-          <Github className="w-5 h-5 mx-3" />
-          المتابعة باستخدام جيت هاب
+          {copy.googleCta}
         </Button>
       </div>
 
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-gray-300 dark:border-gray-600" />
+          <span className="w-full border-t border-zinc-300 dark:border-zinc-600" />
         </div>
         <div className="relative flex justify-center text-sm uppercase">
-          <span className="bg-white dark:bg-gray-800 px-4 text-gray-500 dark:text-gray-400 font-medium">
-            أو
+          <span className="bg-white dark:bg-zinc-800 px-4 text-zinc-500 dark:text-zinc-400 font-medium">
+            {t("auth.divider")}
           </span>
         </div>
       </div>
@@ -306,23 +351,22 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
 
       <form
         onSubmit={handleSubmit}
-        className="space-y-5 text-black dark:text-white text-right"
+        className="space-y-5 text-black dark:text-white"
         noValidate
       >
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block">
-            البريد الإلكتروني
+          <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 block">
+            {t("auth.fields.email")}
           </label>
           <Input
             type="email"
-            placeholder="example@example.com"
-            dir="ltr"
+            placeholder={t("auth.placeholders.email")}
             value={formData.email}
             onChange={handleInputChange("email")}
             className={
               errors.email
-                ? "border-red-500 focus:border-red-500 focus:ring-red-500 text-right"
-                : "text-right"
+                ? "border-red-500 focus:border-red-500 focus:ring-red-500 "
+                : ""
             }
           />
           {errors.email && (
@@ -335,36 +379,39 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-              كلمة المرور
+            <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+              {t("auth.fields.password")}
             </label>
-            <Link
-              to="/forgot-password"
-              className="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors font-medium"
-            >
-              نسيت كلمة المرور؟
-            </Link>
+            {!useSignup && (
+              <Link
+                to="/forgot-password"
+                className="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors font-medium"
+              >
+                {t("auth.login.forgotPassword")}
+              </Link>
+            )}
           </div>
           <div className="relative">
             <Input
               type={showPassword ? "text" : "password"}
-              placeholder="••••••••"
-              dir="ltr"
+              placeholder={t("auth.placeholders.password")}
               value={formData.password}
               onChange={handleInputChange("password")}
-              className={`${
+              className={
                 errors.password
-                  ? "border-red-500 focus:border-red-500 focus:ring-red-500 text-right"
-                  : "text-right"
-              }`}
+                  ? "border-red-500 focus:border-red-500 focus:ring-red-500 "
+                  : ""
+              }
             />
             <button
               type="button"
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-1 disabled:opacity-50"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors p-1 disabled:opacity-50"
               onClick={() => setShowPassword(!showPassword)}
               disabled={isLoading}
               aria-label={
-                showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"
+                showPassword
+                  ? t("auth.accessibility.hidePassword")
+                  : t("auth.accessibility.showPassword")
               }
             >
               {showPassword ? (
@@ -382,29 +429,55 @@ export const LoginForm: React.FC<LoginFormProps> = () => {
           )}
         </div>
 
+        {useSignup && (
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 block">
+              {t("auth.fields.confirmPassword")}
+            </label>
+            <Input
+              type="password"
+              placeholder={t("auth.placeholders.confirmPassword")}
+              dir="ltr"
+              value={formData.confirmPassword}
+              onChange={handleInputChange("confirmPassword")}
+              className={
+                errors.confirmPassword
+                  ? "border-red-500 focus:border-red-500 focus:ring-red-500 "
+                  : ""
+              }
+            />
+            {errors.confirmPassword && (
+              <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                <span className="inline-block w-1 h-1 bg-red-500 rounded-full"></span>
+                {errors.confirmPassword}
+              </p>
+            )}
+          </div>
+        )}
+
         <Button
           type="submit"
-          className="w-full h-11 text-base font-semibold !text-white bg-gradient-to-br from-indigo-600 to-sky-600 transition-all hover:scale-[1.01] hover:shadow-lg disabled:hover:scale-100"
+          className="w-full h-11 text-base font-semibold text-white bg-gradient-to-br from-zinc-600 to-zinc-700 hover:from-zinc-700 hover:to-zinc-800 transition-all hover:shadow-lg"
           disabled={isLoading}
         >
           {isLoading ? (
             <div className="flex items-center justify-center gap-3">
               <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-              جاري تسجيل الدخول...
+              {t("auth.loading")}
             </div>
           ) : (
-            "تسجيل الدخول"
+            copy.primaryCta
           )}
         </Button>
       </form>
 
-      <div className="text-center text-sm text-gray-600 dark:text-gray-400">
-        ليس لديك حساب؟{" "}
+      <div className="text-center text-sm text-zinc-600 dark:text-zinc-400">
+        {copy.switchPrompt}{" "}
         <Link
-          to="/signup"
+          to={copy.switchHref}
           className="font-semibold text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
         >
-          إنشاء حساب جديد
+          {copy.switchAction}
         </Link>
       </div>
     </div>
