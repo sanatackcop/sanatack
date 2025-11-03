@@ -27,6 +27,7 @@ import { getSingleSpaceApi, updateSpaceApi } from "@/utils/_apis/courses-apis";
 import { Space } from "@/types/courses";
 import WorkspacesList from "../workspaces/WorkspacesList.";
 import { formatRelativeDate } from "@/components/utiles";
+import EmojiPicker, { EmojiStyle } from "emoji-picker-react";
 
 export default function SpaceView() {
   const { t, i18n } = useTranslation();
@@ -53,7 +54,7 @@ export default function SpaceView() {
     () => new Intl.NumberFormat(language === "ar" ? "ar" : "en"),
     [language]
   );
-
+  console.log({ space });
   const fetchSpace = useCallback(async () => {
     if (!routeId) return;
     setLoading(true);
@@ -254,29 +255,6 @@ export default function SpaceView() {
                   </div>
 
                   <div className="grid gap-2">
-                    <Label htmlFor="spaceIcon">
-                      {t("dashboard.spaceView.form.icon", "Icon")}
-                    </Label>
-                    <Input
-                      id="spaceIcon"
-                      value={editIcon}
-                      dir={dir}
-                      maxLength={12}
-                      onChange={(e) => setEditIcon(e.target.value)}
-                      placeholder={t(
-                        "dashboard.spaceView.form.iconPlaceholder",
-                        "Use an emoji or short label"
-                      )}
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      {t(
-                        "dashboard.spaceView.form.iconHelper",
-                        "Example: 🚀, 📚, أو أي رمز قصير."
-                      )}
-                    </p>
-                  </div>
-
-                  <div className="grid gap-2">
                     <Label htmlFor="spaceCover">
                       {t("dashboard.spaceView.form.cover", "Cover image URL")}
                     </Label>
@@ -308,6 +286,38 @@ export default function SpaceView() {
                       rows={5}
                     />
                   </div>
+                  <Label
+                    htmlFor="iconPicker"
+                    className={isRTL ? "mr-1" : "ml-1"}
+                  >
+                    {t("dashboard.dialogs.createSpace.icon")}
+                  </Label>
+                  <input
+                    id="iconPicker"
+                    value={editIcon}
+                    readOnly
+                    className="border p-2 w-full"
+                    placeholder="Pick one emoji…"
+                  />
+                  <EmojiPicker
+                    onEmojiClick={(e) => setEditIcon(e.emoji)}
+                    autoFocusSearch
+                    previewConfig={{ showPreview: false }}
+                    emojiStyle={EmojiStyle.NATIVE}
+                    searchDisabled
+                    hiddenEmojis={[
+                      "1f3f3-fe0f-200d-1f308",
+                      "1f3f3-fe0f-200d-26a7-fe0f",
+                      "1f1ee-1f1f1",
+                    ]}
+                    style={
+                      {
+                        "--epr-emoji-size": "20px",
+                        "--epr-emoji-gap": "6px",
+                        height: "300px",
+                      } as React.CSSProperties
+                    }
+                  />
                 </div>
 
                 {error && (

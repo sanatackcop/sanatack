@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, FormEvent, useRef } from "react";
+import { useState, useEffect, useMemo, FormEvent, useId, useRef } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -23,6 +23,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Search,
+  ChevronDownIcon,
   Settings,
 } from "lucide-react";
 import clsx from "clsx";
@@ -48,14 +49,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import LogoLight from "@/assets/logo.svg";
 import { submitFeedback } from "@/utils/_apis/feedback-api";
 import { toast } from "sonner";
 import { useUserContext } from "@/context/UserContext";
 import { FaChrome, FaDiscord } from "react-icons/fa6";
-import LogoDark from "@/assets/dark_logo.svg";
 import { useSettings } from "@/context/SettingsContexts";
 import { SearchCommand } from "@/pages/dashboard/search/Index";
+import LogoLight from "@/assets/logo.svg";
+import LogoDark from "@/assets/dark_logo.svg";
 
 type MenuItem =
   | {
@@ -75,10 +76,11 @@ type MenuItem =
 type LinkMenuItem = Extract<MenuItem, { url: string }>;
 type FeedbackMenuItem = Extract<MenuItem, { type: "feedback" }>;
 
-interface MenuGroup {
+type MenuGroup = {
+  id: string;
   groupTitle: string;
-  menuItems: MenuItem[];
-}
+  menuItems: Array<LinkMenuItem | FeedbackMenuItem>;
+};
 
 interface Workspace {
   id: string;
@@ -132,10 +134,22 @@ export function AppSidebar({ onCollapse }: AppSidebarProps) {
     setNewName(t("sidebar.newSpace"));
   }, [t]);
 
-  const toggleLanguage = () => {
+  const toggleLanguage = async () => {
     const newLang = language === "ar" ? "en" : "ar";
-    setLanguage(newLang);
-    toast.success(t("languages.changed", { lang: t(`languages.${newLang}`) }));
+    try {
+      await i18n.changeLanguage(newLang);
+      setLanguage(newLang);
+      const newDir = i18n.dir(newLang);
+      document.documentElement.setAttribute("dir", newDir);
+      document.documentElement.setAttribute("lang", newLang);
+      toast.success(
+        t("languages.changed", { lang: t(`languages.${newLang}`) })
+      );
+    } catch {
+      const newDir = newLang === "ar" ? "rtl" : "ltr";
+      document.documentElement.setAttribute("dir", newDir);
+      document.documentElement.setAttribute("lang", newLang);
+    }
   };
 
   const handleLanguageSelect = (lng: string) => {
@@ -184,12 +198,12 @@ export function AppSidebar({ onCollapse }: AppSidebarProps) {
   };
 
   const [openSerach, setOpenSearch] = useState(false);
-
   const openSearchCommand = () => setOpenSearch(!openSerach);
 
   const topItemGroups: MenuGroup[] = useMemo(
     () => [
       {
+        id: "learning",
         groupTitle: t("sidebar.groups.learning"),
         menuItems: [
           {
@@ -224,6 +238,7 @@ export function AppSidebar({ onCollapse }: AppSidebarProps) {
         ],
       },
       {
+        id: "taskManagement",
         groupTitle: t("sidebar.groups.taskManagement"),
         menuItems: [
           {
@@ -247,6 +262,7 @@ export function AppSidebar({ onCollapse }: AppSidebarProps) {
         ],
       },
       {
+        id: "helpTools",
         groupTitle: t("sidebar.groups.helpTools"),
         menuItems: [
           {
@@ -276,9 +292,7 @@ export function AppSidebar({ onCollapse }: AppSidebarProps) {
     [t]
   );
 
-  const allItemGroups = useMemo(() => {
-    return topItemGroups;
-  }, [topItemGroups]);
+  const allItemGroups = useMemo(() => topItemGroups, [topItemGroups]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -354,6 +368,32 @@ export function AppSidebar({ onCollapse }: AppSidebarProps) {
     };
     fetchRecent();
   }, []);
+
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(
+        localStorage.getItem("sidebar.openGroups") || "{}"
+      );
+      const withDefaults: Record<string, boolean> = { ...saved };
+      topItemGroups.forEach((g) => {
+        if (withDefaults[g.id] === undefined) withDefaults[g.id] = true;
+      });
+      setOpenGroups(withDefaults);
+    } catch {
+      const initial: Record<string, boolean> = {};
+      topItemGroups.forEach((g) => (initial[g.id] = true));
+      setOpenGroups(initial);
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("sidebar.openGroups", JSON.stringify(openGroups));
+  }, [openGroups]);
+
+  const toggleGroup = (id: string) =>
+    setOpenGroups((prev) => ({ ...prev, [id]: !prev[id] }));
 
   const getWorkspaceTitle = (workspace: Workspace) => {
     if (workspace.workspaceName) return workspace.workspaceName;
@@ -547,25 +587,58 @@ export function AppSidebar({ onCollapse }: AppSidebarProps) {
       </>
     );
   };
-  const MenuGroupEntry = ({ group }: { group: MenuGroup }) => {
+
+  const MenuGroupEntry = ({
+    group,
+    open,
+    onToggle,
+  }: {
+    group: MenuGroup;
+    open: boolean;
+    onToggle: () => void;
+  }) => {
+    const panelId = useId();
+
     return (
       <div className="space-y-0.5">
-        <div
+        <button
+          type="button"
+          aria-expanded={open}
+          aria-controls={panelId}
+          onClick={onToggle}
           className={clsx(
-            `flex items-center px-2 py-1.5 text-[11px] text-sidebar-foreground/50 
-           capitalize tracking-wider select-none`
+            `flex w-full items-center justify-between px-2 py-1.5 text-[11px]
+           text-sidebar-foreground/50 capitalize tracking-wider select-none
+           hover:text-sidebar-foreground transition-colors`
           )}
         >
           <span>{group.groupTitle}</span>
-        </div>
-        <div className="space-y-0.5">
-          {group.menuItems.map((item) =>
-            item.type === "feedback" ? (
-              <FeedbackMenuEntry key={item.title} item={item} />
-            ) : (
-              <MenuEntry key={item.url} item={item} />
-            )
+          <ChevronDownIcon
+            className={clsx(
+              "h-3 w-3 shrink-0 transition-transform duration-200",
+              open ? "rotate-0" : "-rotate-90"
+            )}
+            aria-hidden="true"
+          />
+        </button>
+
+        <div
+          id={panelId}
+          role="region"
+          className={clsx(
+            "overflow-hidden transition-[grid-template-rows] duration-200 grid",
+            open ? "[grid-template-rows:1fr]" : "[grid-template-rows:0fr]"
           )}
+        >
+          <div className="min-h-0 space-y-0.5">
+            {group.menuItems.map((item: any) =>
+              item.type === "feedback" ? (
+                <FeedbackMenuEntry key={item.title} item={item} />
+              ) : (
+                <MenuEntry key={item.url} item={item} />
+              )
+            )}
+          </div>
         </div>
       </div>
     );
@@ -647,7 +720,6 @@ export function AppSidebar({ onCollapse }: AppSidebarProps) {
        dark:bg-zinc-950 dark:border-zinc-800"
       >
         <SearchCommand open={openSerach} setOpen={setOpenSearch} />
-
         <div className="flex flex-col h-full py-2 pl-3 pr-2">
           <div className="flex items-center justify-between">
             <div
@@ -685,12 +757,17 @@ export function AppSidebar({ onCollapse }: AppSidebarProps) {
             </div>
           </div>
 
-          <div className="flex-shrink-0 flex flex-col space-y-2 mb-2">
-            {allItemGroups.map((group) => (
-              <MenuGroupEntry key={group.groupTitle} group={group} />
-            ))}
-            <hr className="-mx-5 dark:border-zinc-700" />
-          </div>
+        <div className="flex-shrink-0 flex flex-col space-y-2 mb-2">
+          {allItemGroups.map((group) => (
+            <MenuGroupEntry
+              key={group.id}
+              group={group}
+              open={!!openGroups[group.id]}
+              onToggle={() => toggleGroup(group.id)}
+            />
+          ))}
+          <hr className="-mx-5 dark:border-zinc-700" />
+        </div>
 
           <div
             className="flex-1 overflow-y-auto min-h-0  py-2 space-y-4"

@@ -150,15 +150,17 @@ export const createNewQuizApi = async ({
 
 export const createNewDeepExplanationApi = async ({
   id,
+  language,
 }: {
   id: string;
+  language: "en" | "ar";
 }): Promise<GenerationJobResponse> => {
   try {
     const response = await Api<GenerationJobResponse>({
       method: API_METHODS.POST,
       url: `study-ai/workspaces/${id}/generate/explanation`,
       data: {
-        language: "en",
+        language,
       },
     });
 
@@ -242,15 +244,17 @@ export const runWorkspaceCode = async (
 
 export const createNewSummaryApi = async ({
   id,
+  language,
 }: {
   id: string;
+  language: "ar" | "en";
 }): Promise<GenerationJobResponse> => {
   try {
     const response = await Api<GenerationJobResponse>({
       method: API_METHODS.POST,
       url: `study-ai/workspaces/${id}/generate/summary`,
       data: {
-        language: "en",
+        language,
       },
     });
 
