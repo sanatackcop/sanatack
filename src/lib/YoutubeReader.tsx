@@ -87,7 +87,7 @@ const YouTubeReader: React.FC<YouTubePlayerProps> = ({
   const playerRef = useRef<any>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const timeUpdateIntervalRef = useRef<number | null>(null);
-
+  console.log({ transcript });
   // Refs for auto-scrolling to the active transcript segment
   const segmentRefs = useRef<(HTMLDivElement | null)[]>([]);
   const transcriptScrollRootRef = useRef<HTMLDivElement>(null);

@@ -488,8 +488,9 @@ const LearnPlayground: React.FC = () => {
               } else {
                 setAppliedContextIds([]);
               }
-              const hasWorkspaceApplied = (chunk.metadata
-                .contextsApplied as any[]).some(
+              const hasWorkspaceApplied = (
+                chunk.metadata.contextsApplied as any[]
+              ).some(
                 (item) =>
                   item && typeof item === "object" && item.scope === "workspace"
               );
@@ -939,7 +940,7 @@ const LearnPlayground: React.FC = () => {
       return (
         <YouTubeReader
           videoId={state.youtubeVideoId || ""}
-          transcript={state.workspace?.video?.transcript as any}
+          transcript={state.workspace?.video?.transcript?.data as any}
           onVideoSelect={(videoId) =>
             dispatch({ type: "SET_YOUTUBE_VIDEO", videoId })
           }
