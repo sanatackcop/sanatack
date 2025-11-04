@@ -559,10 +559,7 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
                       isRTL ? "text-right" : "text-left"
                     }`}
                   >
-                    {t(
-                      "modals.addContent.upload.selectedFile",
-                      "Selected file:"
-                    )}
+                    {t("modals.addContent. ", "Selected file:")}
                   </div>
                   <div className="max-h-48 overflow-y-auto space-y-2">
                     {uploadState.files.map((file, index) => (
@@ -573,7 +570,7 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
                         <div className="flex-shrink-0 text-zinc-500 dark:text-zinc-400">
                           <FileTypeIcon file={file} />
                         </div>
-                        <span className="flex-1 text-sm font-medium text-zinc-700 dark:text-zinc-300 truncate">
+                        <span className="flex-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
                           {file.name}
                         </span>
                         <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">

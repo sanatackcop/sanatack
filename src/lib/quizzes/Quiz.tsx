@@ -233,11 +233,10 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
                       <div className="mt-3 w-full rounded-xl border border-red-200 bg-red-50 text-red-700 px-3 py-2 text-sm flex items-center gap-2">
                         <AlertTriangle className="w-4 h-4" />
                         <span>
-                          {quiz.failureReason ||
-                            t(
-                              "quizzes.list.failure",
-                              "Generation failed. You can regenerate or delete this quiz."
-                            )}
+                          {t(
+                            "quizzes.list.failure",
+                            "Generation failed. You can regenerate or delete this quiz."
+                          )}
                         </span>
                       </div>
                     )}
