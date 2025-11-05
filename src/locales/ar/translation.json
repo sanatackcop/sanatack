@@ -197,8 +197,14 @@
     },
     "view": {
       "noData": "لا توجد بيانات للملخص.",
-      "mainPoints": "النقاط الرئيسية:",
-      "mindMap": "الخريطة الذهنية"
+      "mainPoints": "أبرز الأفكار",
+      "mindMap": "الخريطة الذهنية",
+      "photoPrompts": "أفكار للصور",
+      "structure": "هيكل المحتوى",
+      "keyConcepts": "المفاهيم المحورية",
+      "dataVisuals": "مخططات وبيانات",
+      "studyTips": "نصائح للمذاكرة",
+      "practicalApplications": "تطبيقات عملية"
     },
     "modal": {
       "title": "إنشاء ملخص",
@@ -946,8 +952,7 @@
     "darkMode": "الوضع الليلي"
   },
   "workspace": {
-    "untitled": "بدون عنوان",
-    "fullScreen": "ملء الشاشة"
+    "comingSoon": "قريبًا"
   },
   "codeRunner": {
     "title": "مساحة الأكواد",
@@ -1090,7 +1095,6 @@
       "generic": "حدث خطأ أثناء جلب المقاطع، حاول مرة أخرى لاحقًا."
     }
   },
-
   "auth": {
     "login": {
       "title": "تسجيل الدخول",
@@ -1158,5 +1162,42 @@
       "showPassword": "إظهار كلمة المرور",
       "hidePassword": "إخفاء كلمة المرور"
     }
+  },
+  "quiz": {
+    "loading": "جاري التحميل...",
+    "preparingQuiz": "جاري تحضير الاختبار...",
+    "loadingQuestion": "جاري تحميل السؤال...",
+    "noPayload": "لا يوجد محتوى للاختبار",
+    "noQuestion": "لا يوجد سؤال متاح.",
+    "progress": "التقدم",
+    "answered": "تمت الإجابة",
+    "score": "النقاط",
+    "points": "نقطة",
+    "correct": "صحيح!",
+    "incorrect": "خطأ",
+    "correctAnswerIs": "الإجابة الصحيحة هي",
+    "explanation": "الشرح",
+    "complete": "اكتمل الاختبار!",
+    "thanksForTaking": "شكراً لك على حل الاختبار.",
+    "yourScore": "نقاطك",
+    "passed": "نجحت",
+    "failed": "رسبت",
+    "passingScore": "درجة النجاح",
+    "retake": "إعادة الاختبار",
+    "backToQuizzes": "العودة إلى الاختبارات",
+    "notStarted": "لم يبدأ",
+    "graded": "تم التصحيح",
+    "failedToLoad": "فشل تحميل محاولة الاختبار.",
+    "unableToStart": "تعذر بدء محاولة الاختبار. يرجى المحاولة مرة أخرى.",
+    "unableToSave": "تعذر حفظ الإجابة.",
+    "unableToSubmit": "تعذر إرسال الاختبار.",
+    "yourAnswer": "إجابتك",
+    "typePlaceholder": "اكتب إجابتك هنا...",
+    "submit": "إرسال",
+    "dontKnow": "لا أعرف",
+    "saving": "جاري الحفظ...",
+    "continue": "متابعة",
+    "submitting": "جاري الإرسال...",
+    "submitQuiz": "إرسال الاختبار"
   }
 }

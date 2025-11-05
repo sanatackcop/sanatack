@@ -6,6 +6,12 @@ import {
   Lightbulb,
   CheckCircle2,
   TrendingUp,
+  Image as ImageIcon,
+  BarChart3,
+  // PieChart,
+  // LineChart,
+  // AreaChart,
+  // Donut,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
@@ -13,11 +19,41 @@ import { Edge, Node, Position, ReactFlowProvider } from "reactflow";
 import FlowChart from "./Flowchart";
 import { MindMap, MindMapNode, SummaryViewProps } from "./Summary";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { PieChartComponent, DonutChartComponent } from "@/components/Charts";
 
 export function SummaryView({ summary, onClose }: SummaryViewProps) {
   const { t } = useTranslation();
   const direction = summary.language == "ar" ? "rtl" : "ltr";
   const isRTL = direction === "rtl";
+
+  const photoGradients = [
+    "from-rose-100/70 via-amber-100/60 to-orange-100/60 dark:from-rose-900/40 dark:via-amber-900/30 dark:to-orange-900/30",
+    "from-indigo-100/70 via-blue-100/60 to-cyan-100/60 dark:from-indigo-900/40 dark:via-blue-900/30 dark:to-cyan-900/30",
+    "from-emerald-100/70 via-teal-100/60 to-lime-100/60 dark:from-emerald-900/40 dark:via-teal-900/30 dark:to-lime-900/30",
+  ];
+
+  // const chartIconMap = {
+  //   bar: BarChart3,
+  //   line: LineChart,
+  //   pie: PieChart,
+  //   donut: Donut,
+  //   area: AreaChart,
+  // } as const;
+
+  // Transform chart idea to actual data for rendering
+  const transformChartData = (idea: any) => {
+    // Parse the data from description or data_points
+    const data = idea.data_points.map((point: string, idx: number) => {
+      // Extract name and value from string format like "Category A: 25%"
+      const [name, valueStr] = point.split(":").map((s) => s.trim());
+      const value = parseInt(valueStr) || idx + 1;
+      return {
+        name,
+        value,
+      };
+    });
+    return data;
+  };
 
   if (!summary.payload) {
     return (
@@ -120,6 +156,43 @@ export function SummaryView({ summary, onClose }: SummaryViewProps) {
               </div>
             </section>
 
+            {summary.payload.visuals?.photo_prompts &&
+              summary.payload.visuals.photo_prompts.length > 0 && (
+                <section className="relative">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-zinc-600 to-zinc-700 dark:from-zinc-700 dark:to-zinc-800">
+                      <ImageIcon className="w-5 h-5 text-white" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {t("summary.view.photoPrompts", "Photo Inspiration")}
+                    </h2>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {summary.payload.visuals.photo_prompts.map(
+                      (prompt, idx) => (
+                        <div
+                          key={`${prompt}-${idx}`}
+                          className={`relative overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg ${
+                            photoGradients[idx % photoGradients.length]
+                          }`}
+                        >
+                          <div className="absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_20%_-10%,rgba(255,255,255,0.6),transparent_55%),radial-gradient(circle_at_90%_20%,rgba(255,255,255,0.35),transparent_45%)] pointer-events-none" />
+                          <div className="relative flex items-start gap-3">
+                            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/70 dark:bg-zinc-900/70 text-zinc-700 dark:text-zinc-200 shadow-sm">
+                              <ImageIcon className="w-5 h-5" />
+                            </span>
+                            <p className="text-sm md:text-base leading-relaxed text-zinc-800 dark:text-zinc-100">
+                              {prompt}
+                            </p>
+                          </div>
+                        </div>
+                      )
+                    )}
+                  </div>
+                </section>
+              )}
+
             {/* Mind Map Section with React Flow - Second Position */}
             <section className="relative">
               <div className="flex items-center gap-3 mb-6">
@@ -142,6 +215,76 @@ export function SummaryView({ summary, onClose }: SummaryViewProps) {
                 </div>
               </div>
             </section>
+
+            {/* Charts & Data Visuals Section - UPDATED */}
+            {summary.payload.visuals?.chart_ideas &&
+              summary.payload.visuals.chart_ideas.length > 0 && (
+                <section className="relative">
+                  <div className="flex items-center gap-3 mb-8">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-zinc-600 to-zinc-700 dark:from-zinc-700 dark:to-zinc-800">
+                      <BarChart3 className="w-5 h-5 text-white" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {t("summary.view.dataVisuals", "Data Insights")}
+                    </h2>
+                  </div>
+
+                  <div className="space-y-12">
+                    {summary.payload.visuals.chart_ideas.map((idea, idx) => {
+                      const chartData = transformChartData(idea);
+
+                      return (
+                        <div key={`${idea.title}-${idx}`}>
+                          {/* {idea.chart_type === "bar" && (
+                            <BarChartComponent
+                              title={idea.title}
+                              description={idea.description}
+                              data={chartData}
+                              direction={direction as "ltr" | "rtl"}
+                            />
+                          )} */}
+                          {/* 
+                          {idea.chart_type === "line" && (
+                            <LineChartComponent
+                              title={idea.title}
+                              description={idea.description}
+                              data={chartData}
+                              direction={direction as "ltr" | "rtl"}
+                            />
+                          )} */}
+
+                          {idea.chart_type === "pie" && (
+                            <PieChartComponent
+                              title={idea.title}
+                              description={idea.description}
+                              data={chartData}
+                              direction={direction as "ltr" | "rtl"}
+                            />
+                          )}
+
+                          {idea.chart_type === "donut" && (
+                            <DonutChartComponent
+                              title={idea.title}
+                              description={idea.description}
+                              data={chartData}
+                              direction={direction as "ltr" | "rtl"}
+                            />
+                          )}
+
+                          {/* {idea.chart_type === "area" && (
+                            <AreaChartComponent
+                              title={idea.title}
+                              description={idea.description}
+                              data={chartData}
+                              direction={direction as "ltr" | "rtl"}
+                            />
+                          )} */}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
+              )}
 
             {/* Structure Section - Timeline Style */}
             {summary.payload.structure &&

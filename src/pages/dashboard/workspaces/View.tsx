@@ -1149,7 +1149,7 @@ const LearnPlayground: React.FC = () => {
                             const isActive = state.tab === tab.id;
                             const isSoon = tab?.isSoon;
 
-                            return (
+                            const trigger = (
                               <TabsTrigger
                                 key={tab.id}
                                 disabled={isSoon}
@@ -1177,6 +1177,19 @@ const LearnPlayground: React.FC = () => {
                                   {t(tab.labelKey as any)}
                                 </span>
                               </TabsTrigger>
+                            );
+
+                            if (!isSoon) {
+                              return trigger;
+                            }
+
+                            return (
+                              <Tooltip
+                                key={tab.id}
+                                title={t("workspace.comingSoon", "Coming soon")}
+                              >
+                                <span>{trigger}</span>
+                              </Tooltip>
                             );
                           })}
                         </TabsList>
@@ -1410,7 +1423,7 @@ const LearnPlayground: React.FC = () => {
                             {TABS_CONFIG.map((tab) => {
                               const IconComponent = tab.icon;
                               const isActive = state.tab === tab.id;
-                              return (
+                              const trigger = (
                                 <TabsTrigger
                                   key={tab.id}
                                   value={tab.id}
@@ -1437,6 +1450,22 @@ const LearnPlayground: React.FC = () => {
                                   </span>
                                 </TabsTrigger>
                               );
+
+                              if (!tab.isSoon) {
+                                return trigger;
+                              }
+
+                              return (
+                                <Tooltip
+                                  key={tab.id}
+                                  title={t(
+                                    "workspace.comingSoon",
+                                    "Coming soon"
+                                  )}
+                                >
+                                  <span>{trigger}</span>
+                                </Tooltip>
+                              );
                             })}
                           </TabsList>
 
@@ -1461,10 +1490,10 @@ const LearnPlayground: React.FC = () => {
                       {state.tab === "chat" && (
                         <TabsContent
                           value="chat"
-                          className="m-0 flex-1 flex flex-col relative items-stretch justify-end min-h-0 w-full max-w-full"
+                          className="m-0 flex-1 flex flex-col relative  justify-end min-h-0 w-full max-w-full"
                         >
                           {state.isLoading ? (
-                            <div className="w-full flex-1">
+                            <div className="w-full ">
                               <ChatSkeleton />
                             </div>
                           ) : (

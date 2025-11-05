@@ -197,8 +197,14 @@
     },
     "view": {
       "noData": "No summary data available.",
-      "mainPoints": "Main Points:",
-      "mindMap": "Mind Map"
+      "mainPoints": "Key Insights",
+      "photoPrompts": "Photo Inspiration",
+      "mindMap": "Mind Map",
+      "structure": "Content Structure",
+      "keyConcepts": "Core Concepts",
+      "dataVisuals": "Charts & Data Stories",
+      "studyTips": "Study Tips",
+      "practicalApplications": "Practical Applications"
     },
     "modal": {
       "title": "Create Summary",
@@ -977,6 +983,9 @@
       "failed": "Failed to upload"
     }
   },
+  "workspace": {
+    "comingSoon": "Coming soon"
+  },
   "modals": {
     "addContent": {
       "title": "Add New Learning Playground",
@@ -1152,5 +1161,42 @@
       "showPassword": "Show password",
       "hidePassword": "Hide password"
     }
+  },
+  "quiz": {
+    "loading": "Loading...",
+    "preparingQuiz": "Preparing quiz...",
+    "loadingQuestion": "Loading question...",
+    "noPayload": "No Quiz Payload",
+    "noQuestion": "No question available.",
+    "progress": "Progress",
+    "answered": "Answered",
+    "score": "Score",
+    "points": "pts",
+    "correct": "Correct!",
+    "incorrect": "Incorrect",
+    "correctAnswerIs": "The correct answer is",
+    "explanation": "Explanation",
+    "complete": "Quiz Complete!",
+    "thanksForTaking": "Thanks for taking the quiz.",
+    "yourScore": "Your Score",
+    "passed": "Passed",
+    "failed": "Failed",
+    "passingScore": "Passing Score",
+    "retake": "Retake Quiz",
+    "backToQuizzes": "Back to Quizzes",
+    "notStarted": "Not started",
+    "graded": "Graded",
+    "failedToLoad": "Failed to load quiz attempt.",
+    "unableToStart": "Unable to start quiz attempt. Please try again.",
+    "unableToSave": "Unable to save answer.",
+    "unableToSubmit": "Unable to submit quiz.",
+    "yourAnswer": "Your answer",
+    "typePlaceholder": "Type your answer here...",
+    "submit": "Submit",
+    "dontKnow": "Don't know",
+    "saving": "Saving...",
+    "continue": "Continue",
+    "submitting": "Submitting...",
+    "submitQuiz": "Submit quiz"
   }
 }

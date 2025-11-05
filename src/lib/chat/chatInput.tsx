@@ -193,6 +193,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   const expandedContentRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
   const isRTL = i18n.dir() === "rtl";
 
   useEffect(() => {
@@ -456,7 +457,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
     if (overlay) {
       overlay.style.height = `${newHeight}px`;
     }
-    textarea.style.overflowY = scrollHeight > maxHeight ? "auto" : "hidden";
   }, []);
 
   useEffect(() => {
@@ -841,59 +841,63 @@ const ChatInput: React.FC<ChatInputProps> = ({
             </div>
           )}
 
-          <div className="relative flex items-center min-h-[56px]">
-            {/* Highlighted overlay */}
-            <div
-              ref={overlayRef}
-              className={`
-                absolute inset-0 pointer-events-none whitespace-pre-wrap break-words
-                text-base leading-relaxed text-zinc-900 dark:text-zinc-100
-                ${isRTL ? "text-right pr-6 pl-16" : "text-left pl-4 pr-16"}
-                py-4 overflow-hidden
-              `}
-              style={{
-                minHeight: "56px",
-                maxHeight: "160px",
-              }}
-            >
-              {renderHighlightedText()}
-            </div>
+          <ScrollArea
+            ref={scrollAreaRef}
+            className={`
+              relative max-h-[160px] min-h-[56px]
+              ${isFocused ? "" : ""}
+            `}
+          >
+            <div className="relative flex items-start min-h-[56px]">
+              {/* Highlighted overlay */}
+              <div
+                ref={overlayRef}
+                className={`
+                  absolute inset-0 pointer-events-none whitespace-pre-wrap break-words
+                  text-base leading-relaxed text-zinc-900 dark:text-zinc-100
+                  ${isRTL ? "text-right pr-6 pl-16" : "text-left pl-4 pr-16"}
+                  py-4
+                `}
+              >
+                {renderHighlightedText()}
+              </div>
 
-            <textarea
-              ref={textAreaRef}
-              value={value}
-              onChange={(e) => handleInputChange(e.target.value)}
-              onKeyDown={handleKeyDown}
-              onFocus={handleFocus}
-              onBlur={handleBlur}
-              onSelect={(e) => {
-                const target = e.target as HTMLTextAreaElement;
-                setCursorPosition(target.selectionStart);
-              }}
-              placeholder={actualPlaceholder}
-              dir={isRTL ? "rtl" : "ltr"}
-              className={`
-                flex-1 text-base bg-transparent border-0 resize-none 
-                outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus:border-transparent
-                ${isRTL ? "text-right pr-6 pl-16" : "text-left pl-4 pr-16"}
-                text-zinc-900 dark:text-zinc-100
-                leading-relaxed transition-all duration-200 
-                py-4 relative z-10
-                ${
-                  isFocused
-                    ? "placeholder:text-zinc-400/80 dark:placeholder:text-zinc-500/80"
-                    : "placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
-                }
-              `}
-              style={{
-                minHeight: "56px",
-                maxHeight: "160px",
-                color: value ? "transparent" : undefined,
-                caretColor: isFocused ? "rgb(59 130 246)" : "rgb(24 24 27)",
-              }}
-              rows={1}
-            />
-          </div>
+              <textarea
+                ref={textAreaRef}
+                value={value}
+                onChange={(e) => handleInputChange(e.target.value)}
+                onKeyDown={handleKeyDown}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
+                onSelect={(e) => {
+                  const target = e.target as HTMLTextAreaElement;
+                  setCursorPosition(target.selectionStart);
+                }}
+                placeholder={actualPlaceholder}
+                dir={isRTL ? "rtl" : "ltr"}
+                className={`
+                  w-full text-base bg-transparent border-0 resize-none 
+                  outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus:border-transparent
+                  ${isRTL ? "text-right pr-6 pl-16" : "text-left pl-4 pr-16"}
+                  text-zinc-900 dark:text-zinc-100
+                  leading-relaxed transition-all duration-200 
+                  py-4 relative z-10
+                  ${
+                    isFocused
+                      ? "placeholder:text-zinc-400/80 dark:placeholder:text-zinc-500/80"
+                      : "placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
+                  }
+                `}
+                style={{
+                  minHeight: "56px",
+                  color: value ? "transparent" : undefined,
+                  caretColor: isFocused ? "rgb(59 130 246)" : "rgb(24 24 27)",
+                  overflow: "hidden",
+                }}
+                rows={1}
+              />
+            </div>
+          </ScrollArea>
 
           {expandSection && (
             <div
@@ -952,7 +956,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                         onWheel={(e) => e.stopPropagation()}
                         onTouchMove={(e) => e.stopPropagation()}
                       >
-                        <div className="flex flex-col">
+                        <div className="flex flex-col max-h-[480px]">
                           {/* Search Header */}
                           <div className="p-3 border-b border-zinc-100 dark:border-zinc-800">
                             <div className="relative">
@@ -995,7 +999,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                             </div>
                           )}
 
-                          <ScrollArea className="h-[360px]">
+                          <ScrollArea className="flex-1 max-h-[360px]">
                             {isSearching ? (
                               <div className="flex items-center justify-center py-12">
                                 <Loader2 className="w-6 h-6 animate-spin text-zinc-400" />

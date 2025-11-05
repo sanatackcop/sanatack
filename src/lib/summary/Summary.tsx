@@ -55,6 +55,15 @@ export interface SummaryPayload {
     importance: string;
   }[];
   practical_applications: string[];
+  visuals?: {
+    photo_prompts: string[];
+    chart_ideas: {
+      title: string;
+      chart_type: "bar" | "line" | "pie" | "donut" | "area";
+      description: string;
+      data_points: string[];
+    }[];
+  };
 }
 
 export type MindMapNode = {

@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import React, {
   useCallback,
   useEffect,
@@ -8,8 +9,9 @@ import React, {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { ArrowLeft, Check, RotateCcw } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, RotateCcw } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useTranslation } from "react-i18next";
 import {
   answerWorkspaceQuizQuestion,
   startWorkspaceQuizAttempt,
@@ -23,6 +25,7 @@ import {
   QuizPayload,
 } from "./types";
 import { normalizeQuiz } from "./utils";
+import i18n from "@/i18n";
 
 interface QuizViewProps {
   quiz: Quiz;
@@ -58,21 +61,25 @@ const toNumberOrNull = (value: unknown): number | null => {
 };
 
 // Loading Component
-const LoadingCard: React.FC<{ message?: string }> = ({
-  message = "Loading...",
-}) => (
-  <div className="max-w-4xl mx-auto px-6 py-16">
-    <Card className="p-8 text-center bg-white border border-gray-200 shadow-sm">
-      <div className="flex items-center justify-center gap-3">
-        <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
-        <p className="text-sm text-gray-500">{message}</p>
-      </div>
-    </Card>
-  </div>
-);
+const LoadingCard: React.FC<{ message?: string }> = ({ message }) => {
+  const { t } = useTranslation();
+
+  return (
+    <div className="max-w-4xl mx-auto px-6 py-16">
+      <Card className="p-8 text-center bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm transition-colors">
+        <div className="flex items-center justify-center gap-3">
+          <div className="w-5 h-5 border-2 border-zinc-300 dark:border-zinc-600 border-t-zinc-600 dark:border-t-zinc-400 rounded-full animate-spin" />
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            {message || t("quiz.loading")}
+          </p>
+        </div>
+      </Card>
+    </div>
+  );
+};
 
 const ErrorAlert: React.FC<{ message: string }> = ({ message }) => (
-  <Card className="p-4 mb-4 border border-red-200 bg-red-50 text-red-700 text-sm">
+  <Card className="p-4 mb-4 border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/50 text-red-700 dark:text-red-400 text-sm transition-colors">
     {message}
   </Card>
 );
@@ -93,91 +100,104 @@ const ProgressBar: React.FC<{
   answeredCount,
   scoreEarned,
   totalPoints,
-}) => (
-  <div className="max-w-4xl mx-auto px-6 mb-4">
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
-      <div className="px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3 text-sm text-gray-600">
-          <span className="capitalize">{statusLabel}</span>
-          <span className="text-gray-300">•</span>
+}) => {
+  const { t } = useTranslation();
+
+  return (
+    <div className="max-w-4xl mx-auto px-6 mb-4">
+      <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 transition-colors">
+        <div className="px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3 text-sm text-zinc-600 dark:text-zinc-400">
+            <span className="capitalize">{statusLabel}</span>
+            <span className="text-zinc-300 dark:text-zinc-700">•</span>
+            <span>
+              {Math.min(currentIndex + 1, totalQuestions)} / {totalQuestions}
+            </span>
+          </div>
+        </div>
+
+        <div className="h-2 bg-zinc-100 dark:bg-zinc-800 overflow-hidden transition-colors">
+          <motion.div
+            className="h-full bg-emerald-500 dark:bg-emerald-600"
+            initial={{ width: 0 }}
+            animate={{ width: `${attemptProgress}%` }}
+            transition={{ duration: 0.3 }}
+          />
+        </div>
+
+        <div className="px-6 py-3 flex flex-wrap items-center gap-4 text-xs text-zinc-500 dark:text-zinc-500">
           <span>
-            {Math.min(currentIndex + 1, totalQuestions)} / {totalQuestions}
+            {t("quiz.progress")}: {Math.round(attemptProgress)}%
+          </span>
+          <span>
+            {t("quiz.answered")}: {answeredCount}/{totalQuestions}
+          </span>
+          <span>
+            {t("quiz.score")}: {scoreEarned}/{totalPoints} {t("quiz.points")}
           </span>
         </div>
       </div>
-
-      <div className="h-2 bg-gray-100 overflow-hidden">
-        <motion.div
-          className="h-full bg-green-500"
-          initial={{ width: 0 }}
-          animate={{ width: `${attemptProgress}%` }}
-          transition={{ duration: 0.3 }}
-        />
-      </div>
-
-      <div className="px-6 py-3 flex flex-wrap items-center gap-4 text-xs text-gray-500">
-        <span>Progress: {Math.round(attemptProgress)}%</span>
-        <span>
-          Answered: {answeredCount}/{totalQuestions}
-        </span>
-        <span>
-          Score: {scoreEarned}/{totalPoints} pts
-        </span>
-      </div>
     </div>
-  </div>
-);
+  );
+};
 
 // Feedback Component
 const FeedbackPanel: React.FC<{
   answer: AnswerEntry;
   correctAnswer: string;
   explanation?: string;
-}> = ({ answer, correctAnswer, explanation }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 10 }}
-    animate={{ opacity: 1, y: 0 }}
-    className={`mt-6 p-5 rounded-xl border-2 ${
-      answer.is_correct
-        ? "bg-green-50 border-green-300"
-        : "bg-red-50 border-red-300"
-    }`}
-  >
-    <div className="flex items-start gap-3">
-      <div className="flex-shrink-0">
-        {answer.is_correct ? (
-          <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
-            <Check className="h-5 w-5 text-white" />
-          </div>
-        ) : (
-          <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center">
-            <span className="text-white font-bold text-lg">✗</span>
-          </div>
-        )}
+}> = ({ answer, correctAnswer, explanation }) => {
+  const { t } = useTranslation();
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={`mt-6 p-5 rounded-xl border-2 transition-colors ${
+        answer.is_correct
+          ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-800"
+          : "bg-red-50 dark:bg-red-950/30 border-red-300 dark:border-red-800"
+      }`}
+    >
+      <div className="flex items-start gap-3">
+        <div className="flex-shrink-0">
+          {answer.is_correct ? (
+            <div className="w-8 h-8 rounded-full bg-emerald-500 dark:bg-emerald-600 flex items-center justify-center">
+              <Check className="h-5 w-5 text-white" />
+            </div>
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-red-500 dark:bg-red-600 flex items-center justify-center">
+              <span className="text-white font-bold text-lg">✗</span>
+            </div>
+          )}
+        </div>
+        <div className="flex-1">
+          <h4
+            className={`font-semibold mb-2 text-base ${
+              answer.is_correct
+                ? "text-emerald-900 dark:text-emerald-300"
+                : "text-red-900 dark:text-red-300"
+            }`}
+          >
+            {answer.is_correct ? t("quiz.correct") : t("quiz.incorrect")}
+          </h4>
+          {!answer.is_correct && (
+            <p className="text-sm text-red-800 dark:text-red-400 mb-2">
+              {t("quiz.correctAnswerIs")}:{" "}
+              <span className="font-semibold">{correctAnswer}</span>
+            </p>
+          )}
+          {explanation && (
+            <p className="text-sm text-zinc-700 dark:text-zinc-300 mt-2">
+              <span className="font-medium">{t("quiz.explanation")}:</span>{" "}
+              {explanation}
+            </p>
+          )}
+        </div>
       </div>
-      <div className="flex-1">
-        <h4
-          className={`font-semibold mb-2 text-base ${
-            answer.is_correct ? "text-green-900" : "text-red-900"
-          }`}
-        >
-          {answer.is_correct ? "Correct!" : "Incorrect"}
-        </h4>
-        {!answer.is_correct && (
-          <p className="text-sm text-red-800 mb-2">
-            The correct answer is:{" "}
-            <span className="font-semibold">{correctAnswer}</span>
-          </p>
-        )}
-        {explanation && (
-          <p className="text-sm text-gray-700 mt-2">
-            <span className="font-medium">Explanation:</span> {explanation}
-          </p>
-        )}
-      </div>
-    </div>
-  </motion.div>
-);
+    </motion.div>
+  );
+};
 
 // Results Component
 const ResultsView: React.FC<{
@@ -199,41 +219,51 @@ const ResultsView: React.FC<{
   onClose,
   isLoading,
 }) => {
+  const { t } = useTranslation();
+
   const gradeClass =
     hasPassed === null
-      ? "text-gray-600"
+      ? "text-zinc-600 dark:text-zinc-400"
       : hasPassed
-      ? "text-green-600"
-      : "text-red-600";
+      ? "text-emerald-600 dark:text-emerald-500"
+      : "text-red-600 dark:text-red-500";
 
   return (
-    <div className="max-w-2xl mx-auto px-6 py-16">
-      <Card className="p-12 text-center bg-white rounded-2xl shadow-sm border border-gray-200">
+    <div className="flex items-center justify-center py-8">
+      <Card className="max-w-2xl w-full mx-6 p-12 text-center bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 transition-colors">
         <div className="mb-6">
-          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Check className="h-10 w-10 text-green-600" />
+          <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-950/50 rounded-full flex items-center justify-center mx-auto mb-4 transition-colors">
+            <Check className="h-10 w-10 text-emerald-600 dark:text-emerald-500" />
           </div>
-          <h3 className="text-3xl font-bold text-gray-900 mb-2">
-            Quiz Complete!
+          <h3 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
+            {t("quiz.complete")}
           </h3>
-          <p className="text-gray-600">Thanks for taking the quiz.</p>
+          <p className="text-zinc-600 dark:text-zinc-400">
+            {t("quiz.thanksForTaking")}
+          </p>
         </div>
 
-        <div className="my-8 p-6 bg-gray-50 rounded-xl">
-          <p className="text-gray-600 text-sm mb-2">Your Score</p>
-          <p className="text-5xl font-bold text-gray-900 mb-2">
-            {scoreEarned}
-            <span className="text-2xl text-gray-400">/{totalPoints}</span>
+        <div className="my-8 p-6 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl transition-colors">
+          <p className="text-zinc-600 dark:text-zinc-400 text-sm mb-2">
+            {t("quiz.yourScore")}
           </p>
-          <p className="text-sm text-gray-500">{accuracyPct}% Correct</p>
+          <p className="text-5xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
+            {scoreEarned}
+            <span className="text-2xl text-zinc-400 dark:text-zinc-500">
+              /{totalPoints}
+            </span>
+          </p>
+          <p className="text-sm text-zinc-500 dark:text-zinc-500">
+            {accuracyPct}% {t("quiz.correct")}
+          </p>
         </div>
 
         {passingScore !== null && (
           <p className={`text-lg font-semibold mb-6 ${gradeClass}`}>
-            {hasPassed ? "✓ Passed" : "✗ Failed"}
-            <span className="text-gray-500 font-normal">
+            {hasPassed ? `✓ ${t("quiz.passed")}` : `✗ ${t("quiz.failed")}`}
+            <span className="text-zinc-500 dark:text-zinc-500 font-normal">
               {" "}
-              (Passing Score: {passingScore})
+              ({t("quiz.passingScore")}: {passingScore})
             </span>
           </p>
         )}
@@ -242,14 +272,17 @@ const ResultsView: React.FC<{
           <Button
             onClick={onRestart}
             variant="outline"
-            className="rounded-xl px-6 py-3 border-2"
+            className="rounded-xl px-6 py-3 border-2 border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-900 dark:text-zinc-100 transition-colors"
             disabled={isLoading}
           >
             <RotateCcw className="mr-2 h-4 w-4" />
-            Retake Quiz
+            {t("quiz.retake")}
           </Button>
-          <Button onClick={onClose} className="rounded-xl px-6 py-3">
-            Back to Quizzes
+          <Button
+            onClick={onClose}
+            className="rounded-xl px-6 py-3 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
+          >
+            {t("quiz.backToQuizzes")}
           </Button>
         </div>
       </Card>
@@ -288,12 +321,15 @@ const deriveNextIndex = (
   return normalised;
 };
 
-const normaliseStatusLabel = (attempt: QuizAttemptSummary | null) => {
-  if (!attempt) return "Not started";
+const normaliseStatusLabel = (
+  attempt: QuizAttemptSummary | null,
+  t: (key: string) => string
+) => {
+  if (!attempt) return t("quiz.notStarted");
   if (attempt.status === "graded") {
-    if (attempt.passed === true) return "Passed";
-    if (attempt.passed === false) return "Failed";
-    return "Graded";
+    if (attempt.passed === true) return t("quiz.passed");
+    if (attempt.passed === false) return t("quiz.failed");
+    return t("quiz.graded");
   }
   return attempt.status.replace(/_/g, " ");
 };
@@ -304,11 +340,15 @@ export const QuizView: React.FC<QuizViewProps> = ({
   onClose,
   onAttemptUpdate,
 }) => {
+  const { t } = useTranslation();
+
   if (!quiz)
     return (
-      <div className="max-w-4xl mx-auto px-6 py-16">
-        <Card className="p-8 text-center bg-yellow-50 border border-yellow-200 shadow-sm">
-          <p className="text-sm text-yellow-700">No Quiz Payload</p>
+      <div className="h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950">
+        <Card className="p-8 text-center bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800 shadow-sm transition-colors">
+          <p className="text-sm text-yellow-700 dark:text-yellow-400">
+            {t("quiz.noPayload")}
+          </p>
         </Card>
       </div>
     );
@@ -345,6 +385,7 @@ export const QuizView: React.FC<QuizViewProps> = ({
       }
     >
   >({});
+  const [scenarioInput, setScenarioInput] = useState("");
 
   const answersMap = useMemo(() => {
     const map: Record<string, AnswerEntry> = {};
@@ -374,8 +415,8 @@ export const QuizView: React.FC<QuizViewProps> = ({
 
       return {
         ...prev,
-        ...nextQuiz, // overlay server updates
-        payload: mergedPayload, // merged payload with preserved questions
+        ...nextQuiz,
+        payload: mergedPayload,
         latestAttempt:
           att ?? nextQuiz.latestAttempt ?? prev.latestAttempt ?? null,
       } as Quiz;
@@ -422,14 +463,14 @@ export const QuizView: React.FC<QuizViewProps> = ({
 
         return att;
       } catch (e: any) {
-        setError(e?.error?.body || "Failed to load quiz attempt.");
+        setError(e?.error?.body || t("quiz.failedToLoad"));
         return null;
       } finally {
         setLoadingAttempt(false);
         setInitialised(true);
       }
     },
-    [workspaceId, quiz]
+    [workspaceId, quiz, t]
   );
 
   useEffect(() => {
@@ -523,7 +564,8 @@ export const QuizView: React.FC<QuizViewProps> = ({
     if (!totalQuestions) return 0;
     return Math.min(100, percent);
   })();
-  const statusLabel = normaliseStatusLabel(attempt);
+
+  const statusLabel = normaliseStatusLabel(attempt, t);
   const scoreEarned = toNumberOrNull(attempt?.scoreEarned) ?? 0;
 
   const totalPointsCandidate =
@@ -566,7 +608,7 @@ export const QuizView: React.FC<QuizViewProps> = ({
 
     const activeAttempt = await ensureAttempt();
     if (!activeAttempt) {
-      setError("Unable to start quiz attempt. Please try again.");
+      setError(t("quiz.unableToStart"));
       setLocalAnswers((prev) => {
         const updated = { ...prev };
         delete updated[questionId];
@@ -586,7 +628,7 @@ export const QuizView: React.FC<QuizViewProps> = ({
       const updated = response?.attempt as QuizAttemptSummary;
       applyAttemptToState(updated);
     } catch (e: any) {
-      setError(e?.error?.body || "Unable to save answer.");
+      setError(e?.error?.body || t("quiz.unableToSave"));
       setLocalAnswers((prev) => {
         const updated = { ...prev };
         delete updated[questionId];
@@ -605,7 +647,7 @@ export const QuizView: React.FC<QuizViewProps> = ({
   const handleNext = async () => {
     const activeAttempt = await ensureAttempt();
     if (!activeAttempt) {
-      setError("Unable to start quiz attempt. Please try again.");
+      setError(t("quiz.unableToStart"));
       return;
     }
 
@@ -634,12 +676,11 @@ export const QuizView: React.FC<QuizViewProps> = ({
       setShowResults(true);
       setCurrentIndex(Math.max(totalQuestions - 1, 0));
     } catch (e: any) {
-      setError(e?.error?.body || "Unable to submit quiz.");
+      setError(e?.error?.body || t("quiz.unableToSubmit"));
     } finally {
       setSubmitting(false);
     }
   };
-  const [scenarioInput, setScenarioInput] = useState("");
 
   useEffect(() => {
     setScenarioInput("");
@@ -666,8 +707,8 @@ export const QuizView: React.FC<QuizViewProps> = ({
 
       return (
         <div className="w-full mt-3">
-          <label className="block text-gray-700 text-sm font-medium mb-2">
-            Your answer:
+          <label className="block text-zinc-700 dark:text-zinc-300 text-sm font-medium mb-2">
+            {t("quiz.yourAnswer")}:
           </label>
           <input
             type="text"
@@ -677,15 +718,15 @@ export const QuizView: React.FC<QuizViewProps> = ({
               if (e.key === "Enter") handleScenarioSubmit();
             }}
             disabled={isDisabled}
-            placeholder="Type your answer here..."
-            className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-150"
+            placeholder={t("quiz.typePlaceholder")}
+            className="w-full border-2 border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-600 focus:border-emerald-500 dark:focus:border-emerald-600 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-150 placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
           />
           <button
             onClick={handleScenarioSubmit}
             disabled={isDisabled || !scenarioInput.trim()}
-            className="mt-4 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 rounded-xl transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+            className="mt-4 w-full bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white font-medium py-3 rounded-xl transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            Submit
+            {t("quiz.submit")}
           </button>
         </div>
       );
@@ -703,17 +744,20 @@ export const QuizView: React.FC<QuizViewProps> = ({
         if (showCorrectness) {
           if (isCorrect) {
             optClass +=
-              "bg-green-50 border-green-400 text-green-900 font-medium";
+              "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-400 dark:border-emerald-700 text-emerald-900 dark:text-emerald-300 font-medium";
           } else if (isSelected && !isCorrect) {
-            optClass += "bg-red-50 border-red-400 text-red-900 font-medium";
+            optClass +=
+              "bg-red-50 dark:bg-red-950/30 border-red-400 dark:border-red-700 text-red-900 dark:text-red-300 font-medium";
           } else {
-            optClass += "bg-white border-gray-200 text-gray-600";
+            optClass +=
+              "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400";
           }
         } else if (isSelected) {
-          optClass += "bg-blue-50 border-blue-400 font-medium";
+          optClass +=
+            "bg-blue-50 dark:bg-blue-950/30 border-blue-400 dark:border-blue-700 text-blue-900 dark:text-blue-300 font-medium";
         } else {
           optClass +=
-            "bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300";
+            "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700";
         }
 
         if (isDisabled) {
@@ -729,7 +773,7 @@ export const QuizView: React.FC<QuizViewProps> = ({
             type="button"
           >
             <div className="flex items-center gap-3">
-              <span className="font-semibold text-gray-500">
+              <span className="font-semibold text-zinc-500 dark:text-zinc-500">
                 {String.fromCharCode(65 + idx)}.
               </span>
               <span>{opt}</span>
@@ -756,17 +800,20 @@ export const QuizView: React.FC<QuizViewProps> = ({
         if (showCorrectness) {
           if (isCorrect) {
             btnClass +=
-              "bg-green-50 border-green-400 text-green-900 font-medium";
+              "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-400 dark:border-emerald-700 text-emerald-900 dark:text-emerald-300 font-medium";
           } else if (isSelected && !isCorrect) {
-            btnClass += "bg-red-50 border-red-400 text-red-900 font-medium";
+            btnClass +=
+              "bg-red-50 dark:bg-red-950/30 border-red-400 dark:border-red-700 text-red-900 dark:text-red-300 font-medium";
           } else {
-            btnClass += "bg-white border-gray-200 text-gray-600";
+            btnClass +=
+              "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400";
           }
         } else if (isSelected) {
-          btnClass += "bg-blue-50 border-blue-400 font-medium";
+          btnClass +=
+            "bg-blue-50 dark:bg-blue-950/30 border-blue-400 dark:border-blue-700 text-blue-900 dark:text-blue-300 font-medium";
         } else {
           btnClass +=
-            "bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300";
+            "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700";
         }
 
         if (isDisabled) {
@@ -784,7 +831,7 @@ export const QuizView: React.FC<QuizViewProps> = ({
             type="button"
           >
             <div className="flex items-center gap-2 justify-center">
-              <span className="font-semibold text-gray-500">
+              <span className="font-semibold text-zinc-500 dark:text-zinc-500">
                 {String.fromCharCode(65 + idx)}.
               </span>
               <span>{option}</span>
@@ -821,124 +868,144 @@ export const QuizView: React.FC<QuizViewProps> = ({
     (!showResults && !currentAnswer);
 
   const isLoadingInitial = !initialised && loadingAttempt;
+  const isRTL = i18n.dir() === "rtl";
+  const BackIcon = isRTL ? ArrowRight : ArrowLeft;
 
   return (
-    <ScrollArea>
+    <div className="h-screen flex flex-col transition-colors overflow-hidden">
+      {/* Header - Fixed */}
       <div className="flex items-center gap-4 px-14 py-4 flex-shrink-0">
-        <div
-          className="flex group items-center text-gray-400/50 cursor-pointer hover:bg-gray-50/50 drop-shadow-sm hover:text-zinc-700 rounded-2xl py-2 px-3 transition-all ease-linear duration-100"
+        <button
+          type="button"
           onClick={onClose}
+          className={cn(
+            "flex items-center rounded-2xl py-2 px-3 transition-all ease-linear duration-100 text-gray-400/50 hover:text-zinc-700 hover:bg-gray-50/50 drop-shadow-sm dark:hover:bg-zinc-100",
+            "group",
+            isRTL ? "flex-row-reverse" : ""
+          )}
         >
-          <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-all ease-out duration-200" />
-          <span className="text-sm">Back</span>
-        </div>
+          <BackIcon
+            className={cn(
+              "w-4 h-4 transition-all ease-out duration-200",
+              isRTL
+                ? "ml-2 group-hover:translate-x-1"
+                : "mr-2 group-hover:-translate-x-1"
+            )}
+          />
+          <span className="text-sm">{t("common.back", "Back")}</span>
+        </button>
       </div>
 
-      <div className="min-h-screen py-6 pt-0">
-        {isLoadingInitial ? (
-          <LoadingCard message="Preparing quiz..." />
-        ) : showResults ? (
-          <ResultsView
-            scoreEarned={scoreEarned}
-            totalPoints={totalPoints}
-            accuracyPct={accuracyPct}
-            passingScore={passingScore}
-            hasPassed={hasPassed}
-            onRestart={restartQuiz}
-            onClose={onClose}
-            isLoading={loadingAttempt}
-          />
-        ) : (
-          <>
-            <ProgressBar
-              statusLabel={statusLabel}
-              currentIndex={currentIndex}
-              totalQuestions={totalQuestions}
-              attemptProgress={attemptProgress}
-              answeredCount={answeredCount}
+      {/* Content - Scrollable */}
+      <ScrollArea className="flex-1">
+        <div className="py-6">
+          {isLoadingInitial ? (
+            <LoadingCard message={t("quiz.preparingQuiz")} />
+          ) : showResults ? (
+            <ResultsView
               scoreEarned={scoreEarned}
               totalPoints={totalPoints}
+              accuracyPct={accuracyPct}
+              passingScore={passingScore}
+              hasPassed={hasPassed}
+              onRestart={restartQuiz}
+              onClose={onClose}
+              isLoading={loadingAttempt}
             />
+          ) : (
+            <>
+              <ProgressBar
+                statusLabel={statusLabel}
+                currentIndex={currentIndex}
+                totalQuestions={totalQuestions}
+                attemptProgress={attemptProgress}
+                answeredCount={answeredCount}
+                scoreEarned={scoreEarned}
+                totalPoints={totalPoints}
+              />
 
-            <div className="max-w-4xl mx-auto px-6">
-              <motion.div
-                key={currentQuestion?.id ?? currentIndex}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                {error && <ErrorAlert message={error} />}
+              <div className="max-w-4xl mx-auto px-6">
+                <motion.div
+                  key={currentQuestion?.id ?? currentIndex}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {error && <ErrorAlert message={error} />}
 
-                <Card className="p-8 mb-6 bg-white rounded-2xl shadow-sm border border-gray-200">
-                  {loadingAttempt && !currentQuestion ? (
-                    <LoadingCard message="Loading question..." />
-                  ) : currentQuestion ? (
-                    <>
-                      <p className="text-xl font-medium text-gray-900 leading-relaxed mb-8">
-                        {currentQuestion.question}
-                      </p>
-                      <div>{renderOptions(currentQuestion)}</div>
-
-                      {currentAnswer && (
-                        <FeedbackPanel
-                          answer={currentAnswer}
-                          correctAnswer={currentQuestion.correct_answer}
-                          explanation={currentQuestion.explanation}
-                        />
-                      )}
-                    </>
-                  ) : (
-                    <p className="text-sm text-gray-500">
-                      No question available.
-                    </p>
-                  )}
-                </Card>
-
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex items-center justify-between gap-4">
-                  <div className="flex gap-3">
-                    <button
-                      onClick={handleDontKnow}
-                      disabled={
-                        !currentQuestion ||
-                        showResults ||
-                        loadingAttempt ||
-                        savingAnswer ||
-                        !!currentAnswer
-                      }
-                      className="px-6 py-3 rounded-xl border-2 border-gray-300 bg-white text-gray-700 font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                      {savingAnswer ? "Saving..." : "Don't know"}
-                    </button>
-
-                    <button
-                      onClick={restartQuiz}
-                      className="p-3 rounded-xl border-2 border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                      disabled={loadingAttempt || savingAnswer || submitting}
-                    >
-                      <RotateCcw className="h-5 w-5" />
-                    </button>
-                  </div>
-
-                  <button
-                    onClick={handleNext}
-                    disabled={continueDisabled}
-                    className="px-8 py-3 rounded-xl bg-gray-900 text-white font-medium hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
-                  >
-                    {isLastQuestion ? (
+                  <Card className="p-8 mb-6 bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 transition-colors">
+                    {loadingAttempt && !currentQuestion ? (
+                      <LoadingCard message={t("quiz.loadingQuestion")} />
+                    ) : currentQuestion ? (
                       <>
-                        <Check className="h-5 w-5" />
-                        {submitting ? "Submitting..." : "Submit quiz"}
+                        <p className="text-xl font-medium text-zinc-900 dark:text-zinc-100 leading-relaxed mb-8">
+                          {currentQuestion.question}
+                        </p>
+                        <div>{renderOptions(currentQuestion)}</div>
+
+                        {currentAnswer && (
+                          <FeedbackPanel
+                            answer={currentAnswer}
+                            correctAnswer={currentQuestion.correct_answer}
+                            explanation={currentQuestion.explanation}
+                          />
+                        )}
                       </>
                     ) : (
-                      <>Continue</>
+                      <p className="text-sm text-zinc-500 dark:text-zinc-500">
+                        {t("quiz.noQuestion")}
+                      </p>
                     )}
-                  </button>
-                </div>
-              </motion.div>
-            </div>
-          </>
-        )}
-      </div>
-    </ScrollArea>
+                  </Card>
+
+                  <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 p-6 flex items-center justify-between gap-4 transition-colors">
+                    <div className="flex gap-3">
+                      <button
+                        onClick={handleDontKnow}
+                        disabled={
+                          !currentQuestion ||
+                          showResults ||
+                          loadingAttempt ||
+                          savingAnswer ||
+                          !!currentAnswer
+                        }
+                        className="px-6 py-3 rounded-xl border-2 border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-medium hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                      >
+                        {savingAnswer ? t("quiz.saving") : t("quiz.dontKnow")}
+                      </button>
+
+                      <button
+                        onClick={restartQuiz}
+                        className="p-3 rounded-xl border-2 border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                        disabled={loadingAttempt || savingAnswer || submitting}
+                      >
+                        <RotateCcw className="h-5 w-5" />
+                      </button>
+                    </div>
+
+                    <button
+                      onClick={handleNext}
+                      disabled={continueDisabled}
+                      className="px-8 py-3 rounded-xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2"
+                    >
+                      {isLastQuestion ? (
+                        <>
+                          <Check className="h-5 w-5" />
+                          {submitting
+                            ? t("quiz.submitting")
+                            : t("quiz.submitQuiz")}
+                        </>
+                      ) : (
+                        <>{t("quiz.continue")}</>
+                      )}
+                    </button>
+                  </div>
+                </motion.div>
+              </div>
+            </>
+          )}
+        </div>
+      </ScrollArea>
+    </div>
   );
 };
