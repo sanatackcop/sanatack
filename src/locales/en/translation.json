@@ -48,7 +48,8 @@
     "moreActions": "More actions",
     "back": "Back",
     "feature": "Feature",
-    "admin": "Admin"
+    "admin": "Admin",
+    "revealAll": "Reveal All"
   },
   "flashcards": {
     "fetchError": "Failed to fetch flashcards. Please try again.",
@@ -59,6 +60,13 @@
     "showMoreOptions": "Show more options",
     "hideOptions": "Hide options",
     "cardsLabel": "cards",
+    "hint": "Hint",
+    "hints": "Hints",
+    "pressH": "Press H for hint • Click to flip",
+    "pressE": "Press E for explanation",
+    "clickReveal": "Click to reveal answer",
+    "bad": "Bad",
+    "good": "Good",
     "generate": {
       "title": "Create Flashcards",
       "description": "Quickly generate a flashcard set based on your topic of interest.",
