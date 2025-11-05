@@ -3,7 +3,11 @@ import { useTranslation } from "react-i18next";
 import { RefreshCcw, Settings2, Info } from "lucide-react";
 import { toast } from "sonner";
 import { createFlashcard } from "@/utils/_apis/learnPlayground-api";
-import { getErrorMessage } from "@/pages/dashboard/utils";
+import {
+  getErrorMessage,
+  getRateLimitToastMessage,
+  isRateLimitError,
+} from "@/pages/dashboard/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -113,8 +117,12 @@ export default function FlashcardModal({
         "dashboard.errors.loadSpaces",
         "Failed Creating Flashcard Deck."
       );
-      const msg = getErrorMessage(err, fallbackMessage);
-      toast.error(msg, { closeButton: true });
+      if (isRateLimitError(err)) {
+        toast.error(getRateLimitToastMessage(isRTL), { closeButton: true });
+      } else {
+        const msg = getErrorMessage(err, fallbackMessage);
+        toast.error(msg, { closeButton: true });
+      }
       console.error("Failed Creating Flashcard Deck: ", err);
       onClose();
     } finally {

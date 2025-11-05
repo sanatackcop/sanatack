@@ -55,7 +55,14 @@ import {
   WorkspaceContextInput,
 } from "@/lib/types";
 import YouTubeReader from "@/lib/YoutubeReader";
-import { ChatSkeleton, ContentSkeleton, reducer, TabsSkeleton } from "../utils";
+import {
+  ChatSkeleton,
+  ContentSkeleton,
+  reducer,
+  TabsSkeleton,
+  getRateLimitToastMessage,
+  isRateLimitError,
+} from "../utils";
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -122,7 +129,7 @@ const LearnPlayground: React.FC = () => {
     lastX: 0,
   });
 
-  const isRTL = i18n.language === "ar";
+  const isRTL = i18n.dir() === "rtl";
   const [isResizing, setIsResizing] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -379,12 +386,16 @@ const LearnPlayground: React.FC = () => {
       console.error("Failed to generate auto context:", error);
       setAutoContextEnabled(false);
       setAppliedContextIds([]);
-      toast.error(
-        t(
-          "chat.auto_context_failed",
-          "Unable to generate context for this workspace."
-        )
-      );
+      if (isRateLimitError(error)) {
+        toast.error(getRateLimitToastMessage(isRTL));
+      } else {
+        toast.error(
+          t(
+            "chat.auto_context_failed",
+            "Unable to generate context for this workspace."
+          )
+        );
+      }
     } finally {
       setAutoContextLoading(false);
     }
@@ -535,16 +546,23 @@ const LearnPlayground: React.FC = () => {
             attachments: failedAttachments,
           });
         }
+        const hitLimit = isRateLimitError(error);
+        const failureMessage = hitLimit
+          ? getRateLimitToastMessage(isRTL)
+          : t(
+              "chat.error_occurred",
+              "An error occurred while sending your message."
+            );
+        if (hitLimit) {
+          toast.error(failureMessage);
+        }
         const errorMessage: any = {
           id: Date.now().toString(),
           type: "assistant",
           role: "assistant",
-          content: t(
-            "chat.error_occurred",
-            "An error occurred while sending your message."
-          ),
+          content: failureMessage,
           timestamp: new Date(),
-          metadata: { error: "Network error" },
+          metadata: { error: failureMessage },
         };
         dispatch({ type: "ADD_CHAT_MESSAGE", message: errorMessage });
         dispatch({ type: "SET_CHAT_LOADING", loading: false });

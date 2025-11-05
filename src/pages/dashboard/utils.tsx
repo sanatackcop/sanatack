@@ -349,20 +349,85 @@ export const extractYouTubeId = (url: string): string => {
   return match && match[2].length === 11 ? match[2] : "";
 };
 
-export const getErrorMessage = (err: unknown, fallback: string) => {
-  if (typeof err === "string") return err;
-  if (err && typeof err === "object") {
-    const anyErr = err as {
-      message?: unknown;
-      error?: unknown;
-      detail?: unknown;
-    };
-    if (typeof anyErr.message === "string") return anyErr.message;
-    if (typeof anyErr.error === "string") return anyErr.error;
-    if (typeof anyErr.detail === "string") return anyErr.detail;
+const extractMessage = (err: unknown): string | undefined => {
+  if (!err) return undefined;
+
+  if (typeof err === "string") {
+    return err;
   }
-  return fallback;
+
+  if (err instanceof Error) {
+    return err.message;
+  }
+
+  if (typeof err === "object") {
+    const anyErr = err as Record<string, unknown>;
+
+    const nestedError = anyErr?.error;
+    if (nestedError && typeof nestedError === "object") {
+      const nestedBody = (nestedError as { body?: unknown }).body;
+      if (typeof nestedBody === "string") {
+        return nestedBody;
+      }
+    }
+
+    const candidates = [anyErr?.message, anyErr?.error, anyErr?.detail];
+    for (const candidate of candidates) {
+      if (typeof candidate === "string") {
+        return candidate;
+      }
+    }
+  }
+
+  return undefined;
 };
+
+export const getErrorMessage = (err: unknown, fallback: string) => {
+  const message = extractMessage(err);
+  return typeof message === "string" && message.trim().length > 0
+    ? message
+    : fallback;
+};
+
+export const isRateLimitError = (err: unknown): boolean => {
+  if (!err) return false;
+
+  const anyErr = err as Record<string, unknown>;
+
+  const statusValues = [
+    anyErr?.status,
+    anyErr?.statusCode,
+    (anyErr?.error as { code?: unknown })?.code,
+    (anyErr?.response as { status?: unknown })?.status,
+    (anyErr?.response as { statusCode?: unknown })?.statusCode,
+  ];
+
+  if (statusValues.some((status) => Number(status) === 429)) {
+    return true;
+  }
+
+  const messageCandidates: Array<string | undefined> = [
+    extractMessage(err),
+    typeof (anyErr?.error as { body?: unknown })?.body === "string"
+      ? ((anyErr.error as { body: string }).body as string)
+      : undefined,
+  ];
+
+  return messageCandidates.some((message) => {
+    if (!message) return false;
+    const normalized = message.toLowerCase();
+    return (
+      normalized.includes("too many requests") ||
+      normalized.includes("rate limit") ||
+      normalized.includes("429")
+    );
+  });
+};
+
+export const getRateLimitToastMessage = (isRTL = false) =>
+  isRTL
+    ? "لقد وصلت إلى الحد المسموح. حاول مرة أخرى لاحقًا."
+    : "You hit the limit. Try again later.";
 
 export const StatusBadge: React.FC<{ status: GenerationStatus }> = ({
   status,

@@ -3,7 +3,11 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Settings2 } from "lucide-react";
 import { createNewQuizApi } from "@/utils/_apis/learnPlayground-api";
-import { getErrorMessage } from "@/pages/dashboard/utils";
+import {
+  getErrorMessage,
+  getRateLimitToastMessage,
+  isRateLimitError,
+} from "@/pages/dashboard/utils";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -162,8 +166,12 @@ export default function QuizModal({
         "dashboard.errors.loadSpaces",
         "Failed Creating Quiz."
       );
-      const msg = getErrorMessage(err, fallbackMessage);
-      toast.error(msg);
+      if (isRateLimitError(err)) {
+        toast.error(getRateLimitToastMessage(isRTL));
+      } else {
+        const msg = getErrorMessage(err, fallbackMessage);
+        toast.error(msg);
+      }
       console.error("Failed Creating Quiz.", err);
     } finally {
       setGenerating(false);

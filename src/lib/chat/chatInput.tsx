@@ -496,7 +496,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
         parts.push(
           <span
             key={`mention-${match.index}`}
-            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium"
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-900/30 text-zinc-700 dark:text-zinc-300 font-medium"
           >
             @{mentionName}
           </span>
@@ -624,10 +624,16 @@ const ChatInput: React.FC<ChatInputProps> = ({
 
   const handleContainerClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!isFocused) {
-      setIsFocused(true);
-      textAreaRef.current?.focus();
-    }
+    textAreaRef.current?.focus();
+  };
+
+  const handleFocus = () => {
+    setIsFocused(true);
+  };
+
+  const handleBlur = () => {
+    setIsFocused(false);
+    setShowContextMenu(false);
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -662,9 +668,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
 
   const removeContext = (contextId: string) => {
     setSelectedContexts((prev) => {
-      const updated = prev.filter(
-        (ctx) => getContextKey(ctx) !== contextId
-      );
+      const updated = prev.filter((ctx) => getContextKey(ctx) !== contextId);
       onContextsChange?.(updated);
 
       const contextToRemove = prev.find(
@@ -709,7 +713,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
       !isDisabled && !isApplied
         ? "hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
         : "",
-      isSelected ? "ring-1 ring-blue-200 dark:ring-blue-700" : "",
+      isSelected ? "ring-1 ring-zinc-200 dark:ring-zinc-700" : "",
       isDisabled && !isApplied ? "opacity-60" : "",
     ]
       .filter(Boolean)
@@ -718,7 +722,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
     const iconColor = isApplied
       ? "text-emerald-600 dark:text-emerald-300"
       : isSelected
-      ? "text-blue-600 dark:text-blue-400"
+      ? "text-zinc-600 dark:text-zinc-400"
       : "text-zinc-400 dark:text-zinc-500";
 
     return (
@@ -781,19 +785,21 @@ const ChatInput: React.FC<ChatInputProps> = ({
             transition-all duration-300 ease-out
             ${
               isDragging
-                ? "border-blue-400 dark:border-blue-500 bg-blue-50 dark:bg-blue-950/20 shadow-blue-200 dark:shadow-blue-900/20"
+                ? "border-zinc-400 dark:border-zinc-500 bg-zinc-50 dark:bg-zinc-950/20 shadow-lg shadow-zinc-200/30 dark:shadow-zinc-900/30 ring-2 ring-zinc-400/30 dark:ring-zinc-500/30"
                 : isFocused
-                ? "border-zinc-300 dark:border-zinc-600 shadow-lg shadow-zinc-200/50 dark:shadow-zinc-900/40"
-                : "border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600"
+                ? "border-zinc-500/60 dark:border-zinc-400/60 shadow-2xl shadow-zinc-100/50 dark:shadow-zinc-900/30 ring-2 ring-zinc-500/20 dark:ring-zinc-400/20 bg-white dark:bg-zinc-900"
+                : "border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600 shadow-sm hover:shadow-md bg-white dark:bg-zinc-900"
             }
-            bg-white dark:bg-zinc-900
           `}
+          style={{
+            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+          }}
         >
           {isDragging && (
-            <div className="absolute inset-0 flex items-center justify-center bg-blue-50/90 dark:bg-blue-950/90 backdrop-blur-sm z-10 pointer-events-none">
+            <div className="absolute inset-0 flex items-center justify-center bg-zinc-50/95 dark:bg-zinc-950/95 backdrop-blur-sm z-10 pointer-events-none">
               <div className="text-center">
-                <Paperclip className="w-12 h-12 mx-auto mb-2 text-blue-600 dark:text-blue-400" />
-                <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                <Paperclip className="w-12 h-12 mx-auto mb-2 text-zinc-600 dark:text-zinc-400 animate-pulse" />
+                <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
                   {isRTL ? "أسقط الملفات هنا" : "Drop files here"}
                 </p>
               </div>
@@ -809,7 +815,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
               {attachments.map((context) => (
                 <div
                   key={context.id}
-                  className="group flex items-center gap-2 rounded-xl bg-zinc-100 px-3 py-1.5 text-xs text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700"
+                  className="group flex items-center gap-2 rounded-xl bg-zinc-100 px-3 py-1.5 text-xs text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600 transition-all"
                 >
                   <span className="font-medium truncate max-w-[160px]">
                     {context.name}
@@ -858,6 +864,8 @@ const ChatInput: React.FC<ChatInputProps> = ({
               value={value}
               onChange={(e) => handleInputChange(e.target.value)}
               onKeyDown={handleKeyDown}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
               onSelect={(e) => {
                 const target = e.target as HTMLTextAreaElement;
                 setCursorPosition(target.selectionStart);
@@ -868,17 +876,20 @@ const ChatInput: React.FC<ChatInputProps> = ({
                 flex-1 text-base bg-transparent border-0 resize-none 
                 outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus:border-transparent
                 ${isRTL ? "text-right pr-6 pl-16" : "text-left pl-4 pr-16"}
-                placeholder:text-zinc-400 dark:placeholder:text-zinc-500
                 text-zinc-900 dark:text-zinc-100
                 leading-relaxed transition-all duration-200 
                 py-4 relative z-10
-                caret-zinc-900 dark:caret-zinc-100
+                ${
+                  isFocused
+                    ? "placeholder:text-zinc-400/80 dark:placeholder:text-zinc-500/80"
+                    : "placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
+                }
               `}
               style={{
                 minHeight: "56px",
                 maxHeight: "160px",
                 color: value ? "transparent" : undefined,
-                caretColor: "rgb(24 24 27)",
+                caretColor: isFocused ? "rgb(59 130 246)" : "rgb(24 24 27)",
               }}
               rows={1}
             />
@@ -908,7 +919,16 @@ const ChatInput: React.FC<ChatInputProps> = ({
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
-                          className="rounded-2xl dark:bg-transparent border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                          className={`
+                            rounded-2xl dark:bg-transparent border-zinc-200 dark:border-zinc-700 
+                            hover:bg-zinc-50 dark:hover:bg-zinc-800 
+                            transition-all duration-200
+                            ${
+                              contextMenuOpen
+                                ? "border-zinc-500/50 dark:border-zinc-400/50 bg-zinc-50/50 dark:bg-zinc-950/20"
+                                : ""
+                            }
+                          `}
                           size="sm"
                           disabled={autoContextLoading}
                         >
@@ -943,7 +963,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                                   setContextSearch(e.target.value)
                                 }
                                 placeholder={isRTL ? "بحث" : "Search"}
-                                className="pl-9 h-9 rounded-lg border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus-visible:ring-1 focus-visible:ring-blue-500"
+                                className="pl-9 h-9 rounded-lg border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus-visible:ring-1 focus-visible:ring-zinc-500"
                               />
                             </div>
                           </div>
@@ -1075,7 +1095,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
 
                   <Button
                     variant="outline"
-                    className="rounded-2xl dark:bg-transparent border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                    className="rounded-2xl dark:bg-transparent border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-all duration-200"
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -1099,7 +1119,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                     size-8 rounded-2xl font-medium transition-all duration-300 ease-out
                     ${
                       value?.trim()
-                        ? "bg-zinc-900 hover:bg-black dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 shadow-sm"
+                        ? "bg-zinc-900 hover:bg-black dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 shadow-sm hover:shadow-md hover:scale-105"
                         : "bg-zinc-200 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-600 cursor-not-allowed"
                     }
                   `}

@@ -220,7 +220,7 @@ export const StudyCard: React.FC<{
                     </div>
                   )}
 
-                  <p className="text-2xl font-semibold rotate-180 leading-relaxed text-zinc-900 dark:text-zinc-100">
+                  <p className="text-lg font-medium rotate-180 leading-relaxed text-zinc-900 dark:text-zinc-100">
                     {flashcard.definition || flashcard.back}
                   </p>
                 </div>
