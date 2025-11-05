@@ -513,7 +513,10 @@ export function AppSidebar({ onCollapse }: AppSidebarProps) {
             className="flex-shrink-0 transition-colors text-sidebar-foreground/60 group-hover:text-sidebar-accent-foreground"
           />
           <span
-            className={clsx("text-[13px] font-normal flex-1", getTextAlignment())}
+            className={clsx(
+              "text-[13px] font-normal flex-1",
+              getTextAlignment()
+            )}
           >
             {item.title}
           </span>
@@ -766,27 +769,27 @@ export function AppSidebar({ onCollapse }: AppSidebarProps) {
               </button>
             </div>
           </div>
-        <div className="flex-shrink-0 flex flex-col space-y-2 mb-2">
-          {allItemGroups.map((group) => (
-            <MenuGroupEntry
-              key={group.id}
-              group={group}
-              open={!!openGroups[group.id]}
-              onToggle={() => toggleGroup(group.id)}
-            />
-          ))}
-          <hr className="-mx-5 dark:border-zinc-700" />
-        </div>
+          <div className="flex-shrink-0 flex flex-col space-y-2 mb-2">
+            {allItemGroups.map((group) => (
+              <MenuGroupEntry
+                key={group.id}
+                group={group}
+                open={!!openGroups[group.id]}
+                onToggle={() => toggleGroup(group.id)}
+              />
+            ))}
+            <hr className="-mx-5 dark:border-zinc-700" />
+          </div>
 
-        <div
-          className="flex-1 overflow-y-auto min-h-0  py-2 space-y-4"
-          style={{
-            scrollbarWidth: "thin",
-            scrollbarColor: darkMode
-              ? "rgb(55 65 81 / 0.5) transparent"
-              : "rgb(209 213 219 / 0.5) transparent",
-          }}
-        >
+          <div
+            className="flex-1 overflow-y-auto min-h-0  py-2 space-y-4"
+            style={{
+              scrollbarWidth: "thin",
+              scrollbarColor: darkMode
+                ? "rgb(55 65 81 / 0.5) transparent"
+                : "rgb(209 213 219 / 0.5) transparent",
+            }}
+          >
             <div>
               <SectionHeader title={t("sidebar.recent")} />
               <div className="space-y-0.5">

@@ -29,7 +29,6 @@ import {
 } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
 import { formatRelativeDate } from "@/components/utiles";
-import EmojiPicker, { EmojiStyle } from "emoji-picker-react";
 
 export default function Spaces({
   setParentRefresh,
@@ -47,8 +46,6 @@ export default function Spaces({
   const [deleting, setDeleting] = useState(false);
   const [openAdd, setOpenAdd] = useState(false);
   const [newSpaceName, setNewSpaceName] = useState("");
-  const [icon, setIcon] = useState("");
-  const [coverUrl, setCoverUrl] = useState("");
   const [description, setDescription] = useState("");
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [spaceToDelete, setSpaceToDelete] = useState<Space | null>(null);
@@ -88,8 +85,6 @@ export default function Spaces({
       const { data } = await createSpacesApi({
         name,
         description,
-        icon,
-        coverImageUrl: coverUrl,
       });
       setSpaces((prev) => [...prev, data]);
       setNewSpaceName("");
@@ -211,7 +206,11 @@ export default function Spaces({
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-2">
-            <div className={`grid gap-2 ${isRTL ? "text-right" : "text-left"}`}>
+            <div
+              className={`grid gap-2 ${
+                isRTL ? "text-right" : "text-left"
+              } space-y-4`}
+            >
               <Label htmlFor="spaceName" className={isRTL ? "mr-1" : "ml-1"}>
                 {t("dashboard.dialogs.createSpace.nameLabel")}
               </Label>
@@ -253,48 +252,6 @@ export default function Spaces({
                     handleCreateSpace();
                   }
                 }}
-              />
-
-              <Label htmlFor="iconPicker" className={isRTL ? "mr-1" : "ml-1"}>
-                {t("dashboard.dialogs.createSpace.icon")}
-              </Label>
-              <input
-                id="iconPicker"
-                value={icon}
-                readOnly
-                className="border p-2 w-full"
-                placeholder="Pick one emoji…"
-              />
-              <EmojiPicker
-                onEmojiClick={(e) => setIcon(e.emoji)}
-                autoFocusSearch
-                previewConfig={{ showPreview: false }}
-                emojiStyle={EmojiStyle.NATIVE}
-                hiddenEmojis={[
-                  "1f3f3-fe0f-200d-1f308",
-                  "1f3f3-fe0f-200d-26a7-fe0f",
-                  "1f1ee-1f1f1",
-                ]}
-                style={
-                  {
-                    "--epr-emoji-size": "20px",
-                    "--epr-emoji-gap": "6px",
-                  } as React.CSSProperties
-                }
-              />
-
-              <Label htmlFor="spaceCover">
-                {t("dashboard.spaceView.form.cover", "Cover image URL")}
-              </Label>
-              <Input
-                id="spaceCover"
-                value={coverUrl}
-                dir="ltr"
-                onChange={(e) => setCoverUrl(e.target.value)}
-                placeholder={t(
-                  "dashboard.spaceView.form.coverPlaceholder",
-                  "Paste an image link (https://...)"
-                )}
               />
             </div>
           </div>
