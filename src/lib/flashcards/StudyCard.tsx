@@ -140,7 +140,7 @@ export const StudyCard: React.FC<{
                         className="rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-700 border-zinc-200 dark:border-zinc-700"
                       >
                         <Lightbulb className="w-4 h-4 mr-2" />
-                        {t("study.hint", "Hint")}
+                        {t("flashcards.hint", "Hint")}
                         {allHints.length > 1 && revealedHintCount > 0
                           ? ` (${revealedHintCount}/${allHints.length})`
                           : ""}
@@ -153,7 +153,7 @@ export const StudyCard: React.FC<{
                             onClick={revealAllHints}
                             className="rounded-lg border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                           >
-                            {t("study.revealAll", "Reveal all")}
+                            {t("common.revealAll", "Reveal all")}
                           </Button>
                         )}
                     </>
@@ -178,7 +178,7 @@ export const StudyCard: React.FC<{
                         <div className="rounded-xl border border-amber-200 dark:border-amber-800/50 bg-amber-50 dark:bg-amber-900/20 px-4 py-3 text-amber-900 dark:text-amber-200 text-sm text-left shadow-sm">
                           <div className="flex items-center mb-2 gap-2 font-medium">
                             <Sparkles className="w-4 h-4" />
-                            {t("study.hints", "Hints")}
+                            {t("flashcards.hints", "Hints")}
                           </div>
                           <ul className="list-disc pl-5 space-y-1">
                             {visibleHints.map((h, i) => (
@@ -272,9 +272,9 @@ export const StudyCard: React.FC<{
       <div className="text-xs text-zinc-500 dark:text-zinc-400">
         {!isFlipped
           ? allHints.length != revealedHintCount
-            ? "Press H for hint • Click to flip"
-            : "Click to reveal answer"
-          : "Press E for explanation"}
+            ? t("flashcards.pressH", "Press H for hint • Click to flip")
+            : t("flashcards.clickReveal", "Click to reveal answer")
+          : t("flashcards.pressE", "Press E for explanation")}
       </div>
     </div>
   );
@@ -327,7 +327,7 @@ export const StudyNavigation: React.FC<{
       >
         <div className="flex items-center gap-2">
           <X className="w-5 h-5" />
-          <span>{t("study.hard", "Bad")}</span>
+          <span>{t("flashcards.bad", "Bad")}</span>
         </div>
       </Button>
 
@@ -337,7 +337,7 @@ export const StudyNavigation: React.FC<{
       >
         <div className="flex items-center gap-2">
           <Check className="w-5 h-5" />
-          <span>{t("study.good", "Good")}</span>
+          <span>{t("flashcards.good", "Good")}</span>
         </div>
       </Button>
     </motion.div>

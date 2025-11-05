@@ -211,11 +211,10 @@ export function SummaryList({ workspaceId }: SummaryListProps) {
                       <div className="mt-3 w-full rounded-xl border border-red-200 bg-red-50 text-red-700 px-3 py-2 text-sm flex items-center gap-2">
                         <AlertTriangle className="w-4 h-4" />
                         <span>
-                          {summary.failureReason ||
-                            t(
-                              "summary.list.failure",
-                              "Generation failed. You can delete and try again."
-                            )}
+                          {t(
+                            "summary.list.failure",
+                            "Generation failed. You can delete and try again."
+                          )}
                         </span>
                       </div>
                     )}
