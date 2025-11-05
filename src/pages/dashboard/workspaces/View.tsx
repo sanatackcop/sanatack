@@ -1144,7 +1144,7 @@ const LearnPlayground: React.FC = () => {
                             return (
                               <TabsTrigger
                                 key={tab.id}
-                                disabled={!isSoon}
+                                disabled={isSoon}
                                 value={tab.id}
                                 className={`px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 relative z-20 flex-shrink-0 transition-all duration-200 
                 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 
