@@ -67,7 +67,7 @@ export const ChatSkeleton = () => (
 
 interface State {
   tab: string;
-  type: "video" | "document" | null;
+  type: "video" | "document" | "chat" | null;
   src: string | null;
   page: number;
   pageCount: number | null;
@@ -95,7 +95,7 @@ interface State {
 
 export type Action =
   | { type: "SET_TAB"; tab: string }
-  | { type: "SET_WORKSPACE_TYPE"; workspaceType: "video" | "document" }
+  | { type: "SET_WORKSPACE_TYPE"; workspaceType: "video" | "document" | "chat" }
   | { type: "SET_CONTENT"; contentType: string }
   | { type: "SET_SRC"; src: string }
   | { type: "SET_PAGE"; page: number }
@@ -144,7 +144,7 @@ export const reducer = (state: State, action: any): State => {
     case "SET_CONTENT":
       return {
         ...state,
-        type: action.contentType as "video" | "document",
+        type: action.contentType as State["type"],
         status: { kind: "loading", for: action.contentType },
       };
 

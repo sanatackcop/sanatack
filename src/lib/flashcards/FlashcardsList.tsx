@@ -74,7 +74,6 @@ export const FlashcardsList: React.FC<{
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 20 }}
         transition={{ duration: 0.25 }}
-        dir={direction}
       >
         <div className="px-6 py-4 flex flex-col rounded-3xl justify-between space-y-3">
           <h3 className="px-2 text-sm font-medium text-gray-700 dark:text-white">

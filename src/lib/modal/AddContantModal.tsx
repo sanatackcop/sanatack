@@ -19,6 +19,8 @@ import {
   Image,
   Video,
   Music,
+  MessageCircle,
+  Loader2,
 } from "lucide-react";
 import {
   createNewWorkSpace,
@@ -39,6 +41,7 @@ type ModalType =
   | "selection"
   | "upload"
   | "paste"
+  | "chat"
   | "createCourse"
   | "recordAudio";
 
@@ -75,6 +78,16 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
     documentId: null,
     status: null,
     downloadUrl: null,
+  });
+
+  const [chatState, setChatState] = useState<{
+    name: string;
+    isCreating: boolean;
+    error: string | null;
+  }>({
+    name: "",
+    isCreating: false,
+    error: null,
   });
 
   const [pasteState, setPasteState] = useState<PasteState>({
@@ -311,6 +324,43 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
     }
   }
 
+  async function handleChatWorkspaceCreate() {
+    const trimmedName = chatState.name.trim();
+    if (!trimmedName) {
+      setChatState((prev) => ({
+        ...prev,
+        error: t(
+          "modals.addContent.chatWorkspace.errors.nameRequired",
+          "Please enter a workspace name."
+        ),
+      }));
+      return;
+    }
+
+    setChatState((prev) => ({ ...prev, isCreating: true, error: null }));
+
+    try {
+      const workspace: any = await createNewWorkSpace({
+        workspaceName: trimmedName,
+      });
+      navigate(`/dashboard/learn/workspace/${workspace.workspace.id}`);
+      handleClose();
+    } catch (error: any) {
+      setChatState((prev) => ({
+        ...prev,
+        error:
+          error?.error?.body ||
+          error?.message ||
+          t(
+            "modals.addContent.chatWorkspace.errors.generic",
+            "Failed to create workspace."
+          ),
+      }));
+    } finally {
+      setChatState((prev) => ({ ...prev, isCreating: false }));
+    }
+  }
+
   async function handlePasteSubmit() {
     if (!pasteState.url && !pasteState.text) return;
 
@@ -344,6 +394,12 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
     }
   }, [uploadState]);
 
+  useEffect(() => {
+    if (activeModal === "chat") {
+      setChatState((prev) => ({ ...prev, error: null }));
+    }
+  }, [activeModal]);
+
   function handleClose() {
     onClose();
     clearPolling();
@@ -362,6 +418,11 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
       url: "",
       text: "",
       isProcessing: false,
+      error: null,
+    });
+    setChatState({
+      name: "",
+      isCreating: false,
       error: null,
     });
   }
@@ -407,6 +468,16 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
                 Icon={Link2}
                 isRTL={isRTL}
                 onClick={() => setActiveModal("paste")}
+              />
+              <ContentTypeCard
+                title={t("modals.addContent.chatWorkspace.title", "Chat Workspace")}
+                subtitle={t(
+                  "modals.addContent.chatWorkspace.subtitle",
+                  "Start a workspace focused on conversation"
+                )}
+                Icon={MessageCircle}
+                isRTL={isRTL}
+                onClick={() => setActiveModal("chat")}
               />
               {/* <ContentTypeCard
                 title={t(
@@ -464,6 +535,87 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
                 />
               </div> */}
             </div>
+          </>
+        )}
+
+        {activeModal === "chat" && (
+          <>
+            <DialogHeader className={isRTL ? "text-right" : "text-left"}>
+              <DialogTitle>
+                {t("modals.addContent.chatWorkspace.title", "Chat Workspace")}
+              </DialogTitle>
+              <DialogDescription>
+                {t(
+                  "modals.addContent.chatWorkspace.helper",
+                  "Create a space to chat without uploading materials."
+                )}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="chat-workspace-name">
+                  {t(
+                    "modals.addContent.chatWorkspace.label",
+                    "Workspace name"
+                  )}
+                </Label>
+                <Input
+                  id="chat-workspace-name"
+                  value={chatState.name}
+                  onChange={(e) =>
+                    setChatState((prev) => ({
+                      ...prev,
+                      name: e.target.value,
+                      error: null,
+                    }))
+                  }
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleChatWorkspaceCreate();
+                    }
+                  }}
+                  placeholder={t(
+                    "modals.addContent.chatWorkspace.placeholder",
+                    "e.g. Brainstorming session"
+                  )}
+                  disabled={chatState.isCreating}
+                  dir={dir}
+                />
+                {chatState.error ? (
+                  <p className="text-sm text-red-500">{chatState.error}</p>
+                ) : null}
+              </div>
+            </div>
+
+            <DialogFooter
+              className={`flex gap-2 ${isRTL ? "flex-row-reverse" : "flex-row"}`}
+            >
+              <Button
+                variant="outline"
+                onClick={() => setActiveModal("selection")}
+                disabled={chatState.isCreating}
+              >
+                {t("common.back", "Back")}
+              </Button>
+              <Button
+                onClick={handleChatWorkspaceCreate}
+                disabled={chatState.isCreating}
+              >
+                {chatState.isCreating ? (
+                  <span className="inline-flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {t(
+                      "modals.addContent.chatWorkspace.creating",
+                      "Creating..."
+                    )}
+                  </span>
+                ) : (
+                  t("modals.addContent.chatWorkspace.submit", "Create workspace")
+                )}
+              </Button>
+            </DialogFooter>
           </>
         )}
 

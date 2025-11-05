@@ -995,6 +995,19 @@
         "processing": "Processing...",
         "submit": "Process Content"
       },
+      "chatWorkspace": {
+        "title": "Chat Workspace",
+        "subtitle": "Start a workspace focused on conversation",
+        "helper": "Create a space to chat without uploading materials.",
+        "label": "Workspace name",
+        "placeholder": "e.g. Brainstorming session",
+        "submit": "Create workspace",
+        "creating": "Creating...",
+        "errors": {
+          "nameRequired": "Please enter a workspace name.",
+          "generic": "Failed to create workspace."
+        }
+      },
       "createCourse": {
         "title": "Create Course",
         "subtitle": "Generate a course from content",

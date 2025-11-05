@@ -314,26 +314,34 @@ const LearnPlayground: React.FC = () => {
       dispatch({ type: "SET_WORKSPACE", workspace: workspaceData });
       setWorkspace(workspaceData);
 
-      const url = workspaceData.video?.url;
-      if (url) {
-        dispatch({ type: "SET_WORKSPACE_TYPE", workspaceType: "video" });
-        dispatch({ type: "SET_SRC", src: url });
+      const videoUrl = workspaceData.video?.url;
+      const documentUrl = workspaceData.document?.url;
 
-        const videoId = extractVideoId(url);
+      if (videoUrl) {
+        setFullScreen(false);
+        dispatch({ type: "SET_WORKSPACE_TYPE", workspaceType: "video" });
+        dispatch({ type: "SET_SRC", src: videoUrl });
+
+        const videoId = extractVideoId(videoUrl);
         if (videoId) {
           dispatch({ type: "SET_YOUTUBE_VIDEO", videoId });
         }
-        if (workspaceData.video.transcript) {
+        if (workspaceData.video?.transcript) {
           dispatch({
             type: "SET_TRANSCRIPT",
             transcript: workspaceData.video.transcript,
           });
         }
-      }
-
-      if (workspaceData.type === "document") {
+      } else if (documentUrl) {
+        setFullScreen(false);
         dispatch({ type: "SET_WORKSPACE_TYPE", workspaceType: "document" });
-        dispatch({ type: "SET_SRC", src: workspaceData.document.url });
+        dispatch({ type: "SET_SRC", src: documentUrl });
+      } else {
+        workspaceData.type = "chat";
+        dispatch({ type: "SET_WORKSPACE_TYPE", workspaceType: "chat" });
+        dispatch({ type: "SET_SRC", src: "" });
+        setFullScreen(true);
+        setContentLoading(false);
       }
     } catch (error) {
       console.error("Failed to fetch workspace:", error);
@@ -1406,6 +1414,7 @@ const LearnPlayground: React.FC = () => {
                                 <TabsTrigger
                                   key={tab.id}
                                   value={tab.id}
+                                  disabled={tab.isSoon}
                                   className={`px-1.5 sm:px-2 md:px-3 py-1 sm:py-1.5 md:py-2 relative z-20 flex-shrink-0 transition-all duration-150 
                             hover:bg-transparent data-[state=active]:bg-zinc-100 dark:data-[state=active]:bg-zinc-800/60 rounded-lg sm:rounded-xl h-6 sm:h-7 md:h-9 flex flex-row items-center 
                             justify-center select-none cursor-pointer gap-1 sm:gap-1.5`}
