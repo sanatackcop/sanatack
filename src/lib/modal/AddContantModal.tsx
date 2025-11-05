@@ -469,16 +469,21 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
                 isRTL={isRTL}
                 onClick={() => setActiveModal("paste")}
               />
-              <ContentTypeCard
-                title={t("modals.addContent.chatWorkspace.title", "Chat Workspace")}
-                subtitle={t(
-                  "modals.addContent.chatWorkspace.subtitle",
-                  "Start a workspace focused on conversation"
-                )}
-                Icon={MessageCircle}
-                isRTL={isRTL}
-                onClick={() => setActiveModal("chat")}
-              />
+              <div className="col-span-2">
+                <ContentTypeCard
+                  title={t(
+                    "modals.addContent.chatWorkspace.title",
+                    "Chat Workspace"
+                  )}
+                  subtitle={t(
+                    "modals.addContent.chatWorkspace.subtitle",
+                    "Start a workspace focused on conversation"
+                  )}
+                  Icon={MessageCircle}
+                  isRTL={isRTL}
+                  onClick={() => setActiveModal("chat")}
+                />
+              </div>
               {/* <ContentTypeCard
                 title={t(
                   "modals.addContent.createCourse.title",
@@ -555,10 +560,7 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label htmlFor="chat-workspace-name">
-                  {t(
-                    "modals.addContent.chatWorkspace.label",
-                    "Workspace name"
-                  )}
+                  {t("modals.addContent.chatWorkspace.label", "Workspace name")}
                 </Label>
                 <Input
                   id="chat-workspace-name"
@@ -590,7 +592,9 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
             </div>
 
             <DialogFooter
-              className={`flex gap-2 ${isRTL ? "flex-row-reverse" : "flex-row"}`}
+              className={`flex gap-2 ${
+                isRTL ? "flex-row-reverse" : "flex-row"
+              }`}
             >
               <Button
                 variant="outline"
@@ -612,7 +616,10 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
                     )}
                   </span>
                 ) : (
-                  t("modals.addContent.chatWorkspace.submit", "Create workspace")
+                  t(
+                    "modals.addContent.chatWorkspace.submit",
+                    "Create workspace"
+                  )
                 )}
               </Button>
             </DialogFooter>
