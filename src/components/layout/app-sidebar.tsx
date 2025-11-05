@@ -1,4 +1,12 @@
-import { useState, useEffect, useMemo, FormEvent, useId, useRef } from "react";
+import {
+  useState,
+  useEffect,
+  useMemo,
+  FormEvent,
+  useId,
+  useRef,
+  useCallback,
+} from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -57,6 +65,7 @@ import { useSettings } from "@/context/SettingsContexts";
 import { SearchCommand } from "@/pages/dashboard/search/Index";
 import LogoLight from "@/assets/logo.svg";
 import LogoDark from "@/assets/dark_logo.svg";
+import { SidebarRefreshProvider } from "@/context/SidebarRefreshContext";
 
 type MenuItem =
   | {
@@ -349,25 +358,26 @@ export function AppSidebar({ onCollapse }: AppSidebarProps) {
     }
   };
 
-  useEffect(() => {
-    const fetchRecent = async () => {
-      try {
-        setLoadingRecent(true);
-        const { workspaces: fetchedWorkspaces }: any = await getAllWorkSpace();
-        const sortedWorkspaces =
-          fetchedWorkspaces?.sort(
-            (a: Workspace, b: Workspace) =>
-              new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-          ) || [];
-        setWorkspaces(sortedWorkspaces);
-      } catch {
-        setWorkspaces([]);
-      } finally {
-        setLoadingRecent(false);
-      }
-    };
-    fetchRecent();
+  const refreshWorkspace = useCallback(async () => {
+    try {
+      setLoadingRecent(true);
+      const { workspaces: fetchedWorkspaces }: any = await getAllWorkSpace();
+      const sortedWorkspaces =
+        fetchedWorkspaces?.sort(
+          (a: Workspace, b: Workspace) =>
+            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+        ) || [];
+      setWorkspaces(sortedWorkspaces);
+    } catch {
+      setWorkspaces([]);
+    } finally {
+      setLoadingRecent(false);
+    }
   }, []);
+
+  useEffect(() => {
+    refreshWorkspace();
+  }, [refreshWorkspace]);
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
 
@@ -712,7 +722,7 @@ export function AppSidebar({ onCollapse }: AppSidebarProps) {
   );
 
   return (
-    <>
+    <SidebarRefreshProvider value={{ refreshWorkspace }}>
       <div
         dir={isRTL ? "rtl" : "ltr"}
         lang={i18n.language}
@@ -756,7 +766,6 @@ export function AppSidebar({ onCollapse }: AppSidebarProps) {
               </button>
             </div>
           </div>
-
         <div className="flex-shrink-0 flex flex-col space-y-2 mb-2">
           {allItemGroups.map((group) => (
             <MenuGroupEntry
@@ -769,15 +778,15 @@ export function AppSidebar({ onCollapse }: AppSidebarProps) {
           <hr className="-mx-5 dark:border-zinc-700" />
         </div>
 
-          <div
-            className="flex-1 overflow-y-auto min-h-0  py-2 space-y-4"
-            style={{
-              scrollbarWidth: "thin",
-              scrollbarColor: darkMode
-                ? "rgb(55 65 81 / 0.5) transparent"
-                : "rgb(209 213 219 / 0.5) transparent",
-            }}
-          >
+        <div
+          className="flex-1 overflow-y-auto min-h-0  py-2 space-y-4"
+          style={{
+            scrollbarWidth: "thin",
+            scrollbarColor: darkMode
+              ? "rgb(55 65 81 / 0.5) transparent"
+              : "rgb(209 213 219 / 0.5) transparent",
+          }}
+        >
             <div>
               <SectionHeader title={t("sidebar.recent")} />
               <div className="space-y-0.5">
@@ -1220,6 +1229,6 @@ export function AppSidebar({ onCollapse }: AppSidebarProps) {
           </div>
         </Modal>
       </div>
-    </>
+    </SidebarRefreshProvider>
   );
 }

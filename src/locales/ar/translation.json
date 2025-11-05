@@ -445,6 +445,60 @@
         "deleted": "تم حذف مساحة العمل بنجاح"
       }
     },
+    "spaceView": {
+      "errors": {
+        "load": "تعذّر تحميل المساحة",
+        "save": "تعذّر حفظ آخر التغييرات."
+      },
+      "coverAlt": "صورة الغلاف لهذه المساحة",
+      "noCover": "انقر على تعديل لإضافة صورة غلاف",
+      "actions": {
+        "edit": "تعديل المساحة",
+        "changeCover": "تغيير الغلاف",
+        "changeIcon": "تغيير الأيقونة",
+        "grid": "عرض شبكي"
+      },
+      "edit": {
+        "title": "تحديث تفاصيل المساحة",
+        "description": "عدّل الاسم أو الوصف أو الأيقونة أو الغلاف لتخصيص هذه المساحة."
+      },
+      "form": {
+        "name": "اسم المساحة",
+        "namePlaceholder": "أدخل اسمًا وصفيًا",
+        "description": "الوصف",
+        "descriptionPlaceholder": "لخّص هدف هذه المساحة",
+        "saving": "جارٍ الحفظ…",
+        "save": "حفظ التغييرات"
+      },
+      "coverPicker": {
+        "title": "اختر صورة غلاف",
+        "description": "استعرض صور Unsplash المنسقة أو ابحث عن موضوع لتجديد مساحتك.",
+        "missingKey": "مفتاح الوصول إلى Unsplash مفقود. يرجى ضبط VITE_UNSPLASH_ACCESS_KEY.",
+        "searchPlaceholder": "ابحث (مثال: مكتب دراسة، مساحة عمل إبداعية…)",
+        "loadError": "تعذّر تحميل الصور. يرجى المحاولة مرة أخرى.",
+        "applyError": "تعذّر تحديث الغلاف. يرجى المحاولة مرة أخرى.",
+        "noResults": "لم يتم العثور على صور لهذا البحث.",
+        "imageAlt": "اقتراح غلاف من Unsplash",
+        "unsplash": "Unsplash",
+        "credit": "الصورة بواسطة {{name}} على Unsplash"
+      },
+      "untitled": "مساحة بدون عنوان",
+      "noDescription": "لم تتم إضافة وصف بعد.",
+      "meta": {
+        "created": "أُنشئت {{date}}",
+        "updated": "تم التحديث {{date}}",
+        "unknown": "مؤخرًا",
+        "members_zero": "أعضاء",
+        "members_one": "عضو",
+        "members_two": "عضوان",
+        "members_few": "أعضاء",
+        "members_many": "عضوًا",
+        "members_other": "عضو"
+      },
+      "workspaces": {
+        "title": "مساحات العمل"
+      }
+    },
     "usage": {
       "title": "الاستخدام والحدود",
       "currentPlan": "الخطة الحالية",

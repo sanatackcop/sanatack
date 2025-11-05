@@ -260,6 +260,9 @@ importers:
       three:
         specifier: ^0.180.0
         version: 0.180.0
+      unsplash-js:
+        specifier: ^7.0.20
+        version: 7.0.20
       zod:
         specifier: ^3.24.2
         version: 3.25.76
@@ -4327,6 +4330,10 @@ packages:
 
   unist-util-visit@5.0.0:
     resolution: {integrity: sha512-MR04uvD+07cwl/yhVuVWAtw+3GOR/knlL55Nd/wAdblk27GCVt3lqpTivy/tkJcZoNPzTwS1Y+KMojlLDhoTzg==}
+
+  unsplash-js@7.0.20:
+    resolution: {integrity: sha512-0IzJGKbD6qHm0wg5sNndcCjhNDrtAr08/mySr9TGJ6biD7N03ZldidqXopkOvhAABaeFtRGYBrX1YkgMhKrFOQ==}
+    engines: {node: '>=10'}
 
   update-browserslist-db@1.1.4:
     resolution: {integrity: sha512-q0SPT4xyU84saUX+tomz1WLkxUbuaJnR1xWt17M7fJtEJigJeWUNGUqrauFXsHnqev9y9JTRGwk13tFBuKby4A==}
@@ -9246,6 +9253,8 @@ snapshots:
       '@types/unist': 3.0.3
       unist-util-is: 6.0.1
       unist-util-visit-parents: 6.0.2
+
+  unsplash-js@7.0.20: {}
 
   update-browserslist-db@1.1.4(browserslist@4.27.0):
     dependencies:

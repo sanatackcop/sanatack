@@ -94,6 +94,7 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "three": "^0.180.0",
+    "unsplash-js": "^7.0.20",
     "zod": "^3.24.2"
   },
   "devDependencies": {

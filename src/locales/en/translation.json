@@ -446,6 +446,56 @@
         "deleted": "Workspace deleted successfully"
       }
     },
+    "spaceView": {
+      "errors": {
+        "load": "Failed to load the space",
+        "save": "Failed to save the latest changes."
+      },
+      "coverAlt": "Cover image for this space",
+      "noCover": "Click edit to add a cover",
+      "actions": {
+        "edit": "Edit space",
+        "changeCover": "Change cover",
+        "changeIcon": "Change icon",
+        "grid": "Grid view"
+      },
+      "edit": {
+        "title": "Update space details",
+        "description": "Tweak the name, description, icon, or cover to personalize this space."
+      },
+      "form": {
+        "name": "Space name",
+        "namePlaceholder": "Enter a descriptive name",
+        "description": "Description",
+        "descriptionPlaceholder": "Summarize the purpose of this space",
+        "saving": "Saving…",
+        "save": "Save changes"
+      },
+      "coverPicker": {
+        "title": "Pick a cover image",
+        "description": "Browse curated Unsplash photos or search for a theme to refresh your space.",
+        "missingKey": "Unsplash access key is missing. Please set VITE_UNSPLASH_ACCESS_KEY.",
+        "searchPlaceholder": "Search (e.g. study desk, creative workspace…)",
+        "loadError": "Failed to load images. Please try again.",
+        "applyError": "Failed to update the cover. Please try again.",
+        "noResults": "No images found for this search.",
+        "imageAlt": "Unsplash cover suggestion",
+        "unsplash": "Unsplash",
+        "credit": "Photo by {{name}} on Unsplash"
+      },
+      "untitled": "Untitled space",
+      "noDescription": "No description has been added yet.",
+      "meta": {
+        "created": "Created {{date}}",
+        "updated": "Updated {{date}}",
+        "unknown": "recently",
+        "members_one": "member",
+        "members_other": "members"
+      },
+      "workspaces": {
+        "title": "Workspaces"
+      }
+    },
     "usage": {
       "title": "Usage & Limits",
       "currentPlan": "Current plan",

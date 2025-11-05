@@ -60,13 +60,23 @@ import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 const TABS_CONFIG = [
-  { id: "chat", labelKey: "tabs.chat", icon: MessageCircle },
-  { id: "flashcards", labelKey: "tabs.flashcards", icon: GalleryVerticalEnd },
-  { id: "quizzes", labelKey: "tabs.quizzes", icon: TestTube2 },
-  { id: "summary", labelKey: "tabs.summary", icon: BookOpen },
-  { id: "deepExplanation", labelKey: "tabs.deepExplanation", icon: BrainCog },
-  { id: "code", labelKey: "tabs.code", icon: Code },
-  { id: "note", labelKey: "tabs.notes", icon: Pencil },
+  { id: "chat", labelKey: "tabs.chat", icon: MessageCircle, isSoon: false },
+  {
+    id: "flashcards",
+    labelKey: "tabs.flashcards",
+    icon: GalleryVerticalEnd,
+    isSoon: false,
+  },
+  { id: "quizzes", labelKey: "tabs.quizzes", icon: TestTube2, isSoon: false },
+  { id: "summary", labelKey: "tabs.summary", icon: BookOpen, isSoon: false },
+  {
+    id: "deepExplanation",
+    labelKey: "tabs.deepExplanation",
+    icon: BrainCog,
+    isSoon: false,
+  },
+  { id: "code", labelKey: "tabs.code", icon: Code, isSoon: true },
+  { id: "note", labelKey: "tabs.notes", icon: Pencil, isSoon: true },
 ] as const;
 
 const LearnPlayground: React.FC = () => {
@@ -1111,9 +1121,12 @@ const LearnPlayground: React.FC = () => {
                           {TABS_CONFIG.map((tab) => {
                             const IconComponent = tab.icon;
                             const isActive = state.tab === tab.id;
+                            const isSoon = tab?.isSoon;
+
                             return (
                               <TabsTrigger
                                 key={tab.id}
+                                disabled={!isSoon}
                                 value={tab.id}
                                 className={`px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 relative z-20 flex-shrink-0 transition-all duration-200 
                 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 
@@ -1170,7 +1183,7 @@ const LearnPlayground: React.FC = () => {
                     {state.tab === "chat" && (
                       <TabsContent
                         value="chat"
-                        className="m-0 flex-1 relative flex flex-col min-h-0 w-full max-w-full"
+                        className="m-0 flex-1 relative flex flex-col min-h-0"
                       >
                         {state.isLoading ? (
                           <div className="w-full flex-1">
@@ -1178,19 +1191,15 @@ const LearnPlayground: React.FC = () => {
                           </div>
                         ) : (
                           <>
-                            {/* Scrollable Messages Area */}
-                            <ScrollArea className="flex-1 w-full h-full pb-32 sm:pb-36">
-                              <div className="w-full px-2 sm:px-4">
-                                <ChatMessages
-                                  messages={state.chatMessages || []}
-                                  isLoading={state.chatLoading}
-                                  streamingMessage={state.streamingMessage}
-                                  onSendMessage={handleQuickSend}
-                                />
-                              </div>
+                            <ScrollArea>
+                              <ChatMessages
+                                messages={state.chatMessages || []}
+                                isLoading={state.chatLoading}
+                                streamingMessage={state.streamingMessage}
+                                onSendMessage={handleQuickSend}
+                              />
                             </ScrollArea>
 
-                            {/* Fixed Chat Input at Bottom Center */}
                             <div className="absolute bottom-0 left-0 right-0 flex justify-center bg-gradient-to-t from-white dark:from-zinc-950 via-white/95 dark:via-zinc-950/95 to-transparent pt-4 pb-2 sm:pb-4">
                               <div className="w-full max-w-4xl px-2 sm:px-6">
                                 <ChatInput
@@ -1425,8 +1434,7 @@ const LearnPlayground: React.FC = () => {
                       {state.tab === "chat" && (
                         <TabsContent
                           value="chat"
-                          className="m-0 flex-1 flex flex-col relative items-end justify-end min-h-0 w-full max-w-full"
-                          style={{ maxHeight: "100%" }}
+                          className="m-0 flex-1 flex flex-col relative items-stretch justify-end min-h-0 w-full max-w-full"
                         >
                           {state.isLoading ? (
                             <div className="w-full flex-1">

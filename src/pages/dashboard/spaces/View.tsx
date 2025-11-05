@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   CalendarClock,
@@ -21,6 +26,9 @@ import {
   ImageIcon,
   PencilLine,
   Users,
+  Smile,
+  Loader2,
+  Search,
 } from "lucide-react";
 import { useParams } from "react-router-dom";
 import { getSingleSpaceApi, updateSpaceApi } from "@/utils/_apis/courses-apis";
@@ -28,6 +36,22 @@ import { Space } from "@/types/courses";
 import WorkspacesList from "../workspaces/WorkspacesList.";
 import { formatRelativeDate } from "@/components/utiles";
 import EmojiPicker, { EmojiStyle } from "emoji-picker-react";
+import { createApi } from "unsplash-js";
+
+type UnsplashPhoto = {
+  id: string;
+  alt_description?: string | null;
+  description?: string | null;
+  urls: {
+    thumb: string;
+    small: string;
+    regular: string;
+    full: string;
+  };
+  user?: {
+    name?: string;
+  };
+};
 
 export default function SpaceView() {
   const { t, i18n } = useTranslation();
@@ -43,18 +67,32 @@ export default function SpaceView() {
   const [error, setError] = useState<string | null>(null);
 
   const [openEdit, setOpenEdit] = useState(false);
+  const [openEmojiPicker, setOpenEmojiPicker] = useState(false);
+  const [, setOpenDialogEmojiPicker] = useState(false);
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editCoverImage, setEditCoverImage] = useState("");
   const [editIcon, setEditIcon] = useState("");
   const [saving, setSaving] = useState(false);
+  const unsplashAccessKey = import.meta.env.VITE_UNSPLASH_ACCESS_KEY;
+  const unsplashApi = useMemo(
+    () =>
+      unsplashAccessKey ? createApi({ accessKey: unsplashAccessKey }) : null,
+    [unsplashAccessKey]
+  );
+  const [openCoverPicker, setOpenCoverPicker] = useState(false);
+  const [unsplashPhotos, setUnsplashPhotos] = useState<UnsplashPhoto[]>([]);
+  const [unsplashLoading, setUnsplashLoading] = useState(false);
+  const [unsplashError, setUnsplashError] = useState<string | null>(null);
+  const [unsplashQuery, setUnsplashQuery] = useState("");
+  const [coverSaving, setCoverSaving] = useState(false);
 
   const itemCount = space?.workspaces?.length ?? 0;
   const formatNum = useMemo(
     () => new Intl.NumberFormat(language === "ar" ? "ar" : "en"),
     [language]
   );
-  console.log({ space });
+
   const fetchSpace = useCallback(async () => {
     if (!routeId) return;
     setLoading(true);
@@ -81,6 +119,34 @@ export default function SpaceView() {
   useEffect(() => {
     fetchSpace();
   }, [fetchSpace]);
+
+  const handleIconUpdate = async (emoji: string) => {
+    if (!space) return;
+
+    const payload = {
+      name: space.name,
+      description: space.description as string,
+      coverImageUrl: space.coverImageUrl as string | null,
+      icon: emoji,
+    };
+
+    try {
+      const res = await updateSpaceApi(space.id, payload);
+      const updated: Space = (res?.data ?? res) as Space;
+
+      setSpace((prev: Space | null) =>
+        prev
+          ? {
+              ...prev,
+              icon: updated?.icon ?? emoji,
+            }
+          : prev
+      );
+      setOpenEmojiPicker(false);
+    } catch (e: any) {
+      console.error("Failed to update icon:", e);
+    }
+  };
 
   const handleUpdate = async () => {
     if (!space) return;
@@ -116,6 +182,7 @@ export default function SpaceView() {
       );
 
       setOpenEdit(false);
+      setOpenDialogEmojiPicker(false);
     } catch (e: any) {
       setError(
         e?.message ??
@@ -129,298 +196,636 @@ export default function SpaceView() {
     }
   };
 
+  const loadUnsplashPhotos = useCallback(
+    async (query?: string) => {
+      if (!unsplashApi) {
+        setUnsplashError(
+          t(
+            "dashboard.spaceView.coverPicker.missingKey",
+            "Unsplash access key is missing. Please set VITE_UNSPLASH_ACCESS_KEY."
+          )
+        );
+        setUnsplashPhotos([]);
+        return;
+      }
+
+      setUnsplashLoading(true);
+      setUnsplashError(null);
+
+      try {
+        const trimmedQuery = query?.trim();
+        const response = trimmedQuery
+          ? await unsplashApi.search.getPhotos({
+              query: trimmedQuery,
+              perPage: 24,
+              orientation: "landscape",
+            })
+          : await unsplashApi.photos.list({
+              perPage: 24,
+              // orderBy: "latest",
+            });
+
+        const payload = Array.isArray(response.response)
+          ? response.response
+          : response.response?.results ?? [];
+
+        setUnsplashPhotos(
+          (payload as UnsplashPhoto[]).filter(
+            (photo) => photo?.urls?.regular || photo?.urls?.small
+          )
+        );
+      } catch (e: any) {
+        setUnsplashError(
+          e?.message ??
+            t(
+              "dashboard.spaceView.coverPicker.loadError",
+              "Failed to load images. Please try again."
+            )
+        );
+      } finally {
+        setUnsplashLoading(false);
+      }
+    },
+    [t, unsplashApi]
+  );
+
+  const handleUnsplashSearch = useCallback(
+    (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      loadUnsplashPhotos(unsplashQuery || undefined);
+    },
+    [loadUnsplashPhotos, unsplashQuery]
+  );
+
+  const handleCoverSelect = useCallback(
+    async (photo: UnsplashPhoto) => {
+      if (!space) return;
+
+      const selectedUrl =
+        photo?.urls?.regular ??
+        photo?.urls?.full ??
+        photo?.urls?.small ??
+        photo?.urls?.thumb;
+
+      if (!selectedUrl) return;
+
+      const payload = {
+        name: space.name,
+        description:
+          typeof space.description === "string" ? space.description : "",
+        coverImageUrl: selectedUrl,
+        icon: typeof space.icon === "string" ? space.icon : null,
+      };
+
+      try {
+        setCoverSaving(true);
+        setUnsplashError(null);
+        const res = await updateSpaceApi(space.id, payload);
+        const updated: Space = (res?.data ?? res) as Space;
+
+        const coverUrl =
+          updated?.coverImageUrl ?? payload.coverImageUrl ?? selectedUrl;
+
+        setSpace((prev: Space | null) =>
+          prev
+            ? {
+                ...prev,
+                coverImageUrl: coverUrl,
+              }
+            : prev
+        );
+        setEditCoverImage(coverUrl ?? "");
+        setOpenCoverPicker(false);
+      } catch (e: any) {
+        setUnsplashError(
+          e?.message ??
+            t(
+              "dashboard.spaceView.coverPicker.applyError",
+              "Failed to update the cover. Please try again."
+            )
+        );
+      } finally {
+        setCoverSaving(false);
+      }
+    },
+    [space, t]
+  );
+
+  useEffect(() => {
+    if (openCoverPicker) {
+      loadUnsplashPhotos();
+    } else {
+      setUnsplashError(null);
+    }
+  }, [loadUnsplashPhotos, openCoverPicker]);
+
   return (
-    <section
-      className="mx-auto mt-10 w-full px-6 pb-10 md:px-12 lg:px-20"
-      dir={dir}
-      lang={language}
-    >
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,360px),minmax(0,1fr)]">
-        <div
-          className="relative overflow-hidden rounded-3xl border border-zinc-200 bg-gradient-to-br
-         from-zinc-50 to-zinc-100 shadow-sm dark:border-zinc-800 dark:from-zinc-900/50 dark:to-zinc-900"
-        >
-          {loading ? (
-            <Skeleton className="aspect-[4/3] w-full rounded-3xl" />
-          ) : space?.coverImageUrl ? (
+    <section className="relative min-h-screen w-full" dir={dir} lang={language}>
+      {/* Notion-style Cover Image Banner - 20vh height */}
+      <div className="relative h-[20vh] w-full overflow-hidden">
+        {loading ? (
+          <Skeleton className="h-full w-full" />
+        ) : space?.coverImageUrl ? (
+          <>
             <img
               src={space.coverImageUrl}
               alt={t(
                 "dashboard.spaceView.coverAlt",
                 "Cover image for this space"
               )}
-              className="aspect-[4/3] w-full object-cover"
+              className="h-full w-full object-cover"
             />
-          ) : (
-            <div className="flex aspect-[4/3] w-full flex-col items-center justify-center gap-3 text-center text-muted-foreground">
-              <ImageIcon className="h-10 w-10" />
-              <p className="text-sm font-medium">
-                {t(
-                  "dashboard.spaceView.coverPlaceholder",
-                  "Add a cover image to bring this space to life."
-                )}
+            {/* Gradient overlay for better text contrast */}
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20 dark:to-black/40" />
+          </>
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-zinc-100 via-zinc-50 to-zinc-200 dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800">
+            <div className="text-center">
+              <ImageIcon className="mx-auto h-16 w-16 text-zinc-300 dark:text-zinc-700" />
+              <p className="mt-3 text-sm text-zinc-400 dark:text-zinc-600">
+                {t("dashboard.spaceView.noCover", "Click edit to add a cover")}
               </p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
-        <div className="flex flex-col gap-6">
-          <div
-            className={`flex items-start justify-between gap-4 ${
-              isRTL ? "flex-row-reverse" : "flex-row"
-            }`}
-          >
-            <div
-              className={`flex flex-1 items-start gap-4 ${
-                isRTL ? "flex-row-reverse text-right" : "text-left"
-              }`}
-            >
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-zinc-200 bg-white text-2xl shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-                {space?.icon ? (
-                  <span aria-hidden="true">{space.icon}</span>
-                ) : (
-                  <Grid2x2 className="h-6 w-6 text-zinc-500 dark:text-zinc-400" />
-                )}
-              </div>
-              <div className="min-w-0 space-y-1">
-                {loading ? (
-                  <>
-                    <Skeleton className="h-7 w-48" />
-                    <Skeleton className="h-4 w-32" />
-                  </>
-                ) : error ? (
-                  <p className="text-sm text-destructive">{error}</p>
-                ) : (
-                  <>
-                    <h2 className="truncate text-3xl font-semibold tracking-tight">
-                      {space?.name ||
-                        t("dashboard.spaceView.untitled", "Untitled space")}
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                      {/* {t("dashboard.spaceView.itemCount", "{{count}} items", {
-                        count: formatNum.format(itemCount),
-                      })} */}
-                    </p>
-                  </>
-                )}
-              </div>
-            </div>
+        {/* Cover controls */}
+        <div
+          className={`absolute top-6 z-20 flex items-center gap-2 ${
+            isRTL ? "left-8 flex-row-reverse" : "right-8"
+          }`}
+        >
+          <Dialog open={openEdit} onOpenChange={setOpenEdit}>
+            <DialogTrigger asChild>
+              <Button
+                variant="secondary"
+                size="sm"
+                className={`rounded-xl border border-zinc-200/50 bg-white/95 shadow-lg backdrop-blur-md transition-all duration-200 hover:scale-105 hover:bg-white hover:shadow-xl dark:border-zinc-700/50 dark:bg-zinc-900/95 dark:hover:bg-zinc-900 ${
+                  isRTL ? "flex-row-reverse" : ""
+                }`}
+                disabled={loading}
+              >
+                <PencilLine className="h-4 w-4" />
+                <span className={isRTL ? "mr-2" : "ml-2"}>
+                  {t("dashboard.spaceView.actions.edit", "Edit space")}
+                </span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent dir={dir} className="max-h-[90vh] overflow-y-auto">
+              <DialogHeader className={isRTL ? "text-right" : "text-left"}>
+                <DialogTitle>
+                  {t("dashboard.spaceView.edit.title", "Update space details")}
+                </DialogTitle>
+                <DialogDescription>
+                  {t(
+                    "dashboard.spaceView.edit.description",
+                    "Tweak the name, description, icon, or cover to personalize this space."
+                  )}
+                </DialogDescription>
+              </DialogHeader>
 
-            <Dialog open={openEdit} onOpenChange={setOpenEdit}>
-              <DialogTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={`rounded-full px-4 py-2 transition-colors ${
-                    isRTL ? "flex-row-reverse" : ""
-                  }`}
-                  disabled={loading}
-                >
-                  <PencilLine className="h-4 w-4" />
-                  <span className={isRTL ? "mr-2" : "ml-2"}>
-                    {t("dashboard.spaceView.actions.edit", "Edit space")}
-                  </span>
-                </Button>
-              </DialogTrigger>
-              <DialogContent dir={dir}>
-                <DialogHeader className={isRTL ? "text-right" : "text-left"}>
-                  <DialogTitle>
-                    {t(
-                      "dashboard.spaceView.edit.title",
-                      "Update space details"
-                    )}
-                  </DialogTitle>
-                  <DialogDescription>
-                    {t(
-                      "dashboard.spaceView.edit.description",
-                      "Tweak the name, description, icon, or cover to personalize this space."
-                    )}
-                  </DialogDescription>
-                </DialogHeader>
-
-                <div className="grid gap-4 py-2">
-                  <div className="grid gap-2">
-                    <Label htmlFor="spaceName">
-                      {t("dashboard.spaceView.form.name", "Space name")}
-                    </Label>
-                    <Input
-                      id="spaceName"
-                      value={editName}
-                      dir={dir}
-                      onChange={(e) => setEditName(e.target.value)}
-                      placeholder={t(
-                        "dashboard.spaceView.form.namePlaceholder",
-                        "Enter a descriptive name"
-                      )}
-                    />
-                  </div>
-
-                  <div className="grid gap-2">
-                    <Label htmlFor="spaceCover">
-                      {t("dashboard.spaceView.form.cover", "Cover image URL")}
-                    </Label>
-                    <Input
-                      id="spaceCover"
-                      value={editCoverImage}
-                      dir="ltr"
-                      onChange={(e) => setEditCoverImage(e.target.value)}
-                      placeholder={t(
-                        "dashboard.spaceView.form.coverPlaceholder",
-                        "Paste an image link (https://...)"
-                      )}
-                    />
-                  </div>
-
-                  <div className="grid gap-2">
-                    <Label htmlFor="spaceDescription">
-                      {t("dashboard.spaceView.form.description", "Description")}
-                    </Label>
-                    <Textarea
-                      id="spaceDescription"
-                      value={editDescription}
-                      dir={dir}
-                      onChange={(e) => setEditDescription(e.target.value)}
-                      placeholder={t(
-                        "dashboard.spaceView.form.descriptionPlaceholder",
-                        "Summarize the purpose of this space"
-                      )}
-                      rows={5}
-                    />
-                  </div>
+              <div className="grid gap-5 py-2">
+                <div className="grid gap-2">
                   <Label
-                    htmlFor="iconPicker"
-                    className={isRTL ? "mr-1" : "ml-1"}
+                    htmlFor="spaceName"
+                    className={isRTL ? "text-right" : "text-left"}
                   >
-                    {t("dashboard.dialogs.createSpace.icon")}
+                    {t("dashboard.spaceView.form.name", "Space name")}
                   </Label>
-                  <input
-                    id="iconPicker"
-                    value={editIcon}
-                    readOnly
-                    className="border p-2 w-full"
-                    placeholder="Pick one emoji…"
-                  />
-                  <EmojiPicker
-                    onEmojiClick={(e) => setEditIcon(e.emoji)}
-                    autoFocusSearch
-                    previewConfig={{ showPreview: false }}
-                    emojiStyle={EmojiStyle.NATIVE}
-                    searchDisabled
-                    hiddenEmojis={[
-                      "1f3f3-fe0f-200d-1f308",
-                      "1f3f3-fe0f-200d-26a7-fe0f",
-                      "1f1ee-1f1f1",
-                    ]}
-                    style={
-                      {
-                        "--epr-emoji-size": "20px",
-                        "--epr-emoji-gap": "6px",
-                        height: "300px",
-                      } as React.CSSProperties
-                    }
+                  <Input
+                    id="spaceName"
+                    value={editName}
+                    dir={dir}
+                    onChange={(e) => setEditName(e.target.value)}
+                    placeholder={t(
+                      "dashboard.spaceView.form.namePlaceholder",
+                      "Enter a descriptive name"
+                    )}
+                    className="transition-all focus:ring-2"
                   />
                 </div>
 
-                {error && (
-                  <p className="text-sm text-destructive" role="alert">
-                    {error}
-                  </p>
-                )}
+                <div className="grid gap-2">
+                  <Label
+                    htmlFor="spaceDescription"
+                    className={isRTL ? "text-right" : "text-left"}
+                  >
+                    {t("dashboard.spaceView.form.description", "Description")}
+                  </Label>
+                  <Textarea
+                    id="spaceDescription"
+                    value={editDescription}
+                    dir={dir}
+                    onChange={(e) => setEditDescription(e.target.value)}
+                    placeholder={t(
+                      "dashboard.spaceView.form.descriptionPlaceholder",
+                      "Summarize the purpose of this space"
+                    )}
+                    rows={5}
+                    className="resize-none transition-all focus:ring-2"
+                  />
+                </div>
+              </div>
 
-                <DialogFooter
-                  className={`gap-2 sm:gap-0 ${
-                    isRTL ? "flex-row-reverse" : ""
+              {error && (
+                <div
+                  className={`rounded-lg border border-destructive/50 bg-destructive/10 p-3 ${
+                    isRTL ? "text-right" : "text-left"
+                  }`}
+                  role="alert"
+                >
+                  <p className="text-sm text-destructive">{error}</p>
+                </div>
+              )}
+
+              <DialogFooter
+                className={`gap-2 sm:gap-0 ${isRTL ? "flex-row-reverse" : ""}`}
+              >
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setOpenEdit(false);
+                    setOpenDialogEmojiPicker(false);
+                  }}
+                  disabled={saving}
+                  className="transition-all"
+                >
+                  {t("common.cancel", "Cancel")}
+                </Button>
+                <Button
+                  onClick={handleUpdate}
+                  disabled={saving || !editName.trim()}
+                  className="transition-all"
+                >
+                  {saving
+                    ? t("dashboard.spaceView.form.saving", "Saving…")
+                    : t("dashboard.spaceView.form.save", "Save changes")}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+          <Dialog open={openCoverPicker} onOpenChange={setOpenCoverPicker}>
+            <DialogTrigger asChild>
+              <Button
+                variant="secondary"
+                size="sm"
+                className={`rounded-xl border border-zinc-200/50 bg-white/90 shadow-lg backdrop-blur-md transition-all duration-200 hover:scale-105 hover:bg-white hover:shadow-xl dark:border-zinc-700/50 dark:bg-zinc-900/90 dark:hover:bg-zinc-900 ${
+                  isRTL ? "flex-row-reverse" : ""
+                }`}
+                disabled={loading || coverSaving || !unsplashAccessKey}
+                title={
+                  !unsplashAccessKey
+                    ? t(
+                        "dashboard.spaceView.coverPicker.missingKey",
+                        "Unsplash access key is missing. Please set VITE_UNSPLASH_ACCESS_KEY."
+                      )
+                    : undefined
+                }
+              >
+                <ImageIcon className="h-4 w-4" />
+                <span className={isRTL ? "mr-2" : "ml-2"}>
+                  {t("dashboard.spaceView.actions.changeCover", "Change cover")}
+                </span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent
+              dir={dir}
+              className="max-h-[90vh] max-w-4xl overflow-y-auto"
+            >
+              <DialogHeader className={isRTL ? "text-right" : "text-left"}>
+                <DialogTitle>
+                  {t(
+                    "dashboard.spaceView.coverPicker.title",
+                    "Pick a cover image"
+                  )}
+                </DialogTitle>
+                <DialogDescription>
+                  {t(
+                    "dashboard.spaceView.coverPicker.description",
+                    "Browse curated Unsplash photos or search for a theme to refresh your space."
+                  )}
+                </DialogDescription>
+              </DialogHeader>
+
+              {!unsplashAccessKey ? (
+                <div
+                  className={`rounded-xl border border-amber-200/60 bg-amber-100/60 p-4 text-sm text-amber-700 dark:border-amber-700/60 dark:bg-amber-900/20 dark:text-amber-200 ${
+                    isRTL ? "text-right" : "text-left"
                   }`}
                 >
-                  <Button
-                    variant="ghost"
-                    onClick={() => setOpenEdit(false)}
-                    disabled={saving}
-                  >
-                    {t("common.cancel", "Cancel")}
-                  </Button>
-                  <Button
-                    onClick={handleUpdate}
-                    disabled={saving || !editName.trim()}
-                  >
-                    {saving
-                      ? t("dashboard.spaceView.form.saving", "Saving…")
-                      : t("dashboard.spaceView.form.save", "Save changes")}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </div>
-
-          <div className={`space-y-3 ${isRTL ? "text-right" : "text-left"}`}>
-            {loading ? (
-              <>
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
-              </>
-            ) : (
-              <p className="whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
-                {space?.description?.trim() ||
-                  t(
-                    "dashboard.spaceView.noDescription",
-                    "No description has been added yet."
+                  {t(
+                    "dashboard.spaceView.coverPicker.missingKey",
+                    "Unsplash access key is missing. Please set VITE_UNSPLASH_ACCESS_KEY."
                   )}
-              </p>
-            )}
+                </div>
+              ) : (
+                <>
+                  <form
+                    onSubmit={handleUnsplashSearch}
+                    className={`flex items-center gap-2 rounded-xl border border-zinc-200 bg-white/90 p-2 shadow-sm transition-all focus-within:border-zinc-400 focus-within:shadow-md dark:border-zinc-700 dark:bg-zinc-900 ${
+                      isRTL ? "flex-row-reverse" : ""
+                    }`}
+                  >
+                    <div className="relative flex-1">
+                      <Search
+                        className={`absolute top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 ${
+                          isRTL ? "right-3" : "left-3"
+                        }`}
+                      />
+                      <Input
+                        value={unsplashQuery}
+                        onChange={(e) => setUnsplashQuery(e.target.value)}
+                        placeholder={t(
+                          "dashboard.spaceView.coverPicker.searchPlaceholder",
+                          "Search (e.g. study desk, creative workspace…)"
+                        )}
+                        className={`${
+                          isRTL ? "pr-9 pl-3 text-right" : "pl-9 pr-3 text-left"
+                        }`}
+                      />
+                    </div>
+                    <Button type="submit" disabled={unsplashLoading}>
+                      {unsplashLoading
+                        ? t("common.loading", "Loading…")
+                        : t("common.search", "Search")}
+                    </Button>
+                  </form>
 
-            <div
-              className={`flex flex-wrap items-center gap-4 text-sm text-muted-foreground ${
-                isRTL ? "flex-row-reverse" : ""
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <CalendarClock className="h-4 w-4" />
-                <span>
-                  {t("dashboard.spaceView.meta.created", "Created {{date}}", {
-                    date: space?.created_at
-                      ? formatRelativeDate(space.created_at)
-                      : t("dashboard.spaceView.meta.unknown", "recently"),
-                  })}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Clock3 className="h-4 w-4" />
-                <span>
-                  {t("dashboard.spaceView.meta.updated", "Updated {{date}}", {
-                    date: space?.lastActivity
-                      ? formatRelativeDate(space.lastActivity)
-                      : space?.updated_at
-                      ? formatRelativeDate(space.updated_at)
-                      : t("dashboard.spaceView.meta.unknown", "recently"),
-                  })}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                <span>
-                  {formatNum.format(
-                    space?.memberCount ?? space?.members?.length ?? 0
+                  {unsplashError && (
+                    <div
+                      className={`mt-3 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive dark:border-destructive/30 ${
+                        isRTL ? "text-right" : "text-left"
+                      }`}
+                    >
+                      {unsplashError}
+                    </div>
                   )}
-                </span>
-              </div>
-            </div>
-          </div>
+
+                  <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {unsplashLoading ? (
+                      Array.from({ length: 6 }).map((_, idx) => (
+                        <Skeleton
+                          key={idx}
+                          className="h-40 w-full rounded-2xl"
+                        />
+                      ))
+                    ) : unsplashPhotos.length === 0 ? (
+                      <div
+                        className={`col-span-full rounded-xl border border-zinc-200 bg-zinc-50/80 p-6 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-300 ${
+                          isRTL ? "text-right" : "text-left"
+                        }`}
+                      >
+                        {t(
+                          "dashboard.spaceView.coverPicker.noResults",
+                          "No images found for this search."
+                        )}
+                      </div>
+                    ) : (
+                      unsplashPhotos.map((photo) => (
+                        <button
+                          key={photo.id}
+                          type="button"
+                          onClick={() => handleCoverSelect(photo)}
+                          disabled={coverSaving}
+                          className="group relative overflow-hidden rounded-2xl border border-zinc-200/70 bg-white shadow-sm transition-all hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 disabled:opacity-70 dark:border-zinc-700/60 dark:bg-zinc-900 dark:hover:border-zinc-600"
+                        >
+                          <img
+                            src={photo.urls.small}
+                            alt={
+                              photo.alt_description ??
+                              photo.description ??
+                              t(
+                                "dashboard.spaceView.coverPicker.imageAlt",
+                                "Unsplash cover option"
+                              )
+                            }
+                            className="h-40 w-full object-cover transition-transform duration-200 group-hover:scale-105"
+                            loading="lazy"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/20 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+                          <div className="absolute inset-x-0 bottom-0 flex items-center justify-between px-3 py-2 text-xs text-white">
+                            <span className="truncate">
+                              {photo.user?.name ??
+                                t("dashboard.spaceView.coverPicker.unsplash")}
+                            </span>
+                            <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide">
+                              {coverSaving ? (
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                              ) : (
+                                t("common.select", "Select")
+                              )}
+                            </span>
+                          </div>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                  <p
+                    className={`mt-4 text-[11px] text-zinc-400 dark:text-zinc-500 ${
+                      isRTL ? "text-right" : "text-left"
+                    }`}
+                  >
+                    {t(
+                      "dashboard.spaceView.coverPicker.credit",
+                      "Photos provided by Unsplash."
+                    )}
+                  </p>
+                </>
+              )}
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
-      <div
-        className={`mt-10 mb-4 flex items-center justify-between ${
-          isRTL ? "flex-row-reverse" : ""
-        }`}
-      >
-        <div className="flex items-center gap-2">
+      {/* Notion-style Content Container */}
+      <div className="relative mx-auto max-w-5xl px-6 pb-20 md:px-12 lg:px-20">
+        {/* Icon + Title - Floating above cover with z-index and background */}
+        <div
+          className={`relative -mt-20 z-10 mb-10 flex items-start gap-5 ${
+            isRTL ? "flex-row-reverse" : ""
+          }`}
+        >
+          {/* Large Icon - Clickable with Emoji Picker */}
+          <Popover open={openEmojiPicker} onOpenChange={setOpenEmojiPicker}>
+            <PopoverTrigger asChild>
+              <button
+                className="group relative flex h-24 w-24 flex-shrink-0 items-center justify-center rounded-2xl border-2 border-zinc-200/80 bg-white text-6xl shadow-xl transition-all duration-300 hover:scale-105 hover:border-zinc-300 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-zinc-200 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700 dark:focus:ring-zinc-800"
+                disabled={loading}
+                aria-label={t(
+                  "dashboard.spaceView.actions.changeIcon",
+                  "Change icon"
+                )}
+              >
+                {space?.icon ? (
+                  <span aria-hidden="true">{space.icon}</span>
+                ) : (
+                  <Grid2x2 className="h-10 w-10 text-zinc-400 dark:text-zinc-600" />
+                )}
+                {/* Hover overlay */}
+                <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/0 opacity-0 transition-all duration-300 group-hover:bg-black/40 group-hover:opacity-100">
+                  <Smile className="h-8 w-8 text-white" />
+                </div>
+              </button>
+            </PopoverTrigger>
+            <PopoverContent
+              side="bottom"
+              align="start"
+              className="w-auto border-zinc-200 p-0 shadow-2xl dark:border-zinc-800"
+            >
+              <EmojiPicker
+                onEmojiClick={(e) => handleIconUpdate(e.emoji)}
+                autoFocusSearch
+                previewConfig={{ showPreview: false }}
+                emojiStyle={EmojiStyle.NATIVE}
+                searchDisabled={false}
+                hiddenEmojis={[
+                  "1f3f3-fe0f-200d-1f308",
+                  "1f3f3-fe0f-200d-26a7-fe0f",
+                  "1f1ee-1f1f1",
+                ]}
+                style={
+                  {
+                    "--epr-emoji-size": "24px",
+                    "--epr-emoji-gap": "8px",
+                    height: "350px",
+                  } as React.CSSProperties
+                }
+              />
+            </PopoverContent>
+          </Popover>
+
+          {/* Title - Floating with Background */}
+          <div
+            className={`min-w-0 flex-1 pt-6 ${
+              isRTL ? "text-right" : "text-left"
+            }`}
+          >
+            {loading ? (
+              <Skeleton className="h-12 w-80" />
+            ) : error ? (
+              <p className="text-sm text-destructive">{error}</p>
+            ) : (
+              <div className="inline-block rounded-2xl border border-zinc-200/80 bg-white/98 px-6 py-3 shadow-xl backdrop-blur-md transition-all duration-300 hover:shadow-2xl dark:border-zinc-800 dark:bg-zinc-900/98">
+                <h1 className="text-5xl font-bold tracking-tight text-white dark:text-zinc-100 md:text-6xl">
+                  {space?.name ||
+                    t("dashboard.spaceView.untitled", "Untitled space")}
+                </h1>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Description - Notion style */}
+        <div className={`mb-10 ${isRTL ? "text-right" : "text-left"}`}>
+          {loading ? (
+            <div className="space-y-3">
+              <Skeleton className="h-5 w-full" />
+              <Skeleton className="h-5 w-5/6" />
+              <Skeleton className="h-5 w-4/6" />
+            </div>
+          ) : (
+            <p className="whitespace-pre-wrap text-lg leading-relaxed text-zinc-600 dark:text-zinc-400">
+              {space?.description?.trim() ||
+                t(
+                  "dashboard.spaceView.noDescription",
+                  "No description has been added yet."
+                )}
+            </p>
+          )}
+        </div>
+
+        {/* Metadata - Notion style pills */}
+        <div
+          className={`mb-14 flex flex-wrap items-center gap-3 text-sm ${
+            isRTL ? "flex-row-reverse" : ""
+          }`}
+        >
+          <div
+            className={`flex items-center gap-2.5 rounded-full bg-zinc-100/80 px-4 py-2 backdrop-blur-sm transition-all duration-200 hover:bg-zinc-200/80 dark:bg-zinc-800/80 dark:hover:bg-zinc-700/80 ${
+              isRTL ? "flex-row-reverse" : ""
+            }`}
+          >
+            <CalendarClock className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+            <span className="font-medium text-zinc-700 dark:text-zinc-300">
+              {t("dashboard.spaceView.meta.created", "Created {{date}}", {
+                date: space?.created_at
+                  ? formatRelativeDate(space.created_at)
+                  : t("dashboard.spaceView.meta.unknown", "recently"),
+              })}
+            </span>
+          </div>
+
+          <div
+            className={`flex items-center gap-2.5 rounded-full bg-zinc-100/80 px-4 py-2 backdrop-blur-sm transition-all duration-200 hover:bg-zinc-200/80 dark:bg-zinc-800/80 dark:hover:bg-zinc-700/80 ${
+              isRTL ? "flex-row-reverse" : ""
+            }`}
+          >
+            <Clock3 className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+            <span className="font-medium text-zinc-700 dark:text-zinc-300">
+              {t("dashboard.spaceView.meta.updated", "Updated {{date}}", {
+                date: space?.lastActivity
+                  ? formatRelativeDate(space.lastActivity)
+                  : space?.updated_at
+                  ? formatRelativeDate(space.updated_at)
+                  : t("dashboard.spaceView.meta.unknown", "recently"),
+              })}
+            </span>
+          </div>
+
+          <div
+            className={`flex items-center gap-2.5 rounded-full bg-zinc-100/80 px-4 py-2 backdrop-blur-sm transition-all duration-200 hover:bg-zinc-200/80 dark:bg-zinc-800/80 dark:hover:bg-zinc-700/80 ${
+              isRTL ? "flex-row-reverse" : ""
+            }`}
+          >
+            <Users className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+            <span className="font-medium text-zinc-700 dark:text-zinc-300">
+              {formatNum.format(
+                space?.memberCount ?? space?.members?.length ?? 0
+              )}{" "}
+              {t("dashboard.spaceView.meta.members", {
+                count: space?.memberCount ?? space?.members?.length ?? 0,
+                defaultValue_one: "member",
+                defaultValue_other: "members",
+              })}
+            </span>
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className="mb-10 h-px w-full bg-gradient-to-r from-transparent via-zinc-200 to-transparent dark:via-zinc-800" />
+
+        {/* Workspaces Section Header */}
+        <div
+          className={`mb-8 flex items-center justify-between ${
+            isRTL ? "flex-row-reverse" : ""
+          }`}
+        >
+          <div
+            className={`flex items-center gap-4 ${
+              isRTL ? "flex-row-reverse" : ""
+            }`}
+          >
+            <h2
+              className={`text-2xl font-bold text-zinc-900 dark:text-zinc-100 ${
+                isRTL ? "text-right" : "text-left"
+              }`}
+            >
+              {t("dashboard.spaceView.workspaces.title", "Workspaces")}
+            </h2>
+            <span className="rounded-lg bg-zinc-100 px-3 py-1 text-base font-semibold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+              {loading ? (
+                <Skeleton className="h-5 w-10" />
+              ) : (
+                formatNum.format(itemCount)
+              )}
+            </span>
+          </div>
+
           <Button
             type="button"
             variant={layout === "grid" ? "secondary" : "ghost"}
             size="icon"
-            className="rounded-full"
+            className="rounded-xl transition-all duration-200 hover:scale-105"
             onClick={() => setLayout("grid")}
             aria-label={t("dashboard.spaceView.actions.grid", "Grid view")}
             title={t("dashboard.spaceView.actions.grid", "Grid view")}
@@ -429,20 +834,14 @@ export default function SpaceView() {
             <Grid2x2 className="h-5 w-5" />
           </Button>
         </div>
-        <div className="text-sm text-muted-foreground">
-          {loading ? (
-            <Skeleton className="h-4 w-20" />
-          ) : (
-            formatNum.format(itemCount)
-          )}
-        </div>
-      </div>
 
-      <WorkspacesList
-        workspaces={space?.workspaces ?? []}
-        isRTL={isRTL}
-        refreshParentComponent={fetchSpace}
-      />
+        {/* Workspaces List */}
+        <WorkspacesList
+          workspaces={space?.workspaces ?? []}
+          isRTL={isRTL}
+          refreshParentComponent={fetchSpace}
+        />
+      </div>
     </section>
   );
 }
