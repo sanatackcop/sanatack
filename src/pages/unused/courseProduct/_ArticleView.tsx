@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, JSX } from "react";
 import {
   BookOpen,
   Lightbulb,
@@ -52,9 +52,9 @@ export default function ArticleView({
 
     const config = configs[type];
 
-    useEffect(()=> { 
+    useEffect(() => {
       // che 80ck for the scrollin gleng if
-    }, [])
+    }, []);
 
     return (
       <div

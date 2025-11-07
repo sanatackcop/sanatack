@@ -9,6 +9,7 @@ import {
   Timer,
   Play,
 } from "lucide-react";
+import { JSX } from "react";
 
 export const MaterialPreview: Record<
   MaterialType,

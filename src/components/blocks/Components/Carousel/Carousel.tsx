@@ -4,7 +4,7 @@
 	3-4-2025
 */
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, JSX } from "react";
 import { motion, PanInfo, useMotionValue, useTransform } from "framer-motion";
 import { Brain, ChartLine, Code, Cpu, Database, GitFork } from "lucide-react";
 

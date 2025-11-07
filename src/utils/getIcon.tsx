@@ -13,6 +13,7 @@ import {
   Server,
 } from "lucide-react";
 import { LevelEnum } from "@/types/courses";
+import { JSX } from "react";
 
 const levelIcons: Record<LevelEnum, JSX.Element> = {
   [LevelEnum.BEGINNER]: <Triangle className="h-3 w-3 text-yellow-500 mx-1" />,

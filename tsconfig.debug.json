@@ -1,0 +1,26 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "src/main.tsx",
+    "src/lib/**/*",
+    "src/components/**/*",
+    "src/pages/**/*",
+    "src/shared/**/*",
+    "src/landingpage/**/*",
+    "src/utils/**/*",
+    "src/context/**/*",
+    "src/hooks/**/*",
+    "src/admin/**/*",
+    "src/App.tsx",
+    "src/i18n.ts",
+    "src/declarations.d.ts",
+    "src/custom.d.ts",
+    "src/types/courses.ts",
+    "src/types/markdown.d.ts",
+    "src/types/rateLimit.ts",
+    "src/types/user.ts",
+    "src/types/i18next.d.ts",
+    "src/types/articles/articles.ts"
+  ],
+  "exclude": []
+}

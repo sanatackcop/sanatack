@@ -1,22 +1,24 @@
-export type Article = {
+import type { Dispatch, SetStateAction } from "react";
+
+export interface Article {
   id: string;
   title: string;
   description: string;
   image: string;
   labels?: Labels;
-};
+}
 
-export type Labels = {
+export interface Labels {
   label_name: string;
   label_catagory: string;
-  label_color?: any;
-};
+  label_color?: string;
+}
 
 export interface ArticlesFilter {
   filter: string;
-  setFilter: (value: string) => void;
+  setFilter: Dispatch<SetStateAction<string>>;
   articlesPerPage: number;
-  setArticlesPerPage: (value: number) => void;
+  setArticlesPerPage: Dispatch<SetStateAction<number>>;
   view: "grid" | "row";
-  setView: (value: "grid" | "row") => void;
+  setView: Dispatch<SetStateAction<"grid" | "row">>;
 }

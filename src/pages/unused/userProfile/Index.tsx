@@ -1,4 +1,4 @@
-import { useState, memo, useEffect } from "react";
+import { useState, memo, useEffect, JSX } from "react";
 import {
   User,
   Award,

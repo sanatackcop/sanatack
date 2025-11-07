@@ -26,6 +26,7 @@ import {
 } from "./types";
 import { normalizeQuiz } from "./utils";
 import i18n from "@/i18n";
+import type { TFunction } from "i18next";
 
 interface QuizViewProps {
   quiz: Quiz;
@@ -323,7 +324,7 @@ const deriveNextIndex = (
 
 const normaliseStatusLabel = (
   attempt: QuizAttemptSummary | null,
-  t: (key: string) => string
+  t: TFunction
 ) => {
   if (!attempt) return t("quiz.notStarted");
   if (attempt.status === "graded") {

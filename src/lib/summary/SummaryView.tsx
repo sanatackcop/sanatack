@@ -19,7 +19,7 @@ import { Edge, Node, Position, ReactFlowProvider } from "reactflow";
 import FlowChart from "./Flowchart";
 import { MindMap, MindMapNode, SummaryViewProps } from "./Summary";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { PieChartComponent, DonutChartComponent } from "@/components/Charts";
+// import { PieChartComponent, DonutChartComponent } from "@/components/Charts";
 
 export function SummaryView({ summary, onClose }: SummaryViewProps) {
   const { t } = useTranslation();
@@ -41,19 +41,19 @@ export function SummaryView({ summary, onClose }: SummaryViewProps) {
   // } as const;
 
   // Transform chart idea to actual data for rendering
-  const transformChartData = (idea: any) => {
-    // Parse the data from description or data_points
-    const data = idea.data_points.map((point: string, idx: number) => {
-      // Extract name and value from string format like "Category A: 25%"
-      const [name, valueStr] = point.split(":").map((s) => s.trim());
-      const value = parseInt(valueStr) || idx + 1;
-      return {
-        name,
-        value,
-      };
-    });
-    return data;
-  };
+  // const transformChartData = (idea: any) => {
+  //   // Parse the data from description or data_points
+  //   const data = idea.data_points.map((point: string, idx: number) => {
+  //     // Extract name and value from string format like "Category A: 25%"
+  //     const [name, valueStr] = point.split(":").map((s) => s.trim());
+  //     const value = parseInt(valueStr) || idx + 1;
+  //     return {
+  //       name,
+  //       value,
+  //     };
+  //   });
+  //   return data;
+  // };
 
   if (!summary.payload) {
     return (
@@ -231,7 +231,7 @@ export function SummaryView({ summary, onClose }: SummaryViewProps) {
 
                   <div className="space-y-12">
                     {summary.payload.visuals.chart_ideas.map((idea, idx) => {
-                      const chartData = transformChartData(idea);
+                      // const chartData = transformChartData(idea);
 
                       return (
                         <div key={`${idea.title}-${idx}`}>
@@ -252,7 +252,7 @@ export function SummaryView({ summary, onClose }: SummaryViewProps) {
                               direction={direction as "ltr" | "rtl"}
                             />
                           )} */}
-
+                          {/* 
                           {idea.chart_type === "pie" && (
                             <PieChartComponent
                               title={idea.title}
@@ -269,7 +269,7 @@ export function SummaryView({ summary, onClose }: SummaryViewProps) {
                               data={chartData}
                               direction={direction as "ltr" | "rtl"}
                             />
-                          )}
+                          )} */}
 
                           {/* {idea.chart_type === "area" && (
                             <AreaChartComponent

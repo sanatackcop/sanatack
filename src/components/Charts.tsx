@@ -1,333 +1,333 @@
-import React from "react";
-import {
-  BarChart,
-  Bar,
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  AreaChart,
-  Area,
-} from "recharts";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent,
-} from "@/components/ui/chart";
+// import React from "react";
+// import {
+//   BarChart,
+//   Bar,
+//   LineChart,
+//   Line,
+//   PieChart,
+//   Pie,
+//   Cell,
+//   XAxis,
+//   YAxis,
+//   CartesianGrid,
+//   AreaChart,
+//   Area,
+// } from "recharts";
+// import {
+//   ChartContainer,
+//   ChartTooltip,
+//   ChartTooltipContent,
+//   ChartLegend,
+//   ChartLegendContent,
+// } from "@/components/ui/chart";
 
-// Zinc color palette
-const ZINC_COLORS = [
-  "#18181b",
-  "#3f3f46",
-  "#52525b",
-  "#71717a",
-  "#a1a1aa",
-  "#d4d4d8",
-];
+// // Zinc color palette
+// const ZINC_COLORS = [
+//   "#18181b",
+//   "#3f3f46",
+//   "#52525b",
+//   "#71717a",
+//   "#a1a1aa",
+//   "#d4d4d8",
+// ];
 
-interface ChartData {
-  [key: string]: any;
-}
+// interface ChartData {
+//   [key: string]: any;
+// }
 
-interface ChartConfig {
-  [key: string]: {
-    label: string;
-    color: string;
-  };
-}
+// interface ChartConfig {
+//   [key: string]: {
+//     label: string;
+//     color: string;
+//   };
+// }
 
-interface GenericChartProps {
-  title: string;
-  description?: string;
-  data: ChartData[];
-  config: ChartConfig;
-  direction?: "ltr" | "rtl";
-}
+// interface GenericChartProps {
+//   title: string;
+//   description?: string;
+//   data: ChartData[];
+//   config: ChartConfig;
+//   direction?: "ltr" | "rtl";
+// }
 
-// ============ BAR CHART ============
-export const BarChartComponent: React.FC<GenericChartProps> = ({
-  title,
-  description,
-  data,
-  config,
-}) => {
-  const dataKeys = Object.keys(config);
+// // ============ BAR CHART ============
+// export const BarChartComponent: React.FC<GenericChartProps> = ({
+//   title,
+//   description,
+//   data,
+//   config,
+// }) => {
+//   const dataKeys = Object.keys(config);
 
-  return (
-    <div className="w-full space-y-4">
-      <div>
-        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">
-          {title}
-        </h3>
-        {description && (
-          <p className="text-sm text-zinc-600 dark:text-zinc-300 mt-1">
-            {description}
-          </p>
-        )}
-      </div>
-      <div className="w-full bg-white dark:bg-zinc-900/50 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
-        <ChartContainer config={config} className="min-h-[350px] w-full">
-          <BarChart
-            data={data}
-            margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" stroke="#e4e4e7" />
-            <XAxis
-              dataKey="name"
-              stroke="#71717a"
-              style={{ fontSize: "12px" }}
-            />
-            <YAxis stroke="#71717a" style={{ fontSize: "12px" }} />
-            <ChartTooltip content={<ChartTooltipContent />} />
-            <ChartLegend content={<ChartLegendContent />} />
-            {dataKeys.map((key) => (
-              <Bar
-                key={key}
-                dataKey={key}
-                fill={config[key].color}
-                radius={[8, 8, 0, 0]}
-              />
-            ))}
-          </BarChart>
-        </ChartContainer>
-      </div>
-    </div>
-  );
-};
+//   return (
+//     <div className="w-full space-y-4">
+//       <div>
+//         <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">
+//           {title}
+//         </h3>
+//         {description && (
+//           <p className="text-sm text-zinc-600 dark:text-zinc-300 mt-1">
+//             {description}
+//           </p>
+//         )}
+//       </div>
+//       <div className="w-full bg-white dark:bg-zinc-900/50 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+//         <ChartContainer config={config} className="min-h-[350px] w-full">
+//           <BarChart
+//             data={data}
+//             margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
+//           >
+//             <CartesianGrid strokeDasharray="3 3" stroke="#e4e4e7" />
+//             <XAxis
+//               dataKey="name"
+//               stroke="#71717a"
+//               style={{ fontSize: "12px" }}
+//             />
+//             <YAxis stroke="#71717a" style={{ fontSize: "12px" }} />
+//             <ChartTooltip content={<ChartTooltipContent />} />
+//             <ChartLegend content={<ChartLegendContent />} />
+//             {dataKeys.map((key) => (
+//               <Bar
+//                 key={key}
+//                 dataKey={key}
+//                 fill={config[key].color}
+//                 radius={[8, 8, 0, 0]}
+//               />
+//             ))}
+//           </BarChart>
+//         </ChartContainer>
+//       </div>
+//     </div>
+//   );
+// };
 
-// ============ LINE CHART ============
-export const LineChartComponent: React.FC<GenericChartProps> = ({
-  title,
-  description,
-  data,
-  config,
-}) => {
-  const dataKeys = Object.keys(config);
+// // ============ LINE CHART ============
+// export const LineChartComponent: React.FC<GenericChartProps> = ({
+//   title,
+//   description,
+//   data,
+//   config,
+// }) => {
+//   const dataKeys = Object.keys(config);
 
-  return (
-    <div className="w-full space-y-4">
-      <div>
-        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">
-          {title}
-        </h3>
-        {description && (
-          <p className="text-sm text-zinc-600 dark:text-zinc-300 mt-1">
-            {description}
-          </p>
-        )}
-      </div>
-      <div className="w-full bg-white dark:bg-zinc-900/50 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
-        <ChartContainer config={config} className="min-h-[350px] w-full">
-          <LineChart
-            data={data}
-            margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" stroke="#e4e4e7" />
-            <XAxis
-              dataKey="name"
-              stroke="#71717a"
-              style={{ fontSize: "12px" }}
-            />
-            <YAxis stroke="#71717a" style={{ fontSize: "12px" }} />
-            <ChartTooltip content={<ChartTooltipContent />} />
-            <ChartLegend content={<ChartLegendContent />} />
-            {dataKeys.map((key) => (
-              <Line
-                key={key}
-                type="monotone"
-                dataKey={key}
-                stroke={config[key].color}
-                strokeWidth={2}
-                dot={{ fill: config[key].color, r: 4 }}
-              />
-            ))}
-          </LineChart>
-        </ChartContainer>
-      </div>
-    </div>
-  );
-};
+//   return (
+//     <div className="w-full space-y-4">
+//       <div>
+//         <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">
+//           {title}
+//         </h3>
+//         {description && (
+//           <p className="text-sm text-zinc-600 dark:text-zinc-300 mt-1">
+//             {description}
+//           </p>
+//         )}
+//       </div>
+//       <div className="w-full bg-white dark:bg-zinc-900/50 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+//         <ChartContainer config={config} className="min-h-[350px] w-full">
+//           <LineChart
+//             data={data}
+//             margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
+//           >
+//             <CartesianGrid strokeDasharray="3 3" stroke="#e4e4e7" />
+//             <XAxis
+//               dataKey="name"
+//               stroke="#71717a"
+//               style={{ fontSize: "12px" }}
+//             />
+//             <YAxis stroke="#71717a" style={{ fontSize: "12px" }} />
+//             <ChartTooltip content={<ChartTooltipContent />} />
+//             <ChartLegend content={<ChartLegendContent />} />
+//             {dataKeys.map((key) => (
+//               <Line
+//                 key={key}
+//                 type="monotone"
+//                 dataKey={key}
+//                 stroke={config[key].color}
+//                 strokeWidth={2}
+//                 dot={{ fill: config[key].color, r: 4 }}
+//               />
+//             ))}
+//           </LineChart>
+//         </ChartContainer>
+//       </div>
+//     </div>
+//   );
+// };
 
-// ============ PIE CHART ============
-interface PieChartProps extends Omit<GenericChartProps, "config"> {
-  config?: ChartConfig;
-  nameKey?: string;
-  valueKey?: string;
-}
+// // ============ PIE CHART ============
+// interface PieChartProps extends Omit<GenericChartProps, "config"> {
+//   config?: ChartConfig;
+//   nameKey?: string;
+//   valueKey?: string;
+// }
 
-export const PieChartComponent: React.FC<PieChartProps> = ({
-  title,
-  description,
-  data,
-  config,
-  valueKey = "value",
-}) => {
-  const chartConfig = config || { value: { label: "Value", color: "#18181b" } };
+// export const PieChartComponent: React.FC<PieChartProps> = ({
+//   title,
+//   description,
+//   data,
+//   config,
+//   valueKey = "value",
+// }) => {
+//   const chartConfig = config || { value: { label: "Value", color: "#18181b" } };
 
-  return (
-    <div className="w-full space-y-4">
-      <div>
-        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">
-          {title}
-        </h3>
-        {description && (
-          <p className="text-sm text-zinc-600 dark:text-zinc-300 mt-1">
-            {description}
-          </p>
-        )}
-      </div>
-      <div className="w-full bg-white dark:bg-zinc-900/50 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden flex items-center justify-center">
-        <ChartContainer config={chartConfig} className="min-h-[350px] w-full">
-          <PieChart>
-            <Pie
-              data={data}
-              cx="50%"
-              cy="50%"
-              labelLine={false}
-              outerRadius={100}
-              dataKey={valueKey}
-            >
-              {data.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}-${entry}`}
-                  fill={ZINC_COLORS[index % ZINC_COLORS.length]}
-                />
-              ))}
-            </Pie>
-            <ChartTooltip content={<ChartTooltipContent />} />
-          </PieChart>
-        </ChartContainer>
-      </div>
-    </div>
-  );
-};
+//   return (
+//     <div className="w-full space-y-4">
+//       <div>
+//         <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">
+//           {title}
+//         </h3>
+//         {description && (
+//           <p className="text-sm text-zinc-600 dark:text-zinc-300 mt-1">
+//             {description}
+//           </p>
+//         )}
+//       </div>
+//       <div className="w-full bg-white dark:bg-zinc-900/50 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden flex items-center justify-center">
+//         <ChartContainer config={chartConfig} className="min-h-[350px] w-full">
+//           <PieChart>
+//             <Pie
+//               data={data}
+//               cx="50%"
+//               cy="50%"
+//               labelLine={false}
+//               outerRadius={100}
+//               dataKey={valueKey}
+//             >
+//               {data.map((entry, index) => (
+//                 <Cell
+//                   key={`cell-${index}-${entry}`}
+//                   fill={ZINC_COLORS[index % ZINC_COLORS.length]}
+//                 />
+//               ))}
+//             </Pie>
+//             <ChartTooltip content={<ChartTooltipContent />} />
+//           </PieChart>
+//         </ChartContainer>
+//       </div>
+//     </div>
+//   );
+// };
 
-// ============ DONUT CHART ============
-export const DonutChartComponent: React.FC<PieChartProps> = ({
-  title,
-  description,
-  data,
-  config,
-  valueKey = "value",
-}) => {
-  const chartConfig = config || { value: { label: "Value", color: "#18181b" } };
+// // ============ DONUT CHART ============
+// export const DonutChartComponent: React.FC<PieChartProps> = ({
+//   title,
+//   description,
+//   data,
+//   config,
+//   valueKey = "value",
+// }) => {
+//   const chartConfig = config || { value: { label: "Value", color: "#18181b" } };
 
-  return (
-    <div className="w-full space-y-4">
-      <div>
-        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">
-          {title}
-        </h3>
-        {description && (
-          <p className="text-sm text-zinc-600 dark:text-zinc-300 mt-1">
-            {description}
-          </p>
-        )}
-      </div>
-      <div className="w-full bg-white dark:bg-zinc-900/50 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden flex items-center justify-center">
-        <ChartContainer config={chartConfig} className="min-h-[350px] w-full">
-          <PieChart>
-            <Pie
-              data={data}
-              cx="50%"
-              cy="50%"
-              innerRadius={60}
-              outerRadius={100}
-              paddingAngle={2}
-              dataKey={valueKey}
-            >
-              {data.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}-${entry}`}
-                  fill={ZINC_COLORS[index % ZINC_COLORS.length]}
-                />
-              ))}
-            </Pie>
-            <ChartTooltip content={<ChartTooltipContent />} />
-          </PieChart>
-        </ChartContainer>
-      </div>
-    </div>
-  );
-};
+//   return (
+//     <div className="w-full space-y-4">
+//       <div>
+//         <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">
+//           {title}
+//         </h3>
+//         {description && (
+//           <p className="text-sm text-zinc-600 dark:text-zinc-300 mt-1">
+//             {description}
+//           </p>
+//         )}
+//       </div>
+//       <div className="w-full bg-white dark:bg-zinc-900/50 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden flex items-center justify-center">
+//         <ChartContainer config={chartConfig} className="min-h-[350px] w-full">
+//           <PieChart>
+//             <Pie
+//               data={data}
+//               cx="50%"
+//               cy="50%"
+//               innerRadius={60}
+//               outerRadius={100}
+//               paddingAngle={2}
+//               dataKey={valueKey}
+//             >
+//               {data.map((entry, index) => (
+//                 <Cell
+//                   key={`cell-${index}-${entry}`}
+//                   fill={ZINC_COLORS[index % ZINC_COLORS.length]}
+//                 />
+//               ))}
+//             </Pie>
+//             <ChartTooltip content={<ChartTooltipContent />} />
+//           </PieChart>
+//         </ChartContainer>
+//       </div>
+//     </div>
+//   );
+// };
 
-// ============ AREA CHART ============
-export const AreaChartComponent: React.FC<GenericChartProps> = ({
-  title,
-  description,
-  data,
-  config,
-}) => {
-  const dataKeys = Object.keys(config);
+// // ============ AREA CHART ============
+// export const AreaChartComponent: React.FC<GenericChartProps> = ({
+//   title,
+//   description,
+//   data,
+//   config,
+// }) => {
+//   const dataKeys = Object.keys(config);
 
-  return (
-    <div className="w-full space-y-4">
-      <div>
-        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">
-          {title}
-        </h3>
-        {description && (
-          <p className="text-sm text-zinc-600 dark:text-zinc-300 mt-1">
-            {description}
-          </p>
-        )}
-      </div>
-      <div className="w-full bg-white dark:bg-zinc-900/50 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
-        <ChartContainer config={config} className="min-h-[350px] w-full">
-          <AreaChart
-            data={data}
-            margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
-          >
-            <defs>
-              {dataKeys.map((key) => (
-                <linearGradient
-                  key={`gradient-${key}`}
-                  id={`color${key}`}
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="1"
-                >
-                  <stop
-                    offset="5%"
-                    stopColor={config[key].color}
-                    stopOpacity={0.8}
-                  />
-                  <stop
-                    offset="95%"
-                    stopColor={config[key].color}
-                    stopOpacity={0.1}
-                  />
-                </linearGradient>
-              ))}
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e4e4e7" />
-            <XAxis
-              dataKey="name"
-              stroke="#71717a"
-              style={{ fontSize: "12px" }}
-            />
-            <YAxis stroke="#71717a" style={{ fontSize: "12px" }} />
-            <ChartTooltip content={<ChartTooltipContent />} />
-            <ChartLegend content={<ChartLegendContent />} />
-            {dataKeys.map((key) => (
-              <Area
-                key={key}
-                type="monotone"
-                dataKey={key}
-                stroke={config[key].color}
-                fill={`url(#color${key})`}
-              />
-            ))}
-          </AreaChart>
-        </ChartContainer>
-      </div>
-    </div>
-  );
-};
+//   return (
+//     <div className="w-full space-y-4">
+//       <div>
+//         <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">
+//           {title}
+//         </h3>
+//         {description && (
+//           <p className="text-sm text-zinc-600 dark:text-zinc-300 mt-1">
+//             {description}
+//           </p>
+//         )}
+//       </div>
+//       <div className="w-full bg-white dark:bg-zinc-900/50 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+//         <ChartContainer config={config} className="min-h-[350px] w-full">
+//           <AreaChart
+//             data={data}
+//             margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
+//           >
+//             <defs>
+//               {dataKeys.map((key) => (
+//                 <linearGradient
+//                   key={`gradient-${key}`}
+//                   id={`color${key}`}
+//                   x1="0"
+//                   y1="0"
+//                   x2="0"
+//                   y2="1"
+//                 >
+//                   <stop
+//                     offset="5%"
+//                     stopColor={config[key].color}
+//                     stopOpacity={0.8}
+//                   />
+//                   <stop
+//                     offset="95%"
+//                     stopColor={config[key].color}
+//                     stopOpacity={0.1}
+//                   />
+//                 </linearGradient>
+//               ))}
+//             </defs>
+//             <CartesianGrid strokeDasharray="3 3" stroke="#e4e4e7" />
+//             <XAxis
+//               dataKey="name"
+//               stroke="#71717a"
+//               style={{ fontSize: "12px" }}
+//             />
+//             <YAxis stroke="#71717a" style={{ fontSize: "12px" }} />
+//             <ChartTooltip content={<ChartTooltipContent />} />
+//             <ChartLegend content={<ChartLegendContent />} />
+//             {dataKeys.map((key) => (
+//               <Area
+//                 key={key}
+//                 type="monotone"
+//                 dataKey={key}
+//                 stroke={config[key].color}
+//                 fill={`url(#color${key})`}
+//               />
+//             ))}
+//           </AreaChart>
+//         </ChartContainer>
+//       </div>
+//     </div>
+//   );
+// };

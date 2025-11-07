@@ -10,8 +10,8 @@ export interface AnswerEntry {
   question_id: string;
   position: number;
   selected_option: string | null;
-  is_correct: boolean;
-  points_earned: number;
+  is_correct: boolean | null;
+  points_earned: number | null;
   answered_at: string;
 }
 

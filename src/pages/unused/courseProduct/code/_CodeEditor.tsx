@@ -28,7 +28,7 @@ export default function CodeEditor({
   resetCode: () => void;
   checkCode: () => void;
   copyCode: () => void;
-  iframeRef: React.RefObject<HTMLIFrameElement>;
+  iframeRef: any;
   consoleOutput: ConsoleEntry[];
   initialCode: string;
 }) {

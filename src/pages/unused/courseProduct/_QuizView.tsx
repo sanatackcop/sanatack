@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, JSX } from "react";
 import { Check, X, RotateCcw } from "lucide-react";
 import { useSettings } from "@/context/SettingsContexts";
 import { QuizGroupContext } from "@/types/courses";
