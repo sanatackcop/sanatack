@@ -2,14 +2,7 @@ import { Space } from "@/types/courses";
 import { useTranslation } from "react-i18next";
 import { Button } from "../../../components/ui/button";
 import { Skeleton } from "../../../components/ui/skeleton";
-import {
-  FileText,
-  ImageIcon,
-  Loader2,
-  Plus,
-  Trash2,
-  Users,
-} from "lucide-react";
+import { FileText, ImageIcon, Loader2, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   createSpacesApi,
@@ -18,7 +11,6 @@ import {
 } from "@/utils/_apis/courses-apis";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Dialog,
   DialogContent,
@@ -28,7 +20,6 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
-import { formatRelativeDate } from "@/components/utiles";
 
 export default function Spaces({
   setParentRefresh,
@@ -37,8 +28,7 @@ export default function Spaces({
   setParentRefresh: any;
   refreshParent: boolean;
 }) {
-  const { i18n, t } = useTranslation();
-  const isRTL = i18n.language === "ar";
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [spaces, setSpaces] = useState<Space[]>([]);
   const [loading, setLoading] = useState(true);
@@ -125,27 +115,23 @@ export default function Spaces({
 
   return (
     <>
-      <section className="mt-8" dir={isRTL ? "rtl" : "ltr"}>
+      <section className="mt-8">
         <div className="flex items-center justify-between mb-6">
           <h2
-            className={`text-lg font-semibold text-zinc-900 dark:text-zinc-100 ${
-              isRTL ? "text-right" : "text-left"
-            }`}
+            className={`text-lg font-semibold text-zinc-900 dark:text-zinc-100`}
           >
             {t("dashboard.spaces.header", "Your Spaces")}
           </h2>
         </div>
 
         <div
-          className={`grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 ${
-            isRTL ? "text-right" : "text-left"
-          }`}
+          className={`grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4`}
         >
           {loading ? (
             // Skeleton loading state
             <>
               {Array.from({ length: 6 }).map((_, index) => (
-                <SpaceItemSkeleton key={index} isRTL={isRTL} />
+                <SpaceItemSkeleton key={index} />
               ))}
             </>
           ) : (
@@ -154,9 +140,7 @@ export default function Spaces({
                 type="button"
                 onClick={() => setOpenAdd(true)}
                 disabled={creating}
-                className={`group relative flex h-[220px] flex-col overflow-hidden rounded-2xl border-2 border-dashed border-zinc-200 bg-white text-zinc-700 transition-all duration-200 hover:border-zinc-300 hover:bg-zinc-50/60 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-500 ${
-                  isRTL ? "text-right" : "text-left"
-                }`}
+                className={`group relative flex h-[220px] flex-col overflow-hidden rounded-2xl border-2 border-dashed border-zinc-200 bg-white text-zinc-700 transition-all duration-200 hover:border-zinc-300 hover:bg-zinc-50/60 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-500`}
               >
                 <div className="flex h-28 w-full items-center justify-center bg-zinc-100 dark:bg-zinc-800/60">
                   <ImageIcon className="h-8 w-8 text-zinc-400 dark:text-zinc-500" />
@@ -196,8 +180,8 @@ export default function Spaces({
       </section>
 
       <Dialog open={openAdd} onOpenChange={setOpenAdd}>
-        <DialogContent className="sm:max-w-[480px]" dir={isRTL ? "rtl" : "ltr"}>
-          <DialogHeader className={isRTL ? "text-right" : "text-left"}>
+        <DialogContent className="sm:max-w-[480px]">
+          <DialogHeader>
             <DialogTitle>
               {t("dashboard.dialogs.createSpace.title")}
             </DialogTitle>
@@ -206,21 +190,15 @@ export default function Spaces({
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-2">
-            <div
-              className={`grid gap-2 ${
-                isRTL ? "text-right" : "text-left"
-              } space-y-4`}
-            >
-              <Label htmlFor="spaceName" className={isRTL ? "mr-1" : "ml-1"}>
+            <div className={`grid gap-2 space-y-4`}>
+              <Label htmlFor="spaceName">
                 {t("dashboard.dialogs.createSpace.nameLabel")}
               </Label>
               <Input
                 id="spaceName"
-                dir={isRTL ? "rtl" : "ltr"}
                 value={newSpaceName}
                 onChange={(e) => setNewSpaceName(e.target.value)}
                 placeholder={t("dashboard.dialogs.createSpace.placeholder")}
-                className={isRTL ? "text-right" : "text-left"}
                 disabled={creating}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !creating) {
@@ -230,21 +208,16 @@ export default function Spaces({
                 }}
               />
 
-              <Label
-                htmlFor="descriptionName"
-                className={isRTL ? "mr-1" : "ml-1"}
-              >
+              <Label htmlFor="descriptionName">
                 {t("dashboard.dialogs.createSpace.description")}
               </Label>
               <Input
                 id="descriptionName"
-                dir={isRTL ? "rtl" : "ltr"}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder={t(
                   "dashboard.dialogs.createSpace.descriptionPlaceholder"
                 )}
-                className={isRTL ? "text-right" : "text-left"}
                 disabled={creating}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !creating) {
@@ -283,8 +256,8 @@ export default function Spaces({
       </Dialog>
 
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <DialogContent className="sm:max-w-[460px]" dir={isRTL ? "rtl" : "ltr"}>
-          <DialogHeader className={isRTL ? "text-right" : "text-left"}>
+        <DialogContent className="sm:max-w-[460px]">
+          <DialogHeader>
             <DialogTitle>
               {t("dashboard.dialogs.deleteSpace.title")}
             </DialogTitle>
@@ -293,9 +266,7 @@ export default function Spaces({
             </DialogDescription>
           </DialogHeader>
           <div
-            className={`bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-xl p-4 ${
-              isRTL ? "text-right" : "text-left"
-            }`}
+            className={`bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-xl p-4`}
           >
             <div className="text-sm text-red-800 dark:text-red-200">
               <strong>{t("dashboard.dialogs.deleteSpace.spaceName")}:</strong>{" "}
@@ -338,108 +309,91 @@ export default function Spaces({
   );
 }
 
-function SpaceCardFooter({ space, isRTL }: { space: Space; isRTL: boolean }) {
-  const { t } = useTranslation();
-  const totalMembers = space.memberCount ?? space.members?.length ?? 0;
-  const visibleMembers = (space.members ?? []).slice(0, 3);
-  const remainingMembers = Math.max(totalMembers - visibleMembers.length, 0);
+// function SpaceCardFooter({ space, isRTL }: { space: Space; isRTL: boolean }) {
+//   const { t } = useTranslation();
+//   const totalMembers = space.memberCount ?? space.members?.length ?? 0;
+//   const visibleMembers = (space.members ?? []).slice(0, 3);
+//   const remainingMembers = Math.max(totalMembers - visibleMembers.length, 0);
 
-  const activitySource =
-    space.lastActivity ??
-    (space.updated_at as string | Date | undefined) ??
-    (space.created_at as string | Date | undefined);
+//   const activitySource =
+//     space.lastActivity ??
+//     (space.updated_at as string | Date | undefined) ??
+//     (space.created_at as string | Date | undefined);
 
-  const lastActivityLabel = activitySource
-    ? formatRelativeDate(activitySource)
-    : t("dashboard.spaces.activityUnknown", "Recently updated");
+//   const lastActivityLabel = activitySource
+//     ? formatRelativeDate(activitySource, isRTL ? "ar" : "en")
+//     : t("dashboard.spaces.activityUnknown", "Recently updated");
 
-  const membersLabel =
-    totalMembers === 0
-      ? t("dashboard.spaces.noMembers", "No members yet")
-      : totalMembers === 1
-      ? t("dashboard.spaces.singleMember", "1 member")
-      : t("dashboard.spaces.multiMember", "{{count}} members", {
-          count: totalMembers,
-        });
+//   const membersLabel =
+//     totalMembers === 0
+//       ? t("dashboard.spaces.noMembers", "No members yet")
+//       : totalMembers === 1
+//       ? t("dashboard.spaces.singleMember", "1 member")
+//       : t("dashboard.spaces.multiMember", "{{count}} members", {
+//           count: totalMembers,
+//         });
 
-  return (
-    <div
-      className={`mt-auto flex items-center justify-between gap-3 pt-4 text-xs text-zinc-500 dark:text-zinc-400 ${
-        isRTL ? "flex-row-reverse" : ""
-      }`}
-    >
-      <div
-        className={`flex items-center gap-2 ${isRTL ? "flex-row-reverse" : ""}`}
-      >
-        <div className={`flex -space-x-2 ${isRTL ? "space-x-reverse" : ""}`}>
-          {visibleMembers.length ? (
-            visibleMembers.map((member) => (
-              <Avatar
-                key={member.id}
-                className="h-8 w-8 border-2 border-white text-xs font-medium dark:border-zinc-900"
-              >
-                <AvatarFallback>
-                  {member.initials || member.displayName?.charAt(0) || "?"}
-                </AvatarFallback>
-              </Avatar>
-            ))
-          ) : (
-            <Avatar className="h-8 w-8 border-2 border-white text-zinc-500 dark:border-zinc-900">
-              <AvatarFallback>
-                <Users className="h-3.5 w-3.5" />
-              </AvatarFallback>
-            </Avatar>
-          )}
-          {remainingMembers > 0 && (
-            <Avatar className="h-8 w-8 border-2 border-dashed border-white bg-zinc-100 text-[11px] font-semibold text-zinc-500 dark:border-zinc-900 dark:bg-zinc-800 dark:text-zinc-300">
-              <AvatarFallback>+{remainingMembers}</AvatarFallback>
-            </Avatar>
-          )}
-        </div>
-        <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
-          {membersLabel}
-        </span>
-      </div>
+//   return (
+//     <div
+//       className={`mt-auto flex items-center justify-between gap-3 pt-4 text-xs text-zinc-500 dark:text-zinc-400 ${
+//         isRTL ? "flex-row-reverse" : ""
+//       }`}
+//     >
+//       <div
+//         className={`flex items-center gap-2 ${isRTL ? "flex-row-reverse" : ""}`}
+//       >
+//         <div className={`flex -space-x-2 ${isRTL ? "space-x-reverse" : ""}`}>
+//           {visibleMembers.length ? (
+//             visibleMembers.map((member) => (
+//               <Avatar
+//                 key={member.id}
+//                 className="h-8 w-8 border-2 border-white text-xs font-medium dark:border-zinc-900"
+//               >
+//                 <AvatarFallback>
+//                   {member.initials || member.displayName?.charAt(0) || "?"}
+//                 </AvatarFallback>
+//               </Avatar>
+//             ))
+//           ) : (
+//             <Avatar className="h-8 w-8 border-2 border-white text-zinc-500 dark:border-zinc-900">
+//               <AvatarFallback>
+//                 <Users className="h-3.5 w-3.5" />
+//               </AvatarFallback>
+//             </Avatar>
+//           )}
+//           {remainingMembers > 0 && (
+//             <Avatar className="h-8 w-8 border-2 border-dashed border-white bg-zinc-100 text-[11px] font-semibold text-zinc-500 dark:border-zinc-900 dark:bg-zinc-800 dark:text-zinc-300">
+//               <AvatarFallback>+{remainingMembers}</AvatarFallback>
+//             </Avatar>
+//           )}
+//         </div>
+//         <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+//           {membersLabel}
+//         </span>
+//       </div>
 
-      <span className="text-xs text-zinc-400 dark:text-zinc-500">
-        {lastActivityLabel}
-      </span>
-    </div>
-  );
-}
-function SpaceItemSkeleton({ isRTL }: { isRTL: boolean }) {
+//       <span className="text-xs text-zinc-400 dark:text-zinc-500">
+//         {lastActivityLabel}
+//       </span>
+//     </div>
+//   );
+// }
+
+function SpaceItemSkeleton() {
   return (
     <div className="flex h-[220px] flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
       <Skeleton className="h-28 w-full rounded-none" />
-      <div
-        className={`flex flex-1 flex-col gap-4 p-4 ${
-          isRTL ? "text-right" : "text-left"
-        }`}
-      >
-        <div
-          className={`flex items-center gap-3 ${
-            isRTL ? "flex-row-reverse" : ""
-          }`}
-        >
+      <div className={`flex flex-1 flex-col gap-4 p-4 `}>
+        <div className={`flex items-center gap-3 `}>
           <Skeleton className="h-10 w-10 rounded-xl" />
           <div className="flex-1 space-y-2">
             <Skeleton className="h-4 w-3/4" />
             <Skeleton className="h-3 w-1/2" />
           </div>
         </div>
-        <div
-          className={`mt-auto flex items-center justify-between ${
-            isRTL ? "flex-row-reverse" : ""
-          }`}
-        >
-          <div
-            className={`flex items-center gap-2 ${
-              isRTL ? "flex-row-reverse" : ""
-            }`}
-          >
-            <div
-              className={`flex -space-x-2 ${isRTL ? "space-x-reverse" : ""}`}
-            >
+        <div className={`mt-auto flex items-center justify-between `}>
+          <div className={`flex items-center gap-2 `}>
+            <div className={`flex -space-x-2`}>
               <Skeleton className="h-8 w-8 rounded-full" />
               <Skeleton className="h-8 w-8 rounded-full" />
             </div>
@@ -461,8 +415,7 @@ function SpaceItem({
   onOpen: (id: string) => void;
   onDeleteRequest: (space: Space) => void;
 }) {
-  const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === "ar";
+  const { t } = useTranslation();
   const id = space.id;
   const name = space.name;
 
@@ -477,14 +430,10 @@ function SpaceItem({
           onOpen(id);
         }
       }}
-      className={`group relative flex h-[220px] cursor-pointer flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:shadow-zinc-900/40 ${
-        isRTL ? "text-right" : "text-left"
-      }`}
+      className={`group relative flex h-[220px] cursor-pointer flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:shadow-zinc-900/40`}
     >
       <div
-        className={`absolute top-3 z-20 opacity-0 transition-opacity duration-200 group-hover:opacity-100 ${
-          isRTL ? "left-3" : "right-3"
-        }`}
+        className={`absolute top-3 z-20 opacity-0 transition-opacity duration-200 group-hover:opacity-100 `}
       >
         <Button
           type="button"
@@ -519,11 +468,7 @@ function SpaceItem({
       </div>
 
       <div className="flex flex-1 flex-col px-5 pb-5 pt-4">
-        <div
-          className={`flex items-start gap-3 ${
-            isRTL ? "flex-row-reverse" : ""
-          }`}
-        >
+        <div className={`flex items-start gap-3`}>
           <div className="grid h-10 w-10 place-items-center rounded-xl bg-white shadow-sm ring-1 ring-zinc-100 transition-colors group-hover:bg-zinc-50 dark:bg-zinc-800 dark:ring-zinc-700 dark:group-hover:bg-zinc-800/70">
             {space.icon ? (
               <span className="text-lg" aria-hidden="true">
@@ -533,7 +478,7 @@ function SpaceItem({
               <FileText className="h-5 w-5 text-zinc-600 dark:text-zinc-300" />
             )}
           </div>
-          <div className={`min-w-0 ${isRTL ? "text-right" : "text-left"}`}>
+          <div className="min-w-0">
             <div className="truncate text-[15px] font-semibold text-zinc-900 transition-colors group-hover:text-zinc-950 dark:text-zinc-100 dark:group-hover:text-white">
               {name}
             </div>
@@ -545,7 +490,7 @@ function SpaceItem({
           </div>
         </div>
 
-        <SpaceCardFooter space={space} isRTL={isRTL} />
+        {/* <SpaceCardFooter space={space} isRTL={isRTL} /> */}
       </div>
     </div>
   );

@@ -10,11 +10,9 @@ import { useTranslation } from "react-i18next";
 export default function WorkspacesList({
   workspaces,
   refreshParentComponent,
-  isRTL,
 }: {
   workspaces: Workspace[];
   refreshParentComponent: () => void;
-  isRTL: boolean;
 }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -76,7 +74,6 @@ export default function WorkspacesList({
               key={workspace.id}
               workspace={workspace}
               onClick={() => handleWorkspaceClick(workspace.id)}
-              isRTL={isRTL}
             />
           ))}
       </div>

@@ -9,6 +9,11 @@
   "explain": "شرح",
   "copy": "نسخ",
   "common": {
+    "1_day_ago": "منذ يوم واحد",
+    "days_ago": "منذ أيام",
+    "weeks_ago": "منذ أسابيع",
+    "months_ago": "منذ أشهر",
+    "years_ago": "منذ سنوات",
     "workspaceTitle": "أحدث الساحات",
     "creating": "جارٍ الإنشاء…",
     "deleting": "جاري المسح",
@@ -414,6 +419,7 @@
     "spaces": {
       "title": "المساحات",
       "newSpace": "مساحة جديدة",
+      "newSpaceHint": "قم بإنشاء مساحة جديدة لتنظيم عملك",
       "defaultName": "مساحة بدون عنوان ({{count}})",
       "deleteSpace": "حذف المساحة",
       "itemCount": "{{count}} عناصر",

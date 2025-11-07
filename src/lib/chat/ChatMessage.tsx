@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import {
@@ -620,7 +620,7 @@ const MessageBubble: React.FC<{
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -14, scale: 0.98 }}
       transition={{ type: "spring", stiffness: 380, damping: 28, mass: 0.7 }}
-      className={`flex ${containerJustify} mb-5 w-full break-words max-w-[59%] px-0`}
+      className={`flex ${containerJustify} mb-5 w-full break-words px-0`}
     >
       <div
         className={`flex items-start gap-3 max-w-[85%] min-w-0 ${
@@ -655,9 +655,20 @@ export default function ChatMessages({
 }: ChatMessagesProps) {
   const { t, i18n } = useTranslation();
   const [isRtl, setIsRtl] = useState(false);
+  const lastMessageRef = useRef<HTMLDivElement>(null);
+
+  const scrollToElement = () => {
+    if (lastMessageRef.current) {
+      lastMessageRef.current.scrollIntoView({
+        behavior: "smooth", // For smooth scrolling
+        block: "start", // Aligns the top of the element with the top of the scroll container
+      });
+    }
+  };
 
   useEffect(() => {
     setIsRtl(i18n.language === "ar");
+    scrollToElement();
   }, [i18n.language]);
 
   const hasMessages = messages && messages.length > 0;
@@ -672,35 +683,50 @@ export default function ChatMessages({
           <></>
         ) : (
           <div className="flex flex-col w-full">
-            {messages.map((message) => (
-              <MessageBubble
-                key={message.id || `${message.timestamp}-${message.role}`}
-                message={message}
-                isRtl={isRtl}
-                uploadingLabel={uploadingLabel}
-                failedLabel={failedLabel}
-              />
-            ))}
+            {messages.map((message, ind) => {
+              const isLastMessage =
+                ind === messages.length - 1 && !(isLoading && streamingMessage);
+
+              return (
+                <div
+                  className="mx-6"
+                  key={
+                    message.id || `${message.timestamp}-${message.role}-${ind}`
+                  }
+                >
+                  <MessageBubble
+                    message={message}
+                    isRtl={isRtl}
+                    uploadingLabel={uploadingLabel}
+                    failedLabel={failedLabel}
+                  />
+                  <div ref={isLastMessage ? lastMessageRef : undefined}></div>
+                </div>
+              );
+            })}
 
             {isLoading && streamingMessage && (
-              <MessageBubble
-                message={{
-                  id: "streaming",
-                  type: "assistant",
-                  role: "assistant",
-                  content: "",
-                  timestamp: new Date(),
-                }}
-                isStreaming
-                streamingContent={streamingMessage}
-                isRtl={isRtl}
-                uploadingLabel={uploadingLabel}
-                failedLabel={failedLabel}
-              />
+              <div ref={lastMessageRef}>
+                <MessageBubble
+                  message={{
+                    id: "streaming",
+                    type: "assistant",
+                    role: "assistant",
+                    content: "",
+                    timestamp: new Date(),
+                  }}
+                  isStreaming
+                  streamingContent={streamingMessage}
+                  isRtl={isRtl}
+                  uploadingLabel={uploadingLabel}
+                  failedLabel={failedLabel}
+                />
+              </div>
             )}
 
             {isLoading && !streamingMessage && (
               <motion.div
+                ref={lastMessageRef}
                 initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -14 }}
