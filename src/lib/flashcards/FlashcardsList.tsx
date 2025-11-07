@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { FC, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useTranslation } from "react-i18next";
@@ -9,22 +9,16 @@ import { DeleteModalState, Flashcard, FlashcardDeck } from "./types";
 import { GenerationStatus } from "../types";
 import { getFlashCardInputs, InputConfig } from "./consts";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  ProgressStrip,
-  QueuedStrip,
-  StatusBadge,
-} from "@/pages/dashboard/utils";
+import { ProgressStrip, QueuedStrip } from "@/pages/dashboard/utils";
 import Modal from "@/components/Modal";
-import { cn } from "@/lib/utils";
 
-export const FlashcardsList: React.FC<{
+export const FlashcardsList: FC<{
   sets: FlashcardDeck[];
   onSelectSet: (set: FlashcardDeck) => void;
   onDeleteSet?: (setId: string) => void;
 }> = ({ sets, onSelectSet, onDeleteSet }) => {
   const { t, i18n } = useTranslation();
-  const direction = i18n.dir();
-  const isRTL = direction === "rtl";
+  const isRTL = i18n.dir() == "rtl";
 
   const [deleteModal, setDeleteModal] = useState<DeleteModalState>({
     isOpen: false,
@@ -74,9 +68,14 @@ export const FlashcardsList: React.FC<{
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 20 }}
         transition={{ duration: 0.25 }}
+        dir={isRTL ? "rtl" : "ltr"}
       >
         <div className="px-6 py-4 flex flex-col rounded-3xl justify-between space-y-3">
-          <h3 className="px-2 text-sm font-medium text-gray-700 dark:text-white">
+          <h3
+            className={`px-2 text-sm font-medium text-gray-700 dark:text-white ${
+              isRTL && "text-right"
+            }`}
+          >
             {t("flashcards.list.title", "My Flashcards")}
           </h3>
 
@@ -112,7 +111,6 @@ export const FlashcardsList: React.FC<{
                           <h3 className="font-semibold text-lg text-gray-900 dark:text-white truncate">
                             {set.title}
                           </h3>
-                          <StatusBadge status={set.status} />
                           {isDeleting && (
                             <span className="inline-flex items-center gap-1.5 text-[11px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
                               <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -131,12 +129,7 @@ export const FlashcardsList: React.FC<{
                             </Badge>
                           ))}
                           {completed && set.flashcards && (
-                            <span
-                              className={cn(
-                                "text-xs text-gray-500",
-                                isRTL ? "mr-1" : "ml-1"
-                              )}
-                            >
+                            <span className={"text-xs text-gray-500"}>
                               {set.flashcards.length}{" "}
                               {t("flashcards.cardsLabel", "cards")}
                             </span>

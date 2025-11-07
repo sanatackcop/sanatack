@@ -9,6 +9,11 @@
   "explain": "Explain",
   "copy": "Copy",
   "common": {
+    "1_day_ago": "1 day ago",
+    "days_ago": "days ago",
+    "weeks_ago": "weeks ago",
+    "months_ago": "months ago",
+    "years_ago": "years ago",
     "workspaceTitle": "Recent Playground",
     "creating": "Creating",
     "deleting": "Deleting",
@@ -415,6 +420,7 @@
     "spaces": {
       "title": "Spaces",
       "newSpace": "New Space",
+      "newSpaceHint": "Create a fresh space to organize your work",
       "defaultName": "Untitled Space ({{count}})",
       "deleteSpace": "Delete Space",
       "itemCount": "{{count}} items",

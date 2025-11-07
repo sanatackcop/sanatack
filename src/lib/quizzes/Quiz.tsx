@@ -210,22 +210,24 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
                                 "Generating quiz..."
                               )}
                           </h3>
-                          <StatusBadge status={quiz.status} />
+                          <StatusBadge status={quiz.status} isRTL />
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Badge
-                            variant={statusVariant}
-                            className="text-xs capitalize"
-                          >
-                            {statusLabel}
-                          </Badge>
-                          <p className="text-sm text-gray-500">
-                            {t("quizzes.list.questions", {
-                              count: questionCount,
-                              defaultValue: "{{count}} Questions",
-                            })}
-                          </p>
-                        </div>
+                        {quiz.status == GenerationStatus.COMPLETED && (
+                          <div className="flex items-center gap-2">
+                            <Badge
+                              variant={statusVariant}
+                              className="text-xs capitalize"
+                            >
+                              {statusLabel}
+                            </Badge>
+                            <p className="text-sm text-gray-500">
+                              {t("quizzes.list.questions", {
+                                count: questionCount,
+                                defaultValue: "{{count}} Questions",
+                              })}
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -241,23 +243,25 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
                       </div>
                     )}
 
-                    <div className="mt-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-medium text-gray-500">
-                          {t("quizzes.list.progress", "Progress")}
-                        </span>
-                        <span className="text-xs font-semibold text-gray-700">
-                          {Math.round(progress)}%
-                        </span>
+                    {quiz.status === GenerationStatus.COMPLETED && (
+                      <div className="mt-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs font-medium text-gray-500">
+                            {t("quizzes.list.progress", "Progress")}
+                          </span>
+                          <span className="text-xs font-semibold text-gray-700">
+                            {Math.round(progress)}%
+                          </span>
+                        </div>
+                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-green-500 rounded-full transition-all duration-300"
+                            style={{ width: `${progress}%` }}
+                          />
+                        </div>
+                        <p className="mt-2 text-xs text-gray-500">{infoLine}</p>
                       </div>
-                      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-green-500 rounded-full transition-all duration-300"
-                          style={{ width: `${progress}%` }}
-                        />
-                      </div>
-                      <p className="mt-2 text-xs text-gray-500">{infoLine}</p>
-                    </div>
+                    )}
 
                     {quiz.status === GenerationStatus.PROCESSING && (
                       <ProgressStrip />

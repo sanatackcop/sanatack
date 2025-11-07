@@ -19,7 +19,6 @@ import {
   Image,
   Video,
   Music,
-  MessageCircle,
   Loader2,
 } from "lucide-react";
 import {
@@ -469,7 +468,7 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
                 isRTL={isRTL}
                 onClick={() => setActiveModal("paste")}
               />
-              <div className="col-span-2">
+              {/* <div className="col-span-2">
                 <ContentTypeCard
                   title={t(
                     "modals.addContent.chatWorkspace.title",
@@ -483,7 +482,7 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
                   isRTL={isRTL}
                   onClick={() => setActiveModal("chat")}
                 />
-              </div>
+              </div> */}
               {/* <ContentTypeCard
                 title={t(
                   "modals.addContent.createCourse.title",

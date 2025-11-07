@@ -594,7 +594,6 @@ const LearnPlayground: React.FC = () => {
     [handleSendMessage, selectedContexts]
   );
 
-  // Fullscreen scroll functions
   const checkFullscreenScroll = useCallback(() => {
     if (fullscreenScrollRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } =
@@ -1054,170 +1053,159 @@ const LearnPlayground: React.FC = () => {
         autoSaveId={fullScreen ? "fs-layout" : "split-layout"}
       >
         {fullScreen ? (
-          <ResizablePanel
-            defaultSize={100}
-            minSize={0}
-            className="mt-2 min-h-0 flex flex-col"
+          <motion.div
+            initial={{ x: 20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 260, damping: 30 }}
+            className="h-full w-full flex flex-col min-h-0 px-2 sm:px-6 mx-2 sm:mx-4"
           >
-            <motion.div
-              initial={{ x: 20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ type: "spring", stiffness: 260, damping: 30 }}
-              className="h-full flex flex-col min-h-0 px-2 sm:px-6 mx-2 sm:mx-4"
-            >
-              {workspaceLoading ? (
-                <TabsSkeleton />
-              ) : (
-                <Tabs
-                  value={state.tab}
-                  onValueChange={(v) =>
-                    dispatch({ type: "SET_TAB", tab: v as TabKey })
-                  }
-                  className="h-full flex flex-col min-h-0"
-                >
-                  <div className="relative pb-4 flex-shrink-0 flex justify-center">
-                    {fullscreenScroll.canScrollLeft && (
-                      <>
-                        <div
-                          className="absolute left-0 top-0 bottom-4 w-24 z-30 pointer-events-none"
-                          style={{
-                            background:
-                              "linear-gradient(to right, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0) 100%)",
-                          }}
-                        />
-                        <div
-                          className="absolute left-0 top-0 bottom-4 w-24 z-30 pointer-events-none dark:block hidden"
-                          style={{
-                            background:
-                              "linear-gradient(to right, rgba(9, 9, 11, 0.95) 0%, rgba(9, 9, 11, 0) 100%)",
-                          }}
-                        />
-                      </>
-                    )}
+            {workspaceLoading ? (
+              <TabsSkeleton />
+            ) : (
+              <Tabs
+                value={state.tab}
+                onValueChange={(v) =>
+                  dispatch({ type: "SET_TAB", tab: v as TabKey })
+                }
+                className="h-full flex flex-col min-h-0"
+              >
+                <div className="sticky top-0 z-30 pb-4 flex-shrink-0 flex justify-center bg-white/70 dark:bg-zinc-950/60 backdrop-blur-md">
+                  {fullscreenScroll.canScrollLeft && (
+                    <>
+                      <div
+                        className="absolute left-0 top-0 bottom-4 w-24 z-30 pointer-events-none"
+                        style={{
+                          background:
+                            "linear-gradient(to right, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0) 100%)",
+                        }}
+                      />
+                      <div
+                        className="absolute left-0 top-0 bottom-4 w-24 z-30 pointer-events-none dark:block hidden"
+                        style={{
+                          background:
+                            "linear-gradient(to right, rgba(9, 9, 11, 0.95) 0%, rgba(9, 9, 11, 0) 100%)",
+                        }}
+                      />
+                    </>
+                  )}
 
-                    {fullscreenScroll.canScrollRight && (
-                      <>
-                        <div
-                          className="absolute right-0 top-0 bottom-4 w-24 z-30 pointer-events-none"
-                          style={{
-                            background:
-                              "linear-gradient(to left, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0) 100%)",
-                          }}
-                        />
-                        <div
-                          className="absolute right-0 top-0 bottom-4 w-24 z-30 pointer-events-none dark:block hidden"
-                          style={{
-                            background:
-                              "linear-gradient(to left, rgba(9, 9, 11, 0.95) 0%, rgba(9, 9, 11, 0) 100%)",
-                          }}
-                        />
-                      </>
-                    )}
+                  {fullscreenScroll.canScrollRight && (
+                    <>
+                      <div
+                        className="absolute right-0 top-0 bottom-4 w-24 z-30 pointer-events-none"
+                        style={{
+                          background:
+                            "linear-gradient(to left, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0) 100%)",
+                        }}
+                      />
+                      <div
+                        className="absolute right-0 top-0 bottom-4 w-24 z-30 pointer-events-none dark:block hidden"
+                        style={{
+                          background:
+                            "linear-gradient(to left, rgba(9, 9, 11, 0.95) 0%, rgba(9, 9, 11, 0) 100%)",
+                        }}
+                      />
+                    </>
+                  )}
 
-                    <div
-                      ref={fullscreenScrollRef}
-                      className="overflow-x-scroll scrollbar-hide w-full select-none"
-                      onMouseDown={handleFullscreenMouseDown}
-                      onMouseMove={handleFullscreenMouseMove}
-                      onMouseUp={handleFullscreenMouseUp}
-                      onMouseLeave={handleFullscreenMouseUp}
-                      onTouchStart={handleFullscreenTouchStart}
-                      onTouchMove={handleFullscreenTouchMove}
-                      onTouchEnd={handleFullscreenTouchEnd}
-                      style={{
-                        cursor: fullscreenScroll.isDragging
-                          ? "grabbing"
-                          : "grab",
-                        userSelect: "none",
-                        WebkitUserSelect: "none",
-                        MozUserSelect: "none",
-                        msUserSelect: "none",
-                        overflowX: "scroll",
-                        scrollbarWidth: "none",
-                        msOverflowStyle: "none",
-                        WebkitOverflowScrolling: "touch",
-                      }}
-                    >
-                      <div className="flex items-center gap-3 w-max mx-auto">
-                        <TabsList
-                          className="relative !space-x-0 !p-1 sm:!p-1.5 flex items-center gap-1 sm:gap-2 h-10 sm:h-12 rounded-2xl border border-zinc-200/60 dark:border-zinc-800/60 bg-white/90
-                 dark:bg-zinc-900/50 shadow-sm dark:shadow-zinc-950/20 backdrop-blur-md flex-shrink-0"
-                          style={{ direction: isRTL ? "rtl" : "ltr" }}
-                        >
-                          {TABS_CONFIG.map((tab) => {
-                            const IconComponent = tab.icon;
-                            const isActive = state.tab === tab.id;
-                            const isSoon = tab?.isSoon;
+                  <div
+                    ref={fullscreenScrollRef}
+                    className="overflow-x-scroll scrollbar-hide w-full select-none"
+                    onMouseDown={handleFullscreenMouseDown}
+                    onMouseMove={handleFullscreenMouseMove}
+                    onMouseUp={handleFullscreenMouseUp}
+                    onMouseLeave={handleFullscreenMouseUp}
+                    onTouchStart={handleFullscreenTouchStart}
+                    onTouchMove={handleFullscreenTouchMove}
+                    onTouchEnd={handleFullscreenTouchEnd}
+                    style={{
+                      cursor: fullscreenScroll.isDragging ? "grabbing" : "grab",
+                      userSelect: "none",
+                      WebkitUserSelect: "none",
+                      MozUserSelect: "none",
+                      msUserSelect: "none",
+                      overflowX: "scroll",
+                      scrollbarWidth: "none",
+                      msOverflowStyle: "none",
+                      WebkitOverflowScrolling: "touch",
+                    }}
+                  >
+                    <div className="flex items-center gap-3 w-max mx-auto">
+                      <TabsList
+                        className="relative !space-x-0 !p-1 sm:!p-1.5 flex items-center gap-1 sm:gap-2 h-10 sm:h-12 rounded-2xl border border-zinc-200/60 dark:border-zinc-800/60 bg-white/90 dark:bg-zinc-900/50 shadow-sm dark:shadow-zinc-950/20 backdrop-blur-md flex-shrink-0"
+                        style={{ direction: isRTL ? "rtl" : "ltr" }}
+                      >
+                        {TABS_CONFIG.map((tab) => {
+                          const IconComponent = tab.icon;
+                          const isActive = state.tab === tab.id;
+                          const isSoon = tab?.isSoon;
 
-                            const trigger = (
-                              <TabsTrigger
-                                key={tab.id}
-                                disabled={isSoon}
-                                value={tab.id}
-                                className={`px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 relative z-20 flex-shrink-0 transition-all duration-200 
-                hover:bg-zinc-50 dark:hover:bg-zinc-800/40 
-                data-[state=active]:bg-zinc-100 dark:data-[state=active]:bg-zinc-800/60 
-                rounded-lg sm:rounded-xl h-7 sm:h-9 flex flex-row items-center 
-                justify-center select-none cursor-pointer gap-1 sm:gap-1.5 md:gap-2`}
-                                onMouseDown={(e) => e.stopPropagation()}
-                                onTouchStart={(e) => e.stopPropagation()}
+                          const trigger = (
+                            <TabsTrigger
+                              key={tab.id}
+                              disabled={isSoon}
+                              value={tab.id}
+                              className={`px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 relative z-20 flex-shrink-0 transition-all duration-200 
+                        hover:bg-zinc-50 dark:hover:bg-zinc-800/40 
+                        data-[state=active]:bg-zinc-100 dark:data-[state=active]:bg-zinc-800/60 
+                        rounded-lg sm:rounded-xl h-7 sm:h-9 flex flex-row items-center 
+                        justify-center select-none cursor-pointer gap-1 sm:gap-1.5 md:gap-2`}
+                              onMouseDown={(e) => e.stopPropagation()}
+                              onTouchStart={(e) => e.stopPropagation()}
+                            >
+                              {isActive ? (
+                                <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-emerald-500 rounded-full flex-shrink-0" />
+                              ) : (
+                                <IconComponent className="size-3 sm:size-3.5 md:size-4 flex-shrink-0 text-zinc-600 dark:text-zinc-400" />
+                              )}
+                              <span
+                                className={`text-[10px] sm:text-xs md:text-sm font-medium transition-colors duration-200 whitespace-nowrap ${
+                                  isActive
+                                    ? "text-zinc-900 dark:text-zinc-100"
+                                    : "text-zinc-700 dark:text-zinc-300"
+                                }`}
                               >
-                                {isActive ? (
-                                  <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-emerald-500 rounded-full flex-shrink-0" />
-                                ) : (
-                                  <IconComponent className="size-3 sm:size-3.5 md:size-4 flex-shrink-0 text-zinc-600 dark:text-zinc-400" />
-                                )}
-                                <span
-                                  className={`text-[10px] sm:text-xs md:text-sm font-medium transition-colors duration-200 whitespace-nowrap ${
-                                    isActive
-                                      ? "text-zinc-900 dark:text-zinc-100"
-                                      : "text-zinc-700 dark:text-zinc-300"
-                                  }`}
-                                >
-                                  {t(tab.labelKey as any)}
-                                </span>
-                              </TabsTrigger>
-                            );
+                                {t(tab.labelKey as any)}
+                              </span>
+                            </TabsTrigger>
+                          );
 
-                            if (!isSoon) {
-                              return trigger;
-                            }
+                          if (!isSoon) return trigger;
 
-                            return (
-                              <Tooltip
-                                key={tab.id}
-                                title={t("workspace.comingSoon", "Coming soon")}
-                              >
-                                <span>{trigger}</span>
-                              </Tooltip>
-                            );
-                          })}
-                        </TabsList>
+                          return (
+                            <Tooltip
+                              key={tab.id}
+                              title={t("workspace.comingSoon", "Coming soon")}
+                            >
+                              <span>{trigger}</span>
+                            </Tooltip>
+                          );
+                        })}
+                      </TabsList>
 
-                        <Tooltip
-                          title={t(
-                            "workspace.exitFullScreen",
-                            "Exit Full Screen"
-                          )}
-                          className="cursor-pointer flex-shrink-0"
+                      <Tooltip
+                        title={t(
+                          "workspace.exitFullScreen",
+                          "Exit Full Screen"
+                        )}
+                        className="cursor-pointer flex-shrink-0"
+                      >
+                        <div
+                          className="p-1.5 sm:p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors duration-200"
+                          onMouseDown={(e) => e.stopPropagation()}
+                          onTouchStart={(e) => e.stopPropagation()}
                         >
-                          <div
-                            className="p-1.5 sm:p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors duration-200"
-                            onMouseDown={(e) => e.stopPropagation()}
-                            onTouchStart={(e) => e.stopPropagation()}
-                          >
-                            <Scan
-                              className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors duration-200 size-4 sm:size-5"
-                              onClick={() => {
-                                setFullScreen(!fullScreen);
-                              }}
-                            />
-                          </div>
-                        </Tooltip>
-                      </div>
+                          <Scan
+                            className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors duration-200 size-4 sm:size-5"
+                            onClick={() => setFullScreen(!fullScreen)}
+                          />
+                        </div>
+                      </Tooltip>
                     </div>
                   </div>
+                </div>
 
+                <div className="flex-1 min-h-0 overflow-y-auto">
                   <div className="flex-1 flex flex-col min-h-0">
                     {state.tab === "chat" && (
                       <TabsContent
@@ -1230,22 +1218,24 @@ const LearnPlayground: React.FC = () => {
                           </div>
                         ) : (
                           <>
-                            <ScrollArea>
-                              <ChatMessages
-                                messages={state.chatMessages || []}
-                                isLoading={state.chatLoading}
-                                streamingMessage={state.streamingMessage}
-                                onSendMessage={handleQuickSend}
-                              />
-                            </ScrollArea>
+                            <div className="flex-1 min-h-0">
+                              <div className="pb-28 sm:pb-32">
+                                <ChatMessages
+                                  messages={state.chatMessages || []}
+                                  isLoading={state.chatLoading}
+                                  streamingMessage={state.streamingMessage}
+                                  onSendMessage={handleQuickSend}
+                                />
+                              </div>
+                            </div>
 
-                            <div className="absolute bottom-0 left-0 right-0 flex justify-center bg-gradient-to-t from-white dark:from-zinc-950 via-white/95 dark:via-zinc-950/95 to-transparent pt-4 pb-2 sm:pb-4">
+                            <div className="sticky bottom-0 left-0 right-0 flex justify-center bg-gradient-to-t from-white dark:from-zinc-950 via-white/95 dark:via-zinc-950/95 to-transparent pt-4 pb-2 sm:pb-4">
                               <div className="w-full max-w-4xl px-2 sm:px-6">
                                 <ChatInput
                                   className="w-full"
                                   value={state.prompt}
-                                  hasAutoContext={true}
-                                  expandSection={true}
+                                  hasAutoContext
+                                  expandSection
                                   contexts={selectedContexts}
                                   availableContexts={availableContexts}
                                   autoContextCount={autoContextCount}
@@ -1275,11 +1265,7 @@ const LearnPlayground: React.FC = () => {
                     )}
 
                     {state.tab === "flashcards" && workspace && (
-                      <TabsContent
-                        value="flashcards"
-                        className="m-0 h-full w-full max-w-full"
-                        style={{ maxHeight: "100%" }}
-                      >
+                      <TabsContent value="flashcards" className="m-0 p-4">
                         <FlashCards workspaceId={workspace.id} />
                       </TabsContent>
                     )}
@@ -1287,7 +1273,7 @@ const LearnPlayground: React.FC = () => {
                     {state.tab === "quizzes" && workspace && (
                       <TabsContent
                         value="quizzes"
-                        className="m-0 h-full p-4 text-zinc-500 dark:text-zinc-400 w-full max-w-full"
+                        className="m-0 p-4 text-zinc-500 dark:text-zinc-400"
                       >
                         <QuizList
                           workspaceId={(workspace && workspace.id) || ""}
@@ -1298,8 +1284,7 @@ const LearnPlayground: React.FC = () => {
                     {state.tab === "summary" && workspace?.id && (
                       <TabsContent
                         value="summary"
-                        className="m-0 h-full p-4 text-zinc-500 dark:text-zinc-400 w-full max-w-full"
-                        style={{ maxHeight: "100%" }}
+                        className="m-0 p-4 text-zinc-500 dark:text-zinc-400"
                       >
                         <SummaryList workspaceId={String(workspace.id)} />
                       </TabsContent>
@@ -1308,8 +1293,7 @@ const LearnPlayground: React.FC = () => {
                     {state.tab === "deepExplanation" && (
                       <TabsContent
                         value="deepExplanation"
-                        className="m-0 h-full p-4 text-zinc-500 dark:text-zinc-400 flex flex-col w-full max-w-full"
-                        style={{ maxHeight: "100%" }}
+                        className="m-0 p-4 text-zinc-500 dark:text-zinc-400"
                       >
                         <MindMap
                           workspaceId={(workspace && workspace.id) || ""}
@@ -1317,10 +1301,10 @@ const LearnPlayground: React.FC = () => {
                       </TabsContent>
                     )}
                   </div>
-                </Tabs>
-              )}
-            </motion.div>
-          </ResizablePanel>
+                </div>
+              </Tabs>
+            )}
+          </motion.div>
         ) : (
           <>
             <ResizablePanel

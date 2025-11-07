@@ -17,53 +17,11 @@ import { cn } from "@/lib/utils";
 
 const trackCardFlip = async (/*cardId: string, setId: string*/) => {
   try {
-    //! TODO
-    // const response = await fetch(`/api/flashcards/${cardId}/flip`, {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify({
-    //     setId,
-    //     flippedAt: new Date().toISOString(),
-    //   }),
-    // });
-    // if (!response.ok) {
-    //   throw new Error("Failed to track flip");
-    // }
-    // return await response.json();
   } catch (error) {
     console.error("Error tracking flip:", error);
     throw error;
   }
 };
-
-//! TODO
-// const resetStudySession = async (setId: string) => {
-//   try {
-//     const response = await fetch(
-//       `/api/flashcards/sets/${setId}/reset-session`,
-//       {
-//         method: "POST",
-//         headers: {
-//           "Content-Type": "application/json",
-//         },
-//         body: JSON.stringify({
-//           resetAt: new Date().toISOString(),
-//         }),
-//       }
-//     );
-
-//     if (!response.ok) {
-//       throw new Error("Failed to reset session");
-//     }
-
-//     return await response.json();
-//   } catch (error) {
-//     console.error("Error resetting session:", error);
-//     throw error;
-//   }
-// };
 
 const useFlashcards = (workspaceId: string) => {
   const [flashcardSets, setFlashcardSets] = useState<FlashcardDeck[]>([]);
@@ -293,6 +251,7 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
             initial="hidden"
             animate="visible"
             exit="exit"
+            dir={direction}
             className="h-full flex flex-col w-full"
           >
             <div className="flex items-center gap-4 px-14 py-4 flex-shrink-0">
@@ -301,17 +260,11 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
                 onClick={() => setActiveSet(null)}
                 className={cn(
                   "flex items-center rounded-2xl py-2 px-3 transition-all ease-linear duration-100 text-gray-400/50 hover:text-zinc-700 hover:bg-gray-50/50 drop-shadow-sm dark:hover:bg-zinc-100",
-                  "group",
-                  isRTL ? "flex-row-reverse" : ""
+                  "group"
                 )}
               >
                 <BackIcon
-                  className={cn(
-                    "w-4 h-4 transition-all ease-out duration-200",
-                    isRTL
-                      ? "ml-2 group-hover:translate-x-1"
-                      : "mr-2 group-hover:-translate-x-1"
-                  )}
+                  className={cn("w-4 h-4 transition-all ease-out duration-200")}
                 />
                 <span className="text-sm">{t("common.back", "Back")}</span>
               </button>
@@ -425,6 +378,7 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
                   "flashcards.generate.description",
                   "Quickly generate a flashcard set based on your topic of interest."
                 )}
+                disabled={anyActive}
                 buttonLabel={t("flashcards.generate.button", "Generate")}
                 onClick={handleCreatingNewFlashcard}
                 dir={direction}
