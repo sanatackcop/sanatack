@@ -204,7 +204,7 @@ export function SummaryList({ workspaceId }: SummaryListProps) {
                       <div className="flex justify-between items-start gap-3">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-2">
-                            <h3 className="font-semibold text-lg text-gray-900 dark:text-white truncate w-[48ch]">
+                            <h3 className="font-semibold text-lg text-gray-900 dark:text-white truncate max-w-[50vw]">
                               {summary.payload?.title ??
                                 t(
                                   "summary.list.generating",

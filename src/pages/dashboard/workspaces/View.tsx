@@ -992,7 +992,6 @@ const LearnPlayground: React.FC = () => {
           onTranscriptLoad={(transcript) =>
             dispatch({ type: "SET_TRANSCRIPT", transcript })
           }
-          className="w-full h-full flex-grow"
         />
       );
     }
@@ -1402,7 +1401,7 @@ const LearnPlayground: React.FC = () => {
                       >
                         <div className="flex items-center gap-2 w-max mx-auto">
                           <TabsList
-                            className="relative !space-x-0 !p-0.5 sm:!p-1 flex items-center gap-0.5 sm:gap-1 md:gap-2 h-9 sm:h-10 md:h-11 rounded-xl sm:rounded-2xl border border-zinc-200/60 dark:border-zinc-800/60 bg-white/80 dark:bg-zinc-950/40 shadow-sm dark:shadow-none backdrop-blur-sm flex-shrink-0"
+                            className="relative !space-x-0 !p-0.5 sm:!p-1 flex flex-shrink-0 items-center gap-0.5 sm:gap-1 md:gap-2 h-9 sm:h-10 md:h-11 rounded-xl sm:rounded-2xl border border-zinc-200/60 dark:border-zinc-800/60 bg-white/80 dark:bg-zinc-950/40 shadow-sm dark:shadow-none backdrop-blur-sm"
                             style={{ direction: isRTL ? "rtl" : "ltr" }}
                           >
                             {TABS_CONFIG.map((tab) => {
@@ -1413,9 +1412,9 @@ const LearnPlayground: React.FC = () => {
                                   key={tab.id}
                                   value={tab.id}
                                   disabled={tab.isSoon}
-                                  className={`px-1.5 sm:px-2 md:px-3 py-1 sm:py-1.5 md:py-2 relative z-20 flex-shrink-0 transition-all duration-150 
-                            hover:bg-transparent data-[state=active]:bg-zinc-100 dark:data-[state=active]:bg-zinc-800/60 rounded-lg sm:rounded-xl h-6 sm:h-7 md:h-9 flex flex-row items-center 
-                            justify-center select-none cursor-pointer gap-1 sm:gap-1.5`}
+                                  className={`px-1.5 sm:px-2 md:px-3 py-1 sm:py-1.5 md:py-2 relative z-20 flex-shrink-0 transition-all duration-150
+                                  hover:bg-transparent data-[state=active]:bg-zinc-100 dark:data-[state=active]:bg-zinc-800/60 rounded-lg sm:rounded-xl h-6 sm:h-7 md:h-9 flex flex-row items-center
+                                  justify-center select-none cursor-pointer gap-1 sm:gap-1.5`}
                                   onMouseDown={(e) => e.stopPropagation()}
                                   onTouchStart={(e) => e.stopPropagation()}
                                 >

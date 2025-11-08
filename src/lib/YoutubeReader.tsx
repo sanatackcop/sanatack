@@ -6,7 +6,6 @@ import React, {
   useState,
   useMemo,
 } from "react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useTranslation } from "react-i18next";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
@@ -58,7 +57,6 @@ interface YouTubePlayerProps {
   onPause?: () => void;
   onReady?: () => void;
   onTranscriptLoad?: (transcript: any) => void;
-  className?: string;
   transcript?: TranscriptData | null;
   syncOffsetSec?: number;
 }
@@ -80,20 +78,17 @@ const YouTubeReader: React.FC<YouTubePlayerProps> = ({
   onPause,
   onReady,
   transcript,
-  className = "",
   syncOffsetSec = 0.25,
 }) => {
   const { t } = useTranslation();
   const playerRef = useRef<any>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const timeUpdateIntervalRef = useRef<number | null>(null);
-  console.log({ transcript });
-  // Refs for auto-scrolling to the active transcript segment
   const segmentRefs = useRef<(HTMLDivElement | null)[]>([]);
   const transcriptScrollRootRef = useRef<HTMLDivElement>(null);
 
   const [apiReady, setApiReady] = useState(false);
-  const [activeTab, setActiveTab] = useState("transcript");
+  const [activeTab] = useState("transcript");
   const [activeSegmentIndex, setActiveSegmentIndex] = useState(-1);
   const [hideYoutubeVideo, setHideYoutubeVideo] = useState(false);
 
@@ -390,7 +385,7 @@ const YouTubeReader: React.FC<YouTubePlayerProps> = ({
   ] as const;
 
   return (
-    <div className={`flex flex-col h-full min-h-0 ${className}`}>
+    <div className="flex flex-col h-full w-full flexgrow">
       <div
         className={`w-full flex-shrink-0 ${hideYoutubeVideo ? "hidden" : ""}`}
       >
@@ -417,139 +412,127 @@ const YouTubeReader: React.FC<YouTubePlayerProps> = ({
         </div>
       </div>
 
-      <Tabs
-        defaultValue="transcript"
-        value={activeTab}
-        onValueChange={setActiveTab}
-        className="flex flex-col h-full mt-2"
-      >
-        <div className="sticky top-0 z-20">
-          <div className="flex items-center justify-between px-2 py-2">
-            <TabsList className="rounded-2xl border dark:border-zinc-200/20 py-4">
-              {TABS_CONFIG.map((tab) => {
-                const IconComponent = tab.icon;
-                const isActive = activeTab === tab.id;
-                return (
-                  <TabsTrigger
-                    key={tab.id}
-                    value={tab.id}
-                    className={`relative flex items-center  dark:text-white justify-center gap-2 rounded-lg py-1.5 px-3 transition-all duration-200 font-normal ${
-                      isActive
-                        ? "text-green-700"
-                        : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      {isActive ? (
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      ) : (
-                        <IconComponent size={16} />
-                      )}
-                      <span>
-                        {t(
-                          tab.labelKey,
-                          tab.id === "transcript" ? "Transcript" : "Explanation"
-                        )}
-                      </span>
-                    </div>
-                  </TabsTrigger>
-                );
-              })}
-            </TabsList>
-
-            <Button
-              size="sm"
-              variant="outline"
-              className="rounded-full !py-4"
-              onClick={() => setHideYoutubeVideo((v) => !v)}
-            >
-              {hideYoutubeVideo ? <ArrowDown /> : <ArrowUp />}
-            </Button>
-          </div>
-        </div>
-
-        <TabsContent
-          value="transcript"
-          className="flex-1 min-h-0 m-0 data-[state=active]:flex data-[state=active]:flex-col"
-        >
-          <ScrollArea ref={transcriptScrollRootRef} className="h-full">
-            <div className="space-y-6">
-              {transcriptSections.length ? (
-                transcriptSections.map((section, sectionIndex) => (
-                  <div key={`section-${sectionIndex}`} className="space-y-3">
-                    <div className="space-y-2 ml-4">
-                      {section.segments.map((segment) => {
-                        const globalIndex = segment.__idx;
-                        return (
-                          <div
-                            key={`seg-${segment.__idx}`}
-                            ref={(el) => {
-                              segmentRefs.current[globalIndex] = el;
-                            }}
-                          >
-                            <Card
-                              className={`group cursor-pointer p-3 rounded-xl shadow-none border border-transparent hover:border-zinc-200 dark:hover:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-900/40 transition-all duration-200 ${
-                                activeSegmentIndex === globalIndex
-                                  ? "bg-zinc-50 dark:bg-zinc-900/40 border-zinc-200 dark:border-zinc-700"
-                                  : ""
-                              }`}
-                              onClick={() => handleTranscriptClick(segment)}
-                            >
-                              <div className="flex flex-col items-start gap-3">
-                                <div className="flex-shrink-0 flex items-center gap-2">
-                                  <span
-                                    className={`text-xs font-mono px-2.5 py-1 rounded-lg transition-colors ${
-                                      activeSegmentIndex === globalIndex
-                                        ? "bg-zinc-200 text-zinc-800 dark:bg-zinc-700/60 dark:text-zinc-100"
-                                        : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800/60 dark:text-zinc-300"
-                                    }`}
-                                  >
-                                    {segment.timestamp ||
-                                      formatTime(segment.start)}
-                                  </span>
-                                </div>
-                                <p
-                                  className={`text-xl leading-relaxed flex-1 transition-colors ${
-                                    activeSegmentIndex === globalIndex
-                                      ? "text-zinc-900 dark:text-zinc-100"
-                                      : "text-zinc-700 dark:text-zinc-300"
-                                  }`}
-                                >
-                                  {segment.text}
-                                </p>
-                              </div>
-                            </Card>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="h-full flex items-center justify-center text-zinc-500 dark:text-zinc-400">
-                  <div className="text-center py-8">
-                    <div className="w-16 h-16 mx-auto mb-4 bg-zinc-100 dark:bg-zinc-900 rounded-full flex items-center justify-center">
-                      <TextIcon
-                        size={24}
-                        className="text-zinc-400 dark:text-zinc-500"
-                      />
-                    </div>
-                    <h4 className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-                      {t("transcript.noData", "No transcript available")}
-                    </h4>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-xs mx-auto">
-                      {t(
-                        "transcript.willAppear",
-                        "Transcript will appear here when available"
-                      )}
-                    </p>
-                  </div>
+      <div className="sticky top-0 z-20">
+        <div className="flex items-center justify-between px-2 py-2">
+          {TABS_CONFIG.map((tab) => {
+            const IconComponent = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                value={tab.id}
+                className={`relative border flex items-center  dark:text-white justify-center gap-2 rounded-lg py-1.5 px-3 transition-all duration-200 font-normal ${
+                  isActive
+                    ? "text-green-700"
+                    : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  {isActive ? (
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  ) : (
+                    <IconComponent size={16} />
+                  )}
+                  <span>
+                    {t(
+                      tab.labelKey,
+                      tab.id === "transcript" ? "Transcript" : "Explanation"
+                    )}
+                  </span>
                 </div>
-              )}
+              </button>
+            );
+          })}
+
+          <Button
+            size="sm"
+            variant="outline"
+            className="rounded-full !py-4"
+            onClick={() => setHideYoutubeVideo((v) => !v)}
+          >
+            {hideYoutubeVideo ? <ArrowDown /> : <ArrowUp />}
+          </Button>
+        </div>
+      </div>
+
+      <ScrollArea
+        ref={transcriptScrollRootRef}
+        className="flex-1 overflow-auto"
+      >
+        <div className="space-y-6">
+          {transcriptSections.length ? (
+            transcriptSections.map((section, sectionIndex) => (
+              <div key={`section-${sectionIndex}`} className="space-y-3">
+                <div className="space-y-2 ml-4">
+                  {section.segments.map((segment) => {
+                    const globalIndex = segment.__idx;
+                    return (
+                      <div
+                        key={`seg-${segment.__idx}`}
+                        ref={(el) => {
+                          segmentRefs.current[globalIndex] = el;
+                        }}
+                      >
+                        <Card
+                          className={`group cursor-pointer p-3 rounded-xl shadow-none border border-transparent hover:border-zinc-200 dark:hover:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-900/40 transition-all duration-200 ${
+                            activeSegmentIndex === globalIndex
+                              ? "bg-zinc-50 dark:bg-zinc-900/40 border-zinc-200 dark:border-zinc-700"
+                              : ""
+                          }`}
+                          onClick={() => handleTranscriptClick(segment)}
+                        >
+                          <div className="flex flex-col items-start gap-3">
+                            <div className="flex-shrink-0 flex items-center gap-2">
+                              <span
+                                className={`text-xs font-mono px-2.5 py-1 rounded-lg transition-colors ${
+                                  activeSegmentIndex === globalIndex
+                                    ? "bg-zinc-200 text-zinc-800 dark:bg-zinc-700/60 dark:text-zinc-100"
+                                    : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800/60 dark:text-zinc-300"
+                                }`}
+                              >
+                                {segment.timestamp || formatTime(segment.start)}
+                              </span>
+                            </div>
+                            <p
+                              className={`text-xl leading-relaxed flex-1 transition-colors ${
+                                activeSegmentIndex === globalIndex
+                                  ? "text-zinc-900 dark:text-zinc-100"
+                                  : "text-zinc-700 dark:text-zinc-300"
+                              }`}
+                            >
+                              {segment.text}
+                            </p>
+                          </div>
+                        </Card>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="h-full flex items-center justify-center text-zinc-500 dark:text-zinc-400">
+              <div className="text-center py-8">
+                <div className="w-16 h-16 mx-auto mb-4 bg-zinc-100 dark:bg-zinc-900 rounded-full flex items-center justify-center">
+                  <TextIcon
+                    size={24}
+                    className="text-zinc-400 dark:text-zinc-500"
+                  />
+                </div>
+                <h4 className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                  {t("transcript.noData", "No transcript available")}
+                </h4>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-xs mx-auto">
+                  {t(
+                    "transcript.willAppear",
+                    "Transcript will appear here when available"
+                  )}
+                </p>
+              </div>
             </div>
-          </ScrollArea>
-        </TabsContent>
-      </Tabs>
+          )}
+        </div>
+      </ScrollArea>
     </div>
   );
 };

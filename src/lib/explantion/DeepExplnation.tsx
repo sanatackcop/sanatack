@@ -22,7 +22,7 @@ export type Explanation = {
   created_at: string;
   updated_at: string;
   language: "ar" | "en";
-  status: "pending" | "processing" | "failed" | "completed";
+  status: GenerationStatus;
   payload: ExplanationPayload | null;
   failureReason?: string | null;
 };
@@ -63,15 +63,6 @@ export type ExplanationPayload = {
 };
 
 const POLL_MS = 2000;
-
-const toGen = (s: Explanation["status"]): GenerationStatus =>
-  s === "pending"
-    ? GenerationStatus.PENDING
-    : s === "processing"
-    ? GenerationStatus.PROCESSING
-    : s === "failed"
-    ? GenerationStatus.FAILED
-    : GenerationStatus.COMPLETED;
 
 export default function MindMap({ workspaceId }: { workspaceId: string }) {
   const [items, setItems] = useState<Explanation[]>([]);
@@ -118,7 +109,7 @@ export default function MindMap({ workspaceId }: { workspaceId: string }) {
 
   useEffect(() => {
     load();
-  }, [load]);
+  }, [load, refresh]);
 
   const anyActive = useMemo(
     () =>
@@ -202,14 +193,14 @@ export default function MindMap({ workspaceId }: { workspaceId: string }) {
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-2">
-                              <h3 className="font-semibold text-lg text-gray-900 dark:text-white truncate w-[48ch]">
+                              <h3 className="font-semibold text-lg text-gray-900 dark:text-white truncate max-w-[50vw]">
                                 {it.payload?.title ||
                                   t(
                                     "explanations.list.untitled",
                                     "Explanation"
                                   )}
                               </h3>
-                              <StatusBadge status={toGen(it.status)} isRTL />
+                              <StatusBadge status={it.status} isRTL />
                             </div>
                             <div className="text-xs text-gray-500 dark:text-gray-400">
                               {createdLabel}

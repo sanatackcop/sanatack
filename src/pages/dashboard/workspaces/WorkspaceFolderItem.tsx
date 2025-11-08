@@ -11,7 +11,6 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import {
   Boxes,
@@ -207,15 +206,6 @@ export default function WorkspaceFolderItem({
         if (e.key === "Enter" || e.key === " ") onClick();
       }}
     >
-      <Toaster
-        richColors
-        theme="system"
-        dir={isRTLMode ? "rtl" : "ltr"}
-        position={isRTLMode ? "top-left" : "top-right"}
-        closeButton
-        duration={5000}
-      />
-
       <Card
         onClick={onClick}
         className="relative flex flex-col group rounded-2xl
