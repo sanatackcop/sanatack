@@ -153,6 +153,7 @@ export default function MindMap({ workspaceId }: { workspaceId: string }) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
+            dir={isRTL ? "rtl" : "ltr"}
             transition={{ duration: 0.25 }}
           >
             <div className="px-6 py-4 flex flex-col rounded-3xl justify-between space-y-3">
@@ -201,14 +202,14 @@ export default function MindMap({ workspaceId }: { workspaceId: string }) {
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-2">
-                              <h3 className="font-semibold text-lg text-gray-900 dark:text-white truncate">
+                              <h3 className="font-semibold text-lg text-gray-900 dark:text-white truncate w-[48ch]">
                                 {it.payload?.title ||
                                   t(
                                     "explanations.list.untitled",
                                     "Explanation"
                                   )}
                               </h3>
-                              <StatusBadge status={toGen(it.status)} />
+                              <StatusBadge status={toGen(it.status)} isRTL />
                             </div>
                             <div className="text-xs text-gray-500 dark:text-gray-400">
                               {createdLabel}
@@ -246,6 +247,7 @@ export default function MindMap({ workspaceId }: { workspaceId: string }) {
               buttonLabel={t("explanations.generate.button", "Generate")}
               onClick={handleCreateExplanation}
               dir={direction}
+              disabled={anyActive}
             />
           </motion.div>
         ) : (

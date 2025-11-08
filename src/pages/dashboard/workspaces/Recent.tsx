@@ -108,7 +108,6 @@ export default function Recent({
     <WorkspacesList
       workspaces={workspaces}
       refreshParentComponent={refreshComponent}
-      isRTL={isRTL}
     />
   );
 }

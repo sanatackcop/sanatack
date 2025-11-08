@@ -56,6 +56,7 @@ export interface EducationalTopic {
   color: string;
 }
 
+import { t } from "i18next";
 // components/Explore.tsx
 import React, { useState, useEffect } from "react";
 
@@ -216,11 +217,19 @@ const Explore: React.FC = () => {
     const diffTime = Math.abs(now.getTime() - date.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    if (diffDays === 1) return "1 day ago";
-    if (diffDays < 7) return `${diffDays} days ago`;
-    if (diffDays < 30) return `${Math.ceil(diffDays / 7)} weeks ago`;
-    if (diffDays < 365) return `${Math.ceil(diffDays / 30)} months ago`;
-    return `${Math.ceil(diffDays / 365)} years ago`;
+    if (diffDays === 1) return t("common.1_day_ago", "1 day ago");
+    if (diffDays < 7) return `${diffDays} ${t("common.days_ago", "days ago")}`;
+    if (diffDays < 30)
+      return `${Math.ceil(diffDays / 7)} ${t("common.weeks_ago", "weeks ago")}`;
+    if (diffDays < 365)
+      return `${Math.ceil(diffDays / 30)} ${t(
+        "common.months_ago",
+        "months ago"
+      )}`;
+    return `${Math.ceil(diffDays / 365)}  ${t(
+      "common.years_ago",
+      "years ago"
+    )}`;
   };
 
   const truncateText = (text: string, maxLength: number): string => {

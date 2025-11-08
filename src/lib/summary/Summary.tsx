@@ -12,9 +12,9 @@ import {
   QueuedStrip,
   StatusBadge,
 } from "@/pages/dashboard/utils";
+import { SummaryView } from "./SummaryView";
 import GenerateContentComponent from "@/shared/workspaces/Generate";
 import SummaryModal from "./SummaryModal";
-import { SummaryView } from "./SummaryView";
 
 export interface MindMap {
   root: string;
@@ -146,6 +146,7 @@ export function SummaryList({ workspaceId }: SummaryListProps) {
       <ScrollArea className="h-full">
         <motion.div
           key="list"
+          dir={direction}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
@@ -203,14 +204,14 @@ export function SummaryList({ workspaceId }: SummaryListProps) {
                       <div className="flex justify-between items-start gap-3">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-2">
-                            <h3 className="font-semibold text-lg text-gray-900 dark:text-white truncate">
+                            <h3 className="font-semibold text-lg text-gray-900 dark:text-white truncate w-[48ch]">
                               {summary.payload?.title ??
                                 t(
                                   "summary.list.generating",
                                   "Generating summary..."
                                 )}
                             </h3>
-                            <StatusBadge status={summary.status} />
+                            <StatusBadge status={summary.status} isRTL />
                           </div>
                         </div>
                       </div>
@@ -249,6 +250,7 @@ export function SummaryList({ workspaceId }: SummaryListProps) {
             buttonLabel={t("summary.generate.button", "Generate")}
             onClick={handleCreateSummary}
             dir={direction}
+            disabled={anyActive}
           />
         </motion.div>
       </ScrollArea>

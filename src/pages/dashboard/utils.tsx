@@ -429,26 +429,29 @@ export const getRateLimitToastMessage = (isRTL = false) =>
     ? "لقد وصلت إلى الحد المسموح. حاول مرة أخرى لاحقًا."
     : "You hit the limit. Try again later.";
 
-export const StatusBadge: React.FC<{ status: GenerationStatus }> = ({
-  status,
-}) => {
+export const StatusBadge: React.FC<{
+  status: GenerationStatus;
+  isRTL: boolean;
+}> = ({ status, isRTL }) => {
   switch (status) {
     case GenerationStatus.PENDING:
       return (
         <span className="inline-flex items-center gap-1.5 text-[11px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 border border-gray-200">
-          <Clock3 className="w-3.5 h-3.5" /> Pending
+          <Clock3 className="w-3.5 h-3.5" />{" "}
+          {isRTL ? "قيد الانتظار" : "Pending"}
         </span>
       );
     case GenerationStatus.PROCESSING:
       return (
         <span className="inline-flex items-center gap-1.5 text-[11px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-          <Loader2 className="w-3.5 h-3.5 animate-spin" /> Generating…
+          <Loader2 className="w-3.5 h-3.5 animate-spin" />{" "}
+          {isRTL ? "جارٍ الإنشاء" : "Generating…"}
         </span>
       );
     case GenerationStatus.FAILED:
       return (
         <span className="inline-flex items-center gap-1.5 text-[11px] px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200">
-          <AlertTriangle className="w-3.5 h-3.5" /> Failed
+          <AlertTriangle className="w-3.5 h-3.5" /> {isRTL ? "فشل" : "Failed"}
         </span>
       );
     case GenerationStatus.COMPLETED:

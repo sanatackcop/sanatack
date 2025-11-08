@@ -38,7 +38,6 @@ type WorkspaceFolderItemProps = {
   workspace: Workspace;
   onClick: () => void;
   refreshParentComponent: () => void;
-  isRTL?: boolean;
 };
 
 type Space = { id: string; name: string };
@@ -239,7 +238,7 @@ export default function WorkspaceFolderItem({
               {workspaceName}
             </h3>
             <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-              {formatRelativeDate(createdAt)}
+              {formatRelativeDate(createdAt, isRTLMode ? "ar" : "en")}
             </p>
           </div>
         </CardContent>

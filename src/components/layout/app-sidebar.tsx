@@ -754,7 +754,8 @@ export function AppSidebar({
               <img
                 src={String(darkMode ? LogoDark : LogoLight)}
                 alt="logo"
-                className={`h-full w-auto transition-all object-contain scale-[2.5] ${
+                onClick={() => navigate("/dashboard/overview")}
+                className={`h-full cursor-pointer w-auto transition-all object-contain scale-[2.5] ${
                   i18n.dir() === "rtl" ? "pr-6" : "pl-5"
                 }`}
               />
