@@ -3,9 +3,9 @@ import { UserContextProvider } from "./context/UserContext";
 import ErrorBoundary from "./utils/ErrorBoundary";
 import Router from "./utils/router";
 import { DASHBOARDTYPE } from "./utils/types/platfrom";
-import { Toaster } from "sonner";
 import * as pdfjsLib from "pdfjs-dist";
 import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+import { Toaster } from "./components/ui/sonner";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
 
