@@ -10,7 +10,7 @@ export default function LearningDashboard() {
 
   return (
     <>
-      <section className="px-32  py-4 my-5" dir={isRTL ? "rtl" : "ltr"}>
+      <section className="p-5">
         <header className="mb-2">
           <h2
             className={`text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-5 ${

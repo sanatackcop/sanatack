@@ -1298,7 +1298,7 @@ const LearnPlayground: React.FC = () => {
                     {state.tab === "summary" && workspace?.id && (
                       <TabsContent
                         value="summary"
-                        className="m-0 h-full p-4 text-zinc-500 dark:text-zinc-400 w-full max-w-full"
+                        className="m-0 h-full p-4 text-zinc-500 dark:text-zinc-400 flex flex-col w-full max-w-full"
                         style={{ maxHeight: "100%" }}
                       >
                         <SummaryList workspaceId={String(workspace.id)} />

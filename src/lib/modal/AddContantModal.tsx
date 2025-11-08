@@ -31,6 +31,7 @@ import {
 } from "@/utils/_apis/learnPlayground-api";
 import CircularProgress from "@mui/material/CircularProgress";
 import { useTranslation } from "react-i18next";
+import { useSidebarRefresh } from "@/context/SidebarRefreshContext";
 
 interface AddContentModalProps {
   open: boolean;
@@ -66,6 +67,7 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
   const { t, i18n } = useTranslation();
   const dir = i18n.dir();
   const isRTL = dir === "rtl";
+  const { refreshWorkspace } = useSidebarRefresh();
 
   const navigate = useNavigate();
   const [activeModal, setActiveModal] = useState<ModalType>("selection");
@@ -285,6 +287,9 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
         documentId: upload.documentId!,
         workspaceName: uploadState.files[0].name,
       });
+      await refreshWorkspace().catch((error) => {
+        console.error("Failed to refresh sidebar workspaces", error);
+      });
       if (!upload.documentId) {
         throw new Error("Upload response is missing a document id.");
       }
@@ -343,6 +348,9 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
       const workspace: any = await createNewWorkSpace({
         workspaceName: trimmedName,
       });
+      await refreshWorkspace().catch((error) => {
+        console.error("Failed to refresh sidebar workspaces", error);
+      });
       navigate(`/dashboard/learn/workspace/${workspace.workspace.id}`);
       handleClose();
     } catch (error: any) {
@@ -374,6 +382,9 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
       const workSpace: any = await createNewWorkSpace({
         youtubeVideoId: getYoutubeVIdeo.id,
         workspaceName: getYoutubeVIdeo.info.title,
+      });
+      await refreshWorkspace().catch((error) => {
+        console.error("Failed to refresh sidebar workspaces", error);
       });
       navigate(`/dashboard/learn/workspace/${workSpace.workspace.id}`);
       handleClose();

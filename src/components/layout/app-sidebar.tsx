@@ -16,7 +16,6 @@ import {
   BoxIcon,
   ChevronDown,
   LogOut,
-  FileIcon,
   Brain,
   CalendarDaysIcon,
   CheckCircle,
@@ -33,6 +32,7 @@ import {
   Search,
   ChevronDownIcon,
   Settings,
+  FileTextIcon,
 } from "lucide-react";
 import clsx from "clsx";
 import {
@@ -65,7 +65,7 @@ import { useSettings } from "@/context/SettingsContexts";
 import { SearchCommand } from "@/pages/dashboard/search/Index";
 import LogoLight from "@/assets/logo.svg";
 import LogoDark from "@/assets/dark_logo.svg";
-import { SidebarRefreshProvider } from "@/context/SidebarRefreshContext";
+import type { SidebarRefreshContextValue } from "@/context/SidebarRefreshContext";
 
 type MenuItem =
   | {
@@ -95,7 +95,7 @@ interface Workspace {
   id: string;
   title?: string;
   workspaceName?: string;
-  workspaceType: "youtube" | "docuemnt";
+  type: "video" | "docuemnt";
   updatedAt: string;
 }
 
@@ -104,9 +104,13 @@ type SpaceItem = { id: string; title: string; url: string };
 
 interface AppSidebarProps {
   onCollapse?: () => void;
+  onRefreshersChange?: (value: SidebarRefreshContextValue) => void;
 }
 
-export function AppSidebar({ onCollapse }: AppSidebarProps) {
+export function AppSidebar({
+  onCollapse,
+  onRefreshersChange,
+}: AppSidebarProps) {
   const { t, i18n } = useTranslation();
   const { darkMode, toggleDarkMode, language, setLanguage } = useSettings();
   const [showUserDropdown, setShowUserDropdown] = useState(false);
@@ -314,27 +318,28 @@ export function AppSidebar({ onCollapse }: AppSidebarProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showUserDropdown]);
 
-  useEffect(() => {
-    const fetchSpaces = async () => {
-      setLoadingSpaces(true);
-      setSpacesError(null);
-      try {
-        const res = await getAllSpacesApi();
-        const list: RawSpace[] = (res?.data ?? res) as RawSpace[];
-        const mapped: SpaceItem[] = (list || []).map((s) => ({
-          id: s.id,
-          title: s.name,
-          url: `/dashboard/spaces/${s.id}`,
-        }));
-        setSpaces(mapped);
-      } catch (e: any) {
-        setSpacesError(e?.message ?? t("errors.failedToLoadSpaces"));
-      } finally {
-        setLoadingSpaces(false);
-      }
-    };
-    fetchSpaces();
+  const refreshSpace = useCallback(async () => {
+    setLoadingSpaces(true);
+    setSpacesError(null);
+    try {
+      const res = await getAllSpacesApi();
+      const list: RawSpace[] = (res?.data ?? res) as RawSpace[];
+      const mapped: SpaceItem[] = (list || []).map((s) => ({
+        id: s.id,
+        title: s.name,
+        url: `/dashboard/spaces/${s.id}`,
+      }));
+      setSpaces(mapped);
+    } catch (e: any) {
+      setSpacesError(e?.message ?? t("errors.failedToLoadSpaces"));
+    } finally {
+      setLoadingSpaces(false);
+    }
   }, [t]);
+
+  useEffect(() => {
+    refreshSpace();
+  }, [refreshSpace]);
 
   const doCreateSpace = async () => {
     setCreating(true);
@@ -378,6 +383,10 @@ export function AppSidebar({ onCollapse }: AppSidebarProps) {
   useEffect(() => {
     refreshWorkspace();
   }, [refreshWorkspace]);
+
+  useEffect(() => {
+    onRefreshersChange?.({ refreshWorkspace, refreshSpace });
+  }, [onRefreshersChange, refreshWorkspace, refreshSpace]);
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
 
@@ -676,13 +685,13 @@ export function AppSidebar({ onCollapse }: AppSidebarProps) {
             <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
           ) : (
             <>
-              {workspace.workspaceType === "youtube" ? (
+              {workspace.type === "video" ? (
                 <Play
                   className="h-4 w-4 text-sidebar-foreground/60 group-hover:text-sidebar-accent-foreground"
                   strokeWidth={1.75}
                 />
               ) : (
-                <FileIcon
+                <FileTextIcon
                   className="h-4 w-4 text-sidebar-foreground/60 group-hover:text-sidebar-accent-foreground"
                   strokeWidth={1.75}
                 />
@@ -725,7 +734,7 @@ export function AppSidebar({ onCollapse }: AppSidebarProps) {
   );
 
   return (
-    <SidebarRefreshProvider value={{ refreshWorkspace }}>
+    <>
       <div
         dir={isRTL ? "rtl" : "ltr"}
         lang={i18n.language}
@@ -1160,78 +1169,78 @@ export function AppSidebar({ onCollapse }: AppSidebarProps) {
             </div>
           </div>
         </div>
+      </div>
 
-        <Modal
-          open={isSettingsOpen}
-          onOpenChange={setIsSettingsOpen}
-          title={t("sidebar.settingsModal.title")}
-          description={t("sidebar.settingsModal.description")}
-          confirmLabel={t("common.close")}
-          showCancel={false}
-          onConfirm={() => setIsSettingsOpen(false)}
-          dir={isRTL ? "rtl" : "ltr"}
-          className="rounded-2xl"
-        >
-          <div className="space-y-6">
+      <Modal
+        open={isSettingsOpen}
+        onOpenChange={setIsSettingsOpen}
+        title={t("sidebar.settingsModal.title")}
+        description={t("sidebar.settingsModal.description")}
+        confirmLabel={t("common.close")}
+        showCancel={false}
+        onConfirm={() => setIsSettingsOpen(false)}
+        dir={isRTL ? "rtl" : "ltr"}
+        className="rounded-2xl"
+      >
+        <div className="space-y-6">
+          <div
+            className={clsx(
+              "flex items-start justify-between gap-3",
+              isRTL ? "flex-row-reverse" : "flex-row"
+            )}
+          >
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                {t("sidebar.settingsModal.appearance.title")}
+              </p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                {t("sidebar.settingsModal.appearance.description")}
+              </p>
+            </div>
+            <Switch
+              checked={darkMode}
+              onCheckedChange={() => toggleDarkMode()}
+              aria-label={t("sidebar.settingsModal.appearance.ariaLabel")}
+            />
+          </div>
+
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                {t("sidebar.settingsModal.language.title")}
+              </p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                {t("sidebar.settingsModal.language.description")}
+              </p>
+            </div>
             <div
               className={clsx(
-                "flex items-start justify-between gap-3",
+                "flex gap-2",
                 isRTL ? "flex-row-reverse" : "flex-row"
               )}
             >
-              <div className="space-y-1">
-                <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                  {t("sidebar.settingsModal.appearance.title")}
-                </p>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                  {t("sidebar.settingsModal.appearance.description")}
-                </p>
-              </div>
-              <Switch
-                checked={darkMode}
-                onCheckedChange={() => toggleDarkMode()}
-                aria-label={t("sidebar.settingsModal.appearance.ariaLabel")}
-              />
-            </div>
-
-            <div className="space-y-3">
-              <div className="space-y-1">
-                <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                  {t("sidebar.settingsModal.language.title")}
-                </p>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                  {t("sidebar.settingsModal.language.description")}
-                </p>
-              </div>
-              <div
-                className={clsx(
-                  "flex gap-2",
-                  isRTL ? "flex-row-reverse" : "flex-row"
-                )}
+              <Button
+                type="button"
+                size="sm"
+                variant={language === "ar" ? "default" : "outline"}
+                className="flex-1"
+                onClick={() => handleLanguageSelect("ar")}
               >
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={language === "ar" ? "default" : "outline"}
-                  className="flex-1"
-                  onClick={() => handleLanguageSelect("ar")}
-                >
-                  {t("languages.ar")}
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={language === "en" ? "default" : "outline"}
-                  className="flex-1"
-                  onClick={() => handleLanguageSelect("en")}
-                >
-                  {t("languages.en")}
-                </Button>
-              </div>
+                {t("languages.ar")}
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant={language === "en" ? "default" : "outline"}
+                className="flex-1"
+                onClick={() => handleLanguageSelect("en")}
+              >
+                {t("languages.en")}
+              </Button>
             </div>
           </div>
-        </Modal>
-      </div>
-    </SidebarRefreshProvider>
+        </div>
+      </Modal>
+    </>
   );
 }

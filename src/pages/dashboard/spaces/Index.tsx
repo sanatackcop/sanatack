@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
 import { formatRelativeDate } from "@/components/utiles";
+import { useSidebarRefresh } from "@/context/SidebarRefreshContext";
 
 export default function Spaces({
   setParentRefresh,
@@ -40,6 +41,7 @@ export default function Spaces({
   const { i18n, t } = useTranslation();
   const isRTL = i18n.language === "ar";
   const navigate = useNavigate();
+  const { refreshSpace } = useSidebarRefresh();
   const [spaces, setSpaces] = useState<Space[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -91,6 +93,9 @@ export default function Spaces({
       setOpenAdd(false);
       fetchAllSpaces();
       setParentRefresh(!refreshParent);
+      await refreshSpace().catch((error) =>
+        console.error("Failed to refresh sidebar spaces", error)
+      );
     } catch (error) {
       console.error("Failed to create space:", error);
     } finally {

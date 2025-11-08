@@ -1,7 +1,8 @@
 import { createContext, useContext } from "react";
 
-type SidebarRefreshContextValue = {
+export type SidebarRefreshContextValue = {
   refreshWorkspace: () => Promise<void>;
+  refreshSpace: () => Promise<void>;
 };
 
 const SidebarRefreshContext = createContext<

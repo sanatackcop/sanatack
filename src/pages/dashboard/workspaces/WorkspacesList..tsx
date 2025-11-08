@@ -34,16 +34,16 @@ export default function WorkspacesList({
   };
 
   return (
-    <section>
-      <div className="flex flex-wrap w-full gap-10 xl:gap-2">
+    <>
+      <div className="flex flex-wrap gap-5">
         <Card
           onClick={() => setOpen(true)}
           className="
-            relative flex flex-col justify-center items-center group rounded-2xl w-[15em]
-            border-2 border-dashed border-zinc-300 cursor-pointer h-48
-            hover:border-zinc-400 
-            transition-all duration-300 ease-out
-          "
+              relative flex flex-col justify-center items-center group rounded-2xl
+              border-2 border-dashed border-zinc-300 cursor-pointer h-48 w-48 
+              hover:border-zinc-400 
+              transition-all duration-300 ease-out
+            "
           role="button"
           tabIndex={0}
           aria-label="Add New Workspace"
@@ -54,12 +54,12 @@ export default function WorkspacesList({
           <div className="flex flex-col justify-center items-center gap-3 text-zinc-400 group-hover:text-zinc-600 transition-colors duration-300">
             <div
               className="
-              relative flex items-center justify-center
-              w-12 h-12 rounded-full 
-              bg-zinc-100 group-hover:bg-zinc-200
-              transition-all duration-300
-              group-hover:scale-110
-            "
+                relative flex items-center justify-center
+                w-12 h-12 rounded-full 
+                bg-zinc-100 group-hover:bg-zinc-200
+                transition-all duration-300
+                group-hover:scale-110
+              "
             >
               <Plus className="h-6 w-6 transition-transform duration-300 group-hover:rotate-90" />
             </div>
@@ -82,6 +82,6 @@ export default function WorkspacesList({
       </div>
 
       <AddContentModal open={open} onClose={handleReset} />
-    </section>
+    </>
   );
 }

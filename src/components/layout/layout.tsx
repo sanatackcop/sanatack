@@ -8,6 +8,10 @@ import {
 import * as React from "react";
 import { PanelLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import {
+  SidebarRefreshProvider,
+  SidebarRefreshContextValue,
+} from "@/context/SidebarRefreshContext";
 
 const CONFIG = {
   AUTO_COLLAPSE_THRESHOLD: 10,
@@ -28,6 +32,11 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const { i18n } = useTranslation();
+  const [sidebarRefreshers, setSidebarRefreshers] =
+    React.useState<SidebarRefreshContextValue>({
+      refreshWorkspace: async () => {},
+      refreshSpace: async () => {},
+    });
 
   const [isCollapsed, setIsCollapsed] = React.useState(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.SIDEBAR_COLLAPSED);
@@ -140,7 +149,8 @@ export default function DashboardLayout({
   }, []);
 
   return (
-    <SidebarProvider>
+    <SidebarRefreshProvider value={sidebarRefreshers}>
+      <SidebarProvider>
       <div
         className="flex h-dvh w-screen overflow-hidden bg-zinc-100/20 dark:bg-[#101012]"
         dir={currentDir}
@@ -167,7 +177,10 @@ export default function DashboardLayout({
                 isCollapsed ? "opacity-0 pointer-events-none" : "opacity-100"
               }`}
             >
-              <AppSidebar onCollapse={handleCollapse} />
+              <AppSidebar
+                onCollapse={handleCollapse}
+                onRefreshersChange={setSidebarRefreshers}
+              />
             </div>
           </ResizablePanel>
 
@@ -232,6 +245,7 @@ export default function DashboardLayout({
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>
-    </SidebarProvider>
+      </SidebarProvider>
+    </SidebarRefreshProvider>
   );
 }
