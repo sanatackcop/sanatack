@@ -417,6 +417,19 @@
     "errors": {
       "loadCourses": "An error occurred while loading courses. Please try again later."
     },
+    "generation": {
+      "notifications": {
+        "completed": "{{type}} \"{{name}}\" is ready.",
+        "failed": "{{type}} \"{{name}}\" couldn't be generated.",
+        "untitled": "Untitled",
+        "types": {
+          "summary": "Summary",
+          "flashcards": "Flashcard set",
+          "quiz": "Quiz",
+          "explanation": "Explanation"
+        }
+      }
+    },
     "spaces": {
       "title": "Spaces",
       "newSpace": "New Space",

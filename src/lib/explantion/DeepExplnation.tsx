@@ -16,6 +16,7 @@ import { useTranslation } from "react-i18next";
 import GenerateContentComponent from "@/shared/workspaces/Generate";
 import { cn } from "@/lib/utils";
 import ExplanationModal from "./ExplanationModal";
+import useGenerationNotifications from "@/hooks/useGenerationNotifications";
 
 export type Explanation = {
   id: string;
@@ -116,6 +117,11 @@ export default function MindMap({ workspaceId }: { workspaceId: string }) {
       items.some((x) => x.status === "pending" || x.status === "processing"),
     [items]
   );
+
+  useGenerationNotifications(items, {
+    entity: "explanation",
+    getName: (item) => item.payload?.title,
+  });
 
   useEffect(() => {
     if (!anyActive) return;
