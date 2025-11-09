@@ -53,40 +53,112 @@ const SettingsContext = createContext<SettingsContextProps | undefined>(
   undefined
 );
 
-export const SettingsProvider = ({ children }: { children: ReactNode }) => {
-  // Initialize dark mode from localStorage (default: false)
-  const [darkMode, setDarkMode] = useState(() => {
-    const saved = localStorage.getItem("darkMode");
-    return saved === "true";
-  });
+const SUPPORTED_LANGUAGES = ["ar", "en"] as const;
+type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
+const supportedLanguageSet = new Set<string>(SUPPORTED_LANGUAGES);
+const FALLBACK_LANGUAGE: SupportedLanguage = "ar";
 
-  // Initialize language from localStorage (default: Arabic)
-  const [language, setLanguageState] = useState(() => {
-    return localStorage.getItem("language") || "ar";
-  });
+const isBrowser = () => typeof window !== "undefined";
+
+const getSystemPrefersDark = () => {
+  if (!isBrowser()) return false;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches;
+};
+
+const getStoredDarkPreference = () => {
+  if (!isBrowser()) return null;
+  return localStorage.getItem("darkMode");
+};
+
+const getInitialDarkMode = () => {
+  const savedPreference = getStoredDarkPreference();
+  if (savedPreference !== null) {
+    return savedPreference === "true";
+  }
+  return getSystemPrefersDark();
+};
+
+const hasManualDarkPreference = () => getStoredDarkPreference() !== null;
+
+const normalizeLanguage = (
+  value?: string | null
+): SupportedLanguage | undefined => {
+  if (!value) return undefined;
+  const base = value.split("-")[0]?.toLowerCase();
+  if (base && supportedLanguageSet.has(base)) {
+    return base as SupportedLanguage;
+  }
+  return undefined;
+};
+
+const getInitialLanguage = (): SupportedLanguage => {
+  if (!isBrowser()) return FALLBACK_LANGUAGE;
+
+  const saved = normalizeLanguage(localStorage.getItem("language"));
+  if (saved) return saved;
+
+  const primaryNavigatorLang = normalizeLanguage(navigator.language);
+  if (primaryNavigatorLang) return primaryNavigatorLang;
+
+  if (Array.isArray(navigator.languages)) {
+    for (const lang of navigator.languages) {
+      const normalized = normalizeLanguage(lang);
+      if (normalized) return normalized;
+    }
+  }
+
+  return FALLBACK_LANGUAGE;
+};
+
+export const SettingsProvider = ({ children }: { children: ReactNode }) => {
+  const [darkMode, setDarkMode] = useState<boolean>(getInitialDarkMode);
+  const [manualDarkPreference, setManualDarkPreference] = useState(
+    hasManualDarkPreference
+  );
+
+  const [language, setLanguageState] =
+    useState<SupportedLanguage>(getInitialLanguage);
 
   // Current material check
   const [currentCheck, setCurrentCheck] = useState<MaterialCheckInfo>();
 
-  // Sync dark mode to DOM and localStorage
+  // Sync dark mode class and, when manually chosen, persist the preference
   useEffect(() => {
+    if (!isBrowser()) return;
     if (darkMode) {
       document.documentElement.classList.add("dark");
     } else {
       document.documentElement.classList.remove("dark");
     }
-    localStorage.setItem("darkMode", String(darkMode));
-  }, [darkMode]);
+    if (manualDarkPreference) {
+      localStorage.setItem("darkMode", String(darkMode));
+    }
+  }, [darkMode, manualDarkPreference]);
+
+  // Keep dark mode aligned with OS preference until the user overrides it
+  useEffect(() => {
+    if (!isBrowser() || manualDarkPreference) return;
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = (event: MediaQueryListEvent) => {
+      setDarkMode(event.matches);
+    };
+
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, [manualDarkPreference]);
 
   // Sync language to i18n, DOM, and localStorage
   useEffect(() => {
     i18n.changeLanguage(language);
     document.documentElement.dir = i18n.dir(language);
     document.documentElement.lang = language;
-    localStorage.setItem("language", language);
+    if (isBrowser()) {
+      localStorage.setItem("language", language);
+    }
   }, [language]);
 
   const toggleDarkMode = () => {
+    setManualDarkPreference(true);
     setDarkMode((prev) => !prev);
   };
 
@@ -95,7 +167,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const setLanguage = (lng: string) => {
-    setLanguageState(lng);
+    setLanguageState(normalizeLanguage(lng) || FALLBACK_LANGUAGE);
   };
 
   return (
