@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Dispatch, SetStateAction } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Dialog,
@@ -12,15 +12,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { UploadCloud, Link2, Loader2 } from "lucide-react";
-import {
-  createNewWorkSpace,
-  DocumentStatus,
-  youtubeUrlPastApi,
-} from "@/utils/_apis/learnPlayground-api";
-import CircularProgress from "@mui/material/CircularProgress";
+import { createNewWorkSpace } from "@/utils/_apis/learnPlayground-api";
 import { useTranslation } from "react-i18next";
 import { useSidebarRefresh } from "@/context/SidebarRefreshContext";
 import PDFUploadModal from "./PDFUploadModal";
+import VideoModal from "./VideoModal";
 
 interface AddContentModalProps {
   open: boolean;
@@ -35,42 +31,16 @@ export type ModalType =
   | "createCourse"
   | "recordAudio";
 
-export interface UploadState {
-  files: File[];
-  isUploading: boolean;
-  uploadProgress: number;
-  error: string | null;
-  documentId: string | null;
-  status: DocumentStatus | null;
-  downloadUrl: string | null;
-}
-
-interface PasteState {
-  url: string;
-  text: string;
-  isProcessing: boolean;
-  error: string | null;
-}
+export type SetActiveModalType = Dispatch<SetStateAction<ModalType>>;
 
 export function AddContentModal({ open, onClose }: AddContentModalProps) {
   const { t, i18n } = useTranslation();
   const dir = i18n.dir();
   const isRTL = dir === "rtl";
   const { refreshWorkspace } = useSidebarRefresh();
-
   const navigate = useNavigate();
+
   const [activeModal, setActiveModal] = useState<ModalType>("selection");
-
-  const [uploadState, setUploadState] = useState<UploadState>({
-    files: [],
-    isUploading: false,
-    uploadProgress: 0,
-    error: null,
-    documentId: null,
-    status: null,
-    downloadUrl: null,
-  });
-
   const [chatState, setChatState] = useState<{
     name: string;
     isCreating: boolean;
@@ -78,13 +48,6 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
   }>({
     name: "",
     isCreating: false,
-    error: null,
-  });
-
-  const [pasteState, setPasteState] = useState<PasteState>({
-    url: "",
-    text: "",
-    isProcessing: false,
     error: null,
   });
 
@@ -143,41 +106,13 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
     }
   }
 
-  async function handlePasteSubmit() {
-    if (!pasteState.url && !pasteState.text) return;
-
-    setPasteState((prev) => ({ ...prev, isProcessing: true, error: null }));
-
-    try {
-      const getYoutubeVIdeo: any = await youtubeUrlPastApi({
-        url: pasteState.url,
-      });
-
-      const workSpace: any = await createNewWorkSpace({
-        youtubeVideoId: getYoutubeVIdeo.id,
-        workspaceName: getYoutubeVIdeo.info.title,
-      });
-      await refreshWorkspace().catch((error) => {
-        console.error("Failed to refresh sidebar workspaces", error);
-      });
-      navigate(`/dashboard/learn/workspace/${workSpace.workspace.id}`);
-      handleClose();
-    } catch (error: any) {
-      setPasteState((prev) => ({
-        ...prev,
-        error: error.message || "Processing failed",
-        isProcessing: false,
-      }));
-    }
-  }
-
-  useEffect(() => {
-    if (activeModal === "upload") {
-      if (uploadState.status === "uploaded") {
-        handleClose();
-      }
-    }
-  }, [uploadState]);
+  // useEffect(() => {
+  //   if (activeModal === "upload") {
+  //     if (uploadState.status === "uploaded") {
+  //       handleClose();
+  //     }
+  //   }
+  // }, [uploadState]);
 
   useEffect(() => {
     if (activeModal === "chat") {
@@ -189,21 +124,21 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
     onClose();
     clearPolling();
     setActiveModal("selection");
-    setUploadState({
-      files: [],
-      isUploading: false,
-      uploadProgress: 0,
-      error: null,
-      documentId: null,
-      status: null,
-      downloadUrl: null,
-    });
-    setPasteState({
-      url: "",
-      text: "",
-      isProcessing: false,
-      error: null,
-    });
+    // setUploadState({
+    //   files: [],
+    //   isUploading: false,
+    //   uploadProgress: 0,
+    //   error: null,
+    //   documentId: null,
+    //   status: null,
+    //   downloadUrl: null,
+    // });
+    // setPasteState({
+    //   url: "",
+    //   text: "",
+    //   isProcessing: false,
+    //   error: null,
+    // });
     setChatState({
       name: "",
       isCreating: false,
@@ -415,80 +350,10 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
         )}
 
         {activeModal === "paste" && (
-          <>
-            <DialogHeader className={isRTL ? "text-right" : "text-left"}>
-              <DialogTitle>
-                {t("modals.addContent.pasteUrl.title", "Paste URL")}
-              </DialogTitle>
-              <DialogDescription>
-                {t(
-                  "modals.addContent.pasteUrl.helper",
-                  "Paste a URL from YouTube or other sources"
-                )}
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="space-y-4">
-              <div>
-                <Label
-                  htmlFor="url"
-                  className={`block mb-2 ${isRTL ? "text-right" : "text-left"}`}
-                >
-                  {t("modals.addContent.pasteUrl.label", "URL")}
-                </Label>
-                <Input
-                  id="url"
-                  dir={isRTL ? "rtl" : "ltr"}
-                  placeholder={t(
-                    "modals.addContent.pasteUrl.placeholder",
-                    "https://youtube.com/watch?v=..."
-                  )}
-                  value={pasteState.url}
-                  onChange={(e) =>
-                    setPasteState((prev) => ({
-                      ...prev,
-                      url: e.target.value,
-                    }))
-                  }
-                />
-              </div>
-
-              {pasteState.error && (
-                <div className="text-red-600 text-sm text-center">
-                  {pasteState.error}
-                </div>
-              )}
-            </div>
-
-            <DialogFooter
-              className={`flex gap-2 ${
-                isRTL ? "flex-row-reverse" : "flex-row"
-              }`}
-            >
-              <Button
-                variant="outline"
-                onClick={() => setActiveModal("selection")}
-              >
-                {t("common.back", "Back")}
-              </Button>
-              <Button
-                onClick={handlePasteSubmit}
-                disabled={!pasteState.url || pasteState.isProcessing}
-              >
-                {pasteState.isProcessing ? (
-                  <div className="flex items-center gap-2">
-                    <CircularProgress size={20} />
-                    {t(
-                      "modals.addContent.pasteUrl.processing",
-                      "Processing..."
-                    )}
-                  </div>
-                ) : (
-                  t("modals.addContent.pasteUrl.submit", "Process Content")
-                )}
-              </Button>
-            </DialogFooter>
-          </>
+          <VideoModal
+            setActiveModal={setActiveModal}
+            handleClose={handleClose}
+          />
         )}
 
         {activeModal === "createCourse" && (

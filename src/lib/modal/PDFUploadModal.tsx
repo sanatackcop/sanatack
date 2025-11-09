@@ -5,8 +5,8 @@ import {
   uploadDocumentApi,
 } from "@/utils/_apis/learnPlayground-api";
 import { FileText, Image, Music, UploadCloud, Video } from "lucide-react";
-import { Dispatch, SetStateAction, useRef, useState } from "react";
-import { ModalType, UploadState } from "./AddContantModal";
+import { useRef, useState } from "react";
+import { SetActiveModalType } from "./AddContantModal";
 import { useSidebarRefresh } from "@/context/SidebarRefreshContext";
 import {
   DialogDescription,
@@ -19,10 +19,20 @@ import { Button } from "@/components/ui/button";
 import { formatFileSize } from "../chat/chatInput";
 import { Progress } from "@/components/ui/progress";
 
+interface UploadState {
+  files: File[];
+  isUploading: boolean;
+  uploadProgress: number;
+  error: string | null;
+  documentId: string | null;
+  status: DocumentStatus | null;
+  downloadUrl: string | null;
+}
+
 export default function PDFUploadModal({
   setActiveModal,
 }: {
-  setActiveModal: Dispatch<SetStateAction<ModalType>>;
+  setActiveModal: SetActiveModalType;
 }) {
   const [isDragActive, setIsDragActive] = useState(false);
   const uploadRef = useRef<HTMLInputElement | null>(null);
