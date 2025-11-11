@@ -278,6 +278,8 @@
     "brightness": "Brightness"
   },
   "sidebar": {
+    "comminty": "comminty",
+    "leaderboard": "leaderboard",
     "home": "Home",
     "createMap": "Create Map",
     "search": "Search",

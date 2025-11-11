@@ -278,6 +278,8 @@
     "brightness": "السطوع"
   },
   "sidebar": {
+    "comminty": "المجتماع",
+    "leaderboard": "المتصدرين",
     "home": "الرئيسية",
     "createMap": "انشاء خطاط",
     "search": "البحث",
