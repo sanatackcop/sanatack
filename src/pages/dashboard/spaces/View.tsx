@@ -33,10 +33,10 @@ import {
 import { useParams } from "react-router-dom";
 import { getSingleSpaceApi, updateSpaceApi } from "@/utils/_apis/courses-apis";
 import { Space } from "@/types/courses";
-import WorkspacesList from "../workspaces/WorkspacesList.";
 import { formatRelativeDate } from "@/components/utiles";
 import EmojiPicker, { EmojiStyle } from "emoji-picker-react";
 import { createApi } from "unsplash-js";
+import Recent from "../workspaces/Recent";
 
 type UnsplashPhoto = {
   id: string;
@@ -221,7 +221,6 @@ export default function SpaceView() {
             })
           : await unsplashApi.photos.list({
               perPage: 24,
-              // orderBy: "latest",
             });
 
         const payload = Array.isArray(response.response)
@@ -321,7 +320,7 @@ export default function SpaceView() {
   return (
     <section className="relative min-h-screen w-full" dir={dir} lang={language}>
       {/* Cover */}
-      <div className="relative min-h-[18svh] h-[22svh] sm:h-[28svh] md:h-[32svh] w-full overflow-hidden">
+      <div className="relative h-[200px] sm:h-[240px] md:h-[280px] lg:h-[320px] w-full overflow-hidden">
         {loading ? (
           <Skeleton className="h-full w-full" />
         ) : space?.coverImageUrl ? (
@@ -336,41 +335,35 @@ export default function SpaceView() {
               loading="eager"
               fetchPriority="high"
             />
-            {/* top-to-bottom gradient for legibility */}
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/0 to-black/30 dark:from-black/30 dark:via-black/10 dark:to-black/50" />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-black/0 to-black/40 dark:from-black/30 dark:via-black/10 dark:to-black/60" />
           </>
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-zinc-100 via-zinc-50 to-zinc-200 dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800">
             <div className="text-center px-4">
-              <ImageIcon className="mx-auto h-14 w-14 text-zinc-300 dark:text-zinc-700" />
-              <p className="mt-3 text-sm text-zinc-500 dark:text-zinc-400">
+              <ImageIcon className="mx-auto h-12 w-12 sm:h-14 sm:w-14 text-zinc-300 dark:text-zinc-700" />
+              <p className="mt-3 text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">
                 {t("dashboard.spaceView.noCover", "Click edit to add a cover")}
               </p>
             </div>
           </div>
         )}
 
-        {/* Floating Cover Toolbar (responsive, RTL/LTR aware) */}
-        <div
-          className={[
-            "pointer-events-none absolute inset-x-0 bottom-3 sm:bottom-4",
-            "px-3 sm:px-4",
-          ].join(" ")}
-        >
+        {/* Floating Cover Toolbar - Fixed z-index */}
+        <div className="absolute inset-x-0 bottom-3 sm:bottom-4 px-3 sm:px-4 z-20">
           <div
-            className={[
-              "mx-auto flex w-full max-w-6xl",
-              dir === "rtl" ? "justify-start" : "justify-end",
-            ].join(" ")}
+            className={`mx-auto flex w-full max-w-6xl ${
+              dir === "rtl" ? "justify-start" : "justify-end"
+            }`}
           >
-            <div className="pointer-events-auto flex items-center gap-2">
+            <div className="flex items-center gap-2">
               {/* Edit Space */}
               <Dialog open={openEdit} onOpenChange={setOpenEdit}>
                 <DialogTrigger asChild>
                   <Button
+                    type="button"
                     variant="secondary"
                     size="sm"
-                    className="rounded-xl border border-zinc-200/60 bg-white/95 shadow-lg backdrop-blur-md transition-all hover:scale-[1.02] hover:bg-white hover:shadow-xl dark:border-zinc-700/50 dark:bg-zinc-900/95 dark:hover:bg-zinc-900"
+                    className="h-9 rounded-xl border border-zinc-200/60 bg-white/95 px-3 shadow-lg backdrop-blur-md transition-all hover:scale-[1.02] hover:bg-white hover:shadow-xl dark:border-zinc-700/50 dark:bg-zinc-900/95 dark:hover:bg-zinc-900"
                     disabled={loading}
                     title={t("dashboard.spaceView.actions.edit", "Edit space")}
                     aria-label={t(
@@ -379,14 +372,14 @@ export default function SpaceView() {
                     )}
                   >
                     <PencilLine className="h-4 w-4" />
-                    <span className="hidden xs:inline">
+                    <span className="hidden sm:inline ml-2">
                       {t("dashboard.spaceView.actions.edit", "Edit space")}
                     </span>
                   </Button>
                 </DialogTrigger>
                 <DialogContent
                   dir={dir}
-                  className="max-h-[90vh] overflow-y-auto"
+                  className="max-h-[90vh] max-w-[95vw] sm:max-w-[500px] overflow-y-auto"
                 >
                   <DialogHeader>
                     <DialogTitle>
@@ -457,22 +450,24 @@ export default function SpaceView() {
                     </div>
                   )}
 
-                  <DialogFooter className="gap-2 sm:gap-0">
+                  <DialogFooter className="flex-col sm:flex-row gap-2">
                     <Button
+                      type="button"
                       variant="ghost"
                       onClick={() => {
                         setOpenEdit(false);
                         setOpenDialogEmojiPicker(false);
                       }}
                       disabled={saving}
-                      className="transition-all"
+                      className="w-full sm:w-auto transition-all"
                     >
                       {t("common.cancel", "Cancel")}
                     </Button>
                     <Button
+                      type="button"
                       onClick={handleUpdate}
                       disabled={saving || !editName.trim()}
-                      className="transition-all"
+                      className="w-full sm:w-auto transition-all"
                     >
                       {saving
                         ? t("dashboard.spaceView.form.saving", "Saving…")
@@ -486,9 +481,10 @@ export default function SpaceView() {
               <Dialog open={openCoverPicker} onOpenChange={setOpenCoverPicker}>
                 <DialogTrigger asChild>
                   <Button
+                    type="button"
                     variant="secondary"
                     size="sm"
-                    className="rounded-xl border border-zinc-200/60 bg-white/90 shadow-lg backdrop-blur-md transition-all hover:scale-[1.02] hover:bg-white hover:shadow-xl dark:border-zinc-700/50 dark:bg-zinc-900/90 dark:hover:bg-zinc-900"
+                    className="h-9 rounded-xl border border-zinc-200/60 bg-white/90 px-3 shadow-lg backdrop-blur-md transition-all hover:scale-[1.02] hover:bg-white hover:shadow-xl dark:border-zinc-700/50 dark:bg-zinc-900/90 dark:hover:bg-zinc-900"
                     disabled={loading || coverSaving || !unsplashAccessKey}
                     title={
                       !unsplashAccessKey
@@ -507,7 +503,7 @@ export default function SpaceView() {
                     )}
                   >
                     <ImageIcon className="h-4 w-4" />
-                    <span className="hidden xs:inline">
+                    <span className="hidden sm:inline ml-2">
                       {t(
                         "dashboard.spaceView.actions.changeCover",
                         "Change cover"
@@ -518,7 +514,7 @@ export default function SpaceView() {
 
                 <DialogContent
                   dir={dir}
-                  className="max-h-[90vh] max-w-5xl overflow-y-auto"
+                  className="max-h-[90vh] max-w-[95vw] sm:max-w-[90vw] lg:max-w-5xl overflow-y-auto"
                 >
                   <DialogHeader>
                     <DialogTitle>
@@ -546,12 +542,16 @@ export default function SpaceView() {
                     <>
                       <form
                         onSubmit={handleUnsplashSearch}
-                        className="flex items-center gap-2 rounded-xl border border-zinc-200 bg-white/90 p-2 shadow-sm transition-all focus-within:border-zinc-400 focus-within:shadow-md dark:border-zinc-700 dark:bg-zinc-900"
+                        className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 rounded-xl border border-zinc-200 bg-white/90 p-2 shadow-sm transition-all focus-within:border-zinc-400 focus-within:shadow-md dark:border-zinc-700 dark:bg-zinc-900"
                         role="search"
                         aria-label={t("common.search", "Search")}
                       >
                         <div className="relative flex-1">
-                          <Search className="pointer-events-none absolute top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 dark:text-zinc-500" />
+                          <Search
+                            className={`pointer-events-none absolute top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 dark:text-zinc-500 ${
+                              dir === "rtl" ? "right-3" : "left-3"
+                            }`}
+                          />
                           <Input
                             value={unsplashQuery}
                             onChange={(e) => setUnsplashQuery(e.target.value)}
@@ -559,10 +559,17 @@ export default function SpaceView() {
                               "dashboard.spaceView.coverPicker.searchPlaceholder",
                               "Search (e.g. study desk, creative workspace…)"
                             )}
+                            className={`border-0 bg-transparent shadow-none focus-visible:ring-0 ${
+                              dir === "rtl" ? "pr-10" : "pl-10"
+                            }`}
                             aria-label={t("common.search", "Search")}
                           />
                         </div>
-                        <Button type="submit" disabled={unsplashLoading}>
+                        <Button
+                          type="submit"
+                          disabled={unsplashLoading}
+                          className="w-full sm:w-auto"
+                        >
                           {unsplashLoading
                             ? t("common.loading", "Loading…")
                             : t("common.search", "Search")}
@@ -575,12 +582,12 @@ export default function SpaceView() {
                         </div>
                       )}
 
-                      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                      <div className="mt-4 grid grid-cols-2 gap-2 sm:gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                         {unsplashLoading ? (
                           Array.from({ length: 10 }).map((_, idx) => (
                             <Skeleton
                               key={idx}
-                              className="h-36 w-full rounded-2xl"
+                              className="h-24 sm:h-32 md:h-36 w-full rounded-xl sm:rounded-2xl"
                             />
                           ))
                         ) : unsplashPhotos.length === 0 ? (
@@ -597,7 +604,7 @@ export default function SpaceView() {
                               type="button"
                               onClick={() => handleCoverSelect(photo)}
                               disabled={coverSaving}
-                              className="group relative overflow-hidden rounded-2xl border border-zinc-200/70 bg-white shadow-sm transition-all hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 disabled:opacity-70 dark:border-zinc-700/60 dark:bg-zinc-900 dark:hover:border-zinc-600"
+                              className="group relative overflow-hidden rounded-xl sm:rounded-2xl border border-zinc-200/70 bg-white shadow-sm transition-all hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 disabled:opacity-70 dark:border-zinc-700/60 dark:bg-zinc-900 dark:hover:border-zinc-600"
                             >
                               <img
                                 src={photo.urls.small}
@@ -609,21 +616,21 @@ export default function SpaceView() {
                                     "Unsplash cover option"
                                   )
                                 }
-                                className="h-36 w-full object-cover transition-transform duration-200 group-hover:scale-105"
+                                className="h-24 sm:h-32 md:h-36 w-full object-cover transition-transform duration-200 group-hover:scale-105"
                                 loading="lazy"
                               />
                               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/20 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
-                              <div className="absolute inset-x-0 bottom-0 flex items-center justify-between px-3 py-2 text-xs text-white">
-                                <span className="truncate">
+                              <div className="absolute inset-x-0 bottom-0 flex items-center justify-between px-2 sm:px-3 py-1.5 sm:py-2 text-xs text-white">
+                                <span className="truncate text-[10px] sm:text-xs">
                                   {photo.user?.name ??
                                     t(
                                       "dashboard.spaceView.coverPicker.unsplash",
                                       "Unsplash"
                                     )}
                                 </span>
-                                <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide">
+                                <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-medium uppercase tracking-wide">
                                   {coverSaving ? (
-                                    <Loader2 className="h-3 w-3 animate-spin" />
+                                    <Loader2 className="h-2.5 w-2.5 sm:h-3 sm:w-3 animate-spin" />
                                   ) : (
                                     t("common.select", "Select")
                                   )}
@@ -634,7 +641,7 @@ export default function SpaceView() {
                         )}
                       </div>
 
-                      <p className="mt-4 text-[11px] text-zinc-400 dark:text-zinc-500">
+                      <p className="mt-4 text-[10px] sm:text-[11px] text-zinc-400 dark:text-zinc-500">
                         {t(
                           "dashboard.spaceView.coverPicker.credit",
                           "Photos provided by Unsplash."
@@ -649,14 +656,15 @@ export default function SpaceView() {
         </div>
       </div>
 
-      <div className="relative mx-auto max-w-5xl px-6 pb-20 md:px-12 lg:px-20">
-        {/* Icon + Title - Floating above cover with z-index and background */}
-        <div className={`relative -mt-20 z-10 mb-10 flex items-start gap-5`}>
+      <div className="relative mx-auto max-w-6xl px-3 sm:px-4 md:px-6 pb-16 sm:pb-20">
+        {/* Icon + Title - STACKED VERTICALLY, ALIGNED BASED ON DIR */}
+        <div className="-mt-12 sm:-mt-16 md:-mt-20 relative z-10 mb-6 sm:mb-8 md:mb-10 flex flex-col items-start gap-4 sm:gap-5">
           {/* Large Icon - Clickable with Emoji Picker */}
           <Popover open={openEmojiPicker} onOpenChange={setOpenEmojiPicker}>
             <PopoverTrigger asChild>
               <button
-                className="group relative flex h-24 w-24 flex-shrink-0 items-center justify-center rounded-2xl border-2 border-zinc-200/80 bg-white text-6xl shadow-xl transition-all duration-300 hover:scale-105 hover:border-zinc-300 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-zinc-200 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700 dark:focus:ring-zinc-800"
+                type="button"
+                className="group relative flex h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24 flex-shrink-0 items-center justify-center rounded-xl sm:rounded-2xl border-2 border-zinc-200/80 bg-white text-4xl sm:text-5xl md:text-6xl shadow-xl transition-all duration-300 hover:scale-105 hover:border-zinc-300 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-zinc-200 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700 dark:focus:ring-zinc-800"
                 disabled={loading}
                 aria-label={t(
                   "dashboard.spaceView.actions.changeIcon",
@@ -666,11 +674,10 @@ export default function SpaceView() {
                 {space?.icon ? (
                   <span aria-hidden="true">{space.icon}</span>
                 ) : (
-                  <Grid2x2 className="h-10 w-10 text-zinc-400 dark:text-zinc-600" />
+                  <Grid2x2 className="h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 text-zinc-400 dark:text-zinc-600" />
                 )}
-                {/* Hover overlay */}
-                <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/0 opacity-0 transition-all duration-300 group-hover:bg-black/40 group-hover:opacity-100">
-                  <Smile className="h-8 w-8 text-white" />
+                <div className="absolute inset-0 flex items-center justify-center rounded-xl sm:rounded-2xl bg-black/0 opacity-0 transition-all duration-300 group-hover:bg-black/40 group-hover:opacity-100">
+                  <Smile className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-white" />
                 </div>
               </button>
             </PopoverTrigger>
@@ -701,33 +708,31 @@ export default function SpaceView() {
             </PopoverContent>
           </Popover>
 
-          {/* Title - Floating with Background */}
-          <div className={`min-w-0 flex-1 pt-4`}>
+          {/* Title - Below Icon, Aligned Based on Dir */}
+          <div className="w-full">
             {loading ? (
-              <Skeleton className="h-12 w-80" />
+              <Skeleton className="h-10 sm:h-12 w-full max-w-2xl" />
             ) : error ? (
               <p className="text-sm text-destructive">{error}</p>
             ) : (
-              <div className="inline-block rounded-2xl border border-zinc-200/80 bg-white/98 px-6 py-3 shadow-xl backdrop-blur-md transition-all duration-300 hover:shadow-2xl dark:border-zinc-800 dark:bg-zinc-900/98">
-                <h1 className="text-5xl font-bold tracking-tight text-white dark:text-zinc-100 md:text-6xl">
-                  {space?.name ||
-                    t("dashboard.spaceView.untitled", "Untitled space")}
-                </h1>
-              </div>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 break-words">
+                {space?.name ||
+                  t("dashboard.spaceView.untitled", "Untitled space")}
+              </h1>
             )}
           </div>
         </div>
 
-        {/* Description - Notion style */}
-        <div className={`mb-10`}>
+        {/* Description */}
+        <div className="mb-6 sm:mb-8 md:mb-10">
           {loading ? (
-            <div className="space-y-3">
-              <Skeleton className="h-5 w-full" />
-              <Skeleton className="h-5 w-5/6" />
-              <Skeleton className="h-5 w-4/6" />
+            <div className="space-y-2 sm:space-y-3">
+              <Skeleton className="h-4 sm:h-5 w-full" />
+              <Skeleton className="h-4 sm:h-5 w-5/6" />
+              <Skeleton className="h-4 sm:h-5 w-4/6" />
             </div>
           ) : (
-            <p className="whitespace-pre-wrap text-lg leading-relaxed text-zinc-600 dark:text-zinc-400">
+            <p className="whitespace-pre-wrap text-sm sm:text-base md:text-lg leading-relaxed text-zinc-600 dark:text-zinc-400">
               {space?.description?.trim() ||
                 t(
                   "dashboard.spaceView.noDescription",
@@ -737,13 +742,11 @@ export default function SpaceView() {
           )}
         </div>
 
-        {/* Metadata - Notion style pills */}
-        <div className={`mb-14 flex flex-wrap items-center gap-3 text-sm `}>
-          <div
-            className={`flex items-center gap-2.5 rounded-full bg-zinc-100/80 px-4 py-2 backdrop-blur-sm transition-all duration-200 hover:bg-zinc-200/80 dark:bg-zinc-800/80 dark:hover:bg-zinc-700/80`}
-          >
-            <CalendarClock className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
-            <span className="font-medium text-zinc-700 dark:text-zinc-300">
+        {/* Metadata - Responsive pills */}
+        <div className="mb-10 sm:mb-12 md:mb-14 flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm">
+          <div className="flex items-center gap-2 sm:gap-2.5 rounded-full bg-zinc-100/80 px-3 sm:px-4 py-1.5 sm:py-2 backdrop-blur-sm transition-all duration-200 hover:bg-zinc-200/80 dark:bg-zinc-800/80 dark:hover:bg-zinc-700/80">
+            <CalendarClock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-zinc-500 dark:text-zinc-400 flex-shrink-0" />
+            <span className="font-medium text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
               {t("dashboard.spaceView.meta.created", "Created {{date}}", {
                 date: space?.created_at
                   ? formatRelativeDate(space.created_at, language)
@@ -752,11 +755,9 @@ export default function SpaceView() {
             </span>
           </div>
 
-          <div
-            className={`flex items-center gap-2.5 rounded-full bg-zinc-100/80 px-4 py-2 backdrop-blur-sm transition-all duration-200 hover:bg-zinc-200/80 dark:bg-zinc-800/80 dark:hover:bg-zinc-700/80`}
-          >
-            <Clock3 className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
-            <span className="font-medium text-zinc-700 dark:text-zinc-300">
+          <div className="flex items-center gap-2 sm:gap-2.5 rounded-full bg-zinc-100/80 px-3 sm:px-4 py-1.5 sm:py-2 backdrop-blur-sm transition-all duration-200 hover:bg-zinc-200/80 dark:bg-zinc-800/80 dark:hover:bg-zinc-700/80">
+            <Clock3 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-zinc-500 dark:text-zinc-400 flex-shrink-0" />
+            <span className="font-medium text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
               {t("dashboard.spaceView.meta.updated", "Updated {{date}}", {
                 date: space?.lastActivity
                   ? formatRelativeDate(space.lastActivity, language)
@@ -767,11 +768,9 @@ export default function SpaceView() {
             </span>
           </div>
 
-          <div
-            className={`flex items-center gap-2.5 rounded-full bg-zinc-100/80 px-4 py-2 backdrop-blur-sm transition-all duration-200 hover:bg-zinc-200/80 dark:bg-zinc-800/80 dark:hover:bg-zinc-700/80`}
-          >
-            <Users className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
-            <span className="font-medium text-zinc-700 dark:text-zinc-300">
+          <div className="flex items-center gap-2 sm:gap-2.5 rounded-full bg-zinc-100/80 px-3 sm:px-4 py-1.5 sm:py-2 backdrop-blur-sm transition-all duration-200 hover:bg-zinc-200/80 dark:bg-zinc-800/80 dark:hover:bg-zinc-700/80">
+            <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-zinc-500 dark:text-zinc-400 flex-shrink-0" />
+            <span className="font-medium text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
               {formatNum.format(
                 space?.memberCount ?? space?.members?.length ?? 0
               )}{" "}
@@ -785,19 +784,17 @@ export default function SpaceView() {
         </div>
 
         {/* Divider */}
-        <div className="mb-10 h-px w-full bg-gradient-to-r from-transparent via-zinc-200 to-transparent dark:via-zinc-800" />
+        <div className="mb-8 sm:mb-10 h-px w-full bg-gradient-to-r from-transparent via-zinc-200 to-transparent dark:via-zinc-800" />
 
         {/* Workspaces Section Header */}
-        <div className={`mb-8 flex items-center justify-between`}>
-          <div className={`flex items-center gap-4`}>
-            <h2
-              className={`text-2xl font-bold text-zinc-900 dark:text-zinc-100`}
-            >
+        <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <h2 className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-zinc-100">
               {t("dashboard.spaceView.workspaces.title", "Workspaces")}
             </h2>
-            <span className="rounded-lg bg-zinc-100 px-3 py-1 text-base font-semibold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+            <span className="rounded-lg bg-zinc-100 px-2.5 sm:px-3 py-1 text-sm sm:text-base font-semibold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
               {loading ? (
-                <Skeleton className="h-5 w-10" />
+                <Skeleton className="h-4 sm:h-5 w-8 sm:w-10" />
               ) : (
                 formatNum.format(itemCount)
               )}
@@ -818,10 +815,7 @@ export default function SpaceView() {
           </Button>
         </div>
 
-        <WorkspacesList
-          workspaces={space?.workspaces ?? []}
-          refreshParentComponent={fetchSpace}
-        />
+        <Recent spaceId={space?.id} />
       </div>
     </section>
   );

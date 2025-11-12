@@ -33,6 +33,7 @@ import {
   ChevronDownIcon,
   Settings,
   FileTextIcon,
+  Trophy,
 } from "lucide-react";
 import clsx from "clsx";
 import {
@@ -60,7 +61,6 @@ import { Switch } from "@/components/ui/switch";
 import { submitFeedback } from "@/utils/_apis/feedback-api";
 import { toast } from "sonner";
 import { useUserContext } from "@/context/UserContext";
-import { FaChrome, FaDiscord } from "react-icons/fa6";
 import { useSettings } from "@/context/SettingsContexts";
 import { SearchCommand } from "@/pages/dashboard/search/Index";
 import LogoLight from "@/assets/logo.svg";
@@ -289,15 +289,27 @@ export function AppSidebar({
             comingSoon: true,
             icon: Tablet,
           },
+          // {
+          //   title: t("sidebar.discord"),
+          //   url: "https://discord.gg/WEJDkQS8",
+          //   icon: FaDiscord,
+          // },
+          // {
+          //   title: t("sidebar.chromeExtension"),
+          //   url: "https://chrome.google.com/webstore/category/extensions",
+          //   icon: FaChrome,
+          // },
+        ],
+      },
+      {
+        id: "comminty",
+        groupTitle: t("sidebar.comminty"),
+        menuItems: [
           {
-            title: t("sidebar.discord"),
-            url: "https://discord.gg/WEJDkQS8",
-            icon: FaDiscord,
-          },
-          {
-            title: t("sidebar.chromeExtension"),
-            url: "https://chrome.google.com/webstore/category/extensions",
-            icon: FaChrome,
+            title: t("sidebar.leaderboard"),
+            icon: Trophy,
+            type: "feedback",
+            comingSoon: true,
           },
         ],
       },
@@ -366,7 +378,7 @@ export function AppSidebar({
   const refreshWorkspace = useCallback(async () => {
     try {
       setLoadingRecent(true);
-      const { workspaces: fetchedWorkspaces }: any = await getAllWorkSpace();
+      const { workspaces: fetchedWorkspaces }: any = await getAllWorkSpace({});
       const sortedWorkspaces =
         fetchedWorkspaces?.sort(
           (a: Workspace, b: Workspace) =>

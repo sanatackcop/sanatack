@@ -65,6 +65,7 @@ import {
 } from "../utils";
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import WorkspaceGenerationWatcher from "./GenerationWatcher";
 
 const TABS_CONFIG = [
   { id: "chat", labelKey: "tabs.chat", icon: MessageCircle, isSoon: false },
@@ -1025,6 +1026,7 @@ const LearnPlayground: React.FC = () => {
       dir={isRTL ? "rtl" : "ltr"}
       className="flex flex-col"
     >
+      <WorkspaceGenerationWatcher workspaceId={workspace?.id} />
       <div className="p-2 pb-0 pl-12 flex items-center justify-between flex-shrink-0">
         <div className="max-w-[34rem] flex-grow relative">
           {workspaceLoading ? (
@@ -1359,24 +1361,6 @@ const LearnPlayground: React.FC = () => {
                     className="h-full flex flex-col min-h-0"
                   >
                     <div className="relative p-2 pt-0 flex-shrink-0 flex justify-center">
-                      {splitScroll.canScrollLeft && (
-                        <>
-                          {/* Light mode gradient */}
-                          <div className="absolute left-2 top-0 bottom-0 w-20 z-30 pointer-events-none bg-gradient-to-r from-white/95 to-white/0 dark:hidden" />
-                          {/* Dark mode gradient */}
-                          <div className="absolute left-2 top-0 bottom-0 w-20 z-30 pointer-events-none hidden dark:block bg-gradient-to-r from-zinc-900/95 to-zinc-900/0" />
-                        </>
-                      )}
-
-                      {splitScroll.canScrollRight && (
-                        <>
-                          {/* Light mode gradient */}
-                          <div className="absolute right-2 top-0 bottom-0 w-20 z-30 pointer-events-none bg-gradient-to-l from-white/95 to-white/0 dark:hidden" />
-                          {/* Dark mode gradient */}
-                          <div className="absolute right-2 top-0 bottom-0 w-20 z-30 pointer-events-none hidden dark:block bg-gradient-to-l from-zinc-900/95 to-zinc-900/0" />
-                        </>
-                      )}
-
                       <div
                         ref={splitScrollRef}
                         className="overflow-x-scroll scrollbar-hide w-full select-none px-1"

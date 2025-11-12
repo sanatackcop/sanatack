@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { Progress } from "@/components/ui/progress";
 import { getWorkSpaceContent } from "@/utils/_apis/learnPlayground-api";
 import { ArrowLeft, ArrowRight } from "lucide-react";
@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import Card from "@mui/material/Card";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import useGenerationNotifications from "@/hooks/useGenerationNotifications";
 
 const trackCardFlip = async (/*cardId: string, setId: string*/) => {
   try {
@@ -23,31 +24,47 @@ const trackCardFlip = async (/*cardId: string, setId: string*/) => {
   }
 };
 
+const POLL_INTERVAL_MS = 3500;
+
 const useFlashcards = (workspaceId: string) => {
   const [flashcardSets, setFlashcardSets] = useState<FlashcardDeck[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const fetchFlashCards = useCallback(async () => {
-    try {
-      setLoading(true);
-      const response = await getWorkSpaceContent(workspaceId);
-      const cleanedResponse = response.flashcards.filter(
-        (item): item is FlashcardDeck => item != null
-      );
-      setFlashcardSets(cleanedResponse);
-      setError(null);
-      setLoading(false);
-    } catch (err) {
-      setError("flashcards.fetchError");
-      console.error("Error fetching flashcards:", err);
-      setFlashcardSets([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [workspaceId]);
+  const isMountedRef = useRef(true);
 
   useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  const fetchFlashCards = useCallback(
+    async (options?: { silent?: boolean }) => {
+      const silent = options?.silent ?? false;
+      if (!silent) setLoading(true);
+      try {
+        const response = await getWorkSpaceContent(workspaceId);
+        const cleanedResponse = (response.flashcards ?? []).filter(
+          (item): item is FlashcardDeck => item != null
+        );
+        if (!isMountedRef.current) return;
+        setFlashcardSets(cleanedResponse);
+        setError(null);
+      } catch (err) {
+        if (!isMountedRef.current) return;
+        setError("flashcards.fetchError");
+        console.error("Error fetching flashcards:", err);
+        setFlashcardSets([]);
+      } finally {
+        if (!isMountedRef.current) return;
+        if (!silent) setLoading(false);
+      }
+    },
+    [workspaceId]
+  );
+
+  useEffect(() => {
+    isMountedRef.current = true;
     fetchFlashCards();
   }, [fetchFlashCards]);
 
@@ -228,6 +245,20 @@ const FlashCards: React.FC<{ workspaceId: string }> = ({ workspaceId }) => {
       ),
     [flashcardSets]
   );
+
+  useGenerationNotifications(flashcardSets, {
+    entity: "flashcards",
+    getName: (set) => set.title,
+  });
+
+  useEffect(() => {
+    if (!anyActive) return;
+    const interval = window.setInterval(
+      () => refetch({ silent: true }),
+      POLL_INTERVAL_MS
+    );
+    return () => window.clearInterval(interval);
+  }, [anyActive, refetch]);
 
   if (loading) return <LoadingSkeleton />;
   if (error)

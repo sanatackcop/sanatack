@@ -8,10 +8,6 @@ import {
   TrendingUp,
   Image as ImageIcon,
   BarChart3,
-  // PieChart,
-  // LineChart,
-  // AreaChart,
-  // Donut,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
@@ -19,7 +15,27 @@ import { Edge, Node, Position, ReactFlowProvider } from "reactflow";
 import FlowChart from "./Flowchart";
 import { MindMap, MindMapNode, SummaryViewProps } from "./Summary";
 import { ScrollArea } from "@/components/ui/scroll-area";
-// import { PieChartComponent, DonutChartComponent } from "@/components/Charts";
+import {
+  PieChartComponent,
+  DonutChartComponent,
+  BarChartComponent,
+  LineChartComponent,
+  AreaChartComponent,
+  CHART_COLORS,
+} from "@/components/Charts";
+
+type SimplifiedChartDatum = {
+  name: any;
+  [key: string]: number;
+};
+
+type SummaryChartConfig = Record<
+  string,
+  {
+    label: string;
+    color: string;
+  }
+>;
 
 export function SummaryView({ summary, onClose }: SummaryViewProps) {
   const { t } = useTranslation();
@@ -32,28 +48,107 @@ export function SummaryView({ summary, onClose }: SummaryViewProps) {
     "from-emerald-100/70 via-teal-100/60 to-lime-100/60 dark:from-emerald-900/40 dark:via-teal-900/30 dark:to-lime-900/30",
   ];
 
-  // const chartIconMap = {
-  //   bar: BarChart3,
-  //   line: LineChart,
-  //   pie: PieChart,
-  //   donut: Donut,
-  //   area: AreaChart,
-  // } as const;
+  const defaultValueLabel = t("summary.view.chartValueLabel", "Value");
 
-  // Transform chart idea to actual data for rendering
-  // const transformChartData = (idea: any) => {
-  //   // Parse the data from description or data_points
-  //   const data = idea.data_points.map((point: string, idx: number) => {
-  //     // Extract name and value from string format like "Category A: 25%"
-  //     const [name, valueStr] = point.split(":").map((s) => s.trim());
-  //     const value = parseInt(valueStr) || idx + 1;
-  //     return {
-  //       name,
-  //       value,
-  //     };
-  //   });
-  //   return data;
-  // };
+  const fallbackPointLabel = (idx: number) =>
+    `${t("summary.view.chartItemLabel", "Item")} ${idx + 1}`;
+
+  const formatPointLabel = (label: string | undefined, idx: number) =>
+    label?.trim() || fallbackPointLabel(idx);
+
+  const extractNumericValue = (
+    rawValue: string | number | undefined
+  ): number | null => {
+    if (typeof rawValue === "number" && Number.isFinite(rawValue)) {
+      return rawValue;
+    }
+    if (typeof rawValue === "string") {
+      const cleaned = rawValue.replace(/[^0-9.-]+/g, "");
+      if (!cleaned) {
+        return null;
+      }
+      const parsed = Number(cleaned);
+      return Number.isNaN(parsed) ? null : parsed;
+    }
+    return null;
+  };
+
+  const parseNumericValue = (
+    rawValue: string | number | undefined,
+    fallback: number
+  ) => extractNumericValue(rawValue) ?? fallback;
+
+  const transformChartData = (idea: any): SimplifiedChartDatum[] => {
+    if (!idea?.data_points?.length) {
+      return [];
+    }
+
+    return idea.data_points.map((point: any, idx: number) => {
+      if (typeof point === "string") {
+        const [labelPart, ...rest] = point.split(":");
+        const remainder = rest.join(":").trim();
+        const name = formatPointLabel(labelPart, idx);
+        const valueSource = remainder || point;
+
+        return {
+          name,
+          value: parseNumericValue(valueSource, idx + 1),
+        };
+      }
+
+      const name = formatPointLabel(
+        point?.name || point?.label || point?.category,
+        idx
+      );
+
+      const valueCandidate =
+        point?.value ??
+        point?.amount ??
+        point?.count ??
+        point?.total ??
+        point?.percentage;
+
+      return {
+        name,
+        value: parseNumericValue(valueCandidate, idx + 1),
+      };
+    });
+  };
+
+  const formatSeriesLabel = (key: string) =>
+    key.replace(/[_-]+/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
+
+  const buildChartConfig = (
+    data: SimplifiedChartDatum[],
+    paletteOffset: number,
+    labelFallback?: string
+  ): SummaryChartConfig => {
+    const seriesKeys = new Set<string>();
+
+    data.forEach((point) => {
+      Object.keys(point).forEach((key) => {
+        if (key !== "name") {
+          seriesKeys.add(key);
+        }
+      });
+    });
+
+    if (!seriesKeys.size) {
+      seriesKeys.add("value");
+    }
+
+    const keys = Array.from(seriesKeys);
+    return keys.reduce<SummaryChartConfig>((acc, key, index) => {
+      acc[key] = {
+        label:
+          key === "value"
+            ? labelFallback || defaultValueLabel
+            : formatSeriesLabel(key),
+        color: CHART_COLORS[(paletteOffset + index) % CHART_COLORS.length],
+      };
+      return acc;
+    }, {});
+  };
 
   if (!summary.payload) {
     return (
@@ -231,33 +326,40 @@ export function SummaryView({ summary, onClose }: SummaryViewProps) {
 
                   <div className="space-y-12">
                     {summary.payload.visuals.chart_ideas.map((idea, idx) => {
-                      // const chartData = transformChartData(idea);
+                      const chartData = transformChartData(idea);
+                      if (!chartData.length) {
+                        return null;
+                      }
+                      const chartConfig = buildChartConfig(chartData, idx);
 
                       return (
                         <div key={`${idea.title}-${idx}`}>
-                          {/* {idea.chart_type === "bar" && (
+                          {idea.chart_type === "bar" && (
                             <BarChartComponent
                               title={idea.title}
                               description={idea.description}
                               data={chartData}
                               direction={direction as "ltr" | "rtl"}
+                              config={chartConfig}
                             />
-                          )} */}
-                          {/* 
+                          )}
+
                           {idea.chart_type === "line" && (
                             <LineChartComponent
                               title={idea.title}
                               description={idea.description}
                               data={chartData}
+                              config={chartConfig}
                               direction={direction as "ltr" | "rtl"}
                             />
-                          )} */}
-                          {/* 
+                          )}
+
                           {idea.chart_type === "pie" && (
                             <PieChartComponent
                               title={idea.title}
                               description={idea.description}
                               data={chartData}
+                              config={chartConfig}
                               direction={direction as "ltr" | "rtl"}
                             />
                           )}
@@ -267,18 +369,20 @@ export function SummaryView({ summary, onClose }: SummaryViewProps) {
                               title={idea.title}
                               description={idea.description}
                               data={chartData}
+                              config={chartConfig}
                               direction={direction as "ltr" | "rtl"}
                             />
-                          )} */}
+                          )}
 
-                          {/* {idea.chart_type === "area" && (
+                          {idea.chart_type === "area" && (
                             <AreaChartComponent
                               title={idea.title}
                               description={idea.description}
                               data={chartData}
                               direction={direction as "ltr" | "rtl"}
+                              config={chartConfig}
                             />
-                          )} */}
+                          )}
                         </div>
                       );
                     })}

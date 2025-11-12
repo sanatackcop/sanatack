@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import "reactflow/dist/style.css";
 import { getWorkSpaceContent } from "@/utils/_apis/learnPlayground-api";
@@ -15,6 +15,7 @@ import {
 import { SummaryView } from "./SummaryView";
 import GenerateContentComponent from "@/shared/workspaces/Generate";
 import SummaryModal from "./SummaryModal";
+import useGenerationNotifications from "@/hooks/useGenerationNotifications";
 
 export interface MindMap {
   root: string;
@@ -61,7 +62,19 @@ export interface SummaryPayload {
       title: string;
       chart_type: "bar" | "line" | "pie" | "donut" | "area";
       description: string;
-      data_points: string[];
+      data_points: (
+        | string
+        | {
+            name?: string;
+            label?: string;
+            category?: string;
+            value?: number | string;
+            amount?: number | string;
+            count?: number | string;
+            total?: number | string;
+            percentage?: number | string;
+          }
+      )[];
     }[];
   };
 }
@@ -81,6 +94,8 @@ export interface SummaryViewProps {
   onClose: () => void;
 }
 
+const POLL_INTERVAL_MS = 3500;
+
 export function SummaryList({ workspaceId }: SummaryListProps) {
   const [summaries, setSummaries] = useState<Summary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -90,6 +105,7 @@ export function SummaryList({ workspaceId }: SummaryListProps) {
   const [error, setError] = useState<string | null>(null);
   const { t, i18n } = useTranslation();
   const direction = i18n.dir();
+  const isMountedRef = useRef(true);
 
   const handleCreateSummary = useCallback(() => {
     setModalOpen(true);
@@ -108,29 +124,52 @@ export function SummaryList({ workspaceId }: SummaryListProps) {
     [summaries]
   );
 
+  useGenerationNotifications(summaries, {
+    entity: "summary",
+    getName: (summary) =>
+      summary.payload?.title || summary.payload?.structure?.[0]?.section,
+  });
+
   useEffect(() => {
-    let isMounted = true;
-    const load = async () => {
-      setLoading(true);
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  const fetchSummaries = useCallback(
+    async (options?: { silent?: boolean }) => {
+      const silent = options?.silent ?? false;
+      if (!silent) setLoading(true);
       try {
         const data = await getWorkSpaceContent(workspaceId);
-        if (!isMounted) return;
+        if (!isMountedRef.current) return;
         setSummaries(data.summaries ?? []);
         setError(null);
       } catch (err) {
-        if (!isMounted) return;
+        if (!isMountedRef.current) return;
         console.error("Failed to fetch summaries:", err);
         setSummaries([]);
         setError("summary.fetchError");
       } finally {
-        if (isMounted) setLoading(false);
+        if (!isMountedRef.current) return;
+        if (!silent) setLoading(false);
       }
-    };
-    load();
-    return () => {
-      isMounted = false;
-    };
-  }, [workspaceId, refresh]);
+    },
+    [workspaceId]
+  );
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    fetchSummaries();
+  }, [fetchSummaries, refresh]);
+
+  useEffect(() => {
+    if (!anyActive) return;
+    const interval = window.setInterval(() => {
+      fetchSummaries({ silent: true });
+    }, POLL_INTERVAL_MS);
+    return () => window.clearInterval(interval);
+  }, [anyActive, fetchSummaries]);
 
   if (selectedSummary) {
     return (
@@ -195,7 +234,7 @@ export function SummaryList({ workspaceId }: SummaryListProps) {
                         summary.payload &&
                         setSelectedSummary(summary)
                       }
-                      className={`group relative overflow-hidden px-6 py-5 flex flex-col rounded-2xl justify-center shadow-sm border transition-all duration-200 cursor-pointer ${
+                      className={`group relative overflow-hidden px-6 py-5 flex  max-w-full truncate flex-col rounded-2xl justify-center shadow-sm border transition-all duration-200 cursor-pointer ${
                         failed
                           ? "bg-red-50/50 dark:bg-red-950/20 border-red-200 dark:border-red-900/50 hover:border-red-300 dark:hover:border-red-800"
                           : "bg-white dark:bg-zinc-900/60 border-gray-200/60 dark:border-zinc-800 hover:border-gray-300/80 dark:hover:border-zinc-700"
@@ -204,7 +243,7 @@ export function SummaryList({ workspaceId }: SummaryListProps) {
                       <div className="flex justify-between items-start gap-3">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-2">
-                            <h3 className="font-semibold text-lg text-gray-900 dark:text-white truncate max-w-[50vw]">
+                            <h3 className="font-semibold max-w-fit text-lg text-gray-900 dark:text-white truncate">
                               {summary.payload?.title ??
                                 t(
                                   "summary.list.generating",

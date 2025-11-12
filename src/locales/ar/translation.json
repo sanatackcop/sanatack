@@ -278,6 +278,8 @@
     "brightness": "السطوع"
   },
   "sidebar": {
+    "comminty": "المجتماع",
+    "leaderboard": "المتصدرين",
     "home": "الرئيسية",
     "createMap": "انشاء خطاط",
     "search": "البحث",
@@ -415,6 +417,19 @@
   "dashboard": {
     "errors": {
       "loadCourses": "حدث خطأ أثناء تحميل الدورات. الرجاء المحاولة لاحقاً."
+    },
+    "generation": {
+      "notifications": {
+        "completed": "{{type}} \"{{name}}\" أصبح جاهزًا.",
+        "failed": "تعذّر إنشاء {{type}} \"{{name}}\".",
+        "untitled": "بدون عنوان",
+        "types": {
+          "summary": "الملخص",
+          "flashcards": "مجموعة البطاقات",
+          "quiz": "الاختبار",
+          "explanation": "الشرح"
+        }
+      }
     },
     "spaces": {
       "title": "المساحات",

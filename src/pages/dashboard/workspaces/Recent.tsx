@@ -7,11 +7,13 @@ import { Workspace } from "@/lib/types";
 import WorkspacesList from "./WorkspacesList.";
 
 export default function Recent({
+  spaceId,
   setParentRefresh,
   refreshParent,
 }: {
-  setParentRefresh: any;
-  refreshParent: boolean;
+  spaceId?: string;
+  setParentRefresh?: any;
+  refreshParent?: boolean;
 }) {
   const { t, i18n } = useTranslation();
   const [workspaces, setWorkspaces] = useState<Workspace[] | null>(null);
@@ -25,7 +27,9 @@ export default function Recent({
       setLoading(true);
       setError(null);
 
-      const { workspaces: fetchedWorkspaces }: any = await getAllWorkSpace();
+      const { workspaces: fetchedWorkspaces }: any = await getAllWorkSpace({
+        spaceId,
+      });
       setWorkspaces(fetchedWorkspaces);
     } catch (err) {
       console.error("Failed to fetch workspaces:", err);
@@ -43,7 +47,7 @@ export default function Recent({
 
   useEffect(() => {
     fetchRecent();
-  }, [refresh]);
+  }, [refresh, spaceId]);
 
   if (loading) {
     return (

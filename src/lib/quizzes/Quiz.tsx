@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,6 +17,9 @@ import { GenerationStatus } from "../types";
 import QuizModal from "./QuizModal";
 import { normalizeQuiz } from "./utils";
 import { useTranslation } from "react-i18next";
+import useGenerationNotifications from "@/hooks/useGenerationNotifications";
+
+const POLL_INTERVAL_MS = 3500;
 
 export const QuizList: React.FC<{ workspaceId: string }> = ({
   workspaceId,
@@ -28,29 +31,43 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
   const [error, setError] = useState<string | null>(null);
   const { t, i18n } = useTranslation();
   const direction = i18n.dir();
+  const isMountedRef = useRef(true);
 
-  const fetchWorkspaceContent = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await getWorkSpaceContent(workspaceId);
+  const fetchWorkspaceContent = useCallback(
+    async (options?: { silent?: boolean }) => {
+      const silent = options?.silent ?? false;
+      if (!silent) setLoading(true);
+      try {
+        const data = await getWorkSpaceContent(workspaceId);
 
-      // Adapt new schema: flatten attempts and map latestAttempt
-      const formattedQuizzes = (
-        Array.isArray(data?.quizzes) ? data?.quizzes : []
-      ).map((quiz: any) => normalizeQuiz(quiz));
+        const formattedQuizzes = (
+          Array.isArray(data?.quizzes) ? data?.quizzes : []
+        ).map((quiz: any) => normalizeQuiz(quiz));
 
-      setQuizzes(formattedQuizzes);
-      setError(null);
-    } catch (error) {
-      console.error("Failed to fetch workspace content:", error);
-      setQuizzes([]);
-      setError("quizzes.fetchError");
-    } finally {
-      setLoading(false);
-    }
-  }, [workspaceId]);
+        if (!isMountedRef.current) return;
+        setQuizzes(formattedQuizzes);
+        setError(null);
+      } catch (error) {
+        if (!isMountedRef.current) return;
+        console.error("Failed to fetch workspace content:", error);
+        setQuizzes([]);
+        setError("quizzes.fetchError");
+      } finally {
+        if (!isMountedRef.current) return;
+        if (!silent) setLoading(false);
+      }
+    },
+    [workspaceId]
+  );
 
   useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    isMountedRef.current = true;
     fetchWorkspaceContent();
   }, [fetchWorkspaceContent, refresh]);
 
@@ -59,6 +76,20 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
       quizzes.some((x) => x.status === "pending" || x.status === "processing"),
     [quizzes]
   );
+
+  useGenerationNotifications(quizzes, {
+    entity: "quiz",
+    getName: (quiz) => quiz.title,
+  });
+
+  useEffect(() => {
+    if (!anyActive) return;
+    const interval = window.setInterval(
+      () => fetchWorkspaceContent({ silent: true }),
+      POLL_INTERVAL_MS
+    );
+    return () => window.clearInterval(interval);
+  }, [anyActive, fetchWorkspaceContent]);
 
   const handleAttemptUpdate = useCallback(
     (quizId: string, attempt: QuizAttemptSummary | null) => {
