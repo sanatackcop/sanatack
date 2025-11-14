@@ -198,6 +198,7 @@ export default function QuizModal({
         )}
         buttonLabel={t("quizzes.generate.button", "Generate")}
         onClick={() => setIsModalOpen(true)}
+        disabled={anyActive}
         dir={direction}
       />
 
