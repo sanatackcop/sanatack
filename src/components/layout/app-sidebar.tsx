@@ -33,7 +33,6 @@ import {
   ChevronDownIcon,
   Settings,
   FileTextIcon,
-  Trophy,
 } from "lucide-react";
 import clsx from "clsx";
 import {
@@ -299,18 +298,6 @@ export function AppSidebar({
           //   url: "https://chrome.google.com/webstore/category/extensions",
           //   icon: FaChrome,
           // },
-        ],
-      },
-      {
-        id: "comminty",
-        groupTitle: t("sidebar.comminty"),
-        menuItems: [
-          {
-            title: t("sidebar.leaderboard"),
-            icon: Trophy,
-            type: "feedback",
-            comingSoon: true,
-          },
         ],
       },
     ],

@@ -21,9 +21,7 @@ import {
   BrainCog,
   Scan,
   TestTube2,
-  Code,
   GalleryVerticalEnd,
-  Pencil,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
@@ -83,8 +81,8 @@ const TABS_CONFIG = [
     icon: BrainCog,
     isSoon: false,
   },
-  { id: "code", labelKey: "tabs.code", icon: Code, isSoon: true },
-  { id: "note", labelKey: "tabs.notes", icon: Pencil, isSoon: true },
+  // { id: "code", labelKey: "tabs.code", icon: Code, isSoon: true },
+  // { id: "note", labelKey: "tabs.notes", icon: Pencil, isSoon: true },
 ] as const;
 
 const LearnPlayground: React.FC = () => {
