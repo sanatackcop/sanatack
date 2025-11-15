@@ -6,7 +6,7 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import * as React from "react";
-import { PanelLeft } from "lucide-react";
+import { Menu, PanelLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   SidebarRefreshProvider,
@@ -31,7 +31,7 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [sidebarRefreshers, setSidebarRefreshers] =
     React.useState<SidebarRefreshContextValue>({
       refreshWorkspace: async () => {},
@@ -55,6 +55,9 @@ export default function DashboardLayout({
   const panelRef = React.useRef<any>(null);
   const autoCollapseTimeoutRef = React.useRef<number | null>(null);
 
+  const [isMobile, setIsMobile] = React.useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+
   const currentDir = i18n.dir();
   const isRTL = currentDir === "rtl";
 
@@ -67,6 +70,23 @@ export default function DashboardLayout({
       panelRef.current.collapse();
     }
   }, []);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  React.useEffect(() => {
+    if (!isMobile) {
+      setIsMobileMenuOpen(false);
+    }
+  }, [isMobile]);
 
   React.useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.SIDEBAR_COLLAPSED, String(isCollapsed));
@@ -148,47 +168,95 @@ export default function DashboardLayout({
     setIsCollapsed(false);
   }, []);
 
+  const mainContent = (
+    <main className="flex-1 min-w-0 min-h-0 flex">
+      <div className="flex-1 min-w-0 min-h-0 flex flex-col">
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <div className="h-full min-h-0 overflow-hidden">
+            <div
+              className="h-full overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-blue-200/70
+                       scrollbar-track-transparent hover:scrollbar-thumb-blue-300/80"
+            >
+              {children}
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+
   return (
     <SidebarRefreshProvider value={sidebarRefreshers}>
       <SidebarProvider>
-      <div
-        className="flex h-dvh w-screen overflow-hidden bg-zinc-100/20 dark:bg-[#101012]"
-        dir={currentDir}
-      >
-        <ResizablePanelGroup
-          key={currentDir}
-          direction="horizontal"
+        <div
+          className="flex h-dvh w-screen overflow-hidden bg-zinc-100/20 dark:bg-[#101012]"
           dir={currentDir}
         >
-          <ResizablePanel
-            ref={panelRef}
-            defaultSize={lastViableSize.current}
-            minSize={CONFIG.MIN_SIZE}
-            maxSize={CONFIG.MAX_SIZE}
-            collapsible={true}
-            collapsedSize={0}
-            onResize={handlePanelResize}
-            onCollapse={() => setIsCollapsed(true)}
-            onExpand={handleExpand}
-            className="transition-all duration-200 ease-out"
-          >
-            <div
-              className={`h-full transition-opacity duration-200 ${
-                isCollapsed ? "opacity-0 pointer-events-none" : "opacity-100"
-              }`}
-            >
+          {isMobile ? (
+            <>
               <AppSidebar
                 onCollapse={handleCollapse}
                 onRefreshersChange={setSidebarRefreshers}
+                isMobile={isMobile}
+                isMobileMenuOpen={isMobileMenuOpen}
+                onMobileMenuChange={setIsMobileMenuOpen}
               />
-            </div>
-          </ResizablePanel>
+              <div className="relative flex h-full min-w-0 flex-1">
+                <button
+                  type="button"
+                  onClick={() => setIsMobileMenuOpen(true)}
+                  className={`
+                    absolute top-3 z-30 inline-flex items-center gap-2 px-2 py-2 rounded-xl
+                    focus:outline-none focus:ring-2 focus:ring-blue-500/40 group
+                    bg-white/80 border border-gray-200/50 shadow-sm backdrop-blur-sm
+                    hover:bg-gray-50 hover:shadow-md duration-200 transition-all
+                    dark:border-white/10 dark:bg-zinc-800/80 dark:hover:bg-zinc-700/90
+                    ${isRTL ? "right-3" : "left-3"}
+                  `}
+                  aria-label={t("sidebar.openMenu", "Open menu")}
+                  title={t("sidebar.openMenu", "Open menu")}
+                >
+                  <Menu className="h-4 w-4 text-zinc-600 dark:text-zinc-300 group-hover:text-zinc-950 dark:group-hover:text-zinc-100 duration-200 transition-all" />
+                </button>
+                {mainContent}
+              </div>
+            </>
+          ) : (
+            <ResizablePanelGroup
+              key={currentDir}
+              direction="horizontal"
+              dir={currentDir}
+            >
+              <ResizablePanel
+                ref={panelRef}
+                defaultSize={lastViableSize.current}
+                minSize={CONFIG.MIN_SIZE}
+                maxSize={CONFIG.MAX_SIZE}
+                collapsible={true}
+                collapsedSize={0}
+                onResize={handlePanelResize}
+                onCollapse={() => setIsCollapsed(true)}
+                onExpand={handleExpand}
+                className="transition-all duration-200 ease-out"
+              >
+                <div
+                  className={`h-full transition-opacity duration-200 ${
+                    isCollapsed ? "opacity-0 pointer-events-none" : "opacity-100"
+                  }`}
+                >
+                  <AppSidebar
+                    onCollapse={handleCollapse}
+                    onRefreshersChange={setSidebarRefreshers}
+                    isMobile={isMobile}
+                  />
+                </div>
+              </ResizablePanel>
 
-          <ResizableHandle
-            withHandle={false}
-            onDragging={handleDraggingChange}
-            aria-label={isRTL ? "تغيير حجم الشريط الجانبي" : "Resize sidebar"}
-            className={`
+              <ResizableHandle
+                withHandle={false}
+                onDragging={handleDraggingChange}
+                aria-label={isRTL ? "تغيير حجم الشريط الجانبي" : "Resize sidebar"}
+                className={`
               relative z-20 w-1.5 select-none
               transition-all duration-200 ease-out cursor-col-resize
               ${isDragging ? "opacity-100" : "opacity-0 hover:opacity-100"}
@@ -200,19 +268,19 @@ export default function DashboardLayout({
                   : "before:bg-border/40 hover:before:bg-blue-300/50"
               }
             `}
-          />
+              />
 
-          <ResizablePanel
-            defaultSize={100 - lastViableSize.current}
-            minSize={CONFIG.MAIN_MIN_SIZE}
-            className="min-w-0"
-          >
-            <div className="relative flex h-full min-w-0 min-h-0">
-              {isCollapsed && (
-                <button
-                  type="button"
-                  onClick={expandSidebar}
-                  className={`
+              <ResizablePanel
+                defaultSize={100 - lastViableSize.current}
+                minSize={CONFIG.MAIN_MIN_SIZE}
+                className="min-w-0"
+              >
+                <div className="relative flex h-full min-w-0 min-h-0">
+                  {isCollapsed && (
+                    <button
+                      type="button"
+                      onClick={expandSidebar}
+                      className={`
                     absolute top-3 z-30 inline-flex items-center gap-2 px-2 py-2 rounded-xl
                     focus:outline-none focus:ring-2 focus:ring-blue-500/40 group
                     bg-white/80 border border-gray-200/50 shadow-sm backdrop-blur-sm
@@ -220,31 +288,19 @@ export default function DashboardLayout({
                     dark:border-white/10 dark:bg-zinc-800/80 dark:hover:bg-zinc-700/90
                     ${isRTL ? "right-3" : "left-3"}
                   `}
-                  aria-label={isRTL ? "فتح الشريط الجانبي" : "Open sidebar"}
-                  title={isRTL ? "فتح الشريط الجانبي" : "Open sidebar"}
-                >
-                  <PanelLeft className="h-4 w-4 text-zinc-600 dark:text-zinc-300 group-hover:text-zinc-950 dark:group-hover:text-zinc-100 duration-200 transition-all" />
-                </button>
-              )}
+                      aria-label={isRTL ? "فتح الشريط الجانبي" : "Open sidebar"}
+                      title={isRTL ? "فتح الشريط الجانبي" : "Open sidebar"}
+                    >
+                      <PanelLeft className="h-4 w-4 text-zinc-600 dark:text-zinc-300 group-hover:text-zinc-950 dark:group-hover:text-zinc-100 duration-200 transition-all" />
+                    </button>
+                  )}
 
-              <main className="flex-1 min-w-0 min-h-0 flex">
-                <div className="flex-1 min-w-0 min-h-0 flex flex-col">
-                  <div className="flex-1 min-h-0 overflow-hidden">
-                    <div className="h-full min-h-0 overflow-hidden">
-                      <div
-                        className="h-full overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-blue-200/70
-                       scrollbar-track-transparent hover:scrollbar-thumb-blue-300/80"
-                      >
-                        {children}
-                      </div>
-                    </div>
-                  </div>
+                  {mainContent}
                 </div>
-              </main>
-            </div>
-          </ResizablePanel>
-        </ResizablePanelGroup>
-      </div>
+              </ResizablePanel>
+            </ResizablePanelGroup>
+          )}
+        </div>
       </SidebarProvider>
     </SidebarRefreshProvider>
   );

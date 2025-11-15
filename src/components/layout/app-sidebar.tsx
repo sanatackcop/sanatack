@@ -33,6 +33,7 @@ import {
   ChevronDownIcon,
   Settings,
   FileTextIcon,
+  X,
 } from "lucide-react";
 import clsx from "clsx";
 import {
@@ -104,11 +105,17 @@ type SpaceItem = { id: string; title: string; url: string };
 interface AppSidebarProps {
   onCollapse?: () => void;
   onRefreshersChange?: (value: SidebarRefreshContextValue) => void;
+  isMobile?: boolean;
+  isMobileMenuOpen?: boolean;
+  onMobileMenuChange?: (open: boolean) => void;
 }
 
 export function AppSidebar({
   onCollapse,
   onRefreshersChange,
+  isMobile: externalIsMobile,
+  isMobileMenuOpen: externalIsMobileMenuOpen,
+  onMobileMenuChange,
 }: AppSidebarProps) {
   const { t, i18n } = useTranslation();
   const { darkMode, toggleDarkMode, language, setLanguage } = useSettings();
@@ -121,6 +128,28 @@ export function AppSidebar({
   const [newName, setNewName] = useState("");
   const [showAllSpaces, setShowAllSpaces] = useState(false);
   const [isLogoHovered, setIsLogoHovered] = useState(false);
+
+  // Mobile state
+  const [internalIsMobile, setInternalIsMobile] = useState(false);
+  const [internalIsMobileMenuOpen, setInternalIsMobileMenuOpen] =
+    useState(false);
+
+  const isMobile = externalIsMobile ?? internalIsMobile;
+  const isMobileMenuOpen =
+    typeof externalIsMobileMenuOpen === "boolean"
+      ? externalIsMobileMenuOpen
+      : internalIsMobileMenuOpen;
+
+  const setIsMobileMenuOpen = useCallback(
+    (open: boolean) => {
+      if (onMobileMenuChange) {
+        onMobileMenuChange(open);
+      } else {
+        setInternalIsMobileMenuOpen(open);
+      }
+    },
+    [onMobileMenuChange]
+  );
 
   const { logout, auth } = useUserContext();
   const [workspaces, setWorkspaces] = useState<Workspace[] | null>(null);
@@ -141,6 +170,39 @@ export function AppSidebar({
 
   const getTextAlignment = () => (isRTL ? "text-right" : "text-left");
   const getFlexDirection = () => (isRTL ? "flex-row-reverse" : "flex-row");
+
+  // Detect mobile screen size if parent isn't controlling it
+  useEffect(() => {
+    if (typeof externalIsMobile === "boolean") return;
+    if (typeof window === "undefined") return;
+    const checkMobile = () => {
+      setInternalIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, [externalIsMobile]);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    if (isMobile) {
+      setIsMobileMenuOpen(false);
+    }
+  }, [location.pathname, isMobile, setIsMobileMenuOpen]);
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen && isMobile) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isMobileMenuOpen, isMobile]);
 
   useEffect(() => {
     setNewName(t("sidebar.newSpace"));
@@ -288,16 +350,6 @@ export function AppSidebar({
             comingSoon: true,
             icon: Tablet,
           },
-          // {
-          //   title: t("sidebar.discord"),
-          //   url: "https://discord.gg/WEJDkQS8",
-          //   icon: FaDiscord,
-          // },
-          // {
-          //   title: t("sidebar.chromeExtension"),
-          //   url: "https://chrome.google.com/webstore/category/extensions",
-          //   icon: FaChrome,
-          // },
         ],
       },
     ],
@@ -732,34 +784,48 @@ export function AppSidebar({
     </div>
   );
 
-  return (
+  // Sidebar content component (reusable for both mobile and desktop)
+  const SidebarContent = () => (
     <>
-      <div
-        dir={isRTL ? "rtl" : "ltr"}
-        lang={i18n.language}
-        className="h-full flex flex-col border-r bg-zinc-50 border
-       dark:bg-zinc-950 dark:border-zinc-800"
-      >
-        <SearchCommand open={openSerach} setOpen={setOpenSearch} />
-        <div className="flex flex-col h-full py-2 pl-3 pr-2">
-          <div className="flex items-center justify-between">
-            <div
-              className={clsx(
-                "h-[60px] flex items-center overflow-hidden w-full justify-between group relative"
-              )}
-              onMouseEnter={() => setIsLogoHovered(true)}
-              onMouseLeave={() => setIsLogoHovered(false)}
-            >
-              <img
-                src={String(darkMode ? LogoDark : LogoLight)}
-                alt="logo"
-                onClick={() => navigate("/dashboard/overview")}
-                className={`h-full cursor-pointer w-auto transition-all object-contain scale-[2.5] ${
-                  i18n.dir() === "rtl" ? "pr-6" : "pl-5"
-                }`}
-              />
+      <SearchCommand open={openSerach} setOpen={setOpenSearch} />
+      <div className="flex flex-col h-full py-2 pl-3 pr-2">
+        <div className="flex items-center justify-between">
+          <div
+            className={clsx(
+              "h-[60px] flex items-center overflow-hidden w-full justify-between group relative"
+            )}
+            onMouseEnter={() => setIsLogoHovered(true)}
+            onMouseLeave={() => setIsLogoHovered(false)}
+          >
+            <img
+              src={String(darkMode ? LogoDark : LogoLight)}
+              alt="logo"
+              onClick={() => {
+                navigate("/dashboard/overview");
+                if (isMobile) setIsMobileMenuOpen(false);
+              }}
+              className={`h-full cursor-pointer w-auto transition-all object-contain scale-[2.5] ${
+                i18n.dir() === "rtl" ? "pr-6" : "pl-5"
+              }`}
+            />
 
-              {/* Collapse button - appears on hover */}
+            {/* Close button for mobile */}
+            {isMobile && (
+              <button
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={clsx(
+                  "p-1.5 rounded-md transition-all duration-200",
+                  "hover:bg-sidebar-accent/50 text-sidebar-foreground/60 hover:text-sidebar-accent-foreground",
+                  isRTL ? "ml-2" : "mr-2"
+                )}
+                aria-label="Close sidebar"
+              >
+                <X size={20} strokeWidth={2} />
+              </button>
+            )}
+
+            {/* Collapse button for desktop - appears on hover */}
+            {!isMobile && (
               <button
                 onClick={onCollapse}
                 className={clsx(
@@ -776,400 +842,442 @@ export function AppSidebar({
                   <ChevronsLeft size={18} strokeWidth={2} />
                 )}
               </button>
-            </div>
+            )}
           </div>
-          <div className="flex-shrink-0 flex flex-col space-y-2 mb-2">
-            {allItemGroups.map((group) => (
-              <MenuGroupEntry
-                key={group.id}
-                group={group}
-                open={!!openGroups[group.id]}
-                onToggle={() => toggleGroup(group.id)}
-              />
-            ))}
-            <hr className="-mx-5 dark:border-zinc-700" />
-          </div>
+        </div>
+        <div className="flex-shrink-0 flex flex-col space-y-2 mb-2">
+          {allItemGroups.map((group) => (
+            <MenuGroupEntry
+              key={group.id}
+              group={group}
+              open={!!openGroups[group.id]}
+              onToggle={() => toggleGroup(group.id)}
+            />
+          ))}
+          <hr className="-mx-5 dark:border-zinc-700" />
+        </div>
 
-          <div
-            className="flex-1 overflow-y-auto min-h-0  py-2 space-y-4"
-            style={{
-              scrollbarWidth: "thin",
-              scrollbarColor: darkMode
-                ? "rgb(55 65 81 / 0.5) transparent"
-                : "rgb(209 213 219 / 0.5) transparent",
-            }}
-          >
-            <div>
-              <SectionHeader title={t("sidebar.recent")} />
-              <div className="space-y-0.5">
-                {loadingRecent ? (
-                  Array.from({ length: 4 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className={clsx(
-                        "flex items-center gap-2 px-2 py-1.5",
-                        getFlexDirection()
-                      )}
-                    >
-                      <Skeleton
-                        variant="circular"
-                        width={16}
-                        height={16}
-                        sx={{
-                          bgcolor: darkMode
-                            ? "rgb(55 65 81)"
-                            : "rgb(229 231 235)",
-                        }}
-                      />
-                      <Skeleton
-                        variant="rounded"
-                        width={120}
-                        height={12}
-                        sx={{
-                          bgcolor: darkMode
-                            ? "rgb(55 65 81)"
-                            : "rgb(229 231 235)",
-                        }}
-                      />
-                    </div>
-                  ))
-                ) : !workspaces || workspaces.length === 0 ? (
+        <div
+          className="flex-1 overflow-y-auto min-h-0 py-2 space-y-4"
+          style={{
+            scrollbarWidth: "thin",
+            scrollbarColor: darkMode
+              ? "rgb(55 65 81 / 0.5) transparent"
+              : "rgb(209 213 219 / 0.5) transparent",
+          }}
+        >
+          <div>
+            <SectionHeader title={t("sidebar.recent")} />
+            <div className="space-y-0.5">
+              {loadingRecent ? (
+                Array.from({ length: 4 }).map((_, i) => (
                   <div
+                    key={i}
                     className={clsx(
-                      "px-2 py-1.5 text-[13px] text-sidebar-foreground/50",
-                      getTextAlignment()
+                      "flex items-center gap-2 px-2 py-1.5",
+                      getFlexDirection()
                     )}
                   >
-                    {t("sidebar.noRecentWorkspaces", "No recent workspaces")}
-                  </div>
-                ) : (
-                  <>
-                    {(showAllRecent ? workspaces : workspaces.slice(0, 5)).map(
-                      (workspace) => (
-                        <RecentWorkspaceEntry
-                          key={workspace.id}
-                          workspace={workspace}
-                        />
-                      )
-                    )}
-                    {workspaces.length > 5 && (
-                      <button
-                        onClick={() => setShowAllRecent((prev) => !prev)}
-                        className={clsx(
-                          "w-full px-2 py-1.5 text-[12px] text-sidebar-foreground/60 hover:text-sidebar-accent-foreground rounded-md hover:bg-sidebar-accent/50 transition-colors font-normal",
-                          getTextAlignment()
-                        )}
-                      >
-                        {showAllRecent
-                          ? t("sidebar.showLess")
-                          : t("sidebar.showMore")}
-                      </button>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Spaces Section */}
-            <div>
-              <SectionHeader
-                title={t("sidebar.spaces")}
-                action={
-                  <Dialog open={openCreate} onOpenChange={setOpenCreate}>
-                    <DialogContent
-                      dir={isRTL ? "rtl" : "ltr"}
-                      className="rounded-2xl"
-                    >
-                      <DialogHeader className={getTextAlignment()}>
-                        <DialogTitle className={getTextAlignment()}>
-                          {t("dialogs.createNewSpace")}
-                        </DialogTitle>
-                        <DialogDescription className={getTextAlignment()}>
-                          {t("dialogs.chooseSpaceName")}
-                        </DialogDescription>
-                      </DialogHeader>
-
-                      <div className="grid gap-3">
-                        <Label
-                          htmlFor="space-name"
-                          className={getTextAlignment()}
-                        >
-                          {t("dialogs.spaceName")}
-                        </Label>
-                        <Input
-                          id="space-name"
-                          value={newName}
-                          onChange={(e) => setNewName(e.target.value)}
-                          placeholder={t("dialogs.spaceNamePlaceholder")}
-                          className="rounded-lg"
-                          dir={isRTL ? "rtl" : "ltr"}
-                          style={{ textAlign: isRTL ? "right" : "left" }}
-                        />
-                      </div>
-
-                      {spacesError && (
-                        <p
-                          className={clsx(
-                            "text-sm text-red-600 dark:text-red-400",
-                            getTextAlignment()
-                          )}
-                        >
-                          {spacesError}
-                        </p>
-                      )}
-
-                      <DialogFooter
-                        className={clsx(
-                          "gap-2 sm:gap-2",
-                          isRTL ? "flex-row-reverse" : "flex-row"
-                        )}
-                      >
-                        <Button
-                          variant="ghost"
-                          onClick={() => setOpenCreate(false)}
-                          disabled={creating}
-                          className="rounded-lg"
-                        >
-                          {t("common.cancel")}
-                        </Button>
-                        <Button
-                          onClick={doCreateSpace}
-                          disabled={creating || !newName.trim()}
-                          className="rounded-lg"
-                        >
-                          {creating ? t("dialogs.creating") : t("common.save")}
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                }
-              />
-
-              <div className="space-y-0.5">
-                {loadingSpaces ? (
-                  Array.from({ length: 4 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className={clsx(
-                        "flex items-center gap-2 px-2 py-1.5",
-                        getFlexDirection()
-                      )}
-                    >
-                      <Skeleton
-                        variant="circular"
-                        width={16}
-                        height={16}
-                        sx={{
-                          bgcolor: darkMode
-                            ? "rgb(55 65 81)"
-                            : "rgb(229 231 235)",
-                        }}
-                      />
-                      <Skeleton
-                        variant="rounded"
-                        width={120}
-                        height={12}
-                        sx={{
-                          bgcolor: darkMode
-                            ? "rgb(55 65 81)"
-                            : "rgb(229 231 235)",
-                        }}
-                      />
-                    </div>
-                  ))
-                ) : spacesError ? (
-                  <div
-                    className={clsx(
-                      "px-2 py-1.5 text-[13px] text-red-600 dark:text-red-400",
-                      getTextAlignment()
-                    )}
-                  >
-                    {spacesError}
-                  </div>
-                ) : spaces.length === 0 ? (
-                  <div
-                    className={clsx(
-                      "px-2 py-1.5 text-[13px] text-sidebar-foreground/50",
-                      getTextAlignment()
-                    )}
-                  >
-                    {t("sidebar.noSpacesYet")}
-                  </div>
-                ) : (
-                  <>
-                    {(showAllSpaces ? spaces : spaces.slice(0, 4)).map(
-                      (item) => (
-                        <NavLink
-                          key={item.id}
-                          to={item.url}
-                          className={({ isActive }) =>
-                            clsx(
-                              "w-full flex items-center gap-2 px-2 py-1.5 rounded-md transition-colors duration-150 group",
-                              isActive
-                                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                                : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
-                            )
-                          }
-                        >
-                          <BoxIcon
-                            size={16}
-                            strokeWidth={1.75}
-                            className="flex-shrink-0 text-sidebar-foreground/60 group-hover:text-sidebar-accent-foreground"
-                          />
-                          <span
-                            className={clsx(
-                              "text-[13px] font-normal flex-1 truncate",
-                              getTextAlignment()
-                            )}
-                          >
-                            {item.title}
-                          </span>
-                        </NavLink>
-                      )
-                    )}
-
-                    {spaces.length > 4 && (
-                      <button
-                        onClick={() => setShowAllSpaces((prev) => !prev)}
-                        className={clsx(
-                          "w-full px-2 py-1.5 text-[12px] text-sidebar-foreground/60 hover:text-sidebar-accent-foreground rounded-md hover:bg-sidebar-accent/50 transition-colors font-normal",
-                          getTextAlignment()
-                        )}
-                      >
-                        {showAllSpaces
-                          ? t("sidebar.showLess")
-                          : t("sidebar.showMore")}
-                      </button>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="flex-shrink-0">
-            <div
-              className="relative user-dropdown-container bg-white dark:bg-zinc-800 backdrop-blur-sm rounded-xl border border-zinc-200/50
-           dark:border-zinc-700/30"
-            >
-              <button
-                onClick={() => setShowUserDropdown((s) => !s)}
-                className="w-full flex items-center gap-2 px-2 py-2 rounded-md hover:bg-sidebar-accent/50 transition-colors"
-              >
-                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center flex-shrink-0">
-                  <span className="text-white text-xs font-semibold">
-                    {auth.user.firstName.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-                <div className={clsx("flex-1 min-w-0", getTextAlignment())}>
-                  <p className="text-[13px] font-medium text-sidebar-foreground truncate">
-                    {auth.user.firstName}
-                  </p>
-                  <p className="text-[11px] text-sidebar-foreground/50 font-normal">
-                    {t("sidebar.freePlan")}
-                  </p>
-                </div>
-                <ChevronDown
-                  size={16}
-                  strokeWidth={2}
-                  className={clsx(
-                    "text-sidebar-foreground/50 transition-transform duration-200 flex-shrink-0",
-                    showUserDropdown && "rotate-180"
-                  )}
-                />
-              </button>
-
-              {showUserDropdown && (
-                <div
-                  className="absolute bottom-full left-0 right-0 mb-2 bg-white 
-              dark:bg-zinc-900 backdrop-blur-xl border border-white/20 dark:border-zinc-700/30 rounded-2xl p-2 z-50"
-                >
-                  <button
-                    onClick={toggleDarkMode}
-                    className={clsx(
-                      "w-full flex items-center gap-2 px-2 py-2 hover:bg-sidebar-accent/50 rounded-md text-[13px] transition-colors text-sidebar-foreground font-normal",
-                      getFlexDirection(),
-                      getTextAlignment()
-                    )}
-                  >
-                    {darkMode ? (
-                      <Sun size={16} strokeWidth={2} />
-                    ) : (
-                      <Moon size={16} strokeWidth={2} />
-                    )}
-                    <span className="flex-1">
-                      {darkMode
-                        ? t("settings.lightMode", "Light Mode")
-                        : t("settings.darkMode", "Dark Mode")}
-                    </span>
-                  </button>
-
-                  <button
-                    onClick={toggleLanguage}
-                    className={clsx(
-                      "w-full flex items-center gap-2 px-2 py-2 hover:bg-sidebar-accent/50 rounded-md text-[13px] transition-colors text-sidebar-foreground font-normal",
-                      getFlexDirection(),
-                      getTextAlignment()
-                    )}
-                  >
-                    <Languages size={16} strokeWidth={2} />
-                    <span className="flex-1">
-                      {t("languages.switchTo", {
-                        lang: nextLanguageLabel,
-                        defaultValue: `Switch to ${nextLanguageLabel}`,
-                      })}
-                    </span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setIsSettingsOpen(true);
-                      setShowUserDropdown(false);
-                    }}
-                    className={clsx(
-                      "w-full flex items-center gap-2 px-2 py-2 hover:bg-sidebar-accent/50 rounded-md text-[13px] transition-colors text-sidebar-foreground font-normal",
-                      getFlexDirection(),
-                      getTextAlignment()
-                    )}
-                  >
-                    <Settings size={16} strokeWidth={2} />
-                    <span className="flex-1">{t("sidebar.settings")}</span>
-                  </button>
-
-                  <button
-                    className={clsx(
-                      "w-full flex items-center gap-2 px-2 py-2 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 rounded-md text-[13px] transition-colors font-normal",
-                      getFlexDirection(),
-                      getTextAlignment()
-                    )}
-                  >
-                    <Crown
-                      size={16}
-                      strokeWidth={2}
-                      className="text-yellow-600 dark:text-yellow-500"
+                    <Skeleton
+                      variant="circular"
+                      width={16}
+                      height={16}
+                      sx={{
+                        bgcolor: darkMode
+                          ? "rgb(55 65 81)"
+                          : "rgb(229 231 235)",
+                      }}
                     />
-                    <span className="flex-1 text-sidebar-foreground">
-                      {t("sidebar.upgrade")}
-                    </span>
-                  </button>
+                    <Skeleton
+                      variant="rounded"
+                      width={120}
+                      height={12}
+                      sx={{
+                        bgcolor: darkMode
+                          ? "rgb(55 65 81)"
+                          : "rgb(229 231 235)",
+                      }}
+                    />
+                  </div>
+                ))
+              ) : !workspaces || workspaces.length === 0 ? (
+                <div
+                  className={clsx(
+                    "px-2 py-1.5 text-[13px] text-sidebar-foreground/50",
+                    getTextAlignment()
+                  )}
+                >
+                  {t("sidebar.noRecentWorkspaces", "No recent workspaces")}
+                </div>
+              ) : (
+                <>
+                  {(showAllRecent ? workspaces : workspaces.slice(0, 5)).map(
+                    (workspace) => (
+                      <RecentWorkspaceEntry
+                        key={workspace.id}
+                        workspace={workspace}
+                      />
+                    )
+                  )}
+                  {workspaces.length > 5 && (
+                    <button
+                      onClick={() => setShowAllRecent((prev) => !prev)}
+                      className={clsx(
+                        "w-full px-2 py-1.5 text-[12px] text-sidebar-foreground/60 hover:text-sidebar-accent-foreground rounded-md hover:bg-sidebar-accent/50 transition-colors font-normal",
+                        getTextAlignment()
+                      )}
+                    >
+                      {showAllRecent
+                        ? t("sidebar.showLess")
+                        : t("sidebar.showMore")}
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
 
-                  <button
-                    onClick={() => logout()}
+          {/* Spaces Section */}
+          <div>
+            <SectionHeader
+              title={t("sidebar.spaces")}
+              action={
+                <Dialog open={openCreate} onOpenChange={setOpenCreate}>
+                  <DialogContent
+                    dir={isRTL ? "rtl" : "ltr"}
+                    className="rounded-2xl"
+                  >
+                    <DialogHeader className={getTextAlignment()}>
+                      <DialogTitle className={getTextAlignment()}>
+                        {t("dialogs.createNewSpace")}
+                      </DialogTitle>
+                      <DialogDescription className={getTextAlignment()}>
+                        {t("dialogs.chooseSpaceName")}
+                      </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="grid gap-3">
+                      <Label
+                        htmlFor="space-name"
+                        className={getTextAlignment()}
+                      >
+                        {t("dialogs.spaceName")}
+                      </Label>
+                      <Input
+                        id="space-name"
+                        value={newName}
+                        onChange={(e) => setNewName(e.target.value)}
+                        placeholder={t("dialogs.spaceNamePlaceholder")}
+                        className="rounded-lg"
+                        dir={isRTL ? "rtl" : "ltr"}
+                        style={{ textAlign: isRTL ? "right" : "left" }}
+                      />
+                    </div>
+
+                    {spacesError && (
+                      <p
+                        className={clsx(
+                          "text-sm text-red-600 dark:text-red-400",
+                          getTextAlignment()
+                        )}
+                      >
+                        {spacesError}
+                      </p>
+                    )}
+
+                    <DialogFooter
+                      className={clsx(
+                        "gap-2 sm:gap-2",
+                        isRTL ? "flex-row-reverse" : "flex-row"
+                      )}
+                    >
+                      <Button
+                        variant="ghost"
+                        onClick={() => setOpenCreate(false)}
+                        disabled={creating}
+                        className="rounded-lg"
+                      >
+                        {t("common.cancel")}
+                      </Button>
+                      <Button
+                        onClick={doCreateSpace}
+                        disabled={creating || !newName.trim()}
+                        className="rounded-lg"
+                      >
+                        {creating ? t("dialogs.creating") : t("common.save")}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              }
+            />
+
+            <div className="space-y-0.5">
+              {loadingSpaces ? (
+                Array.from({ length: 4 }).map((_, i) => (
+                  <div
+                    key={i}
                     className={clsx(
-                      "w-full flex items-center gap-2 px-2 py-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md text-[13px] text-red-600 dark:text-red-400 transition-colors font-normal",
-                      getFlexDirection(),
-                      getTextAlignment()
+                      "flex items-center gap-2 px-2 py-1.5",
+                      getFlexDirection()
                     )}
                   >
-                    <LogOut size={16} strokeWidth={2} />
-                    <span className="flex-1">{t("sidebar.logout")}</span>
-                  </button>
+                    <Skeleton
+                      variant="circular"
+                      width={16}
+                      height={16}
+                      sx={{
+                        bgcolor: darkMode
+                          ? "rgb(55 65 81)"
+                          : "rgb(229 231 235)",
+                      }}
+                    />
+                    <Skeleton
+                      variant="rounded"
+                      width={120}
+                      height={12}
+                      sx={{
+                        bgcolor: darkMode
+                          ? "rgb(55 65 81)"
+                          : "rgb(229 231 235)",
+                      }}
+                    />
+                  </div>
+                ))
+              ) : spacesError ? (
+                <div
+                  className={clsx(
+                    "px-2 py-1.5 text-[13px] text-red-600 dark:text-red-400",
+                    getTextAlignment()
+                  )}
+                >
+                  {spacesError}
                 </div>
+              ) : spaces.length === 0 ? (
+                <div
+                  className={clsx(
+                    "px-2 py-1.5 text-[13px] text-sidebar-foreground/50",
+                    getTextAlignment()
+                  )}
+                >
+                  {t("sidebar.noSpacesYet")}
+                </div>
+              ) : (
+                <>
+                  {(showAllSpaces ? spaces : spaces.slice(0, 4)).map((item) => (
+                    <NavLink
+                      key={item.id}
+                      to={item.url}
+                      className={({ isActive }) =>
+                        clsx(
+                          "w-full flex items-center gap-2 px-2 py-1.5 rounded-md transition-colors duration-150 group",
+                          isActive
+                            ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                            : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                        )
+                      }
+                    >
+                      <BoxIcon
+                        size={16}
+                        strokeWidth={1.75}
+                        className="flex-shrink-0 text-sidebar-foreground/60 group-hover:text-sidebar-accent-foreground"
+                      />
+                      <span
+                        className={clsx(
+                          "text-[13px] font-normal flex-1 truncate",
+                          getTextAlignment()
+                        )}
+                      >
+                        {item.title}
+                      </span>
+                    </NavLink>
+                  ))}
+
+                  {spaces.length > 4 && (
+                    <button
+                      onClick={() => setShowAllSpaces((prev) => !prev)}
+                      className={clsx(
+                        "w-full px-2 py-1.5 text-[12px] text-sidebar-foreground/60 hover:text-sidebar-accent-foreground rounded-md hover:bg-sidebar-accent/50 transition-colors font-normal",
+                        getTextAlignment()
+                      )}
+                    >
+                      {showAllSpaces
+                        ? t("sidebar.showLess")
+                        : t("sidebar.showMore")}
+                    </button>
+                  )}
+                </>
               )}
             </div>
           </div>
         </div>
+
+        <div className="flex-shrink-0">
+          <div
+            className="relative user-dropdown-container bg-white dark:bg-zinc-800 backdrop-blur-sm rounded-xl border border-zinc-200/50
+         dark:border-zinc-700/30"
+          >
+            <button
+              onClick={() => setShowUserDropdown((s) => !s)}
+              className="w-full flex items-center gap-2 px-2 py-2 rounded-md hover:bg-sidebar-accent/50 transition-colors"
+            >
+              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center flex-shrink-0">
+                <span className="text-white text-xs font-semibold">
+                  {auth.user.firstName.charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <div className={clsx("flex-1 min-w-0", getTextAlignment())}>
+                <p className="text-[13px] font-medium text-sidebar-foreground truncate">
+                  {auth.user.firstName}
+                </p>
+                <p className="text-[11px] text-sidebar-foreground/50 font-normal">
+                  {t("sidebar.freePlan")}
+                </p>
+              </div>
+              <ChevronDown
+                size={16}
+                strokeWidth={2}
+                className={clsx(
+                  "text-sidebar-foreground/50 transition-transform duration-200 flex-shrink-0",
+                  showUserDropdown && "rotate-180"
+                )}
+              />
+            </button>
+
+            {showUserDropdown && (
+              <div
+                className="absolute bottom-full left-0 right-0 mb-2 bg-white 
+            dark:bg-zinc-900 backdrop-blur-xl border border-white/20 dark:border-zinc-700/30 rounded-2xl p-2 z-50"
+              >
+                <button
+                  onClick={toggleDarkMode}
+                  className={clsx(
+                    "w-full flex items-center gap-2 px-2 py-2 hover:bg-sidebar-accent/50 rounded-md text-[13px] transition-colors text-sidebar-foreground font-normal",
+                    getFlexDirection(),
+                    getTextAlignment()
+                  )}
+                >
+                  {darkMode ? (
+                    <Sun size={16} strokeWidth={2} />
+                  ) : (
+                    <Moon size={16} strokeWidth={2} />
+                  )}
+                  <span className="flex-1">
+                    {darkMode
+                      ? t("settings.lightMode", "Light Mode")
+                      : t("settings.darkMode", "Dark Mode")}
+                  </span>
+                </button>
+
+                <button
+                  onClick={toggleLanguage}
+                  className={clsx(
+                    "w-full flex items-center gap-2 px-2 py-2 hover:bg-sidebar-accent/50 rounded-md text-[13px] transition-colors text-sidebar-foreground font-normal",
+                    getFlexDirection(),
+                    getTextAlignment()
+                  )}
+                >
+                  <Languages size={16} strokeWidth={2} />
+                  <span className="flex-1">
+                    {t("languages.switchTo", {
+                      lang: nextLanguageLabel,
+                      defaultValue: `Switch to ${nextLanguageLabel}`,
+                    })}
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setIsSettingsOpen(true);
+                    setShowUserDropdown(false);
+                  }}
+                  className={clsx(
+                    "w-full flex items-center gap-2 px-2 py-2 hover:bg-sidebar-accent/50 rounded-md text-[13px] transition-colors text-sidebar-foreground font-normal",
+                    getFlexDirection(),
+                    getTextAlignment()
+                  )}
+                >
+                  <Settings size={16} strokeWidth={2} />
+                  <span className="flex-1">{t("sidebar.settings")}</span>
+                </button>
+
+                <button
+                  className={clsx(
+                    "w-full flex items-center gap-2 px-2 py-2 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 rounded-md text-[13px] transition-colors font-normal",
+                    getFlexDirection(),
+                    getTextAlignment()
+                  )}
+                >
+                  <Crown
+                    size={16}
+                    strokeWidth={2}
+                    className="text-yellow-600 dark:text-yellow-500"
+                  />
+                  <span className="flex-1 text-sidebar-foreground">
+                    {t("sidebar.upgrade")}
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => logout()}
+                  className={clsx(
+                    "w-full flex items-center gap-2 px-2 py-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md text-[13px] text-red-600 dark:text-red-400 transition-colors font-normal",
+                    getFlexDirection(),
+                    getTextAlignment()
+                  )}
+                >
+                  <LogOut size={16} strokeWidth={2} />
+                  <span className="flex-1">{t("sidebar.logout")}</span>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile backdrop overlay */}
+      {isMobile && isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity duration-300"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {!isMobile && (
+        <div
+          dir={isRTL ? "rtl" : "ltr"}
+          lang={i18n.language}
+          className="h-full flex flex-col border-r bg-zinc-50 border
+         dark:bg-zinc-950 dark:border-zinc-800"
+        >
+          <SidebarContent />
+        </div>
+      )}
+
+      {/* Mobile floating sidebar */}
+      {isMobile && (
+        <div
+          dir={isRTL ? "rtl" : "ltr"}
+          lang={i18n.language}
+          className={clsx(
+            "fixed top-0 h-full w-[280px] max-w-[85vw] z-50 transition-transform duration-300 ease-in-out",
+            "bg-zinc-50 dark:bg-zinc-950 border-r border-zinc-200 dark:border-zinc-800",
+            "shadow-2xl",
+            isMobileMenuOpen
+              ? "translate-x-0"
+              : isRTL
+              ? "translate-x-full"
+              : "-translate-x-full",
+            isRTL ? "right-0" : "left-0"
+          )}
+        >
+          <SidebarContent />
+        </div>
+      )}
 
       <Modal
         open={isSettingsOpen}

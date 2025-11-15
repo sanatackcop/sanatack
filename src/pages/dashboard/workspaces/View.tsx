@@ -11,7 +11,7 @@ import {
   ResizablePanel,
   ResizableHandle,
 } from "@/components/ui/resizable";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   getWorkSpace,
   getWorkSpaceChatHistory,
@@ -81,8 +82,6 @@ const TABS_CONFIG = [
     icon: BrainCog,
     isSoon: false,
   },
-  // { id: "code", labelKey: "tabs.code", icon: Code, isSoon: true },
-  // { id: "note", labelKey: "tabs.notes", icon: Pencil, isSoon: true },
 ] as const;
 
 const LearnPlayground: React.FC = () => {
@@ -100,6 +99,10 @@ const LearnPlayground: React.FC = () => {
   const [autoContextEnabled, setAutoContextEnabled] = useState(false);
   const [autoContextLoading, setAutoContextLoading] = useState(false);
   const [appliedContextIds, setAppliedContextIds] = useState<string[]>([]);
+
+  // Mobile state - controls which panel is shown
+  const [isMobile, setIsMobile] = useState(false);
+  const [mobileView, setMobileView] = useState<"content" | "tabs">("content");
 
   // Separate refs for fullscreen and split mode
   const fullscreenScrollRef = useRef<HTMLDivElement>(null);
@@ -131,6 +134,27 @@ const LearnPlayground: React.FC = () => {
   const isRTL = i18n.dir() === "rtl";
   const [isResizing, setIsResizing] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+
+      // If switching to mobile, set default view based on workspace type
+      if (mobile && !isMobile) {
+        if (state.type === "chat") {
+          setMobileView("tabs");
+        } else {
+          setMobileView("content");
+        }
+      }
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, [state.type, isMobile]);
 
   const autoContextCount = useMemo(() => {
     if (!workspaceContexts.length) return 0;
@@ -302,7 +326,6 @@ const LearnPlayground: React.FC = () => {
         try {
           contextsList = await getWorkspaceContexts(id);
         } catch (contextError) {
-          console.log({ contextError });
           console.error("Failed to load workspace contexts:", contextError);
         }
       }
@@ -352,7 +375,7 @@ const LearnPlayground: React.FC = () => {
       setWorkspaceLoading(false);
       setTimeout(() => setContentLoading(false), 1000);
     }
-  }, [id]);
+  }, [id, extractVideoId]);
 
   useEffect(() => {
     fetchWorkspace();
@@ -406,7 +429,7 @@ const LearnPlayground: React.FC = () => {
     } finally {
       setAutoContextLoading(false);
     }
-  }, [id, mapWorkspaceContextsToChat, t]);
+  }, [id, mapWorkspaceContextsToChat, t, isRTL]);
 
   const handleSendMessage = useCallback(
     async (
@@ -584,6 +607,7 @@ const LearnPlayground: React.FC = () => {
       selectedContexts,
       t,
       autoContextEnabled,
+      isRTL,
     ]
   );
 
@@ -606,7 +630,6 @@ const LearnPlayground: React.FC = () => {
     }
   }, []);
 
-  // Split mode scroll functions
   const checkSplitScroll = useCallback(() => {
     if (splitScrollRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = splitScrollRef.current;
@@ -683,7 +706,7 @@ const LearnPlayground: React.FC = () => {
     };
   }, [checkSplitScroll, fullScreen, state.tab]);
 
-  // Fullscreen drag handlers with improved UX
+  // Drag handlers (keeping your existing implementation)
   const handleFullscreenMouseDown = (e: React.MouseEvent) => {
     if (!fullscreenScrollRef.current) return;
     const container = fullscreenScrollRef.current;
@@ -707,10 +730,7 @@ const LearnPlayground: React.FC = () => {
     const deltaTime = now - fullscreenScroll.lastMoveTime;
     const deltaX = e.clientX - fullscreenScroll.lastX;
 
-    // Calculate velocity for momentum
     const velocity = deltaTime > 0 ? deltaX / deltaTime : 0;
-
-    // Smooth drag with higher sensitivity
     const walk = (fullscreenScroll.startX - e.clientX) * 1.2;
     container.scrollLeft = fullscreenScroll.scrollLeft + walk;
 
@@ -725,14 +745,12 @@ const LearnPlayground: React.FC = () => {
   const handleFullscreenMouseUp = () => {
     if (!fullscreenScrollRef.current) return;
 
-    // Apply momentum scrolling
     const container = fullscreenScrollRef.current;
-    let momentum = fullscreenScroll.velocity * -150; // Convert velocity to pixels
-    const friction = 0.92; // Friction coefficient
+    let momentum = fullscreenScroll.velocity * -150;
+    const friction = 0.92;
 
     const animate = () => {
       if (Math.abs(momentum) < 0.5) return;
-
       momentum *= friction;
       container.scrollLeft += momentum;
       requestAnimationFrame(animate);
@@ -772,7 +790,6 @@ const LearnPlayground: React.FC = () => {
     const deltaX = e.touches[0].clientX - fullscreenScroll.lastX;
 
     const velocity = deltaTime > 0 ? deltaX / deltaTime : 0;
-
     const walk = (fullscreenScroll.startX - e.touches[0].clientX) * 1.2;
     container.scrollLeft = fullscreenScroll.scrollLeft + walk;
 
@@ -793,7 +810,6 @@ const LearnPlayground: React.FC = () => {
 
     const animate = () => {
       if (Math.abs(momentum) < 0.5) return;
-
       momentum *= friction;
       container.scrollLeft += momentum;
       requestAnimationFrame(animate);
@@ -810,7 +826,6 @@ const LearnPlayground: React.FC = () => {
     }));
   };
 
-  // Split mode drag handlers with improved UX
   const handleSplitMouseDown = (e: React.MouseEvent) => {
     if (!splitScrollRef.current) return;
     const container = splitScrollRef.current;
@@ -835,7 +850,6 @@ const LearnPlayground: React.FC = () => {
     const deltaX = e.clientX - splitScroll.lastX;
 
     const velocity = deltaTime > 0 ? deltaX / deltaTime : 0;
-
     const walk = (splitScroll.startX - e.clientX) * 1.2;
     container.scrollLeft = splitScroll.scrollLeft + walk;
 
@@ -856,7 +870,6 @@ const LearnPlayground: React.FC = () => {
 
     const animate = () => {
       if (Math.abs(momentum) < 0.5) return;
-
       momentum *= friction;
       container.scrollLeft += momentum;
       requestAnimationFrame(animate);
@@ -892,7 +905,6 @@ const LearnPlayground: React.FC = () => {
     const deltaX = e.touches[0].clientX - splitScroll.lastX;
 
     const velocity = deltaTime > 0 ? deltaX / deltaTime : 0;
-
     const walk = (splitScroll.startX - e.touches[0].clientX) * 1.2;
     container.scrollLeft = splitScroll.scrollLeft + walk;
 
@@ -913,7 +925,6 @@ const LearnPlayground: React.FC = () => {
 
     const animate = () => {
       if (Math.abs(momentum) < 0.5) return;
-
       momentum *= friction;
       container.scrollLeft += momentum;
       requestAnimationFrame(animate);
@@ -998,6 +1009,209 @@ const LearnPlayground: React.FC = () => {
     return null;
   };
 
+  // Render tabs content
+  const renderTabsContent = () => {
+    return (
+      <Tabs
+        value={state.tab}
+        onValueChange={(v) => dispatch({ type: "SET_TAB", tab: v as TabKey })}
+        className="h-full flex flex-col min-h-0"
+      >
+        <div
+          className={`relative ${
+            isMobile ? "p-2 pt-0" : "p-2 pt-0"
+          } flex-shrink-0 flex justify-center`}
+        >
+          <div
+            ref={isMobile ? undefined : splitScrollRef}
+            className="overflow-x-scroll scrollbar-hide w-full select-none px-1"
+            onMouseDown={isMobile ? undefined : handleSplitMouseDown}
+            onMouseMove={isMobile ? undefined : handleSplitMouseMove}
+            onMouseUp={isMobile ? undefined : handleSplitMouseUp}
+            onMouseLeave={isMobile ? undefined : handleSplitMouseUp}
+            onTouchStart={isMobile ? undefined : handleSplitTouchStart}
+            onTouchMove={isMobile ? undefined : handleSplitTouchMove}
+            onTouchEnd={isMobile ? undefined : handleSplitTouchEnd}
+            style={
+              isMobile
+                ? {}
+                : {
+                    cursor: splitScroll.isDragging ? "grabbing" : "grab",
+                    userSelect: "none",
+                    WebkitUserSelect: "none",
+                    MozUserSelect: "none",
+                    msUserSelect: "none",
+                    overflowX: "scroll",
+                    scrollbarWidth: "none",
+                    msOverflowStyle: "none",
+                    WebkitOverflowScrolling: "touch",
+                  }
+            }
+          >
+            <div className="flex items-center gap-2 w-max mx-auto">
+              <TabsList
+                className="relative !space-x-0 !p-0.5 sm:!p-1 flex flex-shrink-0 items-center gap-0.5 sm:gap-1 md:gap-2 h-9 sm:h-10 md:h-11 rounded-xl sm:rounded-2xl border border-zinc-200/60 dark:border-zinc-800/60 bg-white/80 dark:bg-zinc-950/40 shadow-sm dark:shadow-none backdrop-blur-sm"
+                style={{ direction: isRTL ? "rtl" : "ltr" }}
+              >
+                {TABS_CONFIG.map((tab) => {
+                  const IconComponent = tab.icon;
+                  const isActive = state.tab === tab.id;
+                  const trigger = (
+                    <TabsTrigger
+                      key={tab.id}
+                      value={tab.id}
+                      disabled={tab.isSoon}
+                      className={`px-1.5 sm:px-2 md:px-3 py-1 sm:py-1.5 md:py-2 relative z-20 flex-shrink-0 transition-all duration-150
+                        hover:bg-transparent data-[state=active]:bg-zinc-100 dark:data-[state=active]:bg-zinc-800/60 rounded-lg sm:rounded-xl h-6 sm:h-7 md:h-9 flex flex-row items-center
+                        justify-center select-none cursor-pointer gap-1 sm:gap-1.5`}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onTouchStart={(e) => e.stopPropagation()}
+                    >
+                      {isActive ? (
+                        <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-emerald-500 rounded-full flex-shrink-0" />
+                      ) : (
+                        <IconComponent className="size-3 sm:size-3.5 md:size-4 flex-shrink-0 text-zinc-600 dark:text-zinc-400" />
+                      )}
+                      <span
+                        className={`text-[10px] sm:text-xs md:text-sm font-normal transition-colors duration-150 whitespace-nowrap ${
+                          isActive
+                            ? "text-zinc-900 dark:text-zinc-100"
+                            : "text-zinc-700 dark:text-zinc-300"
+                        }`}
+                      >
+                        {t(tab.labelKey as any)}
+                      </span>
+                    </TabsTrigger>
+                  );
+
+                  if (!tab.isSoon) {
+                    return trigger;
+                  }
+
+                  return (
+                    <Tooltip
+                      key={tab.id}
+                      title={t("workspace.comingSoon", "Coming soon")}
+                    >
+                      <span>{trigger}</span>
+                    </Tooltip>
+                  );
+                })}
+              </TabsList>
+
+              {!isMobile && (
+                <Tooltip
+                  title={t("workspace.fullScreen", "Full Screen")}
+                  className="cursor-pointer flex-shrink-0"
+                >
+                  <Scan
+                    className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-all ease-linear duration-200 size-4 sm:size-5"
+                    onClick={() => setFullScreen(!fullScreen)}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onTouchStart={(e) => e.stopPropagation()}
+                  />
+                </Tooltip>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+          {state.tab === "chat" && (
+            <TabsContent
+              value="chat"
+              className="m-0 flex-1 flex flex-col relative justify-end min-h-0 w-full max-w-full"
+            >
+              {state.isLoading ? (
+                <div className="w-full">
+                  <ChatSkeleton />
+                </div>
+              ) : (
+                <>
+                  <ScrollArea>
+                    <ChatMessages
+                      messages={state.chatMessages || []}
+                      isLoading={state.chatLoading}
+                      streamingMessage={state.streamingMessage}
+                      onSendMessage={handleQuickSend}
+                    />
+                  </ScrollArea>
+                  <ChatInput
+                    className="flex-shrink-0 w-full p-5"
+                    value={state.prompt}
+                    hasAutoContext={true}
+                    expandSection={true}
+                    contexts={selectedContexts}
+                    availableContexts={availableContexts}
+                    autoContextCount={autoContextCount}
+                    autoContextLoading={autoContextLoading}
+                    onChange={(value: string) =>
+                      dispatch({
+                        type: "SET_PROMPT",
+                        prompt: value,
+                      })
+                    }
+                    onSubmit={(value, model, contexts) =>
+                      handleSendMessage(value, model, contexts)
+                    }
+                    onContextsChange={handleContextsChange}
+                    onAutoContextClick={handleAutoContext}
+                    appliedContextIds={appliedContextIds}
+                    placeholder={t("aiActions.chatPlaceholder")}
+                    optionsToHide={{
+                      models: true,
+                    }}
+                  />
+                </>
+              )}
+            </TabsContent>
+          )}
+
+          {state.tab === "flashcards" && workspace && (
+            <TabsContent
+              value="flashcards"
+              className="m-0 h-full flex flex-col w-full max-w-full"
+              style={{ maxHeight: "100%" }}
+            >
+              <FlashCards workspaceId={workspace.id} />
+            </TabsContent>
+          )}
+
+          {state.tab === "quizzes" && (
+            <TabsContent
+              value="quizzes"
+              className="m-0 h-full p-4 text-zinc-500 dark:text-zinc-400 flex flex-col w-full max-w-full"
+            >
+              <QuizList workspaceId={(workspace && workspace.id) || ""} />
+            </TabsContent>
+          )}
+
+          {state.tab === "summary" && (
+            <TabsContent
+              value="summary"
+              className="m-0 h-full p-4 text-zinc-500 dark:text-zinc-400 flex flex-col w-full max-w-full"
+              style={{ maxHeight: "100%" }}
+            >
+              <SummaryList
+                workspaceId={String(workspace && workspace.id) || ""}
+              />
+            </TabsContent>
+          )}
+
+          {state.tab === "deepExplanation" && (
+            <TabsContent
+              value="deepExplanation"
+              className="m-0 h-full p-4 text-zinc-500 dark:text-zinc-400 flex flex-col w-full max-w-full"
+              style={{ maxHeight: "100%" }}
+            >
+              <MindMap workspaceId={(workspace && workspace.id) || ""} />
+            </TabsContent>
+          )}
+        </div>
+      </Tabs>
+    );
+  };
+
   if (workspaceLoading) {
     return (
       <section
@@ -1025,7 +1239,13 @@ const LearnPlayground: React.FC = () => {
       className="flex flex-col"
     >
       <WorkspaceGenerationWatcher workspaceId={workspace?.id} />
-      <div className="p-2 pb-0 pl-12 flex items-center justify-between flex-shrink-0">
+
+      {/* Header with title */}
+      <div
+        className={`p-2 pb-0 ${
+          isMobile ? "pl-2" : "pl-12"
+        } flex items-center justify-between flex-shrink-0`}
+      >
         <div className="max-w-[34rem] flex-grow relative">
           {workspaceLoading ? (
             <Skeleton className="h-10 w-full rounded-2xl" />
@@ -1044,14 +1264,38 @@ const LearnPlayground: React.FC = () => {
         </div>
       </div>
 
+      {/* Mobile toggle buttons - only show on mobile for non-fullscreen */}
+      {isMobile && !fullScreen && state.type !== "chat" && (
+        <div className="flex items-center justify-center gap-2 p-2">
+          <Button
+            size="sm"
+            variant={mobileView === "content" ? "default" : "outline"}
+            onClick={() => setMobileView("content")}
+            className="flex items-center gap-2"
+          >
+            {state.type === "video" ? "Video" : "Document"}
+          </Button>
+          <Button
+            size="sm"
+            variant={mobileView === "tabs" ? "default" : "outline"}
+            onClick={() => setMobileView("tabs")}
+            className="flex items-center gap-2"
+          >
+            Lab
+          </Button>
+        </div>
+      )}
+
+      {/* Main content area */}
       <ResizablePanelGroup
-        key={fullScreen ? "pg-full" : "pg-split"}
+        key={fullScreen ? "pg-full" : isMobile ? "pg-mobile" : "pg-split"}
         direction="horizontal"
         dir="ltr"
         className="flex-1 min-h-0"
         autoSaveId={fullScreen ? "fs-layout" : "split-layout"}
       >
         {fullScreen ? (
+          // Fullscreen mode (same as before)
           <motion.div
             initial={{ x: 20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
@@ -1068,6 +1312,7 @@ const LearnPlayground: React.FC = () => {
                 }
                 className="h-full flex flex-col min-h-0"
               >
+                {/* Fullscreen tabs - keeping your existing implementation */}
                 <div className="sticky top-0 z-30 pb-4 flex-shrink-0 flex justify-center bg-white/70 dark:bg-zinc-950/60 backdrop-blur-md">
                   {fullscreenScroll.canScrollLeft && (
                     <>
@@ -1305,7 +1550,37 @@ const LearnPlayground: React.FC = () => {
               </Tabs>
             )}
           </motion.div>
+        ) : isMobile ? (
+          // Mobile view - show only one panel at a time
+          <div className="h-full w-full flex flex-col min-h-0">
+            <AnimatePresence mode="wait">
+              {mobileView === "content" && state.type !== "chat" ? (
+                <motion.div
+                  key="content"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.2 }}
+                  className="h-full p-2 pt-0 flex flex-col min-h-0"
+                >
+                  {renderContent()}
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="tabs"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ duration: 0.2 }}
+                  className="h-full flex flex-col min-h-0"
+                >
+                  {workspaceLoading ? <TabsSkeleton /> : renderTabsContent()}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         ) : (
+          // Desktop split view
           <>
             <ResizablePanel
               defaultSize={50}
@@ -1348,210 +1623,7 @@ const LearnPlayground: React.FC = () => {
                 transition={{ type: "spring", stiffness: 260, damping: 30 }}
                 className="h-full flex flex-col min-h-0"
               >
-                {workspaceLoading ? (
-                  <TabsSkeleton />
-                ) : (
-                  <Tabs
-                    value={state.tab}
-                    onValueChange={(v) =>
-                      dispatch({ type: "SET_TAB", tab: v as TabKey })
-                    }
-                    className="h-full flex flex-col min-h-0"
-                  >
-                    <div className="relative p-2 pt-0 flex-shrink-0 flex justify-center">
-                      <div
-                        ref={splitScrollRef}
-                        className="overflow-x-scroll scrollbar-hide w-full select-none px-1"
-                        onMouseDown={handleSplitMouseDown}
-                        onMouseMove={handleSplitMouseMove}
-                        onMouseUp={handleSplitMouseUp}
-                        onMouseLeave={handleSplitMouseUp}
-                        onTouchStart={handleSplitTouchStart}
-                        onTouchMove={handleSplitTouchMove}
-                        onTouchEnd={handleSplitTouchEnd}
-                        style={{
-                          cursor: splitScroll.isDragging ? "grabbing" : "grab",
-                          userSelect: "none",
-                          WebkitUserSelect: "none",
-                          MozUserSelect: "none",
-                          msUserSelect: "none",
-                          overflowX: "scroll",
-                          scrollbarWidth: "none",
-                          msOverflowStyle: "none",
-                          WebkitOverflowScrolling: "touch",
-                        }}
-                      >
-                        <div className="flex items-center gap-2 w-max mx-auto">
-                          <TabsList
-                            className="relative !space-x-0 !p-0.5 sm:!p-1 flex flex-shrink-0 items-center gap-0.5 sm:gap-1 md:gap-2 h-9 sm:h-10 md:h-11 rounded-xl sm:rounded-2xl border border-zinc-200/60 dark:border-zinc-800/60 bg-white/80 dark:bg-zinc-950/40 shadow-sm dark:shadow-none backdrop-blur-sm"
-                            style={{ direction: isRTL ? "rtl" : "ltr" }}
-                          >
-                            {TABS_CONFIG.map((tab) => {
-                              const IconComponent = tab.icon;
-                              const isActive = state.tab === tab.id;
-                              const trigger = (
-                                <TabsTrigger
-                                  key={tab.id}
-                                  value={tab.id}
-                                  disabled={tab.isSoon}
-                                  className={`px-1.5 sm:px-2 md:px-3 py-1 sm:py-1.5 md:py-2 relative z-20 flex-shrink-0 transition-all duration-150
-                                  hover:bg-transparent data-[state=active]:bg-zinc-100 dark:data-[state=active]:bg-zinc-800/60 rounded-lg sm:rounded-xl h-6 sm:h-7 md:h-9 flex flex-row items-center
-                                  justify-center select-none cursor-pointer gap-1 sm:gap-1.5`}
-                                  onMouseDown={(e) => e.stopPropagation()}
-                                  onTouchStart={(e) => e.stopPropagation()}
-                                >
-                                  {isActive ? (
-                                    <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-emerald-500 rounded-full flex-shrink-0" />
-                                  ) : (
-                                    <IconComponent className="size-3 sm:size-3.5 md:size-4 flex-shrink-0 text-zinc-600 dark:text-zinc-400" />
-                                  )}
-                                  <span
-                                    className={`text-[10px] sm:text-xs md:text-sm font-normal transition-colors duration-150 whitespace-nowrap ${
-                                      isActive
-                                        ? "text-zinc-900 dark:text-zinc-100"
-                                        : "text-zinc-700 dark:text-zinc-300"
-                                    }`}
-                                  >
-                                    {t(tab.labelKey as any)}
-                                  </span>
-                                </TabsTrigger>
-                              );
-
-                              if (!tab.isSoon) {
-                                return trigger;
-                              }
-
-                              return (
-                                <Tooltip
-                                  key={tab.id}
-                                  title={t(
-                                    "workspace.comingSoon",
-                                    "Coming soon"
-                                  )}
-                                >
-                                  <span>{trigger}</span>
-                                </Tooltip>
-                              );
-                            })}
-                          </TabsList>
-
-                          <Tooltip
-                            title={t("workspace.fullScreen", "Full Screen")}
-                            className="cursor-pointer flex-shrink-0"
-                          >
-                            <Scan
-                              className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-all ease-linear duration-200 size-4 sm:size-5"
-                              onClick={() => {
-                                setFullScreen(!fullScreen);
-                              }}
-                              onMouseDown={(e) => e.stopPropagation()}
-                              onTouchStart={(e) => e.stopPropagation()}
-                            />
-                          </Tooltip>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex-1 overflow-hidden flex flex-col min-h-0">
-                      {state.tab === "chat" && (
-                        <TabsContent
-                          value="chat"
-                          className="m-0 flex-1 flex flex-col relative  justify-end min-h-0 w-full max-w-full"
-                        >
-                          {state.isLoading ? (
-                            <div className="w-full ">
-                              <ChatSkeleton />
-                            </div>
-                          ) : (
-                            <>
-                              <ScrollArea>
-                                <ChatMessages
-                                  messages={state.chatMessages || []}
-                                  isLoading={state.chatLoading}
-                                  streamingMessage={state.streamingMessage}
-                                  onSendMessage={handleQuickSend}
-                                />
-                              </ScrollArea>
-                              <ChatInput
-                                className="flex-shrink-0 w-full p-5"
-                                value={state.prompt}
-                                hasAutoContext={true}
-                                expandSection={true}
-                                contexts={selectedContexts}
-                                availableContexts={availableContexts}
-                                autoContextCount={autoContextCount}
-                                autoContextLoading={autoContextLoading}
-                                onChange={(value: string) =>
-                                  dispatch({
-                                    type: "SET_PROMPT",
-                                    prompt: value,
-                                  })
-                                }
-                                onSubmit={(value, model, contexts) =>
-                                  handleSendMessage(value, model, contexts)
-                                }
-                                onContextsChange={handleContextsChange}
-                                onAutoContextClick={handleAutoContext}
-                                appliedContextIds={appliedContextIds}
-                                placeholder={t("aiActions.chatPlaceholder")}
-                                optionsToHide={{
-                                  models: true,
-                                }}
-                              />
-                            </>
-                          )}
-                        </TabsContent>
-                      )}
-
-                      {state.tab === "flashcards" && workspace && (
-                        <TabsContent
-                          value="flashcards"
-                          className="m-0 h-full flex flex-col w-full max-w-full"
-                          style={{ maxHeight: "100%" }}
-                        >
-                          <FlashCards workspaceId={workspace.id} />
-                        </TabsContent>
-                      )}
-
-                      {state.tab === "quizzes" && (
-                        <TabsContent
-                          value="quizzes"
-                          className="m-0 h-full p-4 text-zinc-500 dark:text-zinc-400 flex flex-col w-full max-w-full"
-                        >
-                          <QuizList
-                            workspaceId={(workspace && workspace.id) || ""}
-                          />
-                        </TabsContent>
-                      )}
-
-                      {state.tab === "summary" && (
-                        <TabsContent
-                          value="summary"
-                          className="m-0 h-full p-4 text-zinc-500 dark:text-zinc-400 flex flex-col w-full max-w-full"
-                          style={{ maxHeight: "100%" }}
-                        >
-                          <SummaryList
-                            workspaceId={
-                              String(workspace && workspace.id) || ""
-                            }
-                          />
-                        </TabsContent>
-                      )}
-
-                      {state.tab === "deepExplanation" && (
-                        <TabsContent
-                          value="deepExplanation"
-                          className="m-0 h-full p-4 text-zinc-500 dark:text-zinc-400 flex flex-col w-full max-w-full"
-                          style={{ maxHeight: "100%" }}
-                        >
-                          <MindMap
-                            workspaceId={(workspace && workspace.id) || ""}
-                          />
-                        </TabsContent>
-                      )}
-                    </div>
-                  </Tabs>
-                )}
+                {workspaceLoading ? <TabsSkeleton /> : renderTabsContent()}
               </motion.div>
             </ResizablePanel>
           </>
