@@ -5,7 +5,6 @@ import Hero from "./Hero";
 import CollagesSupported from "./Bannar";
 import { AITutorFeatures } from "./CourseFeature";
 import LightRays from "./LightRays";
-import { MagicAiFeatures } from "./MagaicAiFeatures";
 import FAQs from "./FAQs";
 import { Pricing } from "./Pricing";
 import Footer from "@/components/layout/Footer";
@@ -50,7 +49,7 @@ export default function LandingPage() {
       <Navbar />
       <LightRays
         raysOrigin="top-center"
-        raysColor="#fff"
+        raysColor="#ffff"
         raysSpeed={1.5}
         lightSpread={0.8}
         rayLength={0.8}
@@ -64,7 +63,7 @@ export default function LandingPage() {
         <Hero />
         <CollagesSupported />
         <AITutorFeatures />
-        <MagicAiFeatures />
+        {/* <MagicAiFeatures /> */}
         {/* <UseCases /> */}
         <Pricing />
         <FAQs />

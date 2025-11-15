@@ -1119,7 +1119,7 @@ const LearnPlayground: React.FC = () => {
           {state.tab === "chat" && (
             <TabsContent
               value="chat"
-              className="m-0 flex-1 flex flex-col relative justify-end min-h-0"
+              className="m-0 flex-1 px-14 flex flex-col relative justify-end min-h-0"
             >
               {state.isLoading ? (
                 <div className="w-full">
@@ -1137,7 +1137,7 @@ const LearnPlayground: React.FC = () => {
                       />
                     </div>
                   </ScrollArea>
-                  <div className="flex-shrink-0 w-full max-w-4xl mx-auto px-4 py-5">
+                  <div className="flex-shrink-0 w-full max-w-full py-5">
                     <ChatInput
                       className="w-full"
                       value={state.prompt}
