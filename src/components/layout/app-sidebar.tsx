@@ -20,7 +20,6 @@ import {
   CalendarDaysIcon,
   CheckCircle,
   Clock10,
-  Globe,
   MapIcon,
   Moon,
   Sun,
@@ -290,12 +289,6 @@ export function AppSidebar({
             url: "/dashboard/search",
             icon: Search,
             onClick: openSearchCommand,
-          },
-          {
-            title: t("sidebar.items.discover"),
-            url: "/dashboard/discover",
-            icon: Globe,
-            comingSoon: true,
           },
           {
             title: t("sidebar.createMap"),
