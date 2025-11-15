@@ -17,7 +17,7 @@ import AudioRecordModal from "./AudioRecordModal";
 
 interface AddContentModalProps {
   open: boolean;
-  onClose: () => void;
+  onClose: (update?: boolean) => void;
 }
 
 export type ModalType =
@@ -36,8 +36,8 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
   const isRTL = dir === "rtl";
   const [activeModal, setActiveModal] = useState<ModalType>("selection");
 
-  function handleClose() {
-    onClose();
+  function handleClose(update?: boolean) {
+    onClose(update);
     setActiveModal("selection");
   }
 
@@ -165,7 +165,10 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
         )}
 
         {activeModal === "upload" && (
-          <PDFUploadModal setActiveModal={setActiveModal} />
+          <PDFUploadModal
+            setActiveModal={setActiveModal}
+            handleClose={handleClose}
+          />
         )}
 
         {activeModal === "paste" && (

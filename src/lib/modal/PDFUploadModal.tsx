@@ -4,8 +4,15 @@ import {
   getDocumentApi,
   uploadDocumentApi,
 } from "@/utils/_apis/learnPlayground-api";
-import { FileText, Image, Music, UploadCloud, Video } from "lucide-react";
-import { useRef, useState } from "react";
+import {
+  Check,
+  FileText,
+  Image,
+  Music,
+  UploadCloud,
+  Video,
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { SetActiveModalType } from "./AddContantModal";
 import { useSidebarRefresh } from "@/context/SidebarRefreshContext";
 import {
@@ -18,6 +25,18 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { formatFileSize } from "../chat/chatInput";
 import { Progress } from "@/components/ui/progress";
+import { Document, pdfjs } from "react-pdf";
+import { PDFDocument } from "pdf-lib";
+import LazyPage from "./document/LazyPage";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 interface UploadState {
   files: File[];
@@ -29,9 +48,54 @@ interface UploadState {
   downloadUrl: string | null;
 }
 
+interface Chapter {
+  title: string;
+  pageNumber: number | null;
+}
+
+async function slicePdfByPages(
+  originalFile: File,
+  selectedPages: number[]
+): Promise<File> {
+  if (selectedPages.length === 0) return originalFile;
+
+  const uniqueSortedPages = Array.from(new Set(selectedPages)).sort(
+    (a, b) => a - b
+  );
+
+  const arrayBuffer = await originalFile.arrayBuffer();
+  const srcDoc = await PDFDocument.load(arrayBuffer);
+  const newDoc = await PDFDocument.create();
+
+  const pageIndices = uniqueSortedPages
+    .map((p) => p - 1)
+    .filter((idx) => idx >= 0 && idx < srcDoc.getPageCount());
+
+  const copiedPages = await newDoc.copyPages(srcDoc, pageIndices);
+  copiedPages.forEach((p) => newDoc.addPage(p));
+
+  const pdfBytes = (await newDoc.save()) as any;
+
+  const originalName = originalFile.name || "document.pdf";
+  const dotIndex = originalName.lastIndexOf(".");
+  const baseName =
+    dotIndex > 0 ? originalName.slice(0, dotIndex) : originalName;
+
+  const newFileName = `${baseName}-selected.pdf`;
+
+  return new File([pdfBytes], newFileName, { type: "application/pdf" });
+}
+
+enum UploadSteps {
+  PDFUpload = 0,
+  PDFPageSelect = 1,
+}
+
 export default function PDFUploadModal({
+  handleClose,
   setActiveModal,
 }: {
+  handleClose: (update?: boolean) => void;
   setActiveModal: SetActiveModalType;
 }) {
   const [isDragActive, setIsDragActive] = useState(false);
@@ -45,10 +109,24 @@ export default function PDFUploadModal({
     status: null,
     downloadUrl: null,
   });
+  const [steps, setSteps] = useState(UploadSteps.PDFUpload);
   const { refreshWorkspace } = useSidebarRefresh();
   const { t, i18n } = useTranslation();
   const dir = i18n.dir();
   const isRTL = dir === "rtl";
+
+  const [pdfFileUrl, setPdfFileUrl] = useState<string | null>(null);
+  const [numPages, setNumPages] = useState<number>(0);
+  const [selectedPages, setSelectedPages] = useState<number[]>([]);
+  const [chapters, setChapters] = useState<Chapter[]>([]);
+
+  useEffect(() => {
+    return () => {
+      if (pdfFileUrl) {
+        URL.revokeObjectURL(pdfFileUrl);
+      }
+    };
+  }, [pdfFileUrl]);
 
   function statusToProgress(status: DocumentStatus | null): number {
     switch (status) {
@@ -64,6 +142,7 @@ export default function PDFUploadModal({
         return 0;
     }
   }
+
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   function clearPolling() {
@@ -97,6 +176,10 @@ export default function PDFUploadModal({
         documentId: null,
         downloadUrl: null,
       }));
+      setPdfFileUrl(null);
+      setNumPages(0);
+      setSelectedPages([]);
+      setChapters([]);
       return;
     }
 
@@ -111,6 +194,12 @@ export default function PDFUploadModal({
       documentId: null,
       downloadUrl: null,
     }));
+
+    if (pdfFileUrl) URL.revokeObjectURL(pdfFileUrl);
+    const url = URL.createObjectURL(file);
+    setPdfFileUrl(url);
+    setSelectedPages([]);
+    setChapters([]);
   }
 
   function startPolling(documentId: string) {
@@ -142,6 +231,7 @@ export default function PDFUploadModal({
 
         if (docStatus === "uploaded" || docStatus === "failed") {
           clearPolling();
+          handleClose(true);
         }
       } catch (error: any) {
         clearPolling();
@@ -162,7 +252,6 @@ export default function PDFUploadModal({
     pollIntervalRef.current = setInterval(poll, 5000);
   }
 
-  // Drag hover handlers for upload area
   function handleDragEnter(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault();
     e.stopPropagation();
@@ -172,7 +261,6 @@ export default function PDFUploadModal({
   function handleDragLeave(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault();
     e.stopPropagation();
-    // Only deactivate when leaving the drop zone itself
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX;
     const y = e.clientY;
@@ -192,21 +280,66 @@ export default function PDFUploadModal({
     e.stopPropagation();
     setIsDragActive(false);
     const droppedFiles = Array.from(e.dataTransfer.files);
+    setSteps(UploadSteps.PDFPageSelect);
     processSelectedFiles(droppedFiles);
-  }
-
-  // Upload handlers
-  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
-    const selectedFiles = Array.from(e.target.files || []);
-    processSelectedFiles(selectedFiles);
-    if (e.target) {
-      e.target.value = "";
-    }
   }
 
   function handleDragOver(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault();
   }
+
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const selectedFiles = Array.from(e.target.files || []);
+    processSelectedFiles(selectedFiles);
+    setSteps(UploadSteps.PDFPageSelect);
+    if (e.target) {
+      e.target.value = "";
+    }
+  }
+
+  const handleDocumentLoadSuccess = async (pdf: any) => {
+    setNumPages(pdf.numPages || 0);
+
+    try {
+      const outline = await pdf.getOutline();
+      if (!outline) {
+        setChapters([]);
+        return;
+      }
+
+      const chaptersCollected: Chapter[] = [];
+
+      const walkOutline = async (items: any[]) => {
+        for (const item of items) {
+          let pageNumber: number | null = null;
+          if (item.dest) {
+            try {
+              const pageIndex = await pdf.getPageIndex(item.dest[0]);
+              pageNumber = pageIndex + 1;
+            } catch {
+              pageNumber = null;
+            }
+          }
+          chaptersCollected.push({
+            title: item.title || "Untitled",
+            pageNumber,
+          });
+          if (item.items && item.items.length > 0) {
+            await walkOutline(item.items);
+          }
+        }
+      };
+
+      await walkOutline(outline);
+      const filtered = chaptersCollected.filter(
+        (c) => c.pageNumber !== null && c.pageNumber >= 1
+      ) as Chapter[];
+
+      setChapters(filtered);
+    } catch {
+      setChapters([]);
+    }
+  };
 
   async function handleFileUpload() {
     if (uploadState.files.length === 0) return;
@@ -223,14 +356,24 @@ export default function PDFUploadModal({
     }));
 
     try {
-      const upload = await uploadDocumentApi({ file: uploadState.files[0] });
+      const originalFile = uploadState.files[0];
+
+      const fileToUpload =
+        selectedPages.length > 0
+          ? await slicePdfByPages(originalFile, selectedPages)
+          : originalFile;
+
+      const upload = await uploadDocumentApi({ file: fileToUpload });
+
       await createNewWorkSpace({
         documentId: upload.documentId!,
-        workspaceName: uploadState.files[0].name,
+        workspaceName: originalFile.name,
       });
+
       await refreshWorkspace().catch((error) => {
         console.error("Failed to refresh sidebar workspaces", error);
       });
+
       if (!upload.documentId) {
         throw new Error("Upload response is missing a document id.");
       }
@@ -270,6 +413,36 @@ export default function PDFUploadModal({
     }
   }
 
+  function toggleChapterSelection(chapterIndex: number) {
+    const chapter = chapters[chapterIndex];
+    if (!chapter || !chapter.pageNumber || numPages === 0) return;
+
+    const start = chapter.pageNumber;
+    const nextChapter = chapters[chapterIndex + 1];
+
+    const end =
+      nextChapter && nextChapter.pageNumber
+        ? nextChapter.pageNumber - 1
+        : numPages;
+
+    const chapterPages: number[] = [];
+    for (let p = start; p <= end; p++) {
+      chapterPages.push(p);
+    }
+
+    setSelectedPages((prev) => {
+      const allSelected = chapterPages.every((p) => prev.includes(p));
+
+      if (allSelected) {
+        return prev.filter((p) => !chapterPages.includes(p));
+      } else {
+        const set = new Set(prev);
+        chapterPages.forEach((p) => set.add(p));
+        return Array.from(set).sort((a, b) => a - b);
+      }
+    });
+  }
+
   return (
     <>
       <DialogHeader className={isRTL ? "text-right" : "text-left"}>
@@ -279,147 +452,271 @@ export default function PDFUploadModal({
         <DialogDescription>
           {t(
             "modals.addContent.uploadPdf.helper",
-            "Drag and drop your PDF or choose one to upload."
+            "Drag and drop your PDF or choose one to upload. You can also select specific pages or chapters before uploading."
           )}
         </DialogDescription>
       </DialogHeader>
 
-      <div className="space-y-4">
-        <div
-          onDrop={handleDrop}
-          onDragOver={handleDragOver}
-          onDragEnter={handleDragEnter}
-          onDragLeave={handleDragLeave}
-          onClick={() => uploadRef.current?.click()}
-          className={`relative border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-all duration-200
+      {steps == UploadSteps.PDFUpload && (
+        <>
+          <div
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            onClick={() => uploadRef.current?.click()}
+            className={`relative border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-all duration-200
                   ${
                     isDragActive
                       ? "border-blue-500 bg-blue-50/50 dark:bg-blue-950/30 scale-[1.02] shadow-lg"
                       : "border-zinc-300 dark:border-zinc-700 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30"
                   }
                 `}
-        >
-          {isDragActive && (
-            <div className="absolute inset-0 bg-blue-500/5 rounded-xl pointer-events-none" />
-          )}
-
-          <UploadCloud
-            className={`mx-auto mb-4 h-16 w-16 transition-all duration-200 ${
-              isDragActive
-                ? "scale-110 text-blue-600 dark:text-blue-400 animate-bounce"
-                : "text-zinc-400 dark:text-zinc-500"
-            }`}
-          />
-          <div
-            className={`text-xl font-semibold mb-2 transition-colors duration-200 ${
-              isDragActive
-                ? "text-blue-700 dark:text-blue-300"
-                : "text-zinc-700 dark:text-zinc-200"
-            }`}
           >
-            {isDragActive
-              ? t("modals.addContent.upload.dragActive", "Drop your PDF here")
-              : t("modals.addContent.upload.dragIdle", "Drag & Drop your PDF")}
-          </div>
-          <div className="text-sm text-zinc-500 mb-6 dark:text-zinc-400">
-            {t(
-              "modals.addContent.upload.orBrowse",
-              "or click to browse from your computer"
+            {isDragActive && (
+              <div className="absolute inset-0 bg-blue-500/5 rounded-xl pointer-events-none" />
             )}
-          </div>
-          <Button
-            variant="outline"
-            size="default"
-            className="pointer-events-none"
-          >
-            {t("modals.addContent.upload.choosePdf", "Choose PDF")}
-          </Button>
-          <input
-            ref={uploadRef}
-            type="file"
-            accept="application/pdf,.pdf"
-            onChange={handleFileSelect}
-            className="hidden"
-          />
-          <div className="text-xs text-zinc-400 mt-4 dark:text-zinc-500">
-            {t(
-              "modals.addContent.upload.supportedFormat",
-              "Supported format: PDF"
-            )}
-          </div>
-        </div>
 
-        {uploadState.files.length > 0 && (
-          <div className="space-y-3">
+            <UploadCloud
+              className={`mx-auto mb-4 h-16 w-16 transition-all duration-200 ${
+                isDragActive
+                  ? "scale-110 text-blue-600 dark:text-blue-400 animate-bounce"
+                  : "text-zinc-400 dark:text-zinc-500"
+              }`}
+            />
             <div
-              className={`font-medium text-sm text-zinc-700 dark:text-zinc-300 ${
-                isRTL ? "text-right" : "text-left"
+              className={`text-xl font-semibold mb-2 transition-colors duration-200 ${
+                isDragActive
+                  ? "text-blue-700 dark:text-blue-300"
+                  : "text-zinc-700 dark:text-zinc-200"
               }`}
             >
-              {t("modals.addContent. ", "Selected file:")}
+              {isDragActive
+                ? t("modals.addContent.upload.dragActive", "Drop your PDF here")
+                : t(
+                    "modals.addContent.upload.dragIdle",
+                    "Drag & Drop your PDF"
+                  )}
             </div>
-            <div className="max-h-48 overflow-y-auto space-y-2">
-              {uploadState.files.map((file, index) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-3 p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-750 transition-colors"
-                >
-                  <div className="flex-shrink-0 text-zinc-500 dark:text-zinc-400">
-                    <FileTypeIcon file={file} />
-                  </div>
-                  <span className="flex-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                    {file.name}
-                  </span>
-                  <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
-                    {formatFileSize(file.size)}
-                  </span>
-                </div>
-              ))}
+            <div className="text-sm text-zinc-500 mb-6 dark:text-zinc-400">
+              {t(
+                "modals.addContent.upload.orBrowse",
+                "or click to browse from your computer"
+              )}
+            </div>
+            <Button
+              variant="outline"
+              size="default"
+              className="pointer-events-none"
+            >
+              {t("modals.addContent.upload.choosePdf", "Choose PDF")}
+            </Button>
+            <input
+              ref={uploadRef}
+              type="file"
+              accept="application/pdf,.pdf"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+            <div className="text-xs text-zinc-400 mt-4 dark:text-zinc-500">
+              {t(
+                "modals.addContent.upload.supportedFormat",
+                "Supported format: PDF"
+              )}
             </div>
           </div>
-        )}
 
-        {uploadState.status && (
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span
-                className={
-                  uploadState.status === "failed"
-                    ? "text-red-600"
-                    : uploadState.status === "uploaded"
-                    ? "text-green-600 dark:text-green-400"
-                    : "text-zinc-600 dark:text-zinc-300"
-                }
+          {uploadState.files.length > 0 && (
+            <div className="space-y-3">
+              <div
+                className={`font-medium text-sm text-zinc-700 dark:text-zinc-300 ${
+                  isRTL ? "text-right" : "text-left"
+                }`}
               >
-                {uploadState.status === "uploaded"
-                  ? t(
-                      "modals.addContent.upload.status.complete",
-                      "Upload complete"
-                    )
-                  : uploadState.status === "failed"
-                  ? t("modals.addContent.upload.status.failed", "Upload failed")
-                  : uploadState.status === "uploading"
-                  ? t(
-                      "modals.addContent.upload.status.uploading",
-                      "Uploading to storage..."
-                    )
-                  : t(
-                      "modals.addContent.upload.status.preparing",
-                      "Preparing upload..."
-                    )}
-              </span>
-              <span>{uploadState.uploadProgress}%</span>
+                {t("modals.addContent.selectedFile", "Selected file:")}
+              </div>
+              <div className="max-h-48 overflow-y-auto space-y-2">
+                {uploadState.files.map((file, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center gap-3 p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-750 transition-colors"
+                  >
+                    <div className="flex-shrink-0 text-zinc-500 dark:text-zinc-400">
+                      <FileTypeIcon file={file} />
+                    </div>
+                    <span className="flex-1 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                      {file.name}
+                    </span>
+                    <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
+                      {formatFileSize(file.size)}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <Progress value={uploadState.uploadProgress} className="h-2" />
-          </div>
-        )}
+          )}
+        </>
+      )}
 
-        {uploadState.error && (
-          <div className="text-red-600 text-sm text-center">
-            {uploadState.error}
+      {steps == UploadSteps.PDFPageSelect && (
+        <Document file={pdfFileUrl} onLoadSuccess={handleDocumentLoadSuccess}>
+          <h3 className="font-semibold text-base mb-2">
+            {t(
+              "modals.addContent.pageSelection.title",
+              "Select pages to upload (optional)"
+            )}
+          </h3>
+
+          <ScrollArea className="h-[500px] rounded-md border">
+            {Array.from({ length: numPages }, (_, i) => {
+              const pageNumber = i + 1;
+              const isSelected = selectedPages.includes(pageNumber);
+
+              return (
+                <LazyPage
+                  key={pageNumber}
+                  pageNumber={pageNumber}
+                  isSelected={isSelected}
+                  onToggle={() => {
+                    setSelectedPages((prev) =>
+                      prev.includes(pageNumber)
+                        ? prev.filter((p) => p !== pageNumber)
+                        : [...prev, pageNumber]
+                    );
+                  }}
+                />
+              );
+            })}
+          </ScrollArea>
+          {chapters.length > 0 && (
+            <div className="mt-4 space-y-2">
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="chapters">
+                  <AccordionTrigger>
+                    {t(
+                      "modals.addContent.chapterSelection.title",
+                      "Or select whole chapters"
+                    )}
+                  </AccordionTrigger>
+
+                  <AccordionContent>
+                    {" "}
+                    <div className="max-h-40 overflow-auto space-y-1">
+                      {chapters.map((chapter, index) => {
+                        if (!chapter.pageNumber) return null;
+
+                        const start = chapter.pageNumber;
+                        const nextChapter = chapters[index + 1];
+                        const end =
+                          nextChapter && nextChapter.pageNumber
+                            ? nextChapter.pageNumber - 1
+                            : numPages;
+
+                        const chapterPages: number[] = [];
+                        for (let p = start; p <= end; p++) {
+                          chapterPages.push(p);
+                        }
+
+                        const isChapterSelected =
+                          chapterPages.length > 0 &&
+                          chapterPages.every((p) => selectedPages.includes(p));
+
+                        return (
+                          <button
+                            key={`${chapter.title}-${index}`}
+                            type="button"
+                            onClick={() => toggleChapterSelection(index)}
+                            className="w-full text-left px-3 py-2 rounded-md border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-sm"
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <div>
+                                <div className="font-medium text-zinc-900 dark:text-zinc-50 line-clamp-1">
+                                  {chapter.title}
+                                </div>
+                                <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                                  {t(
+                                    "modals.addContent.chapterStartsAt",
+                                    "Starts at page"
+                                  )}{" "}
+                                  {chapter.pageNumber}{" "}
+                                  {end && end !== chapter.pageNumber
+                                    ? `· ${t(
+                                        "modals.addContent.chapterRange",
+                                        "Pages"
+                                      )} ${start}-${end}`
+                                    : ""}
+                                </div>
+                              </div>
+
+                              <div
+                                className={`h-5 w-5 flex items-center justify-center rounded border ${
+                                  isChapterSelected
+                                    ? "border-blue-600 bg-blue-600 text-white"
+                                    : "border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-900 text-transparent"
+                                }`}
+                              >
+                                <Check className="h-3 w-3" />
+                              </div>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </div>
+          )}
+
+          <div className="mt-3 text-xs text-zinc-600 dark:text-zinc-400">
+            {t("modals.addContent.selectionSummary", "Selected pages:")}{" "}
+            {selectedPages.length > 0
+              ? selectedPages.sort((a, b) => a - b).join(", ")
+              : t("modals.addContent.selectionNone", "None (full PDF)")}
           </div>
-        )}
-      </div>
+        </Document>
+      )}
+
+      {uploadState.status && (
+        <div className="space-y-2">
+          <div className="flex justify-between text-sm">
+            <span
+              className={
+                uploadState.status === "failed"
+                  ? "text-red-600"
+                  : uploadState.status === "uploaded"
+                  ? "text-green-600 dark:text-green-400"
+                  : "text-zinc-600 dark:text-zinc-300"
+              }
+            >
+              {uploadState.status === "uploaded"
+                ? t(
+                    "modals.addContent.upload.status.complete",
+                    "Upload complete"
+                  )
+                : uploadState.status === "failed"
+                ? t("modals.addContent.upload.status.failed", "Upload failed")
+                : uploadState.status === "uploading"
+                ? t(
+                    "modals.addContent.upload.status.uploading",
+                    "Uploading to storage..."
+                  )
+                : t(
+                    "modals.addContent.upload.status.preparing",
+                    "Preparing upload..."
+                  )}
+            </span>
+            <span>{uploadState.uploadProgress}%</span>
+          </div>
+          <Progress value={uploadState.uploadProgress} className="h-2" />
+        </div>
+      )}
+
+      {uploadState.error && (
+        <div className="text-red-600 text-sm text-center">
+          {uploadState.error}
+        </div>
+      )}
 
       <DialogFooter
         className={`flex gap-2 ${isRTL ? "flex-row-reverse" : "flex-row"}`}

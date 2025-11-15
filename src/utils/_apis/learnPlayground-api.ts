@@ -137,7 +137,7 @@ export const createNewQuizApi = async ({
         question_types,
         count,
         difficulty,
-        focus,
+        ...(focus ? { focus } : {}),
       },
     });
 

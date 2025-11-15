@@ -7,7 +7,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useSidebarRefresh } from "@/context/SidebarRefreshContext";
 import { createNewWorkSpace } from "@/utils/_apis/learnPlayground-api";
 import { t } from "i18next";
 import { Loader2 } from "lucide-react";
@@ -19,10 +18,9 @@ export default function ChatModal({
   handleClose,
   setActiveModal,
 }: {
-  handleClose: () => void;
+  handleClose: (update?: boolean) => void;
   setActiveModal: SetActiveModalType;
 }) {
-  const { refreshWorkspace } = useSidebarRefresh();
   const navigate = useNavigate();
   const [chatState, setChatState] = useState<{
     name: string;
@@ -53,11 +51,8 @@ export default function ChatModal({
       const workspace: any = await createNewWorkSpace({
         workspaceName: trimmedName,
       });
-      await refreshWorkspace().catch((error) => {
-        console.error("Failed to refresh sidebar workspaces", error);
-      });
       navigate(`/dashboard/learn/workspace/${workspace.workspace.id}`);
-      handleClose();
+      handleClose(true);
     } catch (error: any) {
       setChatState((prev) => ({
         ...prev,

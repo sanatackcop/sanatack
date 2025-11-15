@@ -14,7 +14,6 @@ import {
   createNewWorkSpace,
   youtubeUrlPastApi,
 } from "@/utils/_apis/learnPlayground-api";
-import { useSidebarRefresh } from "@/context/SidebarRefreshContext";
 import { useNavigate } from "react-router-dom";
 import { SetActiveModalType } from "./AddContantModal";
 
@@ -29,7 +28,7 @@ export default function VideoModal({
   handleClose,
   setActiveModal,
 }: {
-  handleClose: () => void;
+  handleClose: (update?: boolean) => void;
   setActiveModal: SetActiveModalType;
 }) {
   const [pasteState, setPasteState] = useState<PasteState>({
@@ -38,7 +37,6 @@ export default function VideoModal({
     isProcessing: false,
     error: null,
   });
-  const { refreshWorkspace } = useSidebarRefresh();
   const navigate = useNavigate();
 
   async function handlePasteSubmit() {
@@ -55,11 +53,9 @@ export default function VideoModal({
         youtubeVideoId: getYoutubeVIdeo.id,
         workspaceName: getYoutubeVIdeo.info.title,
       });
-      await refreshWorkspace().catch((error) => {
-        console.error("Failed to refresh sidebar workspaces", error);
-      });
+
       navigate(`/dashboard/learn/workspace/${workSpace.workspace.id}`);
-      handleClose();
+      handleClose(true);
     } catch (error: any) {
       setPasteState((prev) => ({
         ...prev,

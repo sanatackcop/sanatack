@@ -105,6 +105,7 @@ export function SummaryList({ workspaceId }: SummaryListProps) {
   const [error, setError] = useState<string | null>(null);
   const { t, i18n } = useTranslation();
   const direction = i18n.dir();
+  const isRTL = direction == "rtl";
   const isMountedRef = useRef(true);
 
   const handleCreateSummary = useCallback(() => {
@@ -250,7 +251,10 @@ export function SummaryList({ workspaceId }: SummaryListProps) {
                                   "Generating summary..."
                                 )}
                             </h3>
-                            <StatusBadge status={summary.status} isRTL />
+                            <StatusBadge
+                              status={summary.status}
+                              isRTL={isRTL}
+                            />
                           </div>
                         </div>
                       </div>
