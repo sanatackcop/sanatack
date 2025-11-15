@@ -706,7 +706,7 @@ const LearnPlayground: React.FC = () => {
     };
   }, [checkSplitScroll, fullScreen, state.tab]);
 
-  // Drag handlers (keeping your existing implementation)
+  // Drag handlers
   const handleFullscreenMouseDown = (e: React.MouseEvent) => {
     if (!fullscreenScrollRef.current) return;
     const container = fullscreenScrollRef.current;
@@ -1024,7 +1024,7 @@ const LearnPlayground: React.FC = () => {
         >
           <div
             ref={isMobile ? undefined : splitScrollRef}
-            className="overflow-x-scroll scrollbar-hide w-full select-none px-1"
+            className="overflow-x-auto scrollbar-hide w-full max-w-full select-none px-1"
             onMouseDown={isMobile ? undefined : handleSplitMouseDown}
             onMouseMove={isMobile ? undefined : handleSplitMouseMove}
             onMouseUp={isMobile ? undefined : handleSplitMouseUp}
@@ -1041,7 +1041,6 @@ const LearnPlayground: React.FC = () => {
                     WebkitUserSelect: "none",
                     MozUserSelect: "none",
                     msUserSelect: "none",
-                    overflowX: "scroll",
                     scrollbarWidth: "none",
                     msOverflowStyle: "none",
                     WebkitOverflowScrolling: "touch",
@@ -1120,7 +1119,7 @@ const LearnPlayground: React.FC = () => {
           {state.tab === "chat" && (
             <TabsContent
               value="chat"
-              className="m-0 flex-1 flex flex-col relative justify-end min-h-0 w-full max-w-full"
+              className="m-0 flex-1 flex flex-col relative justify-end min-h-0"
             >
               {state.isLoading ? (
                 <div className="w-full">
@@ -1128,40 +1127,44 @@ const LearnPlayground: React.FC = () => {
                 </div>
               ) : (
                 <>
-                  <ScrollArea>
-                    <ChatMessages
-                      messages={state.chatMessages || []}
-                      isLoading={state.chatLoading}
-                      streamingMessage={state.streamingMessage}
-                      onSendMessage={handleQuickSend}
-                    />
+                  <ScrollArea className="flex-1">
+                    <div className="w-full max-w-4xl mx-auto px-4">
+                      <ChatMessages
+                        messages={state.chatMessages || []}
+                        isLoading={state.chatLoading}
+                        streamingMessage={state.streamingMessage}
+                        onSendMessage={handleQuickSend}
+                      />
+                    </div>
                   </ScrollArea>
-                  <ChatInput
-                    className="flex-shrink-0 w-full p-5"
-                    value={state.prompt}
-                    hasAutoContext={true}
-                    expandSection={true}
-                    contexts={selectedContexts}
-                    availableContexts={availableContexts}
-                    autoContextCount={autoContextCount}
-                    autoContextLoading={autoContextLoading}
-                    onChange={(value: string) =>
-                      dispatch({
-                        type: "SET_PROMPT",
-                        prompt: value,
-                      })
-                    }
-                    onSubmit={(value, model, contexts) =>
-                      handleSendMessage(value, model, contexts)
-                    }
-                    onContextsChange={handleContextsChange}
-                    onAutoContextClick={handleAutoContext}
-                    appliedContextIds={appliedContextIds}
-                    placeholder={t("aiActions.chatPlaceholder")}
-                    optionsToHide={{
-                      models: true,
-                    }}
-                  />
+                  <div className="flex-shrink-0 w-full max-w-4xl mx-auto px-4 py-5">
+                    <ChatInput
+                      className="w-full"
+                      value={state.prompt}
+                      hasAutoContext={true}
+                      expandSection={true}
+                      contexts={selectedContexts}
+                      availableContexts={availableContexts}
+                      autoContextCount={autoContextCount}
+                      autoContextLoading={autoContextLoading}
+                      onChange={(value: string) =>
+                        dispatch({
+                          type: "SET_PROMPT",
+                          prompt: value,
+                        })
+                      }
+                      onSubmit={(value, model, contexts) =>
+                        handleSendMessage(value, model, contexts)
+                      }
+                      onContextsChange={handleContextsChange}
+                      onAutoContextClick={handleAutoContext}
+                      appliedContextIds={appliedContextIds}
+                      placeholder={t("aiActions.chatPlaceholder")}
+                      optionsToHide={{
+                        models: true,
+                      }}
+                    />
+                  </div>
                 </>
               )}
             </TabsContent>
@@ -1170,8 +1173,7 @@ const LearnPlayground: React.FC = () => {
           {state.tab === "flashcards" && workspace && (
             <TabsContent
               value="flashcards"
-              className="m-0 h-full flex flex-col w-full max-w-full"
-              style={{ maxHeight: "100%" }}
+              className="m-0 h-full flex flex-col overflow-hidden"
             >
               <FlashCards workspaceId={workspace.id} />
             </TabsContent>
@@ -1180,7 +1182,7 @@ const LearnPlayground: React.FC = () => {
           {state.tab === "quizzes" && (
             <TabsContent
               value="quizzes"
-              className="m-0 h-full p-4 text-zinc-500 dark:text-zinc-400 flex flex-col w-full max-w-full"
+              className="m-0 h-full text-zinc-500 dark:text-zinc-400 flex flex-col overflow-hidden"
             >
               <QuizList workspaceId={(workspace && workspace.id) || ""} />
             </TabsContent>
@@ -1189,8 +1191,7 @@ const LearnPlayground: React.FC = () => {
           {state.tab === "summary" && (
             <TabsContent
               value="summary"
-              className="m-0 h-full p-4 text-zinc-500 dark:text-zinc-400 flex flex-col w-full max-w-full"
-              style={{ maxHeight: "100%" }}
+              className="m-0 h-full text-zinc-500 dark:text-zinc-400 flex flex-col overflow-hidden"
             >
               <SummaryList
                 workspaceId={String(workspace && workspace.id) || ""}
@@ -1201,8 +1202,7 @@ const LearnPlayground: React.FC = () => {
           {state.tab === "deepExplanation" && (
             <TabsContent
               value="deepExplanation"
-              className="m-0 h-full p-4 text-zinc-500 dark:text-zinc-400 flex flex-col w-full max-w-full"
-              style={{ maxHeight: "100%" }}
+              className="m-0 h-full text-zinc-500 dark:text-zinc-400 flex flex-col overflow-hidden"
             >
               <MindMap workspaceId={(workspace && workspace.id) || ""} />
             </TabsContent>
@@ -1236,7 +1236,7 @@ const LearnPlayground: React.FC = () => {
     <section
       style={{ height: "calc(100vh)" }}
       dir={isRTL ? "rtl" : "ltr"}
-      className="flex flex-col"
+      className="flex flex-col overflow-hidden"
     >
       <WorkspaceGenerationWatcher workspaceId={workspace?.id} />
 
@@ -1291,16 +1291,16 @@ const LearnPlayground: React.FC = () => {
         key={fullScreen ? "pg-full" : isMobile ? "pg-mobile" : "pg-split"}
         direction="horizontal"
         dir="ltr"
-        className="flex-1 min-h-0"
+        className="flex-1 min-h-0 overflow-hidden"
         autoSaveId={fullScreen ? "fs-layout" : "split-layout"}
       >
         {fullScreen ? (
-          // Fullscreen mode (same as before)
+          // Fullscreen mode
           <motion.div
             initial={{ x: 20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ type: "spring", stiffness: 260, damping: 30 }}
-            className="h-full w-full flex flex-col min-h-0 px-2 sm:px-6 mx-2 sm:mx-4"
+            className="h-full w-full flex flex-col min-h-0 overflow-hidden px-2 sm:px-6 mx-2 sm:mx-4"
           >
             {workspaceLoading ? (
               <TabsSkeleton />
@@ -1310,9 +1310,9 @@ const LearnPlayground: React.FC = () => {
                 onValueChange={(v) =>
                   dispatch({ type: "SET_TAB", tab: v as TabKey })
                 }
-                className="h-full flex flex-col min-h-0"
+                className="h-full flex flex-col min-h-0 overflow-hidden"
               >
-                {/* Fullscreen tabs - keeping your existing implementation */}
+                {/* Fullscreen tabs */}
                 <div className="sticky top-0 z-30 pb-4 flex-shrink-0 flex justify-center bg-white/70 dark:bg-zinc-950/60 backdrop-blur-md">
                   {fullscreenScroll.canScrollLeft && (
                     <>
@@ -1354,7 +1354,7 @@ const LearnPlayground: React.FC = () => {
 
                   <div
                     ref={fullscreenScrollRef}
-                    className="overflow-x-scroll scrollbar-hide w-full select-none"
+                    className="overflow-x-auto scrollbar-hide w-full max-w-full select-none"
                     onMouseDown={handleFullscreenMouseDown}
                     onMouseMove={handleFullscreenMouseMove}
                     onMouseUp={handleFullscreenMouseUp}
@@ -1368,7 +1368,6 @@ const LearnPlayground: React.FC = () => {
                       WebkitUserSelect: "none",
                       MozUserSelect: "none",
                       msUserSelect: "none",
-                      overflowX: "scroll",
                       scrollbarWidth: "none",
                       msOverflowStyle: "none",
                       WebkitOverflowScrolling: "touch",
@@ -1449,12 +1448,12 @@ const LearnPlayground: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex-1 min-h-0 overflow-y-auto">
-                  <div className="flex-1 flex flex-col min-h-0">
+                <div className="flex-1 min-h-0 overflow-hidden">
+                  <div className="flex-1 flex flex-col min-h-0 h-full overflow-hidden">
                     {state.tab === "chat" && (
                       <TabsContent
                         value="chat"
-                        className="m-0 flex-1 relative flex flex-col min-h-0"
+                        className="m-0 flex-1 relative flex flex-col min-h-0 overflow-hidden"
                       >
                         {state.isLoading ? (
                           <div className="w-full flex-1">
@@ -1462,8 +1461,8 @@ const LearnPlayground: React.FC = () => {
                           </div>
                         ) : (
                           <>
-                            <div className="flex-1 min-h-0">
-                              <div className="pb-28 sm:pb-32">
+                            <div className="flex-1 min-h-0 overflow-y-auto">
+                              <div className="pb-28 sm:pb-32 w-full max-w-4xl mx-auto px-4">
                                 <ChatMessages
                                   messages={state.chatMessages || []}
                                   isLoading={state.chatLoading}
@@ -1509,7 +1508,10 @@ const LearnPlayground: React.FC = () => {
                     )}
 
                     {state.tab === "flashcards" && workspace && (
-                      <TabsContent value="flashcards" className="m-0 p-4">
+                      <TabsContent
+                        value="flashcards"
+                        className="m-0 h-full overflow-hidden flex flex-col"
+                      >
                         <FlashCards workspaceId={workspace.id} />
                       </TabsContent>
                     )}
@@ -1517,7 +1519,7 @@ const LearnPlayground: React.FC = () => {
                     {state.tab === "quizzes" && workspace && (
                       <TabsContent
                         value="quizzes"
-                        className="m-0 p-4 text-zinc-500 dark:text-zinc-400"
+                        className="m-0 h-full text-zinc-500 dark:text-zinc-400 overflow-hidden flex flex-col"
                       >
                         <QuizList
                           workspaceId={(workspace && workspace.id) || ""}
@@ -1528,8 +1530,7 @@ const LearnPlayground: React.FC = () => {
                     {state.tab === "summary" && workspace?.id && (
                       <TabsContent
                         value="summary"
-                        className="m-0 h-full p-4 text-zinc-500 dark:text-zinc-400 flex flex-col w-full max-w-full"
-                        style={{ maxHeight: "100%" }}
+                        className="m-0 h-full text-zinc-500 dark:text-zinc-400 flex flex-col overflow-hidden"
                       >
                         <SummaryList workspaceId={String(workspace.id)} />
                       </TabsContent>
@@ -1538,7 +1539,7 @@ const LearnPlayground: React.FC = () => {
                     {state.tab === "deepExplanation" && (
                       <TabsContent
                         value="deepExplanation"
-                        className="m-0 p-4 text-zinc-500 dark:text-zinc-400"
+                        className="m-0 h-full text-zinc-500 dark:text-zinc-400 overflow-hidden flex flex-col"
                       >
                         <MindMap
                           workspaceId={(workspace && workspace.id) || ""}
@@ -1552,7 +1553,7 @@ const LearnPlayground: React.FC = () => {
           </motion.div>
         ) : isMobile ? (
           // Mobile view - show only one panel at a time
-          <div className="h-full w-full flex flex-col min-h-0">
+          <div className="h-full w-full flex flex-col min-h-0 overflow-hidden">
             <AnimatePresence mode="wait">
               {mobileView === "content" && state.type !== "chat" ? (
                 <motion.div
@@ -1561,7 +1562,7 @@ const LearnPlayground: React.FC = () => {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.2 }}
-                  className="h-full p-2 pt-0 flex flex-col min-h-0"
+                  className="h-full p-2 pt-0 flex flex-col min-h-0 overflow-hidden"
                 >
                   {renderContent()}
                 </motion.div>
@@ -1572,7 +1573,7 @@ const LearnPlayground: React.FC = () => {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20 }}
                   transition={{ duration: 0.2 }}
-                  className="h-full flex flex-col min-h-0"
+                  className="h-full flex flex-col min-h-0 overflow-hidden"
                 >
                   {workspaceLoading ? <TabsSkeleton /> : renderTabsContent()}
                 </motion.div>
@@ -1585,13 +1586,13 @@ const LearnPlayground: React.FC = () => {
             <ResizablePanel
               defaultSize={50}
               minSize={30}
-              className="mt-2 min-h-0 flex flex-col"
+              className="mt-2 min-h-0 flex flex-col overflow-hidden"
             >
               <motion.div
                 initial={{ x: 20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ type: "spring", stiffness: 260, damping: 30 }}
-                className="h-full p-2 pt-0 flex flex-col min-h-0"
+                className="h-full p-2 pt-0 flex flex-col min-h-0 overflow-hidden"
               >
                 {renderContent()}
               </motion.div>
@@ -1615,13 +1616,13 @@ const LearnPlayground: React.FC = () => {
             <ResizablePanel
               defaultSize={50}
               minSize={30}
-              className="mt-2 min-h-0 flex flex-col"
+              className="mt-2 min-h-0 flex flex-col overflow-hidden"
             >
               <motion.div
                 initial={{ x: 20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
+                animate={{ opacity: 1 }}
                 transition={{ type: "spring", stiffness: 260, damping: 30 }}
-                className="h-full flex flex-col min-h-0"
+                className="h-full flex flex-col min-h-0 overflow-hidden"
               >
                 {workspaceLoading ? <TabsSkeleton /> : renderTabsContent()}
               </motion.div>

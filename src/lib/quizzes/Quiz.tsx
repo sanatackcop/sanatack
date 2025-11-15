@@ -123,18 +123,18 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
   }
 
   return (
-    <div className="flex-1 min-h-0">
-      <ScrollArea className="h-full">
+    <div className="flex-1 min-h-0 w-full">
+      <ScrollArea className="h-full w-full">
         <motion.div
           key="list"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
           transition={{ duration: 0.25 }}
-          className="w-full max-w-4xl mx-auto px-4 sm:px-6 py-4 space-y-4"
+          className="w-full max-w-full sm:max-w-2xl md:max-w-3xl lg:max-w-full mx-auto px-3 sm:px-4 md:px-6 py-3 sm:py-4 space-y-3 sm:space-y-4"
           dir={direction}
         >
-          <div>
+          <div className="px-1">
             <h3 className="text-sm font-medium text-gray-700 dark:text-white">
               {t("quizzes.list.title", "My Quizzes")}
             </h3>
@@ -145,11 +145,11 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
               {[...Array(3)].map((_, i) => (
                 <Card
                   key={i}
-                  className="p-4 h-32 animate-pulse overflow-hidden"
+                  className="p-3 sm:p-4 h-28 sm:h-32 animate-pulse overflow-hidden"
                 >
-                  <Skeleton className="h-6 w-40 mb-3" />
-                  <Skeleton className="h-4 w-full mb-1" />
-                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-5 sm:h-6 w-32 sm:w-40 mb-2 sm:mb-3" />
+                  <Skeleton className="h-3 sm:h-4 w-full mb-1" />
+                  <Skeleton className="h-3 sm:h-4 w-3/4" />
                 </Card>
               ))}
             </div>
@@ -160,7 +160,7 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
           ) : quizzes.length === 0 ? (
             <></>
           ) : (
-            <ul className="space-y-4 list-none m-0 p-0">
+            <ul className="space-y-3 sm:space-y-4 list-none m-0 p-0 w-full">
               {quizzes.map((quiz) => {
                 const attempt = quiz.latestAttempt ?? null;
                 const disabled =
@@ -224,23 +224,23 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
                   quiz.questionCount ?? quiz.payload?.questions?.length ?? 0;
 
                 return (
-                  <li key={quiz.id}>
+                  <li key={quiz.id} className="w-full">
                     <Card
                       role="button"
                       aria-disabled={disabled}
                       onClick={() =>
                         !disabled && !failed && setSelectedQuiz(quiz)
                       }
-                      className={`group relative overflow-hidden px-5 sm:px-6 py-5 flex flex-col rounded-2xl justify-center transition-all duration-200 cursor-pointer ${
+                      className={`group relative overflow-hidden w-full px-4 sm:px-5 md:px-6 py-4 sm:py-5 flex flex-col rounded-xl sm:rounded-2xl justify-center transition-all duration-200 cursor-pointer ${
                         failed
-                          ? "bg-red-50/50 border-red-200 hover:border-red-300"
-                          : "border-gray-200/60 hover:border-gray-300/80 dark:hover:bg-opacity-5"
+                          ? "bg-red-50/50 dark:bg-red-950/20 border-red-200 dark:border-red-900/50 hover:border-red-300 dark:hover:border-red-800"
+                          : "border-gray-200/60 dark:border-zinc-800 hover:border-gray-300/80 dark:hover:border-zinc-700 dark:hover:bg-zinc-900/40"
                       } ${disabled ? "pointer-events-auto" : ""}`}
                     >
-                      <div className="flex justify-between items-start gap-3 min-w-0">
+                      <div className="flex justify-between items-start gap-2 sm:gap-3 min-w-0 w-full">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-2 min-w-0 flex-wrap">
-                            <h3 className="font-medium text-lg text-gray-900 dark:text-white min-w-0 break-words">
+                            <h3 className="font-medium text-base sm:text-lg text-gray-900 dark:text-white min-w-0 break-words flex-1">
                               {quiz.title ||
                                 t(
                                   "quizzes.list.generating",
@@ -259,7 +259,7 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
                               >
                                 {statusLabel}
                               </Badge>
-                              <p className="text-sm text-gray-500 flex-shrink-0">
+                              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 flex-shrink-0">
                                 {t("quizzes.list.questions", {
                                   count: questionCount,
                                   defaultValue: "{{count}} Questions",
@@ -271,8 +271,8 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
                       </div>
 
                       {failed && (
-                        <div className="mt-3 rounded-xl border border-red-200 bg-red-50 text-red-700 px-3 py-2 text-sm flex items-center gap-2">
-                          <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                        <div className="mt-3 w-full rounded-lg sm:rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 px-3 py-2 text-xs sm:text-sm flex items-center gap-2">
+                          <AlertTriangle className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
                           <span className="break-words">
                             {t(
                               "quizzes.list.failure",
@@ -283,16 +283,16 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
                       )}
 
                       {quiz.status === GenerationStatus.COMPLETED && (
-                        <div className="mt-3">
+                        <div className="mt-3 w-full">
                           <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs font-medium text-gray-500">
+                            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
                               {t("quizzes.list.progress", "Progress")}
                             </span>
                             <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
                               {Math.round(progress)}%
                             </span>
                           </div>
-                          <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                          <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden w-full">
                             <div
                               className="h-full bg-green-500 rounded-full transition-all duration-300"
                               style={{ width: `${progress}%` }}
@@ -305,10 +305,14 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
                       )}
 
                       {quiz.status === GenerationStatus.PROCESSING && (
-                        <ProgressStrip />
+                        <div className="w-full">
+                          <ProgressStrip />
+                        </div>
                       )}
                       {quiz.status === GenerationStatus.PENDING && (
-                        <QueuedStrip />
+                        <div className="w-full">
+                          <QueuedStrip />
+                        </div>
                       )}
                     </Card>
                   </li>
