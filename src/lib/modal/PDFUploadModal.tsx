@@ -26,7 +26,6 @@ import { Button } from "@/components/ui/button";
 import { formatFileSize } from "../chat/chatInput";
 import { Progress } from "@/components/ui/progress";
 import { Document, pdfjs } from "react-pdf";
-import { PDFDocument } from "pdf-lib";
 import LazyPage from "./document/LazyPage";
 import {
   Accordion,
@@ -35,6 +34,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { PDFDocument } from "pdf-lib";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
@@ -72,7 +72,7 @@ async function slicePdfByPages(
     .filter((idx) => idx >= 0 && idx < srcDoc.getPageCount());
 
   const copiedPages = await newDoc.copyPages(srcDoc, pageIndices);
-  copiedPages.forEach((p) => newDoc.addPage(p));
+  copiedPages.forEach((p: any) => newDoc.addPage(p));
 
   const pdfBytes = (await newDoc.save()) as any;
 
