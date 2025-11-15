@@ -131,17 +131,22 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
           transition={{ duration: 0.25 }}
-          className="px-6 mb-4 flex flex-col rounded-3xl justify-between space-y-3"
+          className="w-full max-w-4xl mx-auto px-4 sm:px-6 py-4 space-y-4"
           dir={direction}
         >
-          <h3 className="px-2 text-sm font-medium text-gray-700 dark:text-white">
-            {t("quizzes.list.title", "My Quizzes")}
-          </h3>
+          <div>
+            <h3 className="text-sm font-medium text-gray-700 dark:text-white">
+              {t("quizzes.list.title", "My Quizzes")}
+            </h3>
+          </div>
 
           {loading ? (
             <div className="space-y-3">
               {[...Array(3)].map((_, i) => (
-                <Card key={i} className="p-4 h-32 animate-pulse">
+                <Card
+                  key={i}
+                  className="p-4 h-32 animate-pulse overflow-hidden"
+                >
                   <Skeleton className="h-6 w-40 mb-3" />
                   <Skeleton className="h-4 w-full mb-1" />
                   <Skeleton className="h-4 w-3/4" />
@@ -155,7 +160,7 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
           ) : quizzes.length === 0 ? (
             <></>
           ) : (
-            <div className="space-y-4">
+            <ul className="space-y-4 list-none m-0 p-0">
               {quizzes.map((quiz) => {
                 const attempt = quiz.latestAttempt ?? null;
                 const disabled =
@@ -219,92 +224,97 @@ export const QuizList: React.FC<{ workspaceId: string }> = ({
                   quiz.questionCount ?? quiz.payload?.questions?.length ?? 0;
 
                 return (
-                  <Card
-                    key={quiz.id}
-                    role="button"
-                    aria-disabled={disabled}
-                    onClick={() =>
-                      !disabled && !failed && setSelectedQuiz(quiz)
-                    }
-                    className={`group relative overflow-hidden px-6 py-5 flex flex-col rounded-2xl justify-center transition-all duration-200 cursor-pointer ${
-                      failed
-                        ? "bg-red-50/50 border-red-200 hover:border-red-300"
-                        : "border-gray-200/60 hover:border-gray-300/80 dark:hover:bg-opacity-5"
-                    } ${disabled ? "pointer-events-auto" : ""}`}
-                  >
-                    <div className="flex justify-between items-start gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-medium text-lg text-gray-900 truncate dark:text-white">
-                            {quiz.title ||
-                              t(
-                                "quizzes.list.generating",
-                                "Generating quiz..."
-                              )}
-                          </h3>
-                          <StatusBadge status={quiz.status} isRTL={isRTL} />
-                        </div>
-                        {quiz.status == GenerationStatus.COMPLETED && (
-                          <div className="flex items-center gap-2">
-                            <Badge
-                              variant={statusVariant}
-                              className="text-xs capitalize"
-                            >
-                              {statusLabel}
-                            </Badge>
-                            <p className="text-sm text-gray-500">
-                              {t("quizzes.list.questions", {
-                                count: questionCount,
-                                defaultValue: "{{count}} Questions",
-                              })}
-                            </p>
+                  <li key={quiz.id}>
+                    <Card
+                      role="button"
+                      aria-disabled={disabled}
+                      onClick={() =>
+                        !disabled && !failed && setSelectedQuiz(quiz)
+                      }
+                      className={`group relative overflow-hidden px-5 sm:px-6 py-5 flex flex-col rounded-2xl justify-center transition-all duration-200 cursor-pointer ${
+                        failed
+                          ? "bg-red-50/50 border-red-200 hover:border-red-300"
+                          : "border-gray-200/60 hover:border-gray-300/80 dark:hover:bg-opacity-5"
+                      } ${disabled ? "pointer-events-auto" : ""}`}
+                    >
+                      <div className="flex justify-between items-start gap-3 min-w-0">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-2 min-w-0 flex-wrap">
+                            <h3 className="font-medium text-lg text-gray-900 dark:text-white min-w-0 break-words">
+                              {quiz.title ||
+                                t(
+                                  "quizzes.list.generating",
+                                  "Generating quiz..."
+                                )}
+                            </h3>
+                            <div className="flex-shrink-0">
+                              <StatusBadge status={quiz.status} isRTL={isRTL} />
+                            </div>
                           </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {failed && (
-                      <div className="mt-3 w-full rounded-xl border border-red-200 bg-red-50 text-red-700 px-3 py-2 text-sm flex items-center gap-2">
-                        <AlertTriangle className="w-4 h-4" />
-                        <span>
-                          {t(
-                            "quizzes.list.failure",
-                            "Generation failed. You can regenerate or delete this quiz."
+                          {quiz.status == GenerationStatus.COMPLETED && (
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <Badge
+                                variant={statusVariant}
+                                className="text-xs capitalize flex-shrink-0"
+                              >
+                                {statusLabel}
+                              </Badge>
+                              <p className="text-sm text-gray-500 flex-shrink-0">
+                                {t("quizzes.list.questions", {
+                                  count: questionCount,
+                                  defaultValue: "{{count}} Questions",
+                                })}
+                              </p>
+                            </div>
                           )}
-                        </span>
+                        </div>
                       </div>
-                    )}
 
-                    {quiz.status === GenerationStatus.COMPLETED && (
-                      <div className="mt-3">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs font-medium text-gray-500">
-                            {t("quizzes.list.progress", "Progress")}
-                          </span>
-                          <span className="text-xs font-semibold text-gray-700">
-                            {Math.round(progress)}%
+                      {failed && (
+                        <div className="mt-3 rounded-xl border border-red-200 bg-red-50 text-red-700 px-3 py-2 text-sm flex items-center gap-2">
+                          <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                          <span className="break-words">
+                            {t(
+                              "quizzes.list.failure",
+                              "Generation failed. You can regenerate or delete this quiz."
+                            )}
                           </span>
                         </div>
-                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-green-500 rounded-full transition-all duration-300"
-                            style={{ width: `${progress}%` }}
-                          />
-                        </div>
-                        <p className="mt-2 text-xs text-gray-500">{infoLine}</p>
-                      </div>
-                    )}
+                      )}
 
-                    {quiz.status === GenerationStatus.PROCESSING && (
-                      <ProgressStrip />
-                    )}
-                    {quiz.status === GenerationStatus.PENDING && (
-                      <QueuedStrip />
-                    )}
-                  </Card>
+                      {quiz.status === GenerationStatus.COMPLETED && (
+                        <div className="mt-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-medium text-gray-500">
+                              {t("quizzes.list.progress", "Progress")}
+                            </span>
+                            <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                              {Math.round(progress)}%
+                            </span>
+                          </div>
+                          <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-green-500 rounded-full transition-all duration-300"
+                              style={{ width: `${progress}%` }}
+                            />
+                          </div>
+                          <p className="mt-2 text-xs text-gray-500 dark:text-gray-400 break-words">
+                            {infoLine}
+                          </p>
+                        </div>
+                      )}
+
+                      {quiz.status === GenerationStatus.PROCESSING && (
+                        <ProgressStrip />
+                      )}
+                      {quiz.status === GenerationStatus.PENDING && (
+                        <QueuedStrip />
+                      )}
+                    </Card>
+                  </li>
                 );
               })}
-            </div>
+            </ul>
           )}
         </motion.div>
 

@@ -191,66 +191,68 @@ export function SummaryList({ workspaceId }: SummaryListProps) {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
           transition={{ duration: 0.25 }}
+          className="w-full max-w-4xl mx-auto px-4 sm:px-6 py-4 space-y-4"
         >
-          <div className="px-6 py-4 flex flex-col rounded-3xl justify-between space-y-3">
-            <h3 className="px-2 text-sm font-medium text-gray-700 dark:text-white">
+          <div>
+            <h3 className="text-sm font-medium text-gray-700 dark:text-white">
               {t("summary.list.title", "Summaries")}
             </h3>
+          </div>
 
-            {loading ? (
-              <div className="space-y-3">
-                {[...Array(3)].map((_, i) => (
+          {loading ? (
+            <div className="space-y-3">
+              {[...Array(3)].map((_, i) => (
+                <Card
+                  key={i}
+                  className="p-4 h-32 animate-pulse bg-zinc-100 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 overflow-hidden"
+                />
+              ))}
+            </div>
+          ) : error ? (
+            <div className="text-sm text-destructive dark:text-red-400 px-2">
+              {t(error, "Failed to fetch summaries. Please try again.")}
+            </div>
+          ) : summaries.length === 0 ? (
+            <></>
+          ) : (
+            <div className="space-y-3">
+              {summaries.map((summary) => {
+                const disabled =
+                  summary.status === GenerationStatus.PENDING ||
+                  summary.status === GenerationStatus.PROCESSING;
+                const failed = summary.status === GenerationStatus.FAILED;
+                const completed = summary.status === GenerationStatus.COMPLETED;
+
+                return (
                   <Card
-                    key={i}
-                    className="p-4 h-32 animate-pulse bg-zinc-100 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800"
-                  />
-                ))}
-              </div>
-            ) : error ? (
-              <div className="text-sm text-destructive dark:text-red-400 px-2">
-                {t(error, "Failed to fetch summaries. Please try again.")}
-              </div>
-            ) : summaries.length === 0 ? (
-              <></>
-            ) : (
-              <div className="space-y-3">
-                {summaries.map((summary) => {
-                  const disabled =
-                    summary.status === GenerationStatus.PENDING ||
-                    summary.status === GenerationStatus.PROCESSING;
-                  const failed = summary.status === GenerationStatus.FAILED;
-                  const completed =
-                    summary.status === GenerationStatus.COMPLETED;
-
-                  return (
-                    <Card
-                      key={summary.id}
-                      role="button"
-                      aria-disabled={disabled}
-                      aria-busy={disabled}
-                      onClick={() =>
-                        !disabled &&
-                        !failed &&
-                        completed &&
-                        summary.payload &&
-                        setSelectedSummary(summary)
-                      }
-                      className={`group relative overflow-hidden px-6 py-5 flex  max-w-full truncate flex-col rounded-2xl justify-center shadow-sm border transition-all duration-200 cursor-pointer ${
-                        failed
-                          ? "bg-red-50/50 dark:bg-red-950/20 border-red-200 dark:border-red-900/50 hover:border-red-300 dark:hover:border-red-800"
-                          : "bg-white dark:bg-zinc-900/60 border-gray-200/60 dark:border-zinc-800 hover:border-gray-300/80 dark:hover:border-zinc-700"
-                      } ${disabled ? "pointer-events-auto" : ""}`}
-                    >
-                      <div className="flex justify-between items-start gap-3">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-2">
-                            <h3 className="font-semibold max-w-fit text-lg text-gray-900 dark:text-white truncate">
-                              {summary.payload?.title ??
-                                t(
-                                  "summary.list.generating",
-                                  "Generating summary..."
-                                )}
-                            </h3>
+                    key={summary.id}
+                    role="button"
+                    aria-disabled={disabled}
+                    aria-busy={disabled}
+                    onClick={() =>
+                      !disabled &&
+                      !failed &&
+                      completed &&
+                      summary.payload &&
+                      setSelectedSummary(summary)
+                    }
+                    className={`group relative overflow-hidden px-5 sm:px-6 py-5 flex flex-col rounded-2xl justify-center shadow-sm border transition-all duration-200 cursor-pointer ${
+                      failed
+                        ? "bg-red-50/50 dark:bg-red-950/20 border-red-200 dark:border-red-900/50 hover:border-red-300 dark:hover:border-red-800"
+                        : "bg-white dark:bg-zinc-900/60 border-gray-200/60 dark:border-zinc-800 hover:border-gray-300/80 dark:hover:border-zinc-700"
+                    } ${disabled ? "pointer-events-auto" : ""}`}
+                  >
+                    <div className="flex justify-between items-start gap-3 min-w-0">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2 flex-wrap">
+                          <h3 className="font-semibold text-lg text-gray-900 dark:text-white break-words min-w-0">
+                            {summary.payload?.title ??
+                              t(
+                                "summary.list.generating",
+                                "Generating summary..."
+                              )}
+                          </h3>
+                          <div className="flex-shrink-0">
                             <StatusBadge
                               status={summary.status}
                               isRTL={isRTL}
@@ -258,31 +260,31 @@ export function SummaryList({ workspaceId }: SummaryListProps) {
                           </div>
                         </div>
                       </div>
+                    </div>
 
-                      {failed && (
-                        <div className="mt-3 w-full rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 px-3 py-2 text-sm flex items-center gap-2">
-                          <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-                          <span>
-                            {t(
-                              "summary.list.failure",
-                              "Generation failed. You can delete and try again."
-                            )}
-                          </span>
-                        </div>
-                      )}
+                    {failed && (
+                      <div className="mt-3 rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 px-3 py-2 text-sm flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                        <span className="break-words">
+                          {t(
+                            "summary.list.failure",
+                            "Generation failed. You can delete and try again."
+                          )}
+                        </span>
+                      </div>
+                    )}
 
-                      {summary.status === GenerationStatus.PROCESSING && (
-                        <ProgressStrip />
-                      )}
-                      {summary.status === GenerationStatus.PENDING && (
-                        <QueuedStrip />
-                      )}
-                    </Card>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+                    {summary.status === GenerationStatus.PROCESSING && (
+                      <ProgressStrip />
+                    )}
+                    {summary.status === GenerationStatus.PENDING && (
+                      <QueuedStrip />
+                    )}
+                  </Card>
+                );
+              })}
+            </div>
+          )}
 
           <GenerateContentComponent
             title={t("summary.generate.title", "Create a Summary")}
