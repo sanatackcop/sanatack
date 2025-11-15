@@ -4,8 +4,9 @@ import { useNavigate } from "react-router-dom";
 import { Plus } from "lucide-react";
 import { AddContentModal } from "@/lib/modal/AddContantModal";
 import { Workspace } from "@/lib/types";
-import WorkspaceFolderItem from "./WorkspaceFolderItem";
 import { useTranslation } from "react-i18next";
+import WorkspaceFolderItem from "./WorkspaceFolderItem";
+import { useSidebarRefresh } from "@/context/SidebarRefreshContext";
 
 export default function WorkspacesList({
   workspaces,
@@ -17,6 +18,7 @@ export default function WorkspacesList({
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  const { refreshWorkspace } = useSidebarRefresh();
 
   const handleWorkspaceClick = (workspaceId: string) => {
     navigate(`/dashboard/learn/workspace/${workspaceId}`);
@@ -26,9 +28,14 @@ export default function WorkspacesList({
     refreshParentComponent();
   };
 
-  const handleReset = () => {
+  const handleReset = async (update?: boolean) => {
     setOpen(false);
-    refreshComponent();
+    if (update) {
+      refreshComponent();
+      await refreshWorkspace().catch((error) => {
+        console.error("Failed to refresh sidebar workspaces", error);
+      });
+    }
   };
 
   return (
