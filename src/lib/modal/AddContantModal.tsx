@@ -168,6 +168,7 @@ export function AddContentModal({ open, onClose }: AddContentModalProps) {
           <PDFUploadModal
             setActiveModal={setActiveModal}
             handleClose={handleClose}
+            isRTL={isRTL}
           />
         )}
 
