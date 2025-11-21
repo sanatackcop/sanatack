@@ -1,12 +1,4 @@
-import {
-  useState,
-  useEffect,
-  useMemo,
-  FormEvent,
-  useId,
-  useRef,
-  useCallback,
-} from "react";
+import { useState, useEffect, useMemo, useId, useCallback } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -55,9 +47,7 @@ import { Modal } from "@/components/Modal";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { submitFeedback } from "@/utils/_apis/feedback-api";
 import { toast } from "sonner";
 import { useUserContext } from "@/context/UserContext";
 import { useSettings } from "@/context/SettingsContexts";
@@ -65,6 +55,7 @@ import { SearchCommand } from "@/pages/dashboard/search/Index";
 import LogoLight from "@/assets/logo.svg";
 import LogoDark from "@/assets/dark_logo.svg";
 import type { SidebarRefreshContextValue } from "@/context/SidebarRefreshContext";
+import FeedbackMenuEntry from "./helpers/FeedbackModal";
 
 type MenuItem =
   | {
@@ -82,7 +73,7 @@ type MenuItem =
     };
 
 type LinkMenuItem = Extract<MenuItem, { url: string }>;
-type FeedbackMenuItem = Extract<MenuItem, { type: "feedback" }>;
+export type FeedbackMenuItem = Extract<MenuItem, { type: "feedback" }>;
 
 type MenuGroup = {
   id: string;
@@ -154,11 +145,6 @@ export function AppSidebar({
   const [workspaces, setWorkspaces] = useState<Workspace[] | null>(null);
   const [loadingRecent, setLoadingRecent] = useState<boolean>(true);
   const [showAllRecent, setShowAllRecent] = useState(false);
-  const [feedbackOpen, setFeedbackOpen] = useState(false);
-  const [feedbackSubject, setFeedbackSubject] = useState("");
-  const [feedbackMessage, setFeedbackMessage] = useState("");
-  const [feedbackLoading, setFeedbackLoading] = useState(false);
-  const [feedbackError, setFeedbackError] = useState<string | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -231,43 +217,6 @@ export function AppSidebar({
     toast.success(
       t("languages.changed", { lang: t(`languages.${lng}` as any) })
     );
-  };
-
-  const handleFeedbackSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const trimmedSubject = feedbackSubject.trim();
-    const trimmedMessage = feedbackMessage.trim();
-
-    if (!trimmedSubject || !trimmedMessage) {
-      setFeedbackError(t("sidebar.feedbackForm.validation"));
-      return;
-    }
-
-    setFeedbackLoading(true);
-    setFeedbackError(null);
-    try {
-      await submitFeedback({
-        subject: trimmedSubject,
-        message: trimmedMessage,
-      });
-      toast.success(t("sidebar.feedbackForm.success"));
-      setFeedbackSubject("");
-      setFeedbackMessage("");
-      setFeedbackOpen(false);
-    } catch (error: any) {
-      const errorMessage =
-        error?.error?.body ??
-        error?.response?.data?.message ??
-        error?.message ??
-        t("sidebar.feedbackForm.error");
-      toast.error(
-        typeof errorMessage === "string"
-          ? errorMessage
-          : t("sidebar.feedbackForm.error")
-      );
-    } finally {
-      setFeedbackLoading(false);
-    }
   };
 
   const [openSerach, setOpenSearch] = useState(false);
@@ -535,125 +484,6 @@ export function AppSidebar({
     );
   };
 
-  const FeedbackMenuEntry = ({ item }: { item: FeedbackMenuItem }) => {
-    const ItemIcon = item.icon;
-    const subjectInputRef = useRef<HTMLInputElement | null>(null);
-
-    useEffect(() => {
-      if (!feedbackOpen) {
-        return;
-      }
-      const id = setTimeout(() => {
-        subjectInputRef.current?.focus();
-      }, 0);
-
-      return () => clearTimeout(id);
-    }, [feedbackOpen]);
-
-    return (
-      <>
-        <button
-          type="button"
-          onClick={() => setFeedbackOpen(true)}
-          className={clsx(
-            "w-full flex items-center gap-2.5 px-2 py-1.5 rounded-md transition-colors duration-150 group relative focus:outline-none",
-            "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
-          )}
-        >
-          <ItemIcon
-            size={16}
-            strokeWidth={1.75}
-            className="flex-shrink-0 transition-colors text-sidebar-foreground/60 group-hover:text-sidebar-accent-foreground"
-          />
-          <span
-            className={clsx(
-              "text-[13px] font-normal flex-1",
-              getTextAlignment()
-            )}
-          >
-            {item.title}
-          </span>
-        </button>
-        <Dialog
-          open={feedbackOpen}
-          onOpenChange={(open) => {
-            if (!open) {
-              setFeedbackOpen(false);
-              setFeedbackError(null);
-            }
-          }}
-        >
-          <DialogContent
-            className="sm:max-w-[420px]"
-            dir={isRTL ? "rtl" : "ltr"}
-            onOpenAutoFocus={(event) => event.preventDefault()}
-          >
-            <DialogHeader className={getTextAlignment()}>
-              <DialogTitle>{t("sidebar.feedback")}</DialogTitle>
-              <DialogDescription>
-                {t("sidebar.feedbackForm.placeholderMessage")}
-              </DialogDescription>
-            </DialogHeader>
-            <form className="space-y-3 pt-2" onSubmit={handleFeedbackSubmit}>
-              <div className="space-y-1">
-                <Label htmlFor="feedback-subject">
-                  {t("sidebar.feedbackForm.subject")}
-                </Label>
-                <Input
-                  id="feedback-subject"
-                  ref={subjectInputRef}
-                  value={feedbackSubject}
-                  maxLength={120}
-                  placeholder={t("sidebar.feedbackForm.placeholderSubject")}
-                  onChange={(event) => {
-                    setFeedbackSubject(event.target.value);
-                    if (feedbackError) {
-                      setFeedbackError(null);
-                    }
-                  }}
-                  required
-                />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="feedback-message">
-                  {t("sidebar.feedbackForm.message")}
-                </Label>
-                <Textarea
-                  id="feedback-message"
-                  value={feedbackMessage}
-                  placeholder={t("sidebar.feedbackForm.placeholderMessage")}
-                  onChange={(event) => {
-                    setFeedbackMessage(event.target.value);
-                    if (feedbackError) {
-                      setFeedbackError(null);
-                    }
-                  }}
-                  required
-                  rows={4}
-                />
-              </div>
-              {feedbackError && (
-                <p className="text-xs text-red-500">{feedbackError}</p>
-              )}
-              <div
-                className={clsx(
-                  "flex items-center",
-                  isRTL ? "justify-start" : "justify-end"
-                )}
-              >
-                <Button type="submit" size="sm" disabled={feedbackLoading}>
-                  {feedbackLoading
-                    ? t("common.loading")
-                    : t("sidebar.feedbackForm.submit")}
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
-      </>
-    );
-  };
-
   const MenuGroupEntry = ({
     group,
     open,
@@ -699,7 +529,7 @@ export function AppSidebar({
           <div className="min-h-0 space-y-0.5">
             {group.menuItems.map((item: any) =>
               item.type === "feedback" ? (
-                <FeedbackMenuEntry key={item.title} item={item} />
+                <FeedbackMenuEntry key={item.title} item={item} isRTL={isRTL} />
               ) : (
                 <MenuEntry key={item.url} item={item} />
               )

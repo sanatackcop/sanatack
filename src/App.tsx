@@ -6,11 +6,13 @@ import { DASHBOARDTYPE } from "./utils/types/platfrom";
 import * as pdfjsLib from "pdfjs-dist";
 import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import { Toaster } from "./components/ui/sonner";
+import { useSettings } from "./context/SettingsContexts";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
 
 function App({ switch_dashboard }: { switch_dashboard: DASHBOARDTYPE }) {
   const { i18n } = useTranslation();
+  const { darkMode } = useSettings();
 
   return (
     <div
@@ -26,6 +28,7 @@ function App({ switch_dashboard }: { switch_dashboard: DASHBOARDTYPE }) {
 
         <Toaster
           position={i18n.dir() === "rtl" ? "top-left" : "top-right"}
+          theme={darkMode ? "dark" : "light"}
           richColors
           closeButton
         />
