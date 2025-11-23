@@ -120,9 +120,7 @@ export default function LearningDashboard() {
     <>
       <section className="p-5 px-28 py-20">
         <h2
-          className={`text-2xl font-medium text-zinc-900 dark:text-zinc-100 mb-5 ${
-            isRTL ? "text-right" : "text-left"
-          }`}
+          className={`text-2xl font-medium text-zinc-900 dark:text-zinc-100 mb-5`}
         >
           Welcome, {auth.user.firstName}!
         </h2>
@@ -132,11 +130,7 @@ export default function LearningDashboard() {
             className={`flex flex-col gap-4 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 `}
           >
             <div className="flex-1 space-y-4">
-              <div
-                className={`flex items-start justify-between gap-3 ${
-                  isRTL ? "flex-row-reverse" : ""
-                }`}
-              >
+              <div className={`flex items-start justify-between gap-3`}>
                 <div className="space-y-1">
                   <p className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
                     {t(
@@ -166,9 +160,7 @@ export default function LearningDashboard() {
                 </div>
               ) : habitsError ? (
                 <div
-                  className={`flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-800/50 dark:bg-red-900/40 dark:text-red-100 ${
-                    isRTL ? "flex-row-reverse" : ""
-                  }`}
+                  className={`flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-800/50 dark:bg-red-900/40 dark:text-red-100`}
                 >
                   <span>{habitsError}</span>
                   <Button
@@ -185,9 +177,7 @@ export default function LearningDashboard() {
                   {(habits?.tasks || placeholderTasks).map((task) => (
                     <li
                       key={task.key}
-                      className={`flex items-center justify-between rounded-xl bg-zinc-50 px-3 py-2 text-sm dark:bg-zinc-800/80 ${
-                        isRTL ? "flex-row-reverse" : ""
-                      }`}
+                      className={`flex items-center justify-between rounded-xl bg-zinc-50 px-3 py-2 text-sm dark:bg-zinc-800/80`}
                     >
                       <div className="flex items-center gap-2 text-zinc-800 dark:text-zinc-100">
                         <span>{taskLabels[task.key]}</span>
