@@ -162,6 +162,8 @@ export interface CoursesReport {
   totalHours: number;
   streakDays: number;
   certifications: number;
+  totalWorkspaces?: number;
+  totalMaterials?: number;
 }
 
 export interface PatchCourseProgressParams {

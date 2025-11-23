@@ -237,6 +237,7 @@ export function AppSidebar({
             title: t("common.search"),
             url: "/dashboard/search",
             icon: Search,
+            comingSoon: true,
             onClick: openSearchCommand,
           },
           {
@@ -1060,7 +1061,6 @@ export function AppSidebar({
 
   return (
     <>
-      {/* Mobile backdrop overlay */}
       {isMobile && isMobileMenuOpen && (
         <div
           className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity duration-300"
@@ -1072,14 +1072,13 @@ export function AppSidebar({
         <div
           dir={isRTL ? "rtl" : "ltr"}
           lang={i18n.language}
-          className="h-full flex flex-col border-r bg-zinc-50 border
+          className="h-full flex flex-col border-r bg-[#F7F7F7] border
          dark:bg-zinc-950 dark:border-zinc-800"
         >
           <SidebarContent />
         </div>
       )}
 
-      {/* Mobile floating sidebar */}
       {isMobile && (
         <div
           dir={isRTL ? "rtl" : "ltr"}

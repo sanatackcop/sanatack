@@ -2,7 +2,7 @@ import { Space } from "@/types/courses";
 import { useTranslation } from "react-i18next";
 import { Button } from "../../../components/ui/button";
 import { Skeleton } from "../../../components/ui/skeleton";
-import { FileText, ImageIcon, Loader2, Plus, Trash2 } from "lucide-react";
+import { FileText, ImageIcon, Loader2, Telescope, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   createSpacesApi,
@@ -129,11 +129,8 @@ export default function Spaces({
           </h2>
         </div>
 
-        <div
-          className={`grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4`}
-        >
+        <div className="flex flex-wrap gap-5">
           {loading ? (
-            // Skeleton loading state
             <>
               {Array.from({ length: 6 }).map((_, index) => (
                 <SpaceItemSkeleton key={index} />
@@ -145,14 +142,25 @@ export default function Spaces({
                 type="button"
                 onClick={() => setOpenAdd(true)}
                 disabled={creating}
-                className={`group relative flex h-[220px] flex-col overflow-hidden rounded-2xl border-2 border-dashed border-zinc-200 bg-white text-zinc-700 transition-all duration-200 hover:border-zinc-300 hover:bg-zinc-50/60 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-500`}
+                className={`group relative flex h-48 w-56  flex-col overflow-hidden rounded-2xl
+                   border-2 border-dashed border-zinc-200
+                    bg-white text-zinc-700 transition-all duration-200 
+                    hover:border-zinc-300 hover:bg-zinc-50/60 focus:outline-none 
+                    focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 
+                    disabled:cursor-not-allowed disabled:opacity-50 
+                    dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300
+                     dark:hover:border-zinc-500`}
               >
-                <div className="flex h-28 w-full items-center justify-center bg-zinc-100 dark:bg-zinc-800/60">
-                  <ImageIcon className="h-8 w-8 text-zinc-400 dark:text-zinc-500" />
-                </div>
                 <div className="flex flex-1 flex-col items-center justify-center gap-3 p-4 text-center">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 transition-colors group-hover:bg-white group-hover:text-zinc-600 dark:bg-zinc-800 dark:group-hover:bg-zinc-700">
-                    <Plus className="h-5 w-5" />
+                  <div
+                    className="flex h-12 w-12 items-center justify-center rounded-full
+                     bg-[#10B981] bg-opacity-25 transition-colors group-hover:bg-white group-hover:text-zinc-600
+                    dark:bg-zinc-800 dark:group-hover:bg-zinc-700"
+                  >
+                    <Telescope
+                      className="size-6 transition-transform duration-300 
+               text-[#0A8E63] group-hover:text-[#10B981]"
+                    />
                   </div>
                   <span className="text-sm font-semibold">
                     {t("dashboard.spaces.newSpace")}
@@ -177,8 +185,6 @@ export default function Spaces({
                     onDeleteRequest={requestDelete}
                   />
                 ))}
-
-              {/* Add New Space Button */}
             </>
           )}
         </div>
@@ -314,76 +320,6 @@ export default function Spaces({
   );
 }
 
-// function SpaceCardFooter({ space, isRTL }: { space: Space; isRTL: boolean }) {
-//   const { t } = useTranslation();
-//   const totalMembers = space.memberCount ?? space.members?.length ?? 0;
-//   const visibleMembers = (space.members ?? []).slice(0, 3);
-//   const remainingMembers = Math.max(totalMembers - visibleMembers.length, 0);
-
-//   const activitySource =
-//     space.lastActivity ??
-//     (space.updated_at as string | Date | undefined) ??
-//     (space.created_at as string | Date | undefined);
-
-//   const lastActivityLabel = activitySource
-//     ? formatRelativeDate(activitySource, isRTL ? "ar" : "en")
-//     : t("dashboard.spaces.activityUnknown", "Recently updated");
-
-//   const membersLabel =
-//     totalMembers === 0
-//       ? t("dashboard.spaces.noMembers", "No members yet")
-//       : totalMembers === 1
-//       ? t("dashboard.spaces.singleMember", "1 member")
-//       : t("dashboard.spaces.multiMember", "{{count}} members", {
-//           count: totalMembers,
-//         });
-
-//   return (
-//     <div
-//       className={`mt-auto flex items-center justify-between gap-3 pt-4 text-xs text-zinc-500 dark:text-zinc-400 ${
-//         isRTL ? "flex-row-reverse" : ""
-//       }`}
-//     >
-//       <div
-//         className={`flex items-center gap-2 ${isRTL ? "flex-row-reverse" : ""}`}
-//       >
-//         <div className={`flex -space-x-2 ${isRTL ? "space-x-reverse" : ""}`}>
-//           {visibleMembers.length ? (
-//             visibleMembers.map((member) => (
-//               <Avatar
-//                 key={member.id}
-//                 className="h-8 w-8 border-2 border-white text-xs font-medium dark:border-zinc-900"
-//               >
-//                 <AvatarFallback>
-//                   {member.initials || member.displayName?.charAt(0) || "?"}
-//                 </AvatarFallback>
-//               </Avatar>
-//             ))
-//           ) : (
-//             <Avatar className="h-8 w-8 border-2 border-white text-zinc-500 dark:border-zinc-900">
-//               <AvatarFallback>
-//                 <Users className="h-3.5 w-3.5" />
-//               </AvatarFallback>
-//             </Avatar>
-//           )}
-//           {remainingMembers > 0 && (
-//             <Avatar className="h-8 w-8 border-2 border-dashed border-white bg-zinc-100 text-[11px] font-semibold text-zinc-500 dark:border-zinc-900 dark:bg-zinc-800 dark:text-zinc-300">
-//               <AvatarFallback>+{remainingMembers}</AvatarFallback>
-//             </Avatar>
-//           )}
-//         </div>
-//         <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
-//           {membersLabel}
-//         </span>
-//       </div>
-
-//       <span className="text-xs text-zinc-400 dark:text-zinc-500">
-//         {lastActivityLabel}
-//       </span>
-//     </div>
-//   );
-// }
-
 function SpaceItemSkeleton() {
   return (
     <div className="flex h-[220px] flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
@@ -435,7 +371,9 @@ function SpaceItem({
           onOpen(id);
         }
       }}
-      className={`group relative flex h-[220px] cursor-pointer flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:shadow-zinc-900/40`}
+      className={`group relative flex  h-48 w-56 cursor-pointer flex-col
+         overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm
+          transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:shadow-zinc-900/40`}
     >
       <div
         className={`absolute top-3 z-20 opacity-0 transition-opacity duration-200 group-hover:opacity-100 `}

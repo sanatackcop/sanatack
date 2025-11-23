@@ -419,6 +419,16 @@
     "errors": {
       "loadCourses": "An error occurred while loading courses. Please try again later."
     },
+    "habits": {
+      "title": "Take your first steps to building a learning habit.",
+      "createWorkspaces": "Create your first 3 workspaces",
+      "createSpaces": "Create 3 spaces and organize your workspaces",
+      "createQuizzes": "Create 3 quizzes and flashcards",
+      "uploadDocument": "Upload 1 document",
+      "progress": "{{completed}}/{{total}} completed",
+      "error": "Couldn't load your habit checklist.",
+      "retry": "Retry"
+    },
     "generation": {
       "notifications": {
         "completed": "{{type}} \"{{name}}\" is ready.",
@@ -432,10 +442,25 @@
         }
       }
     },
+    "streak": {
+      "title": "Current streak",
+      "subtitle": "Keep the momentum going",
+      "hours": "Hours learned",
+      "hoursHelper": "Across all activity",
+      "totalWorkspaces": "Total workspaces",
+      "totalWorkspacesHelper": "Created so far",
+      "totalMaterials": "Materials generated",
+      "totalMaterialsHelper": "Quizzes, cards, summaries",
+      "daysLabel": "day streak",
+      "keepGoing": "Complete something today to extend it.",
+      "error": "Couldn't load your streak.",
+      "retry": "Retry"
+    },
     "spaces": {
       "title": "Spaces",
       "newSpace": "New Space",
       "newSpaceHint": "Create a fresh space to organize your work",
+      "newWorkSpace": "Create a fresh new workspace",
       "defaultName": "Untitled Space ({{count}})",
       "deleteSpace": "Delete Space",
       "itemCount": "{{count}} items",
