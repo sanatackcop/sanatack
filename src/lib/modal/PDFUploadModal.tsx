@@ -14,14 +14,12 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { SetActiveModalType } from "./AddContantModal";
-import { useSidebarRefresh } from "@/context/SidebarRefreshContext";
 import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { formatFileSize } from "../chat/chatInput";
 import { Progress } from "@/components/ui/progress";
@@ -35,6 +33,7 @@ import {
 } from "@/components/ui/accordion";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { PDFDocument } from "pdf-lib";
+import { t } from "i18next";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
@@ -94,9 +93,11 @@ enum UploadSteps {
 export default function PDFUploadModal({
   handleClose,
   setActiveModal,
+  isRTL,
 }: {
   handleClose: (update?: boolean) => void;
   setActiveModal: SetActiveModalType;
+  isRTL: boolean;
 }) {
   const [isDragActive, setIsDragActive] = useState(false);
   const uploadRef = useRef<HTMLInputElement | null>(null);
@@ -110,11 +111,6 @@ export default function PDFUploadModal({
     downloadUrl: null,
   });
   const [steps, setSteps] = useState(UploadSteps.PDFUpload);
-  const { refreshWorkspace } = useSidebarRefresh();
-  const { t, i18n } = useTranslation();
-  const dir = i18n.dir();
-  const isRTL = dir === "rtl";
-
   const [pdfFileUrl, setPdfFileUrl] = useState<string | null>(null);
   const [numPages, setNumPages] = useState<number>(0);
   const [selectedPages, setSelectedPages] = useState<number[]>([]);
@@ -370,10 +366,6 @@ export default function PDFUploadModal({
         workspaceName: originalFile.name,
       });
 
-      await refreshWorkspace().catch((error) => {
-        console.error("Failed to refresh sidebar workspaces", error);
-      });
-
       if (!upload.documentId) {
         throw new Error("Upload response is missing a document id.");
       }
@@ -446,10 +438,10 @@ export default function PDFUploadModal({
   return (
     <>
       <DialogHeader className={isRTL ? "text-right" : "text-left"}>
-        <DialogTitle>
+        <DialogTitle className={isRTL ? "text-right" : "text-left"}>
           {t("modals.addContent.uploadPdf.title", "Upload PDF")}
         </DialogTitle>
-        <DialogDescription>
+        <DialogDescription className={isRTL ? "text-right" : "text-left"}>
           {t(
             "modals.addContent.uploadPdf.helper",
             "Drag and drop your PDF or choose one to upload. You can also select specific pages or chapters before uploading."
@@ -718,26 +710,30 @@ export default function PDFUploadModal({
         </div>
       )}
 
-      <DialogFooter
-        className={`flex gap-2 ${isRTL ? "flex-row-reverse" : "flex-row"}`}
-      >
-        <Button variant="outline" onClick={() => setActiveModal("selection")}>
-          {t("common.back", "Back")}
-        </Button>
-        <Button
-          onClick={handleFileUpload}
-          disabled={
-            uploadState.files.length === 0 ||
-            uploadState.isUploading ||
-            uploadState.status === "uploaded"
-          }
+      <DialogFooter>
+        <div
+          className={`flex w-full gap-2 ${
+            isRTL ? "justify-start" : "flex-row"
+          }`}
         >
-          {uploadState.isUploading
-            ? t("modals.addContent.upload.uploading", "Uploading...")
-            : uploadState.status === "uploaded"
-            ? t("modals.addContent.upload.done", "Uploaded")
-            : t("modals.addContent.upload.submit", "Upload PDF")}
-        </Button>
+          <Button variant="outline" onClick={() => setActiveModal("selection")}>
+            {t("common.back", "Back")}
+          </Button>
+          <Button
+            onClick={handleFileUpload}
+            disabled={
+              uploadState.files.length === 0 ||
+              uploadState.isUploading ||
+              uploadState.status === "uploaded"
+            }
+          >
+            {uploadState.isUploading
+              ? t("modals.addContent.upload.uploading", "Uploading...")
+              : uploadState.status === "uploaded"
+              ? t("modals.addContent.upload.done", "Uploaded")
+              : t("modals.addContent.upload.submit", "Upload PDF")}
+          </Button>
+        </div>
       </DialogFooter>
     </>
   );
