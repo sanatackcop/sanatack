@@ -777,15 +777,14 @@ export function AppSidebar({
     </div>
   );
 
-  // Sidebar content component (reusable for both mobile and desktop)
   const SidebarContent = () => (
     <>
       <SearchCommand open={openSerach} setOpen={setOpenSearch} />
       <div className="flex flex-col h-full py-2 pl-3 pr-2">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-2">
           <div
             className={clsx(
-              "h-[60px] flex items-center overflow-hidden w-full justify-between group relative"
+              "h-[30px] flex items-center overflow-hidden w-full justify-between group relative"
             )}
             onMouseEnter={() => setIsLogoHovered(true)}
             onMouseLeave={() => setIsLogoHovered(false)}
@@ -797,12 +796,11 @@ export function AppSidebar({
                 navigate("/dashboard/overview");
                 if (isMobile) setIsMobileMenuOpen(false);
               }}
-              className={`h-full cursor-pointer w-auto transition-all object-contain scale-[2.5] ${
-                i18n.dir() === "rtl" ? "pr-6" : "pl-5"
-              }`}
+              width={20}
+              height={10}
+              className={`h-full cursor-pointer w-auto transition-all object-contain scale-110 pl-2`}
             />
 
-            {/* Close button for mobile */}
             {isMobile && (
               <button
                 onClick={() => setIsMobileMenuOpen(false)}
