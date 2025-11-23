@@ -15,10 +15,16 @@ import MappedLessons from "@/admin/pages/mapped.lessons.page";
 import MappedModules from "@/admin/pages/mapped.modules.page";
 import RoadmapsPage from "@/admin/pages/roadmap.page";
 import UsagePage from "@/admin/pages/usage.page";
+import TermsAndConditions from "@/landingpage/TermsAndConditions";
+import PrivacyPolicy from "@/landingpage/PrivacyPolicy";
+import ContactUs from "@/landingpage/ContactUs";
 
 const publicRoutes = [
   { path: "/", element: <HomePAGE /> },
+  { path: "/terms", element: <TermsAndConditions /> },
+  { path: "/privacy", element: <PrivacyPolicy /> },
   { path: "/login", element: <LoginPage /> },
+  { path: "/contact", element: <ContactUs /> },
   { path: "/signup", element: <SingupPage /> },
 ];
 

@@ -117,8 +117,8 @@ export function Pricing() {
     },
     {
       nameKey: "pricing.pro.name",
-      yearlyPriceUSD: 8.99,
-      monthlyPriceUSD: 10,
+      yearlyPriceUSD: 10.99,
+      monthlyPriceUSD: 15.99,
       periodKey: "pricing.pro.period",
       subtitleKey: "pricing.pro.subtitle",
       descriptionKey: "pricing.pro.description",
