@@ -1,6 +1,7 @@
 {
   "pageFit": "Page Fit",
   "pageLoadFailed": "Failed to load page {{page}}",
+  "welcome": "Welcome",
   "fileLoadError": "Failed to Load File",
   "retry": "Retry",
   "loadingFile": "Loading File",
@@ -365,6 +366,13 @@
         "title": "Language",
         "description": "Choose the language used across the interface."
       }
+    },
+    "limits": {
+      "title": "Usage",
+      "upload": "Upload limit",
+      "ai": "AI limit",
+      "seePricing": "See Pricing",
+      "unlimited": "Unlimited"
     }
   },
   "languages": {

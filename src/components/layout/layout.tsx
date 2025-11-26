@@ -6,12 +6,23 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import * as React from "react";
-import { Menu, PanelLeft } from "lucide-react";
+import { PanelLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   SidebarRefreshProvider,
   SidebarRefreshContextValue,
 } from "@/context/SidebarRefreshContext";
+import { usePageTitle } from "@/context/PageTitleContext";
+import { useSettings } from "@/context/SettingsContexts";
+import LogoLight from "@/assets/logo.svg";
+import LogoDark from "@/assets/dark_logo.svg";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 const CONFIG = {
   AUTO_COLLAPSE_THRESHOLD: 10,
@@ -32,6 +43,9 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const { t, i18n } = useTranslation();
+  const { darkMode } = useSettings();
+  const { title, titleContent, isUpgradeOpen, openUpgrade, closeUpgrade } =
+    usePageTitle();
   const [sidebarRefreshers, setSidebarRefreshers] =
     React.useState<SidebarRefreshContextValue>({
       refreshWorkspace: async () => {},
@@ -168,16 +182,69 @@ export default function DashboardLayout({
     setIsCollapsed(false);
   }, []);
 
+  const TopBar = () => (
+    <div className="sticky top-0 z-20 flex items-center gap-3 px-4 py-3 backdrop-blur">
+      <div className="flex items-center gap-3 flex-1 min-w-0">
+        {isMobile || isCollapsed ? (
+          <button
+            type="button"
+            onClick={() =>
+              isMobile ? setIsMobileMenuOpen(true) : expandSidebar()
+            }
+            className={`
+                    inline-flex items-center gap-2 px-2 py-2 rounded-xl
+                    focus:outline-none focus:ring-2 focus:ring-blue-500/40 group
+                    bg-white/80 border border-gray-200/50 shadow-sm backdrop-blur-sm
+                    hover:bg-gray-50 hover:shadow-md duration-200 transition-all
+                    dark:border-white/10 dark:bg-zinc-800/80 dark:hover:bg-zinc-700/90
+                    ${isRTL ? "right-3" : "left-3"}
+                  `}
+            aria-label={isRTL ? "فتح الشريط الجانبي" : "Open sidebar"}
+            title={isRTL ? "فتح الشريط الجانبي" : "Open sidebar"}
+          >
+            <PanelLeft className="h-4 w-4 text-zinc-600 dark:text-zinc-300 group-hover:text-zinc-950 dark:group-hover:text-zinc-100 duration-200 transition-all" />
+          </button>
+        ) : null}
+
+        {(isMobile || isCollapsed) && (
+          <img
+            src={String(darkMode ? LogoDark : LogoLight)}
+            alt="Logo"
+            className="h-6 w-auto"
+          />
+        )}
+        <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-100 truncate">
+          {title}
+        </span>
+
+        {titleContent && <div className="flex-1 min-w-0">{titleContent}</div>}
+      </div>
+
+      <div className={`ml-auto ${isRTL ? "mr-auto ml-0" : ""}`}>
+        <Button
+          variant="secondary"
+          className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/60 dark:text-emerald-100 dark:hover:bg-emerald-800/80"
+          onClick={openUpgrade}
+        >
+          {t("common.upgrade", "Upgrade")}
+        </Button>
+      </div>
+    </div>
+  );
+
   const mainContent = (
-    <main className="flex-1 min-w-0 min-h-0 flex">
-      <div className="flex-1 min-w-0 min-h-0 flex flex-col">
-        <div className="flex-1 min-h-0 overflow-hidden">
-          <div className="h-full min-h-0 overflow-hidden">
-            <div
-              className="h-full overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-blue-200/70
+    <main className="flex-1 min-w-0 min-h-0 flex flex-col">
+      <TopBar />
+      <div className="flex-1 min-w-0 min-h-0 flex">
+        <div className="flex-1 min-w-0 min-h-0 flex flex-col">
+          <div className="flex-1 min-h-0 overflow-hidden">
+            <div className="h-full min-h-0 overflow-hidden">
+              <div
+                className="h-full overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-blue-200/70
                        scrollbar-track-transparent hover:scrollbar-thumb-blue-300/80"
-            >
-              {children}
+              >
+                {children}
+              </div>
             </div>
           </div>
         </div>
@@ -202,22 +269,6 @@ export default function DashboardLayout({
                 onMobileMenuChange={setIsMobileMenuOpen}
               />
               <div className="relative flex h-full min-w-0 flex-1">
-                <button
-                  type="button"
-                  onClick={() => setIsMobileMenuOpen(true)}
-                  className={`
-                    absolute top-3 z-30 inline-flex items-center gap-2 px-2 py-2 rounded-xl
-                    focus:outline-none focus:ring-2 focus:ring-blue-500/40 group
-                    bg-white/80 border border-gray-200/50 shadow-sm backdrop-blur-sm
-                    hover:bg-gray-50 hover:shadow-md duration-200 transition-all
-                    dark:border-white/10 dark:bg-zinc-800/80 dark:hover:bg-zinc-700/90
-                    ${isRTL ? "right-3" : "left-3"}
-                  `}
-                  aria-label={t("sidebar.openMenu", "Open menu")}
-                  title={t("sidebar.openMenu", "Open menu")}
-                >
-                  <Menu className="h-4 w-4 text-zinc-600 dark:text-zinc-300 group-hover:text-zinc-950 dark:group-hover:text-zinc-100 duration-200 transition-all" />
-                </button>
                 {mainContent}
               </div>
             </>
@@ -241,7 +292,9 @@ export default function DashboardLayout({
               >
                 <div
                   className={`h-full transition-opacity duration-200 ${
-                    isCollapsed ? "opacity-0 pointer-events-none" : "opacity-100"
+                    isCollapsed
+                      ? "opacity-0 pointer-events-none"
+                      : "opacity-100"
                   }`}
                 >
                   <AppSidebar
@@ -255,7 +308,9 @@ export default function DashboardLayout({
               <ResizableHandle
                 withHandle={false}
                 onDragging={handleDraggingChange}
-                aria-label={isRTL ? "تغيير حجم الشريط الجانبي" : "Resize sidebar"}
+                aria-label={
+                  isRTL ? "تغيير حجم الشريط الجانبي" : "Resize sidebar"
+                }
                 className={`
               relative z-20 w-1.5 select-none
               transition-all duration-200 ease-out cursor-col-resize
@@ -276,25 +331,6 @@ export default function DashboardLayout({
                 className="min-w-0"
               >
                 <div className="relative flex h-full min-w-0 min-h-0">
-                  {isCollapsed && (
-                    <button
-                      type="button"
-                      onClick={expandSidebar}
-                      className={`
-                    absolute top-3 z-30 inline-flex items-center gap-2 px-2 py-2 rounded-xl
-                    focus:outline-none focus:ring-2 focus:ring-blue-500/40 group
-                    bg-white/80 border border-gray-200/50 shadow-sm backdrop-blur-sm
-                    hover:bg-gray-50 hover:shadow-md duration-200 transition-all
-                    dark:border-white/10 dark:bg-zinc-800/80 dark:hover:bg-zinc-700/90
-                    ${isRTL ? "right-3" : "left-3"}
-                  `}
-                      aria-label={isRTL ? "فتح الشريط الجانبي" : "Open sidebar"}
-                      title={isRTL ? "فتح الشريط الجانبي" : "Open sidebar"}
-                    >
-                      <PanelLeft className="h-4 w-4 text-zinc-600 dark:text-zinc-300 group-hover:text-zinc-950 dark:group-hover:text-zinc-100 duration-200 transition-all" />
-                    </button>
-                  )}
-
                   {mainContent}
                 </div>
               </ResizablePanel>
@@ -302,6 +338,22 @@ export default function DashboardLayout({
           )}
         </div>
       </SidebarProvider>
+      <Dialog
+        open={isUpgradeOpen}
+        onOpenChange={(open) => (open ? openUpgrade() : closeUpgrade())}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("common.upgrade", "Upgrade")}</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-zinc-600 dark:text-zinc-300">
+            {t(
+              "common.upgradePrompt",
+              "Unlock premium features and supercharge your learning."
+            )}
+          </p>
+        </DialogContent>
+      </Dialog>
     </SidebarRefreshProvider>
   );
 }

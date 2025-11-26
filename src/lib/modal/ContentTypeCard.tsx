@@ -29,7 +29,12 @@ export default function ContentTypeCard({
         }
       }}
     >
-      <Icon className="h-8 w-8 text-zinc-500 opacity-85 group-hover:text-zinc-800 group-hover:opacity-100 dark:text-zinc-400 dark:group-hover:text-zinc-200 transition-all duration-200" />
+      <div className="size-10 bg-[#10B981] bg-opacity-25 group-hover:bg-white rounded-full items-center flex justify-center">
+        <Icon
+          className="h-8 w-8                text-[#0A8E63] group-hover:text-[#10B981]
+         opacity-85 group-hover:opacity-100 dark:te-200 transition-all duration-200"
+        />
+      </div>
       <h3
         className={`font-medium text-base text-zinc-600 opacity-90 group-hover:text-zinc-900 group-hover:opacity-100 dark:text-zinc-300 dark:group-hover:text-zinc-100 transition-all duration-200 ${
           isRTL ? "text-right" : "text-left"

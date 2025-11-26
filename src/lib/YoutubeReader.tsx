@@ -421,7 +421,7 @@ const YouTubeReader: React.FC<YouTubePlayerProps> = ({
               <button
                 key={tab.id}
                 value={tab.id}
-                className={`relative border flex items-center  dark:text-white justify-center gap-2 rounded-lg py-1.5 px-3 transition-all duration-200 font-normal ${
+                className={`relative border dark:border-zinc-200/20 flex items-center  dark:text-white justify-center gap-2 rounded-lg py-1.5 px-3 transition-all duration-200 font-normal ${
                   isActive
                     ? "text-green-700"
                     : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"

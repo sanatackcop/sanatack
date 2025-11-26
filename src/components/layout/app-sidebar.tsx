@@ -11,6 +11,7 @@ import {
   Brain,
   CalendarDaysIcon,
   CheckCircle,
+  Zap,
   Clock10,
   MapIcon,
   Moon,
@@ -32,8 +33,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Progress } from "@/components/ui/progress";
 import { createSpacesApi, getAllSpacesApi } from "@/utils/_apis/courses-apis";
 import { getAllWorkSpace } from "@/utils/_apis/learnPlayground-api";
+import { fetchRateLimitSummary } from "@/utils/_apis/rate-limit-api";
 import Skeleton from "@mui/material/Skeleton";
 import {
   Dialog,
@@ -54,6 +57,7 @@ import { useSettings } from "@/context/SettingsContexts";
 import { SearchCommand } from "@/pages/dashboard/search/Index";
 import LogoLight from "@/assets/logo.svg";
 import LogoDark from "@/assets/dark_logo.svg";
+import type { RateLimitSummaryResponse } from "@/types/rateLimit";
 import type { SidebarRefreshContextValue } from "@/context/SidebarRefreshContext";
 import FeedbackMenuEntry from "./helpers/FeedbackModal";
 
@@ -146,6 +150,9 @@ export function AppSidebar({
   const [loadingRecent, setLoadingRecent] = useState<boolean>(true);
   const [showAllRecent, setShowAllRecent] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [rateLimitSummary, setRateLimitSummary] =
+    useState<RateLimitSummaryResponse | null>(null);
+  const [loadingRateLimits, setLoadingRateLimits] = useState<boolean>(true);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -192,6 +199,25 @@ export function AppSidebar({
   useEffect(() => {
     setNewName(t("sidebar.newSpace"));
   }, [t]);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        setLoadingRateLimits(true);
+        const summary = await fetchRateLimitSummary();
+        if (mounted) setRateLimitSummary(summary);
+      } catch (error) {
+        console.error("Failed to fetch rate limit summary", error);
+      } finally {
+        if (mounted) setLoadingRateLimits(false);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const toggleLanguage = async () => {
     const newLang = language === "ar" ? "en" : "ar";
@@ -300,6 +326,31 @@ export function AppSidebar({
   );
 
   const allItemGroups = useMemo(() => topItemGroups, [topItemGroups]);
+
+  const overallUsage = useMemo(() => {
+    if (!rateLimitSummary) return null;
+    const finite = rateLimitSummary.usage.filter(
+      (item) => typeof item.limit === "number" && item.limit !== null
+    );
+    const totalLimit = finite.reduce(
+      (sum, item) => sum + (item.limit ?? 0),
+      0
+    );
+    const totalUsed = finite.reduce(
+      (sum, item) => sum + (item.usedCredits ?? 0),
+      0
+    );
+
+    if (totalLimit <= 0) {
+      return { used: totalUsed, limit: null, progress: 0 };
+    }
+
+    return {
+      used: totalUsed,
+      limit: totalLimit,
+      progress: Math.min((totalUsed / totalLimit) * 100, 100),
+    };
+  }, [rateLimitSummary]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -930,6 +981,80 @@ export function AppSidebar({
                   )}
                 </>
               )}
+            </div>
+          </div>
+
+          <div>
+            <SectionHeader
+              title={t("sidebar.limits.title", { defaultValue: "Usage" })}
+            />
+            <div
+              className="space-y-3 rounded-xl border border-zinc-200/70 bg-white p-3 
+              shadow-sm dark:border-zinc-800/60 dark:bg-zinc-900"
+            >
+              {loadingRateLimits ? (
+                <div className="space-y-3">
+                  <Skeleton
+                    variant="rounded"
+                    width="100%"
+                    height={12}
+                    sx={{
+                      bgcolor: darkMode ? "rgb(55 65 81)" : "rgb(229 231 235)",
+                    }}
+                  />
+                  <Skeleton
+                    variant="rounded"
+                    width="100%"
+                    height={12}
+                    sx={{
+                      bgcolor: darkMode ? "rgb(55 65 81)" : "rgb(229 231 235)",
+                    }}
+                  />
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <div
+                      className={clsx(
+                        "flex items-center justify-between text-[12px] font-medium text-sidebar-foreground",
+                        getFlexDirection()
+                      )}
+                    >
+                      <span>
+                        {t("sidebar.limits.title", { defaultValue: "Usage" })}
+                      </span>
+                      <span className="text-[11px] text-sidebar-foreground/60">
+                        {overallUsage?.limit === null
+                          ? t("sidebar.limits.unlimited", {
+                              defaultValue: t("dashboard.usage.unlimited", {
+                                defaultValue: "Unlimited",
+                              }),
+                            })
+                          : t("dashboard.usage.usageSummary", {
+                              used: overallUsage?.used ?? 0,
+                              limit: overallUsage?.limit ?? 0,
+                            })}
+                      </span>
+                    </div>
+                    <Progress
+                      value={overallUsage?.progress ?? 0}
+                      className="h-2"
+                    />
+                  </div>
+                </>
+              )}
+
+              <Button
+                type="button"
+                onClick={() => window.open("/#pricing", "_blank")}
+                className={clsx(
+                  "w-full gap-2 rounded-lg dark:bg-[#0FB27C] dark:text-white bg-[#0FB27C] text-white shadow-sm hover:bg-[#003926]",
+                  getFlexDirection()
+                )}
+              >
+                <Zap size={16} strokeWidth={2} />
+                <span>{t("sidebar.limits.seePricing")}</span>
+              </Button>
             </div>
           </div>
         </div>
