@@ -15,10 +15,7 @@ function App({ switch_dashboard }: { switch_dashboard: DASHBOARDTYPE }) {
   const { darkMode } = useSettings();
 
   return (
-    <div
-      className="font-rubik min-h-screen bg-white dark:bg-black"
-      dir={i18n.dir()}
-    >
+    <div className="min-h-screen bg-white dark:bg-black" dir={i18n.dir()}>
       <div className="relative min-h-screen">
         <UserContextProvider>
           <ErrorBoundary>

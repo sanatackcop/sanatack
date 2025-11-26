@@ -237,6 +237,7 @@ export function AppSidebar({
             title: t("common.search"),
             url: "/dashboard/search",
             icon: Search,
+            comingSoon: true,
             onClick: openSearchCommand,
           },
           {
@@ -607,15 +608,14 @@ export function AppSidebar({
     </div>
   );
 
-  // Sidebar content component (reusable for both mobile and desktop)
   const SidebarContent = () => (
     <>
       <SearchCommand open={openSerach} setOpen={setOpenSearch} />
       <div className="flex flex-col h-full py-2 pl-3 pr-2">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-2">
           <div
             className={clsx(
-              "h-[60px] flex items-center overflow-hidden w-full justify-between group relative"
+              "h-[30px] flex items-center overflow-hidden w-full justify-between group relative"
             )}
             onMouseEnter={() => setIsLogoHovered(true)}
             onMouseLeave={() => setIsLogoHovered(false)}
@@ -627,12 +627,11 @@ export function AppSidebar({
                 navigate("/dashboard/overview");
                 if (isMobile) setIsMobileMenuOpen(false);
               }}
-              className={`h-full cursor-pointer w-auto transition-all object-contain scale-[2.5] ${
-                i18n.dir() === "rtl" ? "pr-6" : "pl-5"
-              }`}
+              width={20}
+              height={10}
+              className={`h-full cursor-pointer w-auto transition-all object-contain scale-110 pl-2`}
             />
 
-            {/* Close button for mobile */}
             {isMobile && (
               <button
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -1062,7 +1061,6 @@ export function AppSidebar({
 
   return (
     <>
-      {/* Mobile backdrop overlay */}
       {isMobile && isMobileMenuOpen && (
         <div
           className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity duration-300"
@@ -1074,14 +1072,13 @@ export function AppSidebar({
         <div
           dir={isRTL ? "rtl" : "ltr"}
           lang={i18n.language}
-          className="h-full flex flex-col border-r bg-zinc-50 border
+          className="h-full flex flex-col border-r bg-[#F7F7F7] border
          dark:bg-zinc-950 dark:border-zinc-800"
         >
           <SidebarContent />
         </div>
       )}
 
-      {/* Mobile floating sidebar */}
       {isMobile && (
         <div
           dir={isRTL ? "rtl" : "ltr"}

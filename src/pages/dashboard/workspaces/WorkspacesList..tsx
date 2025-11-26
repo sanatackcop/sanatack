@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { Plus } from "lucide-react";
+import { FolderPlusIcon } from "lucide-react";
 import { AddContentModal } from "@/lib/modal/AddContantModal";
 import { Workspace } from "@/lib/types";
 import { useTranslation } from "react-i18next";
@@ -41,38 +40,36 @@ export default function WorkspacesList({
   return (
     <>
       <div className="flex flex-wrap gap-5">
-        <Card
+        <button
+          type="button"
           onClick={() => setOpen(true)}
-          className="
-              relative flex flex-col justify-center items-center group rounded-2xl
-              border-2 border-dashed border-zinc-300 cursor-pointer h-48 w-48 
-              hover:border-zinc-400 
-              transition-all duration-300 ease-out
-            "
-          role="button"
-          tabIndex={0}
-          aria-label="Add New Workspace"
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") setOpen(true);
-          }}
+          className={`group relative flex h-48 w-56  flex-col overflow-hidden rounded-2xl
+                   border-2 border-dashed border-zinc-200
+                    bg-white text-zinc-700 transition-all duration-200 
+                    hover:border-zinc-300 hover:bg-zinc-50/60 focus:outline-none 
+                    focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 
+                    disabled:cursor-not-allowed disabled:opacity-50 
+                    dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300
+                     dark:hover:border-zinc-500`}
         >
-          <div className="flex flex-col justify-center items-center gap-3 text-zinc-400 group-hover:text-zinc-600 transition-colors duration-300">
+          <div className="flex flex-1 flex-col items-center justify-center gap-3 p-4 text-center">
             <div
-              className="
-                relative flex items-center justify-center
-                w-12 h-12 rounded-full 
-                bg-zinc-100 group-hover:bg-zinc-200
-                transition-all duration-300
-                group-hover:scale-110
-              "
+              className="flex h-12 w-12 items-center justify-center rounded-full
+                   transition-colors 
+                    bg-[#10B981] bg-opacity-25 group-hover:bg-white
+                    dark:bg-zinc-800 dark:group-hover:bg-zinc-700"
             >
-              <Plus className="h-6 w-6 transition-transform duration-300 group-hover:rotate-90" />
+              <FolderPlusIcon
+                className="size-6 transition-transform duration-300 
+               text-[#0A8E63] group-hover:text-[#10B981]"
+              />
             </div>
-            <span className="text-sm font-medium select-none">
-              {t("common.add")}
+            <span className="text-sm font-semibold">{t("common.add")}</span>
+            <span className="text-xs text-zinc-500 dark:text-zinc-400">
+              {t("dashboard.spaces.newWorkSpace")}
             </span>
           </div>
-        </Card>
+        </button>
 
         {workspaces.length !== 0 &&
           workspaces.map((workspace) => (

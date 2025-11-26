@@ -418,6 +418,16 @@
     "errors": {
       "loadCourses": "حدث خطأ أثناء تحميل الدورات. الرجاء المحاولة لاحقاً."
     },
+    "habits": {
+      "title": "اتخذ خطواتك الأولى لبناء عادة التعلم.",
+      "createWorkspaces": "أنشئ أول 3 مساحات عمل",
+      "createSpaces": "أنشئ 3 مساحات ونظّم مساحات العمل",
+      "createQuizzes": "أنشئ 3 اختبارات وبطاقات تعليمية",
+      "uploadDocument": "ارفع مستندًا واحدًا",
+      "progress": "{{completed}}/{{total}} مكتملة",
+      "error": "تعذر تحميل قائمة مهام التعلم.",
+      "retry": "إعادة المحاولة"
+    },
     "generation": {
       "notifications": {
         "completed": "{{type}} \"{{name}}\" أصبح جاهزًا.",
@@ -431,10 +441,25 @@
         }
       }
     },
+    "streak": {
+      "title": "سلسلة إنجازاتك الحالية",
+      "subtitle": "واصل الزخم",
+      "hours": "ساعات التعلّم",
+      "hoursHelper": "عبر كل نشاطاتك",
+      "totalWorkspaces": "إجمالي مساحات العمل",
+      "totalWorkspacesHelper": "تم إنشاؤها حتى الآن",
+      "totalMaterials": "المواد المُنشأة",
+      "totalMaterialsHelper": "اختبارات، بطاقات، ملخصات",
+      "daysLabel": "سلسلة أيام",
+      "keepGoing": "أنجز شيئًا اليوم لتمديد السلسلة.",
+      "error": "تعذّر تحميل سلسلة الإنجازات.",
+      "retry": "إعادة المحاولة"
+    },
     "spaces": {
       "title": "المساحات",
       "newSpace": "مساحة جديدة",
       "newSpaceHint": "قم بإنشاء مساحة جديدة لتنظيم عملك",
+      "newWorkSpace": "إنشاء مساحة عمل جديدة",
       "defaultName": "مساحة بدون عنوان ({{count}})",
       "deleteSpace": "حذف المساحة",
       "itemCount": "{{count}} عناصر",
