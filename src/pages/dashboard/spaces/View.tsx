@@ -37,6 +37,7 @@ import { formatRelativeDate } from "@/components/utiles";
 import EmojiPicker, { EmojiStyle } from "emoji-picker-react";
 import { createApi } from "unsplash-js";
 import Recent from "../workspaces/Recent";
+import clsx from "clsx";
 
 type UnsplashPhoto = {
   id: string;
@@ -318,7 +319,7 @@ export default function SpaceView() {
   }, [loadUnsplashPhotos, openCoverPicker]);
 
   return (
-    <section className="relative min-h-screen w-full" dir={dir} lang={language}>
+    <section className="relative min-h-screen w-full">
       {/* Cover */}
       <div className="relative h-[200px] sm:h-[240px] md:h-[280px] lg:h-[320px] w-full overflow-hidden">
         {loading ? (
@@ -349,14 +350,14 @@ export default function SpaceView() {
         )}
 
         {/* Floating Cover Toolbar - Fixed z-index */}
-        <div className="absolute inset-x-0 bottom-3 sm:bottom-4 px-3 sm:px-4 z-20">
-          <div
-            className={`mx-auto flex w-full max-w-6xl ${
-              dir === "rtl" ? "justify-start" : "justify-end"
-            }`}
-          >
+        <div
+          className={clsx(
+            "absolute  bottom-3 sm:bottom-4 px-3 sm:px-4 z-20",
+            dir === "rtl" ? "left-0" : "right-0"
+          )}
+        >
+          <div className={`mx-auto flex w-full max-w-6xl`}>
             <div className="flex items-center gap-2">
-              {/* Edit Space */}
               <Dialog open={openEdit} onOpenChange={setOpenEdit}>
                 <DialogTrigger asChild>
                   <Button
@@ -377,10 +378,7 @@ export default function SpaceView() {
                     </span>
                   </Button>
                 </DialogTrigger>
-                <DialogContent
-                  dir={dir}
-                  className="max-h-[90vh] max-w-[95vw] sm:max-w-[500px] overflow-y-auto"
-                >
+                <DialogContent className="max-h-[90vh] max-w-[95vw] sm:max-w-[500px] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>
                       {t(
@@ -404,7 +402,6 @@ export default function SpaceView() {
                       <Input
                         id="spaceName"
                         value={editName}
-                        dir={dir}
                         onChange={(e) => setEditName(e.target.value)}
                         placeholder={t(
                           "dashboard.spaceView.form.namePlaceholder",
@@ -429,7 +426,6 @@ export default function SpaceView() {
                       <Textarea
                         id="spaceDescription"
                         value={editDescription}
-                        dir={dir}
                         onChange={(e) => setEditDescription(e.target.value)}
                         placeholder={t(
                           "dashboard.spaceView.form.descriptionPlaceholder",
@@ -477,7 +473,6 @@ export default function SpaceView() {
                 </DialogContent>
               </Dialog>
 
-              {/* Change Cover */}
               <Dialog open={openCoverPicker} onOpenChange={setOpenCoverPicker}>
                 <DialogTrigger asChild>
                   <Button
@@ -512,10 +507,7 @@ export default function SpaceView() {
                   </Button>
                 </DialogTrigger>
 
-                <DialogContent
-                  dir={dir}
-                  className="max-h-[90vh] max-w-[95vw] sm:max-w-[90vw] lg:max-w-5xl overflow-y-auto"
-                >
+                <DialogContent className="max-h-[90vh] max-w-[95vw] sm:max-w-[90vw] lg:max-w-5xl overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>
                       {t(
@@ -548,9 +540,7 @@ export default function SpaceView() {
                       >
                         <div className="relative flex-1">
                           <Search
-                            className={`pointer-events-none absolute top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 dark:text-zinc-500 ${
-                              dir === "rtl" ? "right-3" : "left-3"
-                            }`}
+                            className={`pointer-events-none absolute top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 dark:text-zinc-500`}
                           />
                           <Input
                             value={unsplashQuery}
@@ -559,9 +549,7 @@ export default function SpaceView() {
                               "dashboard.spaceView.coverPicker.searchPlaceholder",
                               "Search (e.g. study desk, creative workspace…)"
                             )}
-                            className={`border-0 bg-transparent shadow-none focus-visible:ring-0 ${
-                              dir === "rtl" ? "pr-10" : "pl-10"
-                            }`}
+                            className={`border-0 bg-transparent shadow-none focus-visible:ring-0`}
                             aria-label={t("common.search", "Search")}
                           />
                         </div>

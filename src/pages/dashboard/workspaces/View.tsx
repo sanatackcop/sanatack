@@ -791,7 +791,7 @@ const LearnPlayground: React.FC = () => {
                       />
                     </div>
                   </ScrollArea>
-                  <div className="border-t border-zinc-200 dark:border-zinc-800  dark:bg-zinc-900">
+                  <div className="dark:bg-zinc-900">
                     <div className="max-w-4xl mx-auto px-4 md:px-6 py-3 md:py-4">
                       <ChatInput
                         className="w-full"
@@ -998,9 +998,7 @@ const LearnPlayground: React.FC = () => {
             className="h-full"
           >
             {showMobileContent ? (
-              <div className="h-full p-2  dark:bg-zinc-950">
-                {renderContent()}
-              </div>
+              <div className="h-full p-2">{renderContent()}</div>
             ) : (
               renderTabsContent()
             )}
