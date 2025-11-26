@@ -124,26 +124,9 @@ const LearnPlayground: React.FC = () => {
     return () => setTitle("");
   }, [getDisplayTitle, setTitle]);
 
-  const handleShare = useCallback(async () => {
-    const url = `${window.location.origin}/dashboard/learn/workspace/${id}`;
-    try {
-      if (navigator.share) {
-        await navigator.share({ url, title: getDisplayTitle() });
-      } else if (navigator.clipboard) {
-        await navigator.clipboard.writeText(url);
-        toast.success(t("common.copied", { defaultValue: "Copied!" }));
-      }
-    } catch (error) {
-      if (navigator.clipboard) {
-        await navigator.clipboard.writeText(url);
-        toast.success(t("common.copied", { defaultValue: "Copied!" }));
-      } else {
-        toast.error(
-          t("errors.unknownError", { defaultValue: "Failed to share" })
-        );
-      }
-    }
-  }, [getDisplayTitle, id, t]);
+  const handleToggleFullScreen = useCallback(() => {
+    setFullScreen((prev) => !prev);
+  }, []);
 
   const headerContent = useMemo(() => {
     return (
@@ -209,6 +192,7 @@ const LearnPlayground: React.FC = () => {
               <Button
                 variant="outline"
                 size="icon"
+                onClick={handleToggleFullScreen}
                 className="h-9 w-9 rounded-xl border border-zinc-200 dark:border-zinc-700  dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-750"
               >
                 <Scan className="h-4 w-4 text-zinc-600 dark:text-zinc-300" />
@@ -218,7 +202,7 @@ const LearnPlayground: React.FC = () => {
         )}
       </div>
     );
-  }, [state.tab, t, handleShare, fullScreen, isMobile]);
+  }, [state.tab, t, handleToggleFullScreen, isMobile]);
 
   useEffect(() => {
     setTitleContent(headerContent);
@@ -763,7 +747,7 @@ const LearnPlayground: React.FC = () => {
 
   const renderTabsContent = () => {
     return (
-      <div className="h-full flex flex-col  dark:bg-zinc-900">
+      <div className="h-full flex flex-col">
         <Tabs
           value={state.tab}
           onValueChange={(v) => dispatch({ type: "SET_TAB", tab: v as TabKey })}
@@ -791,7 +775,7 @@ const LearnPlayground: React.FC = () => {
                       />
                     </div>
                   </ScrollArea>
-                  <div className="dark:bg-zinc-900">
+                  <div>
                     <div className="max-w-4xl mx-auto px-4 md:px-6 py-3 md:py-4">
                       <ChatInput
                         className="w-full"
@@ -894,7 +878,7 @@ const LearnPlayground: React.FC = () => {
                       workspaceContexts.map((context) => (
                         <div
                           key={context.id}
-                          className="p-4 rounded-lg border border-zinc-200 dark:border-zinc-800  dark:bg-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors"
+                          className="p-4 rounded-lg border border-zinc-200 dark:border-zinc-800  hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors"
                         >
                           <h3 className="font-medium text-zinc-900 dark:text-zinc-100 mb-2 text-sm md:text-base">
                             {context.title || "Untitled Source"}
@@ -924,7 +908,7 @@ const LearnPlayground: React.FC = () => {
   if (workspaceLoading) {
     return (
       <section
-        className="h-[calc(100vh-3rem)] flex items-center justify-center  dark:bg-zinc-950"
+        className="h-[calc(100vh-3rem)] flex items-center justify-center "
         dir={isRTL ? "rtl" : "ltr"}
       >
         <div className="flex flex-col items-center space-y-4">
@@ -939,7 +923,7 @@ const LearnPlayground: React.FC = () => {
 
   if (fullScreen) {
     return (
-      <section className="h-[calc(93vh)]  dark:bg-zinc-950">
+      <section className="h-[calc(93vh)] ">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -955,7 +939,7 @@ const LearnPlayground: React.FC = () => {
   // Mobile Layout: Toggle between content and tabs
   if (isMobile) {
     return (
-      <section className="h-[calc(93vh)] flex flex-col  dark:bg-zinc-950">
+      <section className="h-[calc(93vh)] flex flex-col ">
         {/* Mobile Toggle Bar */}
         <div className="flex items-center justify-center gap-2 p-2 bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
           <Button
@@ -998,7 +982,7 @@ const LearnPlayground: React.FC = () => {
             className="h-full"
           >
             {showMobileContent ? (
-              <div className="h-full p-2">{renderContent()}</div>
+              <div className="h-full p-2 ">{renderContent()}</div>
             ) : (
               renderTabsContent()
             )}
