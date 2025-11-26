@@ -226,7 +226,7 @@ export default function DashboardLayout({
           className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/60 dark:text-emerald-100 dark:hover:bg-emerald-800/80"
           onClick={openUpgrade}
         >
-          {t("common.upgrade", "Upgrade")}
+          {t("upgrade")}
         </Button>
       </div>
     </div>

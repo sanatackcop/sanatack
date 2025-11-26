@@ -2,6 +2,7 @@
   "pageFit": "Page Fit",
   "pageLoadFailed": "Failed to load page {{page}}",
   "welcome": "Welcome",
+  "upgrade": "Upgrade",
   "fileLoadError": "Failed to Load File",
   "retry": "Retry",
   "loadingFile": "Loading File",

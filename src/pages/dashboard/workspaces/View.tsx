@@ -156,7 +156,12 @@ const LearnPlayground: React.FC = () => {
               dispatch({ type: "SET_TAB", tab: v as TabKey })
             }
           >
-            <TabsList className="inline-flex h-9 items-center gap-1.5 rounded-none bg-transparent border-none p-0">
+            <TabsList
+              className={clsx(
+                "inline-flex h-9 items-center gap-1.5 rounded-none bg-transparent border-none p-0",
+                isRTL ? "flex-row-reverse" : ""
+              )}
+            >
               {TABS_CONFIG.map((tab) => {
                 const IconComponent = tab.icon;
                 const isActive = state.tab === tab.id;
@@ -170,9 +175,9 @@ const LearnPlayground: React.FC = () => {
                       "inline-flex items-center justify-center rounded-xl font-medium text-sm transition-all duration-200 flex-shrink-0",
                       "h-9 px-3 gap-2",
                       isActive
-                        ? "bg-[#179E7E] text-white border-2 border-[#58CC02] shadow-sm dark:!text-white"
-                        : "bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700",
-                      "hover:bg-zinc-50 dark:hover:bg-zinc-750",
+                        ? "bg-[#179E7E] !text-white border-2 border-[#58CC02] shadow-sm dark:!text-white"
+                        : " dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700",
+                      "hover:bg-zinc-50 dark:hover:bg-zinc-750 hover:!text-black",
                       "disabled:opacity-40 disabled:cursor-not-allowed"
                     )}
                   >
@@ -204,7 +209,7 @@ const LearnPlayground: React.FC = () => {
               <Button
                 variant="outline"
                 size="icon"
-                className="h-9 w-9 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-750"
+                className="h-9 w-9 rounded-xl border border-zinc-200 dark:border-zinc-700  dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-750"
               >
                 <Scan className="h-4 w-4 text-zinc-600 dark:text-zinc-300" />
               </Button>
@@ -758,7 +763,7 @@ const LearnPlayground: React.FC = () => {
 
   const renderTabsContent = () => {
     return (
-      <div className="h-full flex flex-col bg-white dark:bg-zinc-900">
+      <div className="h-full flex flex-col  dark:bg-zinc-900">
         <Tabs
           value={state.tab}
           onValueChange={(v) => dispatch({ type: "SET_TAB", tab: v as TabKey })}
@@ -786,7 +791,7 @@ const LearnPlayground: React.FC = () => {
                       />
                     </div>
                   </ScrollArea>
-                  <div className="border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+                  <div className="border-t border-zinc-200 dark:border-zinc-800  dark:bg-zinc-900">
                     <div className="max-w-4xl mx-auto px-4 md:px-6 py-3 md:py-4">
                       <ChatInput
                         className="w-full"
@@ -889,7 +894,7 @@ const LearnPlayground: React.FC = () => {
                       workspaceContexts.map((context) => (
                         <div
                           key={context.id}
-                          className="p-4 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors"
+                          className="p-4 rounded-lg border border-zinc-200 dark:border-zinc-800  dark:bg-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors"
                         >
                           <h3 className="font-medium text-zinc-900 dark:text-zinc-100 mb-2 text-sm md:text-base">
                             {context.title || "Untitled Source"}
@@ -919,7 +924,7 @@ const LearnPlayground: React.FC = () => {
   if (workspaceLoading) {
     return (
       <section
-        className="h-[calc(100vh-3rem)] flex items-center justify-center bg-white dark:bg-zinc-950"
+        className="h-[calc(100vh-3rem)] flex items-center justify-center  dark:bg-zinc-950"
         dir={isRTL ? "rtl" : "ltr"}
       >
         <div className="flex flex-col items-center space-y-4">
@@ -934,7 +939,7 @@ const LearnPlayground: React.FC = () => {
 
   if (fullScreen) {
     return (
-      <section className="h-[calc(93vh)] bg-white dark:bg-zinc-950">
+      <section className="h-[calc(93vh)]  dark:bg-zinc-950">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -950,7 +955,7 @@ const LearnPlayground: React.FC = () => {
   // Mobile Layout: Toggle between content and tabs
   if (isMobile) {
     return (
-      <section className="h-[calc(93vh)] flex flex-col bg-white dark:bg-zinc-950">
+      <section className="h-[calc(93vh)] flex flex-col  dark:bg-zinc-950">
         {/* Mobile Toggle Bar */}
         <div className="flex items-center justify-center gap-2 p-2 bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
           <Button
@@ -961,7 +966,7 @@ const LearnPlayground: React.FC = () => {
               "flex-1 h-9",
               showMobileContent
                 ? "bg-[#179E7E] text-white hover:bg-[#15896d]"
-                : "bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700"
+                : " dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700"
             )}
           >
             <ChevronLeft className="h-4 w-4 mr-1" />
@@ -975,7 +980,7 @@ const LearnPlayground: React.FC = () => {
               "flex-1 h-9",
               !showMobileContent
                 ? "bg-[#179E7E] text-white hover:bg-[#15896d]"
-                : "bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700"
+                : " dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700"
             )}
           >
             Tools
@@ -993,7 +998,7 @@ const LearnPlayground: React.FC = () => {
             className="h-full"
           >
             {showMobileContent ? (
-              <div className="h-full p-2 bg-white dark:bg-zinc-950">
+              <div className="h-full p-2  dark:bg-zinc-950">
                 {renderContent()}
               </div>
             ) : (
@@ -1048,7 +1053,7 @@ const LearnPlayground: React.FC = () => {
             animate={{ x: 0, opacity: 1 }}
             transition={{ type: "spring", stiffness: 260, damping: 30 }}
             className="h-full border border-zinc-200 dark:border-zinc-800 rounded-xl mx-2
-             overflow-hidden bg-white dark:bg-zinc-900"
+             overflow-hidden  dark:bg-zinc-900"
           >
             {renderTabsContent()}
           </motion.div>

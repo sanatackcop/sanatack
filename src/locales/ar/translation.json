@@ -1,6 +1,7 @@
 {
   "pageFit": "ملائمة الصفحة",
   "welcome": "مرحبا",
+  "upgrade": "الترقية",
   "pageLoadFailed": "فشل تحميل الصفحة {{page}}",
   "fileLoadError": "فشل تحميل الملف",
   "retry": "إعادة المحاولة",

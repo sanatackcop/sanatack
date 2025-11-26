@@ -332,10 +332,7 @@ export function AppSidebar({
     const finite = rateLimitSummary.usage.filter(
       (item) => typeof item.limit === "number" && item.limit !== null
     );
-    const totalLimit = finite.reduce(
-      (sum, item) => sum + (item.limit ?? 0),
-      0
-    );
+    const totalLimit = finite.reduce((sum, item) => sum + (item.limit ?? 0), 0);
     const totalUsed = finite.reduce(
       (sum, item) => sum + (item.usedCredits ?? 0),
       0
@@ -680,7 +677,9 @@ export function AppSidebar({
               }}
               width={20}
               height={10}
-              className={`h-full cursor-pointer w-auto transition-all object-contain scale-110 pl-2`}
+              className={`h-full cursor-pointer w-auto transition-all object-contain scale-110 ${
+                isRTL ? "pr-2" : "pl-2"
+              }`}
             />
 
             {isMobile && (
