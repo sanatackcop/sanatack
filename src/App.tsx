@@ -7,6 +7,7 @@ import * as pdfjsLib from "pdfjs-dist";
 import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import { Toaster } from "./components/ui/sonner";
 import { useSettings } from "./context/SettingsContexts";
+import { PageTitleProvider } from "./context/PageTitleContext";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
 
@@ -18,9 +19,11 @@ function App({ switch_dashboard }: { switch_dashboard: DASHBOARDTYPE }) {
     <div className="min-h-screen bg-white dark:bg-black" dir={i18n.dir()}>
       <div className="relative min-h-screen">
         <UserContextProvider>
-          <ErrorBoundary>
-            <Router switch_dashboard={switch_dashboard} />
-          </ErrorBoundary>
+          <PageTitleProvider>
+            <ErrorBoundary>
+              <Router switch_dashboard={switch_dashboard} />
+            </ErrorBoundary>
+          </PageTitleProvider>
         </UserContextProvider>
 
         <Toaster

@@ -118,11 +118,11 @@ export default function LearningDashboard() {
 
   return (
     <>
-      <section className="p-5 px-28 py-20">
+      <section className="p-5 px-6 sm:px-10 md:px-16 lg:px-28">
         <h2
           className={`text-2xl font-medium text-zinc-900 dark:text-zinc-100 mb-5`}
         >
-          Welcome, {auth.user.firstName}!
+          {t("welcome")} {auth.user.firstName}!
         </h2>
 
         <div className="mb-10 grid gap-6 xl:grid-cols-[1.4fr,1fr]">
@@ -264,15 +264,15 @@ export default function LearningDashboard() {
                   </div>
                 </div>
 
-                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-                  <MetricTile
+                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-1">
+                  {/* <MetricTile
                     label={t("dashboard.streak.hours", "Hours learned")}
                     value={report?.totalHours ?? 0}
                     helper={t(
                       "dashboard.streak.hoursHelper",
                       "Across all activity"
                     )}
-                  />
+                  /> */}
                   <MetricTile
                     label={t(
                       "dashboard.streak.totalWorkspaces",
@@ -284,7 +284,7 @@ export default function LearningDashboard() {
                       "Created so far"
                     )}
                   />
-                  <MetricTile
+                  {/* <MetricTile
                     label={t(
                       "dashboard.streak.totalMaterials",
                       "Materials generated"
@@ -294,7 +294,7 @@ export default function LearningDashboard() {
                       "dashboard.streak.totalMaterialsHelper",
                       "Quizzes, cards, summaries"
                     )}
-                  />
+                  /> */}
                 </div>
               </>
             )}

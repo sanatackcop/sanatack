@@ -289,6 +289,24 @@ export const getAllSpacesApi = async (): Promise<{ data: Space[] }> => {
   }
 };
 
+export const searchSpacesApi = async (
+  query: string
+): Promise<{ data: Space[] }> => {
+  try {
+    const response = await trackPromise(
+      Api({
+        method: "get",
+        url: "spaces/",
+        params: { search: query },
+      }) as Promise<{ data: Space[] }>
+    );
+    return response.data as any;
+  } catch (e: any) {
+    console.error("getAllCoursesApi error:", e);
+    throw e;
+  }
+};
+
 export const createSpacesApi = async ({
   name,
   description,
