@@ -827,16 +827,20 @@ const LearnPlayground: React.FC = () => {
           {/* Summary Tab */}
           {state.tab === "summary" && (
             <TabsContent value="summary" className="flex-1 m-0 h-full">
-              <SummaryList
-                workspaceId={String(workspace && workspace.id) || ""}
-              />
+              <ScrollArea className="h-full">
+                <SummaryList
+                  workspaceId={String(workspace && workspace.id) || ""}
+                />
+              </ScrollArea>
             </TabsContent>
           )}
 
           {/* Deep Explanation Tab */}
           {state.tab === "deepExplanation" && (
             <TabsContent value="deepExplanation" className="flex-1 m-0 h-full">
-              <MindMap workspaceId={(workspace && workspace.id) || ""} />
+              <ScrollArea className="h-full">
+                <MindMap workspaceId={(workspace && workspace.id) || ""} />
+              </ScrollArea>
             </TabsContent>
           )}
 
