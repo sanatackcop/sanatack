@@ -246,7 +246,7 @@ export function AppSidebar({
   };
 
   const [openSerach, setOpenSearch] = useState(false);
-  const openSearchCommand = () => setOpenSearch(!openSerach);
+  const openSearchCommand = () => setOpenSearch(true);
 
   const topItemGroups: MenuGroup[] = useMemo(
     () => [
@@ -261,9 +261,8 @@ export function AppSidebar({
           },
           {
             title: t("common.search"),
-            url: "/dashboard/search",
+            url: "#search",
             icon: Search,
-            comingSoon: true,
             onClick: openSearchCommand,
           },
           {
@@ -470,13 +469,17 @@ export function AppSidebar({
     const currentPathname = location.pathname;
     const isActive = item.url === currentPathname;
 
-    const onClick = item.onClick
-      ? item.onClick
-      : (e: any) => {
-          if (item.comingSoon) {
-            e.preventDefault();
-          }
-        };
+    const onClick = (e: any) => {
+      if (item.onClick) {
+        e.preventDefault();
+        e.stopPropagation();
+        item.onClick();
+        return;
+      }
+      if (item.comingSoon) {
+        e.preventDefault();
+      }
+    };
 
     const to = !item.onClick ? (item.comingSoon ? "#" : item.url) : "#";
     const content = (
@@ -658,7 +661,18 @@ export function AppSidebar({
 
   const SidebarContent = () => (
     <>
-      <SearchCommand open={openSerach} setOpen={setOpenSearch} />
+      <SearchCommand
+        open={openSerach}
+        setOpen={setOpenSearch}
+        spaces={spaces}
+        workspaces={(workspaces as any) ?? []}
+        onNavigate={(path) => {
+          navigate(path);
+          if (isMobile) {
+            setIsMobileMenuOpen(false);
+          }
+        }}
+      />
       <div className="flex flex-col h-full py-2 pl-3 pr-2">
         <div className="flex items-center justify-between mb-2">
           <div

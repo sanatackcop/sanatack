@@ -279,13 +279,20 @@ export const getWorkSpace = async (id: string) => {
   }
 };
 
-export const getAllWorkSpace = async ({ spaceId }: { spaceId?: string }) => {
+export const getAllWorkSpace = async ({
+  spaceId,
+  search,
+}: {
+  spaceId?: string;
+  search?: string;
+}) => {
   try {
     const response = await Api({
       method: API_METHODS.GET,
       url: `study-ai/workspaces`,
       params: {
         space_id: spaceId,
+        ...(search ? { search } : {}),
       },
     });
 

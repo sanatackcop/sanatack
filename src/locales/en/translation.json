@@ -376,6 +376,25 @@
       "unlimited": "Unlimited"
     }
   },
+  "searchDialog": {
+    "title": "Search",
+    "placeholder": "Search spaces or workspaces...",
+    "subtitle": "Jump to a space or workspace without leaving the sidebar.",
+    "loading": "Searching...",
+    "empty": "No matches yet. Try another keyword.",
+    "suggestion": "Start typing to search across spaces and workspaces.",
+    "error": "Unable to search right now. Showing recent items instead.",
+    "groups": {
+      "workspaces": "Workspaces",
+      "spaces": "Spaces"
+    },
+    "labels": {
+      "workspace": "Workspace",
+      "space": "Space",
+      "video": "Video",
+      "document": "Document"
+    }
+  },
   "languages": {
     "ar": "العربية",
     "en": "English",
