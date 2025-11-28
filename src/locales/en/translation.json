@@ -1185,6 +1185,7 @@
       "subtitle": "Join Sanatack to unlock personalised learning.",
       "submitButton": "Create account",
       "hasAccount": "Already have an account?",
+      "signUpTermsCond": "By signing up, you agree to our Terms & Conditions.",
       "signIn": "Sign in",
       "googleButton": "Sign up with Google",
       "success": "Account created successfully"

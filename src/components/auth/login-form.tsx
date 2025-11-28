@@ -92,6 +92,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ useSignup = false }) => {
           subtitle: t("auth.signup.subtitle"),
           primaryCta: t("auth.signup.submitButton"),
           switchPrompt: t("auth.signup.hasAccount"),
+          signUpTermsCond: t("auth.signup.signUpTermsCond"),
           switchAction: t("auth.signup.signIn"),
           switchHref: "/login",
           googleCta: t("auth.signup.googleButton"),
@@ -479,6 +480,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ useSignup = false }) => {
         >
           {copy.switchAction}
         </Link>
+        <p className="text-xs text-zinc-500 mt-2">{copy.signUpTermsCond}</p>
       </div>
     </div>
   );
