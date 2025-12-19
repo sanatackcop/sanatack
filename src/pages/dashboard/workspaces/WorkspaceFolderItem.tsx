@@ -29,9 +29,9 @@ import {
   linkWorkspaceToSpace,
   unlinkWorkspaceFromSpace,
 } from "@/utils/_apis/courses-apis";
-import { formatRelativeDate } from "@/components/utiles";
 import { Workspace } from "@/lib/types";
 import { getErrorMessage } from "../utils";
+import { formatRelativeDate } from "@/lib/utils";
 
 type WorkspaceFolderItemProps = {
   workspace: Workspace;

@@ -1,46 +1,5 @@
-import {
-  Triangle,
-  Signal,
-  Mountain,
-  Code2,
-  Brain,
-  Database,
-  FileText,
-  Play,
-  Files,
-  AppWindow,
-  Code,
-  Server,
-} from "lucide-react";
-import { LevelEnum } from "@/types/courses";
+import { FileText, Play, Files, Code, Server } from "lucide-react";
 import { JSX } from "react";
-
-const levelIcons: Record<LevelEnum, JSX.Element> = {
-  [LevelEnum.BEGINNER]: <Triangle className="h-3 w-3 text-yellow-500 mx-1" />,
-  [LevelEnum.INTERMEDIATE]: <Signal className="h-3 w-3 text-yellow-500 mx-1" />,
-  [LevelEnum.ADVANCED]: <Mountain className="h-3 w-3 text-yellow-500 mx-1" />,
-};
-
-export const getLevelIcon = (level: LevelEnum) => {
-  return (
-    levelIcons[level] || <AppWindow className="h-3 w-3 text-yellow-500 mx-1" />
-  );
-};
-
-const courseTypeIcons: Record<string, JSX.Element> = {
-  frontend: <Code2 className="h-4 w-4 text-blue-500 mx-1" />,
-  backend: <Database className="h-4 w-4 text-blue-500 mx-1" />,
-  ai: <Brain className="h-4 w-4 text-blue-500 mx-1" />,
-};
-
-export const getCourseTypeIcon = (type: string) => {
-  if (!type) return;
-  return (
-    courseTypeIcons[type.toLowerCase()] || (
-      <Code2 className="h-4 w-4 text-blue-400 mx-1" />
-    )
-  );
-};
 
 interface CareerIconProps {
   title: string;

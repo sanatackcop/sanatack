@@ -5,9 +5,6 @@ type PageTitleContextValue = {
   setTitle: (value: string) => void;
   titleContent: ReactNode | null;
   setTitleContent: (value: ReactNode | null) => void;
-  openUpgrade: () => void;
-  closeUpgrade: () => void;
-  isUpgradeOpen: boolean;
 };
 
 const PageTitleContext = createContext<PageTitleContextValue | undefined>(

@@ -10,7 +10,7 @@ interface Feature {
   boldKeys?: string[];
 }
 
-interface Plan {
+export interface Plan {
   nameKey: string;
   yearlyPriceUSD: number | string;
   monthlyPriceUSD: number | string;
@@ -21,6 +21,7 @@ interface Plan {
   isPopular?: boolean;
   features: Feature[];
   buttonTextKey: string;
+  plan_type: "free" | "pro";
   buttonVariant: "outline" | "primary";
 }
 
@@ -78,6 +79,79 @@ function AnimatedPrice({
   );
 }
 
+export const plans: Plan[] = [
+  {
+    nameKey: "pricing.free.name",
+    yearlyPriceUSD: 0,
+    monthlyPriceUSD: 0,
+    periodKey: "pricing.free.period",
+    descriptionKey: "pricing.free.description",
+    billingToggle: false,
+    features: [
+      { key: "pricing.free.features.uploads" },
+      {
+        key: "pricing.free.features.aiChats",
+        boldKeys: ["pricing.free.features.learnPlus"],
+      },
+      { key: "pricing.free.features.quizAnswers" },
+      { key: "pricing.free.features.practiceExams" },
+      { key: "pricing.free.features.podcast" },
+      {
+        key: "pricing.free.features.uploadFiles",
+        boldKeys: ["pricing.free.features.pages", "pricing.free.features.size"],
+      },
+    ],
+    buttonTextKey: "pricing.free.button",
+    buttonVariant: "outline",
+    plan_type: "free",
+  },
+  {
+    nameKey: "pricing.pro.name",
+    yearlyPriceUSD: 10.99,
+    monthlyPriceUSD: 15.99,
+    periodKey: "pricing.pro.period",
+    subtitleKey: "pricing.pro.subtitle",
+    descriptionKey: "pricing.pro.description",
+    billingToggle: true,
+    isPopular: true,
+    features: [
+      {
+        key: "pricing.pro.features.unlimitedUploads",
+        boldKeys: ["pricing.pro.features.unlimited"],
+      },
+      {
+        key: "pricing.pro.features.unlimitedAI",
+        boldKeys: [
+          "pricing.pro.features.unlimitedText",
+          "pricing.pro.features.aiLimit",
+        ],
+      },
+      {
+        key: "pricing.pro.features.unlimitedQuiz",
+        boldKeys: ["pricing.pro.features.unlimitedText"],
+      },
+      {
+        key: "pricing.pro.features.unlimitedExams",
+        boldKeys: ["pricing.pro.features.unlimitedText"],
+      },
+      {
+        key: "pricing.pro.features.podcasts",
+        boldKeys: ["pricing.pro.features.podcastCount"],
+      },
+      {
+        key: "pricing.pro.features.uploadFilesLarge",
+        boldKeys: [
+          "pricing.pro.features.pagesLarge",
+          "pricing.pro.features.sizeLarge",
+        ],
+      },
+    ],
+    buttonTextKey: "pricing.pro.button",
+    buttonVariant: "primary",
+    plan_type: "pro",
+  },
+];
+
 export function Pricing() {
   const { t } = useTranslation();
   const { isRTL } = useLocaleDirection();
@@ -86,80 +160,6 @@ export function Pricing() {
   const [currency, setCurrency] = useState<"SAR" | "USD">("SAR");
 
   const USD_TO_SAR = 3.75;
-
-  const plans: Plan[] = [
-    {
-      nameKey: "pricing.free.name",
-      yearlyPriceUSD: 0,
-      monthlyPriceUSD: 0,
-      periodKey: "pricing.free.period",
-      descriptionKey: "pricing.free.description",
-      billingToggle: false,
-      features: [
-        { key: "pricing.free.features.uploads" },
-        {
-          key: "pricing.free.features.aiChats",
-          boldKeys: ["pricing.free.features.learnPlus"],
-        },
-        { key: "pricing.free.features.quizAnswers" },
-        { key: "pricing.free.features.practiceExams" },
-        { key: "pricing.free.features.podcast" },
-        {
-          key: "pricing.free.features.uploadFiles",
-          boldKeys: [
-            "pricing.free.features.pages",
-            "pricing.free.features.size",
-          ],
-        },
-      ],
-      buttonTextKey: "pricing.free.button",
-      buttonVariant: "outline",
-    },
-    {
-      nameKey: "pricing.pro.name",
-      yearlyPriceUSD: 10.99,
-      monthlyPriceUSD: 15.99,
-      periodKey: "pricing.pro.period",
-      subtitleKey: "pricing.pro.subtitle",
-      descriptionKey: "pricing.pro.description",
-      billingToggle: true,
-      isPopular: true,
-      features: [
-        {
-          key: "pricing.pro.features.unlimitedUploads",
-          boldKeys: ["pricing.pro.features.unlimited"],
-        },
-        {
-          key: "pricing.pro.features.unlimitedAI",
-          boldKeys: [
-            "pricing.pro.features.unlimitedText",
-            "pricing.pro.features.aiLimit",
-          ],
-        },
-        {
-          key: "pricing.pro.features.unlimitedQuiz",
-          boldKeys: ["pricing.pro.features.unlimitedText"],
-        },
-        {
-          key: "pricing.pro.features.unlimitedExams",
-          boldKeys: ["pricing.pro.features.unlimitedText"],
-        },
-        {
-          key: "pricing.pro.features.podcasts",
-          boldKeys: ["pricing.pro.features.podcastCount"],
-        },
-        {
-          key: "pricing.pro.features.uploadFilesLarge",
-          boldKeys: [
-            "pricing.pro.features.pagesLarge",
-            "pricing.pro.features.sizeLarge",
-          ],
-        },
-      ],
-      buttonTextKey: "pricing.pro.button",
-      buttonVariant: "primary",
-    },
-  ];
 
   const getPrice = (plan: Plan) => {
     const priceInUSD = isYearly ? plan.yearlyPriceUSD : plan.monthlyPriceUSD;

@@ -18,17 +18,23 @@ import UsagePage from "@/admin/pages/usage.page";
 import TermsAndConditions from "@/landingpage/TermsAndConditions";
 import PrivacyPolicy from "@/landingpage/PrivacyPolicy";
 import ContactUs from "@/landingpage/ContactUs";
+import PaymentCallback from "@/pages/payment/callback/PaymentCallback";
+import { ForgotPassword } from "@/pages/auth/login/ForgotPassword";
 
 const publicRoutes = [
   { path: "/", element: <HomePAGE /> },
   { path: "/terms", element: <TermsAndConditions /> },
   { path: "/privacy", element: <PrivacyPolicy /> },
   { path: "/login", element: <LoginPage /> },
+  { path: "/forgot-password", element: <ForgotPassword /> },
   { path: "/contact", element: <ContactUs /> },
   { path: "/signup", element: <SingupPage /> },
 ];
 
-const privateRoutes = [{ path: "/dashboard/*", element: <MainDashboard /> }];
+const privateRoutes = [
+  { path: "/dashboard/*", element: <MainDashboard /> },
+  { path: "/payment/callback", element: <PaymentCallback /> },
+];
 const adminRoutes = [
   {
     path: "/",

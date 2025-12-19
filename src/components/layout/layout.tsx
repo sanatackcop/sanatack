@@ -16,13 +16,8 @@ import { usePageTitle } from "@/context/PageTitleContext";
 import { useSettings } from "@/context/SettingsContexts";
 import LogoLight from "@/assets/logo.svg";
 import LogoDark from "@/assets/dark_logo.svg";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import UpgradeModal from "@/shared/workspaces/modals/UpgradeModal";
+import { useUserContext } from "@/context/UserContext";
 
 const CONFIG = {
   AUTO_COLLAPSE_THRESHOLD: 10,
@@ -42,10 +37,10 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const { darkMode } = useSettings();
-  const { title, titleContent, isUpgradeOpen, openUpgrade, closeUpgrade } =
-    usePageTitle();
+  const { title, titleContent } = usePageTitle();
+  const userContext = useUserContext();
   const [sidebarRefreshers, setSidebarRefreshers] =
     React.useState<SidebarRefreshContextValue>({
       refreshWorkspace: async () => {},
@@ -220,15 +215,11 @@ export default function DashboardLayout({
         {titleContent && <div className="flex-1 min-w-0">{titleContent}</div>}
       </div>
 
-      <div className={`ml-auto ${isRTL ? "mr-auto ml-0" : ""}`}>
-        <Button
-          variant="secondary"
-          className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/60 dark:text-emerald-100 dark:hover:bg-emerald-800/80"
-          onClick={openUpgrade}
-        >
-          {t("upgrade")}
-        </Button>
-      </div>
+      {!userContext?.isPro() && (
+        <div className={`ml-auto ${isRTL ? "mr-auto ml-0" : ""}`}>
+          <UpgradeModal />
+        </div>
+      )}
     </div>
   );
 
@@ -338,22 +329,6 @@ export default function DashboardLayout({
           )}
         </div>
       </SidebarProvider>
-      <Dialog
-        open={isUpgradeOpen}
-        onOpenChange={(open) => (open ? openUpgrade() : closeUpgrade())}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t("common.upgrade", "Upgrade")}</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-zinc-600 dark:text-zinc-300">
-            {t(
-              "common.upgradePrompt",
-              "Unlock premium features and supercharge your learning."
-            )}
-          </p>
-        </DialogContent>
-      </Dialog>
     </SidebarRefreshProvider>
   );
 }

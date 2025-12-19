@@ -56,7 +56,7 @@ const variantClasses: Record<ModalVariant, string> = {
  * - Supports title, description, variants, loading, and disabling backdrop close.
  * - Place arbitrary JSX in the body via `children`.
  */
-export const Modal: React.FC<ModalProps> = ({
+const Modal: React.FC<ModalProps> = ({
   open,
   onOpenChange,
   title,
@@ -114,25 +114,27 @@ export const Modal: React.FC<ModalProps> = ({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent
         dir={dir}
-        className={cn(
-          "sm:max-w-lg",
-          dir === "rtl" && "text-right",
-          className
-        )}
+        className={cn("sm:max-w-lg", dir === "rtl" && "text-right", className)}
         onInteractOutside={preventIfDisabled}
         onEscapeKeyDown={preventIfDisabled}
       >
         <DialogHeader>
           {title ? (
             <DialogTitle
-              className={cn("text-xl font-semibold text-gray-900 dark:text-white", dir === "rtl" && "text-right")}
+              className={cn(
+                "text-xl font-semibold text-gray-900 dark:text-white",
+                dir === "rtl" && "text-right"
+              )}
             >
               {title}
             </DialogTitle>
           ) : null}
           {description ? (
             <DialogDescription
-              className={cn("text-gray-600 text-sm", dir === "rtl" && "text-right")}
+              className={cn(
+                "text-gray-600 text-sm",
+                dir === "rtl" && "text-right"
+              )}
             >
               {description}
             </DialogDescription>

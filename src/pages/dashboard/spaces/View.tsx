@@ -33,11 +33,11 @@ import {
 import { useParams } from "react-router-dom";
 import { getSingleSpaceApi, updateSpaceApi } from "@/utils/_apis/courses-apis";
 import { Space } from "@/types/courses";
-import { formatRelativeDate } from "@/components/utiles";
 import EmojiPicker, { EmojiStyle } from "emoji-picker-react";
 import { createApi } from "unsplash-js";
-import Recent from "../workspaces/Recent";
 import clsx from "clsx";
+import { formatRelativeDate } from "@/lib/utils";
+import WorkspacesList from "../workspaces/WorkspacesList.";
 
 type UnsplashPhoto = {
   id: string;
@@ -119,6 +119,10 @@ export default function SpaceView() {
   useEffect(() => {
     fetchSpace();
   }, [fetchSpace]);
+
+  const refreshComponent = () => {
+    fetchSpace();
+  };
 
   const handleIconUpdate = async (emoji: string) => {
     if (!space) return;
@@ -803,7 +807,10 @@ export default function SpaceView() {
           </Button>
         </div>
 
-        <Recent spaceId={space?.id} />
+        <WorkspacesList
+          refreshParentComponent={refreshComponent}
+          workspaces={space?.workspaces ?? []}
+        />
       </div>
     </section>
   );

@@ -8,12 +8,14 @@ import {
   useContext,
 } from "react";
 import Storage from "@/lib/Storage";
+import { registerLogout } from "@/utils/_apis/api";
 interface User {
   id: string;
   email: string;
   mobile: string;
   firstName: string;
   lastName: string;
+  is_pro: boolean;
   avatar?: string;
   isVerify?: boolean;
 }
@@ -35,6 +37,7 @@ const initialUserState: User = {
   lastName: "",
   mobile: "",
   email: "",
+  is_pro: false,
   isVerify: false,
 };
 
@@ -53,12 +56,14 @@ type LoginPayload = {
   refresh_token: string;
   type: ContextType;
   role: "admin" | "student";
+  is_pro: boolean;
 };
 
 export type UserContextType = {
   isLoggedIn: () => boolean;
   logout: () => void;
   login: (payload: LoginPayload) => void;
+  isPro(): boolean;
   auth: Auth;
 };
 
@@ -140,7 +145,7 @@ export const UserContextProvider: FC<Props> = ({ children }: Props) => {
     window.location.replace("/");
   };
 
-  const login = ({ user, type, role, refresh_token }: LoginPayload) => {
+  const login = ({ user, type, role, refresh_token, is_pro }: LoginPayload) => {
     try {
       const decodedAuth = decodeJWT(user, type, role);
       const payloadUser: any = decodedAuth?.user || {};
@@ -170,6 +175,7 @@ export const UserContextProvider: FC<Props> = ({ children }: Props) => {
         lastName: derivedLastName,
         mobile: payloadUser.mobile || payloadUser.phone_number || "",
         avatar: payloadUser.avatar || payloadUser.picture || "",
+        is_pro,
         isVerify:
           payloadUser.isVerify ||
           payloadUser.email_verified ||
@@ -186,6 +192,7 @@ export const UserContextProvider: FC<Props> = ({ children }: Props) => {
         role: role || "student",
         type: type as ContextType,
       });
+      Storage.set("is_pro", is_pro);
 
       setAuth({
         user: normalizedUser,
@@ -199,9 +206,17 @@ export const UserContextProvider: FC<Props> = ({ children }: Props) => {
     }
   };
 
+  const isPro = (): boolean => {
+    return auth?.user?.is_pro || Storage.get("is_pro") === "true" || false;
+  };
+
   useEffect(() => {
     getAuth();
   }, [refreshAccess]);
+
+  useEffect(() => {
+    registerLogout(logout);
+  }, []);
 
   return (
     <UserContext.Provider
@@ -210,6 +225,7 @@ export const UserContextProvider: FC<Props> = ({ children }: Props) => {
         auth,
         logout,
         login,
+        isPro,
       }}
     >
       {children}

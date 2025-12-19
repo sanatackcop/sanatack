@@ -209,7 +209,6 @@ export default function LearningDashboard() {
               )}
             </div>
           </div>
-
           <div className="relative overflow-hidden rounded-2xl border border-zinc-200 bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 p-6 text-white shadow-lg dark:border-emerald-800/60">
             <div className="absolute right-6 top-6 h-20 w-20 rounded-full bg-white/10 blur-2xl" />
             <div className="flex items-start justify-between">

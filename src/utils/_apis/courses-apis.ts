@@ -1,16 +1,14 @@
-/* eslint-disable no-unused-vars */
 import { trackPromise } from "react-promise-tracker";
 import Api from "./api";
 import {
   CareerPathInterface,
   CourseDetails,
-  CoursesReport,
   RoadMapInterface,
   PatchCourseProgressParams,
   CodeExecutionResponse,
   CodeCheckResponse,
   Space,
-} from "@/types/courses"; /*  */
+} from "@/types/courses";
 import { CoursesContext } from "../types";
 
 export const getCareerPathApi = async (): Promise<CareerPathInterface[]> => {
@@ -60,25 +58,6 @@ export const getRoadMapApi = async (): Promise<RoadMapInterface[]> => {
     return response.data;
   } catch (e: any) {
     console.error("getRoadMapApi error:", e);
-    throw e;
-  }
-};
-export const getSingleRoadMapApi = async ({
-  RoadMapId,
-}: {
-  RoadMapId: string;
-}): Promise<RoadMapInterface> => {
-  try {
-    const response = await trackPromise(
-      Api({
-        method: "get",
-        url: `/courses/roadmap/${RoadMapId}`,
-        withCredentials: false,
-      }) as Promise<{ data: RoadMapInterface }>
-    );
-    return response.data;
-  } catch (e: any) {
-    console.error("getSingleRoadMapApi error:", e);
     throw e;
   }
 };
@@ -133,24 +112,6 @@ export const enrollCoursesApi = async ({ courseId }: { courseId: string }) => {
     throw e;
   }
 };
-export const enrollRoadMapApi = async ({
-  RoadMapId,
-}: {
-  RoadMapId: string;
-}) => {
-  try {
-    const response = await Api({
-      method: "post",
-      url: `courses/enroll/roadmap/${RoadMapId}`,
-      withCredentials: false,
-    });
-
-    return response;
-  } catch (e: any) {
-    console.error("enrollRoadMapApi error:", e.message);
-    throw e;
-  }
-};
 
 export const enrollCareerPathApi = async ({
   careerPathId,
@@ -167,22 +128,6 @@ export const enrollCareerPathApi = async ({
     return response;
   } catch (e: any) {
     console.error("enrollCareerPathApi error:", e.message);
-    throw e;
-  }
-};
-
-export const getCourseReportApi = async (): Promise<CoursesReport> => {
-  try {
-    const response = await trackPromise(
-      Api({
-        method: "get",
-        url: "courses/report",
-        withCredentials: false,
-      }) as Promise<{ data: CoursesReport }>
-    );
-    return response.data;
-  } catch (e: any) {
-    console.error("getCourseReportApi error:", e);
     throw e;
   }
 };
@@ -247,24 +192,6 @@ export const codeCheckApi = async (data: {
       url: `courses/code/check`,
       withCredentials: false,
       data,
-    });
-
-    return response.data;
-  } catch (e: any) {
-    console.error("codeCheckApi error:", e.message);
-    throw e;
-  }
-};
-
-export const aiCourseGenerator = async (
-  payload: any
-): Promise<CodeCheckResponse> => {
-  try {
-    const response = await Api<CodeCheckResponse>({
-      method: "post",
-      url: `courses/aicourses`,
-      withCredentials: false,
-      data: payload,
     });
 
     return response.data;

@@ -18,7 +18,7 @@ interface Options<T extends BaseItem> {
 
 const CLEANUP_DELAY_MS = 5_000;
 
-export function useGenerationNotifications<T extends BaseItem>(
+function useGenerationNotifications<T extends BaseItem>(
   items: T[] | undefined,
   options: Options<T>
 ) {
@@ -53,9 +53,12 @@ export function useGenerationNotifications<T extends BaseItem>(
       return;
     }
 
-    const typeLabel = t(`dashboard.generation.notifications.types.${options.entity}`, {
-      defaultValue: options.entity,
-    });
+    const typeLabel = t(
+      `dashboard.generation.notifications.types.${options.entity}`,
+      {
+        defaultValue: options.entity,
+      }
+    );
     const fallbackName = t(
       "dashboard.generation.notifications.untitled",
       "Untitled"
@@ -92,8 +95,7 @@ export function useGenerationNotifications<T extends BaseItem>(
           t("dashboard.generation.notifications.failed", {
             type: typeLabel,
             name,
-          }) +
-            (item.failureReason ? ` • ${item.failureReason}` : ""),
+          }) + (item.failureReason ? ` • ${item.failureReason}` : ""),
           { closeButton: true }
         );
       }
