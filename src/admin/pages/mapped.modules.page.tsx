@@ -33,7 +33,6 @@ export default function MappedModules() {
   useEffect(() => {
     fetchLessons();
   }, []);
-  console.log({ mappedModules });
   const LinkedLessonColumns: ColumnDef<MappedModule>[] = [
     {
       accessorKey: "module.title",

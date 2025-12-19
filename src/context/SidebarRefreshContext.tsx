@@ -20,5 +20,3 @@ export const useSidebarRefresh = () => {
   }
   return context;
 };
-
-export { SidebarRefreshContext };

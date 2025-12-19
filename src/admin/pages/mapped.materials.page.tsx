@@ -40,8 +40,6 @@ export default function MappedMaterials() {
         id
       );
 
-      console.log(linkedMaterials);
-
       if (linkedMaterials) {
         if (linkedMaterials.quiz_groups)
           setQuizGroup(linkedMaterials.quiz_groups);

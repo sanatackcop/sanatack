@@ -39,7 +39,11 @@ export type LoginResult = {
   user: string;
   type: ContextType;
   role: "admin" | "student";
+  is_pro: boolean;
   refresh_token: string;
+  accessToken?: string;
+  refreshToken?: string;
+  message?: string;
 };
 
 export type FirebaseSignInPayload = {
@@ -113,7 +117,7 @@ export const signupApi = async ({
             password,
             firstName: first_name.toLowerCase(),
             lastName: last_name.toLowerCase(),
-            phone,
+            ...(phone ? { phone } : {}),
           },
           interests,
           userType,
@@ -139,7 +143,7 @@ export const verifyOtpApi = async (otp: string, email: string) => {
         },
       })
     );
-    return response.data;
+    return response.data as unknown as LoginResult;
   } catch (e: any) {
     console.log("login error", { e });
     throw e;

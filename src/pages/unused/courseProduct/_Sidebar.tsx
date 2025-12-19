@@ -38,8 +38,7 @@ const iconMap: Record<MaterialType, React.FC<any>> = {
   [MaterialType.QUIZ_GROUP]: PenTool,
 };
 
-export const getIcon = (type: MaterialContext["type"]) =>
-  iconMap[type] ?? FileText;
+const getIcon = (type: MaterialContext["type"]) => iconMap[type] ?? FileText;
 
 export const SideNavbar: React.FC<SideNavbarProps> = ({
   sidebarOpen,

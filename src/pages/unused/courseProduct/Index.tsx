@@ -10,7 +10,7 @@ import { MaterialType } from "@/utils/types/adminTypes";
 import { useCourseData } from "@/hooks/useCourseData";
 import { CourseDetailsContext } from "@/types/courses";
 
-export const CoursePlayground: React.FC = () => {
+const CoursePlayground: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [expandedModules, setExpandedModules] = useState<string[]>(["basics"]);
   const { id } = useParams();

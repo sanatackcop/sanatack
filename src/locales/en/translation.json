@@ -1022,7 +1022,8 @@
   },
   "workspace": {
     "untitled": "Untitled",
-    "fullScreen": "Full Screen"
+    "fullScreen": "Full Screen",
+    "comingSoon": "Coming soon"
   },
   "codeRunner": {
     "title": "Code Playground",
@@ -1056,9 +1057,6 @@
       "uploading": "Uploading…",
       "failed": "Failed to upload"
     }
-  },
-  "workspace": {
-    "comingSoon": "Coming soon"
   },
   "modals": {
     "addContent": {
@@ -1190,10 +1188,21 @@
       "googleButton": "Sign up with Google",
       "success": "Account created successfully"
     },
+    "forgot": {
+      "title": "Forgot your password?",
+      "subtitle": "Enter your email and we’ll send you a one-time code.",
+      "submit": "Send OTP",
+      "successToast": "OTP sent successfully",
+      "successMessage": "If the email exists, an OTP has been sent.",
+      "continue": "Continue to reset password",
+      "backToLogin": "Back to login"
+    },
     "divider": "Or continue with email",
     "comingSoon": "Coming soon",
     "loading": "Processing...",
     "fields": {
+      "firstName": "First Name",
+      "lastName": "Last Name",
       "email": "Email",
       "password": "Password",
       "confirmPassword": "Confirm password"
@@ -1204,6 +1213,8 @@
       "confirmPassword": "Re-enter your password"
     },
     "validation": {
+      "firstNameRequired": "First Name is Required",
+      "lastNameRequired": "Last Name is Required",
       "emailRequired": "Email is required",
       "emailInvalid": "Enter a valid email address",
       "passwordRequired": "Password is required",
@@ -1218,6 +1229,7 @@
       "unexpectedError": "An unexpected error occurred. Please try again.",
       "noEmail": "We couldn't retrieve your email from Google.",
       "googleUnexpected": "Google sign in failed. Please try again.",
+      "emailNotFound": "Email Not Found",
       "firebase": {
         "popup-closed-by-user": "The sign in window was closed before we could finish.",
         "popup-blocked": "Your browser blocked the sign in window. Please allow popups and try again.",
@@ -1273,5 +1285,13 @@
     "continue": "Continue",
     "submitting": "Submitting...",
     "submitQuiz": "Submit quiz"
+  },
+  "payment": {
+    "upgrade": "Upgrade",
+    "step": "Step",
+    "upgradePrompt": "Choose the plan that fits your learning goals",
+    "paymentPrompt": "Complete your secure payment to activate your subscription.",
+    "completePayment": "Complete your payment",
+    "secureSubscription": "Secure subscription payment"
   }
 }

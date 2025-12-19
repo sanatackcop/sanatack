@@ -22,7 +22,7 @@ const extractQuestions = (payload: any): Question[] => {
   return [];
 };
 
-export const normalizeQuizPayload = (
+const normalizeQuizPayload = (
   rawPayload: any,
   context: {
     passingScore?: number | null;
@@ -138,9 +138,8 @@ export const normalizeQuiz = (rawQuiz: any): Quiz => {
     status: rawQuiz.status ?? GenerationStatus.PENDING,
     title: rawQuiz.title ?? null,
     durationMinutes:
-      toNullableNumber(
-        rawQuiz.durationMinutes ?? rawQuiz.duration_minutes
-      ) ?? payload.duration,
+      toNullableNumber(rawQuiz.durationMinutes ?? rawQuiz.duration_minutes) ??
+      payload.duration,
     passingScore,
     description: rawQuiz.description ?? null,
     questionCount,

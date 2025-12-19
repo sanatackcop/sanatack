@@ -14,29 +14,6 @@ export const ContentSkeleton = () => (
   </div>
 );
 
-export const TabsSkeleton = () => (
-  <div className="h-full flex flex-col">
-    <div className="p-2 pt-0 flex-shrink-0">
-      <div className="flex space-x-2 rounded-2xl bg-zinc-100 p-1 w-fit mx-auto dark:bg-zinc-900/60">
-        {[1, 2, 3, 4].map((i) => (
-          <Skeleton key={i} className="h-12 w-24 rounded-xl" />
-        ))}
-      </div>
-    </div>
-    <div className="flex-1 p-4">
-      <div className="space-y-4">
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-3/4" />
-        <Skeleton className="h-4 w-1/2" />
-        <div className="space-y-2 mt-8">
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
 export const ChatSkeleton = () => (
   <div className="flex-1 flex flex-col p-4 space-y-4">
     <div className="space-y-3">
@@ -340,13 +317,6 @@ export const reducer = (state: State, action: any): State => {
     default:
       return state;
   }
-};
-
-export const extractYouTubeId = (url: string): string => {
-  const regExp =
-    /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-  const match = url.match(regExp);
-  return match && match[2].length === 11 ? match[2] : "";
 };
 
 const extractMessage = (err: unknown): string | undefined => {

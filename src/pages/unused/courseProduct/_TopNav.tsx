@@ -50,7 +50,7 @@ interface NavigationPlaygroundProps {
   handleRestart: () => void;
 }
 
-export const NavigationPlayground = ({
+const NavigationPlayground = ({
   courseData,
   prevMaterial,
   nextMaterial,

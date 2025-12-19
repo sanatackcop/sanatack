@@ -225,23 +225,6 @@ export interface RunCodeResponse {
   status: string;
 }
 
-export const runWorkspaceCode = async (
-  payload: RunCodeRequest
-): Promise<RunCodeResponse> => {
-  try {
-    const response = await Api<RunCodeResponse>({
-      method: API_METHODS.POST,
-      url: `study-ai/code/run`,
-      data: payload,
-    });
-
-    return response.data;
-  } catch (e: any) {
-    console.error("runWorkspaceCode error:", e.message ?? e);
-    throw e;
-  }
-};
-
 export const createNewSummaryApi = async ({
   id,
   language,
@@ -294,20 +277,6 @@ export const getAllWorkSpace = async ({
         space_id: spaceId,
         ...(search ? { search } : {}),
       },
-    });
-
-    return response.data as unknown;
-  } catch (e: any) {
-    console.error("enrollCoursesApi error:", e.message);
-    throw e;
-  }
-};
-
-export const sendChatMessage = async () => {
-  try {
-    const response = await Api({
-      method: API_METHODS.GET,
-      url: `study-ai/workspaces`,
     });
 
     return response.data as unknown;
