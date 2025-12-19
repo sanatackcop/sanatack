@@ -134,7 +134,9 @@ export default function UpgradeModal() {
                       amount={Math.round(paymentData.amount * 100)}
                       currency={paymentData.currency}
                       description={`Subscribing ${paymentData.billing_interval} to Sanatack`}
-                      callback_url="http://localhost:5173/payment/callback"
+                      callback_url={`${
+                        import.meta.env.VITE_REACT_APP_BASEURL
+                      }/payment/callback`}
                       language={i18n.language === "ar" ? "ar" : "en"}
                       metadata={{
                         user_id: userContext.auth.user.id,
