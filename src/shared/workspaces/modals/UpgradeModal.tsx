@@ -135,7 +135,7 @@ export default function UpgradeModal() {
                       currency={paymentData.currency}
                       description={`Subscribing ${paymentData.billing_interval} to Sanatack`}
                       callback_url={`${
-                        import.meta.env.VITE_REACT_APP_BASEURL
+                        import.meta.env.VITE_BASE_URL
                       }/payment/callback`}
                       language={i18n.language === "ar" ? "ar" : "en"}
                       metadata={{
