@@ -37,7 +37,7 @@ export default function PaymentForm({
     if (Moyasar) {
       Moyasar.init({
         language,
-        amount: Math.round(amount * 100),
+        amount: parseInt(amount.toString().replace(".", "")),
         currency,
         description,
         callback_url,
