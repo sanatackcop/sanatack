@@ -57,7 +57,7 @@ export default function PaymentForm({
         },
         apple_pay: {
           country: "SA",
-          label: "Awesome Cookie Store",
+          label: "Sanatack",
           validate_merchant_url: "https://api.moyasar.com/v1/applepay/initiate",
         },
       });
