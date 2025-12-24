@@ -56,6 +56,7 @@ interface FormData {
   confirmPassword?: string;
   firstName?: string;
   lastName?: string;
+  acceptedTerms?: boolean;
 }
 
 interface FormErrors {
@@ -65,11 +66,13 @@ interface FormErrors {
   firstName?: string;
   lastName?: string;
   general?: string;
+  acceptedTerms?: string;
 }
 
 const INITIAL_DATA: FormData = {
   email: "",
   password: "",
+  acceptedTerms: false,
 };
 
 type AuthStep = "form" | "verify-otp";
@@ -135,6 +138,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({ useSignup = false }) => {
         e.password = t("auth.validation.passwordLength");
       if (formData.confirmPassword !== formData.password)
         e.confirmPassword = t("auth.validation.passwordMismatch");
+      if (!formData.acceptedTerms)
+        e.acceptedTerms = "You must accept the terms and conditions";
     }
 
     setErrors(e);
@@ -382,6 +387,43 @@ export const LoginForm: React.FC<LoginFormProps> = ({ useSignup = false }) => {
                 />
                 <FieldError message={errors.confirmPassword} />
               </>
+            )}
+
+            {useSignup && (
+              <div className="space-y-2">
+                <label className="flex items-start gap-3 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={formData.acceptedTerms ?? false}
+                    onChange={(e) =>
+                      setFormData((p) => ({
+                        ...p,
+                        acceptedTerms: e.target.checked,
+                      }))
+                    }
+                    className="mt-1 h-4 w-4 rounded border-zinc-300 text-primary focus:ring-2 focus:ring-primary cursor-pointer"
+                  />
+                  <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                    I agree to the{" "}
+                    <Link
+                      to="/terms"
+                      className="font-semibold text-primary hover:underline"
+                      target="_blank"
+                    >
+                      Terms and Conditions
+                    </Link>{" "}
+                    and{" "}
+                    <Link
+                      to="/privacy"
+                      className="font-semibold text-primary hover:underline"
+                      target="_blank"
+                    >
+                      Privacy Policy
+                    </Link>
+                  </span>
+                </label>
+                <FieldError message={errors.acceptedTerms} />
+              </div>
             )}
 
             <Button className="w-full" disabled={isLoading}>

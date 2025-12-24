@@ -5,7 +5,8 @@ import { useLocaleDirection } from "@/hooks/useLocaleDirection";
 import StarBorder from "@/components/blocks/Animations/StarBorder/StarBorder";
 import { Link } from "react-router-dom";
 import { CircleArrowLeft } from "lucide-react";
-import HomePageDemo from "@/assets/demo/home.png";
+import HomePageDemo from "@/assets/demo/newhome.png";
+import HomePageDarkDemo from "@/assets/demo/newhomeDark.png";
 
 const TypingAnimation: React.FC<any> = ({
   texts,
