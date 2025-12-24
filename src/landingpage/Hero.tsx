@@ -5,7 +5,8 @@ import { useLocaleDirection } from "@/hooks/useLocaleDirection";
 import StarBorder from "@/components/blocks/Animations/StarBorder/StarBorder";
 import { Link } from "react-router-dom";
 import { CircleArrowLeft } from "lucide-react";
-import HomePageDemo from "@/assets/demo/home.png";
+import HomePageDemo from "@/assets/demo/newhome.png";
+import HomePageDarkDemo from "@/assets/demo/newhomeDark.png";
 
 const TypingAnimation: React.FC<any> = ({
   texts,
@@ -63,6 +64,26 @@ const TypingAnimation: React.FC<any> = ({
 
 const LaptopDemo: React.FC = () => {
   const laptopRef = useRef<HTMLDivElement>(null);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+
+  useEffect(() => {
+    // Check initial theme
+    const checkTheme = () => {
+      const isDark = document.documentElement.classList.contains('dark');
+      setIsDarkMode(isDark);
+    };
+
+    checkTheme();
+
+    // Create observer to watch for theme changes
+    const observer = new MutationObserver(checkTheme);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     if (laptopRef.current) {
@@ -101,9 +122,9 @@ const LaptopDemo: React.FC = () => {
           <div className="relative rounded-[2rem] border border-zinc-200/70 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-2xl overflow-hidden">
             <div className="relative w-full">
               <img
-                src={HomePageDemo}
+                src={isDarkMode ? HomePageDarkDemo : HomePageDemo}
                 alt="Homepage Preview"
-                className="w-full h-auto"
+                className="w-full h-auto transition-opacity duration-300"
                 loading="lazy"
                 decoding="async"
               />
