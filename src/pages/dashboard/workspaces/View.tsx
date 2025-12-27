@@ -31,8 +31,8 @@ import {
   getWorkSpace,
   getWorkSpaceChatHistory,
   sendWorkspaceChatMessage,
-  generateWorkspaceAutoContext,
   getWorkspaceContexts,
+  generateWorkspaceAutoContext,
 } from "@/utils/_apis/learnPlayground-api";
 import { useParams } from "react-router-dom";
 import FlashCards from "../../../lib/flashcards/FlashCards";
@@ -211,6 +211,8 @@ const LearnPlayground: React.FC = () => {
 
   // Responsive detection
   useEffect(() => {
+    handleAutoContext();
+    console.log("Auto generatubg");
     const checkMobile = () => {
       const mobile = window.innerWidth < 1024;
       setIsMobile(mobile);
@@ -780,7 +782,7 @@ const LearnPlayground: React.FC = () => {
                       <ChatInput
                         className="w-full"
                         value={state.prompt}
-                        hasAutoContext={true}
+                        hasAutoContext={false}
                         expandSection={true}
                         contexts={selectedContexts}
                         availableContexts={availableContexts}
@@ -796,7 +798,7 @@ const LearnPlayground: React.FC = () => {
                           handleSendMessage(value, model, contexts)
                         }
                         onContextsChange={handleContextsChange}
-                        onAutoContextClick={handleAutoContext}
+                        // onAutoContextClick={handleAutoContext}
                         appliedContextIds={appliedContextIds}
                         placeholder={t("aiActions.chatPlaceholder")}
                         optionsToHide={{

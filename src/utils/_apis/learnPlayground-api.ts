@@ -289,6 +289,7 @@ export const getAllWorkSpace = async ({
 import Storage from "@/lib/Storage";
 
 const getAuth = (): any => Storage.get("auth");
+const access_token = (): any => Storage.get("access_token");
 
 export const sendWorkspaceChatMessage = async (
   workspaceId: string,
@@ -330,6 +331,7 @@ export const sendWorkspaceChatMessage = async (
         method: "POST",
         headers: {
           user_id: auth.user.id,
+          Authorization: `Bearer ${access_token()}`,
         },
         body: formData,
       }
