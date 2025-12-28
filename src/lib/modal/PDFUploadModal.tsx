@@ -552,107 +552,120 @@ export default function PDFUploadModal({
 
       {steps == UploadSteps.PDFPageSelect && (
         <Document file={pdfFileUrl} onLoadSuccess={handleDocumentLoadSuccess}>
-          <h3 className="font-semibold text-base mb-2">
-            {t(
-              "modals.addContent.pageSelection.title",
-              "Select pages to upload (optional)"
-            )}
-          </h3>
+          {/* Header */}
+          <div className="mb-4 space-y-1">
+            <h3 className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+              {t(
+                "modals.addContent.pageSelection.title",
+                "Select pages to upload"
+              )}
+            </h3>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              Choose individual pages or entire chapters
+            </p>
+          </div>
 
-          <ScrollArea className="h-[500px] rounded-md border">
-            {Array.from({ length: numPages }, (_, i) => {
-              const pageNumber = i + 1;
-              const isSelected = selectedPages.includes(pageNumber);
+          {/* Pages Card */}
+          <div className="relative rounded-2xl border bg-white dark:bg-zinc-900 shadow-sm">
+            <div className="border-b px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              Pages
+            </div>
 
-              return (
-                <LazyPage
-                  key={pageNumber}
-                  pageNumber={pageNumber}
-                  isSelected={isSelected}
-                  onToggle={() => {
-                    setSelectedPages((prev) =>
-                      prev.includes(pageNumber)
-                        ? prev.filter((p) => p !== pageNumber)
-                        : [...prev, pageNumber]
-                    );
-                  }}
-                />
-              );
-            })}
-          </ScrollArea>
+            <ScrollArea className="h-[480px] px-4 py-3">
+              <div className="grid grid-cols-1 gap-4">
+                {Array.from({ length: numPages }, (_, i) => {
+                  const pageNumber = i + 1;
+
+                  return (
+                    <LazyPage
+                      key={pageNumber}
+                      pageNumber={pageNumber}
+                      isSelected={selectedPages.includes(pageNumber)}
+                      onToggle={() =>
+                        setSelectedPages((prev) =>
+                          prev.includes(pageNumber)
+                            ? prev.filter((p) => p !== pageNumber)
+                            : [...prev, pageNumber]
+                        )
+                      }
+                    />
+                  );
+                })}
+              </div>
+            </ScrollArea>
+          </div>
+
+          {/* Chapters */}
           {chapters.length > 0 && (
-            <div className="mt-4 space-y-2">
-              <Accordion type="single" collapsible className="w-full">
-                <AccordionItem value="chapters">
-                  <AccordionTrigger>
-                    {t(
-                      "modals.addContent.chapterSelection.title",
-                      "Or select whole chapters"
-                    )}
+            <div className="mt-6">
+              <Accordion type="single" collapsible>
+                <AccordionItem value="chapters" className="border-none">
+                  <AccordionTrigger className="text-sm font-medium">
+                    Select by chapter
                   </AccordionTrigger>
 
                   <AccordionContent>
-                    {" "}
-                    <div className="max-h-40 overflow-auto space-y-1">
-                      {chapters.map((chapter, index) => {
-                        if (!chapter.pageNumber) return null;
+                    <div className="mt-3 rounded-2xl border bg-zinc-50 dark:bg-zinc-950 p-2">
+                      <ScrollArea className="max-h-48">
+                        <div className="space-y-2">
+                          {chapters.map((chapter, index) => {
+                            if (!chapter.pageNumber) return null;
 
-                        const start = chapter.pageNumber;
-                        const nextChapter = chapters[index + 1];
-                        const end =
-                          nextChapter && nextChapter.pageNumber
-                            ? nextChapter.pageNumber - 1
-                            : numPages;
+                            const start = chapter.pageNumber;
+                            const end = chapters[index + 1]?.pageNumber
+                              ? chapters[index + 1].pageNumber! - 1
+                              : numPages;
 
-                        const chapterPages: number[] = [];
-                        for (let p = start; p <= end; p++) {
-                          chapterPages.push(p);
-                        }
+                            const chapterPages = Array.from(
+                              { length: end - start + 1 },
+                              (_, i) => start + i
+                            );
 
-                        const isChapterSelected =
-                          chapterPages.length > 0 &&
-                          chapterPages.every((p) => selectedPages.includes(p));
+                            const selected = chapterPages.every((p) =>
+                              selectedPages.includes(p)
+                            );
 
-                        return (
-                          <button
-                            key={`${chapter.title}-${index}`}
-                            type="button"
-                            onClick={() => toggleChapterSelection(index)}
-                            className="w-full text-left px-3 py-2 rounded-md border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-sm"
-                          >
-                            <div className="flex items-center justify-between gap-2">
-                              <div>
-                                <div className="font-medium text-zinc-900 dark:text-zinc-50 line-clamp-1">
-                                  {chapter.title}
-                                </div>
-                                <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                                  {t(
-                                    "modals.addContent.chapterStartsAt",
-                                    "Starts at page"
-                                  )}{" "}
-                                  {chapter.pageNumber}{" "}
-                                  {end && end !== chapter.pageNumber
-                                    ? `· ${t(
-                                        "modals.addContent.chapterRange",
-                                        "Pages"
-                                      )} ${start}-${end}`
-                                    : ""}
-                                </div>
-                              </div>
-
-                              <div
-                                className={`h-5 w-5 flex items-center justify-center rounded border ${
-                                  isChapterSelected
-                                    ? "border-blue-600 bg-blue-600 text-white"
-                                    : "border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-900 text-transparent"
-                                }`}
+                            return (
+                              <button
+                                key={index}
+                                onClick={() => toggleChapterSelection(index)}
+                                className={`
+                          group w-full rounded-xl px-4 py-3 text-left transition
+                          ${
+                            selected
+                              ? "bg-blue-50 ring-1 ring-blue-600 dark:bg-blue-950/40"
+                              : "bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                          }
+                        `}
                               >
-                                <Check className="h-3 w-3" />
-                              </div>
-                            </div>
-                          </button>
-                        );
-                      })}
+                                <div className="flex items-center justify-between">
+                                  <div className="min-w-0">
+                                    <div className="font-medium text-zinc-900 dark:text-zinc-50 truncate">
+                                      {chapter.title}
+                                    </div>
+                                    <div className="text-xs text-zinc-500">
+                                      Pages {start}–{end}
+                                    </div>
+                                  </div>
+
+                                  <div
+                                    className={`
+                              h-6 w-6 rounded-full border flex items-center justify-center
+                              ${
+                                selected
+                                  ? "border-blue-600 bg-blue-600 text-white"
+                                  : "border-zinc-300 dark:border-zinc-600"
+                              }
+                            `}
+                                  >
+                                    <Check className="h-3.5 w-3.5" />
+                                  </div>
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </ScrollArea>
                     </div>
                   </AccordionContent>
                 </AccordionItem>
@@ -660,11 +673,14 @@ export default function PDFUploadModal({
             </div>
           )}
 
-          <div className="mt-3 text-xs text-zinc-600 dark:text-zinc-400">
-            {t("modals.addContent.selectionSummary", "Selected pages:")}{" "}
-            {selectedPages.length > 0
-              ? selectedPages.sort((a, b) => a - b).join(", ")
-              : t("modals.addContent.selectionNone", "None (full PDF)")}
+          {/* Selection Summary */}
+          <div className="mt-5 flex items-center gap-2">
+            <span className="text-sm text-zinc-500">Selection</span>
+            <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200">
+              {selectedPages.length > 0
+                ? `${selectedPages.length} page(s) selected`
+                : "Full PDF"}
+            </span>
           </div>
         </Document>
       )}
