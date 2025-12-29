@@ -25,6 +25,12 @@ import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { useLocaleDirection } from "@/hooks/useLocaleDirection";
 
+// Import Videos
+import quizVideo from "@/assets/demo/gifs/quiz.mp4";
+import flashcardVideo from "@/assets/demo/gifs/flashcard.mp4";
+import summaryVideo from "@/assets/demo/gifs/summry.mp4";
+import deepVideo from "@/assets/demo/gifs/deep.mp4";
+
 export function AITutorFeatures() {
   const { t } = useTranslation();
   const { isRTL, direction } = useLocaleDirection();
@@ -35,11 +41,10 @@ export function AITutorFeatures() {
       titleKey: "aiTutor.chat.title",
       descriptionKey: "aiTutor.chat.description",
       ctaKey: "aiTutor.chat.cta",
-      icon: MessageSquare,
       gradient: "from-blue-500 via-cyan-500 to-blue-600",
       glowColor: "rgba(59, 130, 246, 0.5)",
       borderColor: "#3b82f6",
-      image: "/images/chat-feature.png",
+      image: deepVideo,
       position: "left" as const,
       miniFeatures: [
         {
@@ -65,11 +70,10 @@ export function AITutorFeatures() {
       titleKey: "aiTutor.quiz.title",
       descriptionKey: "aiTutor.quiz.description",
       ctaKey: "aiTutor.quiz.cta",
-      icon: Zap,
       borderColor: "#a855f7",
       gradient: "from-purple-500 via-pink-500 to-purple-600",
       glowColor: "rgba(168, 85, 247, 0.5)",
-      image: "/images/quiz-feature.png",
+      image: quizVideo,
       position: "right" as const,
       miniFeatures: [
         {
@@ -96,10 +100,9 @@ export function AITutorFeatures() {
       descriptionKey: "aiTutor.flashcards.description",
       ctaKey: "aiTutor.flashcards.cta",
       borderColor: "#10b981",
-      icon: BookOpen,
       gradient: "from-green-500 via-emerald-500 to-green-600",
       glowColor: "rgba(34, 197, 94, 0.5)",
-      image: "/images/flashcard-feature.png",
+      image: flashcardVideo,
       position: "left" as const,
       miniFeatures: [
         {
@@ -125,11 +128,10 @@ export function AITutorFeatures() {
       titleKey: "aiTutor.summary.title",
       descriptionKey: "aiTutor.summary.description",
       ctaKey: "aiTutor.summary.cta",
-      icon: FileText,
       borderColor: "#f97316",
       gradient: "from-orange-500 via-red-500 to-orange-600",
       glowColor: "rgba(249, 115, 22, 0.5)",
-      image: "/images/summary-feature.png",
+      image: summaryVideo,
       position: "right" as const,
       miniFeatures: [
         {
@@ -155,12 +157,12 @@ export function AITutorFeatures() {
       titleKey: "aiTutor.code.title",
       descriptionKey: "aiTutor.code.description",
       ctaKey: "aiTutor.code.cta",
-      icon: Code,
       gradient: "from-indigo-500 via-blue-500 to-indigo-600",
       glowColor: "rgba(99, 102, 241, 0.5)",
-      image: "/images/code-feature.png",
+      image: deepVideo,
       position: "left" as const,
       borderColor: "#6366f1",
+      hidden: true,
       miniFeatures: [
         {
           iconKey: Code,
@@ -185,12 +187,11 @@ export function AITutorFeatures() {
       titleKey: "aiTutor.deepExplanation.title",
       descriptionKey: "aiTutor.deepExplanation.description",
       ctaKey: "aiTutor.deepExplanation.cta",
-      icon: Brain,
       gradient: "from-pink-500 via-rose-500 to-pink-600",
       glowColor: "rgba(236, 72, 153, 0.5)",
-      image: "/images/deep-explanation-feature.png",
+      image: deepVideo,
       borderColor: "#ec4899",
-      position: "right" as const,
+      position: "left" as const,
       miniFeatures: [
         {
           iconKey: Brain,
@@ -236,7 +237,9 @@ export function AITutorFeatures() {
       </div>
 
       <div className="relative mx-auto max-w-7xl space-y-24 md:space-y-32">
-        {tutorFeatures.map((feature, index) => (
+        {tutorFeatures
+          .filter(feature => !feature.hidden)
+          .map((feature, index) => (
           <FeatureCard
             key={feature.id}
             feature={feature}
@@ -257,11 +260,11 @@ interface FeatureCardProps {
     borderColor: string;
     descriptionKey: string;
     ctaKey: string;
-    icon: any;
     gradient: string;
     glowColor: string;
     image: string;
     position: "left" | "right";
+    hidden?: boolean;
     miniFeatures?: Array<{
       iconKey: any;
       labelKey: string;
@@ -273,7 +276,6 @@ interface FeatureCardProps {
 }
 
 function FeatureCard({ feature, index, isRTL, t }: FeatureCardProps) {
-  const Icon = feature.icon;
   const isLeft = isRTL
     ? feature.position === "right"
     : feature.position === "left";
@@ -302,21 +304,19 @@ function FeatureCard({ feature, index, isRTL, t }: FeatureCardProps) {
                 className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-5`}
               />
 
-              {/* Image */}
+              {/* Video */}
               <div className="relative aspect-video rounded-xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
-                <img
+                <video
                   src={feature.image}
-                  alt={t(feature.titleKey)}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     e.currentTarget.style.display = "none";
                   }}
                 />
-
-                {/* Placeholder Content if Image Fails */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Icon className="w-20 h-20 text-gray-300 dark:text-white/20" />
-                </div>
               </div>
 
               {/* Shine Effect */}
