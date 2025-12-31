@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { GenerationStatus } from "@/lib/types";
 
-type EntityType = "summary" | "flashcards" | "quiz" | "explanation";
+type EntityType = "summary" | "flashcards" | "quiz" | "explanation" | "note";
 
 type BaseItem = {
   id: string;
