@@ -1,10 +1,8 @@
 import {
-  MessageSquare,
   Code,
   BookOpen,
   Zap,
   Brain,
-  FileText,
   Lightbulb,
   Target,
   Users,
