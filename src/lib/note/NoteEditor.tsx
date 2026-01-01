@@ -15,12 +15,29 @@ import { Button } from "@/components/ui/button";
 import { NoteEditorProps } from "./types";
 import { motion } from "framer-motion";
 
+// Custom color palette for text colors
+const TEXT_COLORS = [
+  "#000000", "#434343", "#666666", "#999999", "#b7b7b7", "#ffffff",
+  "#e60000", "#ff9900", "#ffff00", "#008a00", "#0066cc", "#9933ff",
+  "#ff0066", "#ff6600", "#99cc00", "#00cccc", "#3366ff", "#cc33ff",
+  "#cc0000", "#cc6600", "#669900", "#006666", "#003399", "#660099",
+];
+
+// Custom color palette for highlights
+const HIGHLIGHT_COLORS = [
+  false, // No highlight
+  "#ffff00", "#00ff00", "#00ffff", "#ff00ff", "#ff0000", "#0000ff",
+  "#ffeaa7", "#55efc4", "#81ecec", "#a29bfe", "#fd79a8", "#fab1a0",
+  "#ffe6e6", "#e6ffe6", "#e6ffff", "#ffe6ff", "#fff0e6", "#e6e6ff",
+  "#fdcb6e", "#00cec9", "#6c5ce7", "#e17055", "#74b9ff", "#f8a5c2",
+];
+
 const QUILL_MODULES = {
   toolbar: {
     container: [
       [{ header: [1, 2, 3, false] }],
       ["bold", "italic", "underline", "strike"],
-      [{ color: [] }, { background: [] }],
+      [{ color: TEXT_COLORS }, { background: HIGHLIGHT_COLORS }],
       [{ list: "ordered" }, { list: "bullet" }, { list: "check" }],
       [{ align: [] }],
       ["blockquote", "code-block"],
@@ -467,6 +484,44 @@ export default function NoteEditor({
         
         .dark .note-editor-modern .ql-toolbar button.ql-active .ql-fill {
           fill: hsl(var(--primary)) !important;
+        }
+        
+        /* Color Picker Styles */
+        .note-editor-modern .ql-toolbar .ql-color-picker .ql-picker-options,
+        .note-editor-modern .ql-toolbar .ql-background .ql-picker-options {
+          width: 192px !important;
+          padding: 8px !important;
+          display: grid !important;
+          grid-template-columns: repeat(6, 1fr) !important;
+          gap: 4px !important;
+        }
+        
+        .note-editor-modern .ql-toolbar .ql-color-picker .ql-picker-item,
+        .note-editor-modern .ql-toolbar .ql-background .ql-picker-item {
+          width: 24px !important;
+          height: 24px !important;
+          border-radius: 4px !important;
+          border: 1px solid hsl(var(--border) / 0.5) !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+        }
+        
+        .note-editor-modern .ql-toolbar .ql-color-picker .ql-picker-item:hover,
+        .note-editor-modern .ql-toolbar .ql-background .ql-picker-item:hover {
+          transform: scale(1.15) !important;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+        }
+        
+        .note-editor-modern .ql-toolbar .ql-color-picker .ql-picker-item.ql-selected,
+        .note-editor-modern .ql-toolbar .ql-background .ql-picker-item.ql-selected {
+          border: 2px solid hsl(var(--primary)) !important;
+        }
+        
+        .dark .note-editor-modern .ql-toolbar .ql-color-picker .ql-picker-options,
+        .dark .note-editor-modern .ql-toolbar .ql-background .ql-picker-options {
+          background: hsl(var(--popover)) !important;
+          border-color: hsl(var(--border)) !important;
         }
         
         /* RTL Support */
