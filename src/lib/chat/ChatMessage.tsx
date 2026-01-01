@@ -384,6 +384,61 @@ const AttachmentItem: React.FC<{
 // Assistant Message Component
 // ============================================================================
 
+const normalizeMarkdownForChat = (input: string) => {
+  if (!input) return input;
+
+  // Preserve fenced code blocks as-is; only normalize outside of them.
+  const parts = input.split(/(```[\s\S]*?```)/g);
+
+  const normalizeOutsideCode = (text: string) => {
+    let out = text.replace(/\r\n?/g, "\n");
+
+    // Remove BOM / bidi control marks at start of lines (can break Markdown heading detection)
+    out = out.replace(/^[\uFEFF\u200E\u200F\u202A-\u202E]+/gm, "");
+
+    // Remove leading invisible spaces that can prevent headings from being recognized
+    // (NBSP, ZWSP, word joiner) and normalize indentation before headings.
+    out = out.replace(/^[\t \u00A0\u200B\u2060]+(?=#{1,6})/gm, "");
+
+    // If a heading is glued to the previous text: "...breakdown## TL;DR"
+    out = out.replace(/(\S)(#{2,6})/g, "$1\n\n$2");
+
+    // If a heading marker appears mid-line ("... text # Title"), move it onto a new paragraph.
+    // Only triggers when hashes are followed by a space, to avoid breaking things like "C#".
+    out = out.replace(/(\S)(#{1,6}\s)/g, "$1\n\n$2");
+
+    // Ensure headings have a space after hashes: "##TL;DR" -> "## TL;DR"
+    out = out.replace(/^(#{1,6})(?=\S)/gm, "$1 ");
+
+    // Force blank lines before headings (but keep heading at line start)
+    out = out.replace(/([^\n])\n(#{1,6} )/g, "$1\n\n$2");
+
+    // Ensure a blank line after any heading line
+    out = out.replace(/^(#{1,6} [^\n]+)\n(?!\n)/gm, "$1\n\n");
+
+    // Common LLM mistake: "# TL;DRDo you..." -> make TL;DR its own heading
+    out = out.replace(/^(#{1,6}\s+TL;DR)(?=\S)/gm, "$1\n\n");
+
+    // Similar for "# Solve2x^2..." -> split after Solve
+    out = out.replace(/^(#{1,6}\s+Solve)(?=\S)/gm, "$1\n\n");
+
+    // If a list starts on the same line as a heading: "## TL;DR- item" -> split line
+    out = out.replace(/^(#{1,6} [^\n]*?)(-\s)/gm, "$1\n\n$2");
+
+    // If a numbered list starts immediately after a heading without spacing: "# Title1." -> split
+    out = out.replace(/^(#{1,6} [^\n]*?)(\d+\.)/gm, "$1\n\n$2");
+
+    // Same for "# Title1)" -> split
+    out = out.replace(/^(#{1,6} [^\n]*?)(\d+\))/gm, "$1\n\n$2");
+
+    return out;
+  };
+
+  return parts
+    .map((part) => (part.startsWith("```") ? part : normalizeOutsideCode(part)))
+    .join("");
+};
+
 const AssistantMessage: React.FC<{
   message: ChatMessage;
   isStreaming: boolean;
@@ -400,7 +455,8 @@ const AssistantMessage: React.FC<{
   failedLabel,
 }) => {
   // Use content directly without sanitization for performance
-  const displayContent = isStreaming ? streamingContent : message.content;
+  const displayContentRaw = isStreaming ? streamingContent : message.content;
+  const displayContent = normalizeMarkdownForChat(displayContentRaw);
 
   const attachments: Attachment[] = Array.isArray(message.metadata?.attachments)
     ? (message.metadata?.attachments as Attachment[])
@@ -434,17 +490,17 @@ const AssistantMessage: React.FC<{
         </a>
       ),
       h1: ({ children }: { children?: React.ReactNode }) => (
-        <h1 className="text-base font-semibold mt-4 mb-2 text-zinc-800 dark:text-zinc-200 break-words max-w-full overflow-wrap-break-word first:mt-0">
+        <h1 className="text-xl font-semibold mt-4 mb-2 text-zinc-800 dark:text-zinc-200 break-words max-w-full overflow-wrap-break-word first:mt-0">
           {children}
         </h1>
       ),
       h2: ({ children }: { children?: React.ReactNode }) => (
-        <h2 className="text-sm font-semibold mt-3 mb-1.5 text-zinc-700 dark:text-zinc-300 break-words max-w-full overflow-wrap-break-word">
+        <h2 className="text-base font-semibold mt-4 mb-2 text-zinc-700 dark:text-zinc-300 break-words max-w-full overflow-wrap-break-word">
           {children}
         </h2>
       ),
       h3: ({ children }: { children?: React.ReactNode }) => (
-        <h3 className="text-sm font-medium mt-2 mb-1 text-zinc-600 dark:text-zinc-400 break-words max-w-full overflow-wrap-break-word">
+        <h3 className="text-sm font-semibold mt-3 mb-1.5 text-zinc-600 dark:text-zinc-400 break-words max-w-full overflow-wrap-break-word">
           {children}
         </h3>
       ),
