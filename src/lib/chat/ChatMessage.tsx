@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import {
@@ -10,6 +10,7 @@ import {
   ThumbsDown,
   Copy,
   Brain,
+  ChevronUp,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -717,6 +718,8 @@ const MessageBubble: React.FC<{
 // Main Chat Messages Component
 // ============================================================================
 
+const MESSAGES_PER_PAGE = 20; // Number of messages to show initially and load per page
+
 export default function ChatMessages({
   messages,
   isLoading = false,
@@ -724,37 +727,101 @@ export default function ChatMessages({
 }: ChatMessagesProps) {
   const { t, i18n } = useTranslation();
   const [isRtl, setIsRtl] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(MESSAGES_PER_PAGE);
   const lastMessageRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const scrollToElement = () => {
+  // Reset visible count when messages change significantly (new conversation)
+  useEffect(() => {
+    if (messages.length <= MESSAGES_PER_PAGE) {
+      setVisibleCount(MESSAGES_PER_PAGE);
+    }
+  }, [messages.length]);
+
+  // Calculate which messages to show (most recent ones)
+  const { visibleMessages, hasMoreMessages, hiddenCount } = useMemo(() => {
+    const totalMessages = messages.length;
+    const startIndex = Math.max(0, totalMessages - visibleCount);
+    return {
+      visibleMessages: messages.slice(startIndex),
+      hasMoreMessages: startIndex > 0,
+      hiddenCount: startIndex,
+    };
+  }, [messages, visibleCount]);
+
+  const loadMoreMessages = useCallback(() => {
+    // Save current scroll position before loading more
+    const container = scrollContainerRef.current;
+    const previousScrollHeight = container?.scrollHeight || 0;
+    
+    setVisibleCount((prev) => prev + MESSAGES_PER_PAGE);
+    
+    // After state update, maintain scroll position
+    requestAnimationFrame(() => {
+      if (container) {
+        const newScrollHeight = container.scrollHeight;
+        container.scrollTop = newScrollHeight - previousScrollHeight;
+      }
+    });
+  }, []);
+
+  const scrollToElement = useCallback(() => {
     if (lastMessageRef.current) {
       lastMessageRef.current.scrollIntoView({
-        behavior: "smooth", // For smooth scrolling
-        block: "start", // Aligns the top of the element with the top of the scroll container
+        behavior: "smooth",
+        block: "start",
       });
     }
-  };
+  }, []);
 
   useEffect(() => {
     setIsRtl(i18n.language === "ar");
     scrollToElement();
-  }, [i18n.language]);
+  }, [i18n.language, scrollToElement]);
+
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    scrollToElement();
+  }, [messages.length, scrollToElement]);
 
   const hasMessages = messages && messages.length > 0;
   const uploadingLabel = t("chat.attachment.uploading", "Uploading…");
   const failedLabel = t("chat.attachment.failed", "Failed to upload");
   const thinkingLabel = isRtl ? "جاري التفكير..." : "Thinking...";
+  const loadMoreLabel = isRtl 
+    ? `تحميل ${Math.min(hiddenCount, MESSAGES_PER_PAGE)} رسائل أخرى` 
+    : `Load ${Math.min(hiddenCount, MESSAGES_PER_PAGE)} more messages`;
 
   return (
     <div className="w-full flex-1 flex flex-col overflow-hidden">
-      <div className="flex-1 overflow-y-auto px-4 py-3">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto px-4 py-3">
         {!hasMessages && !isLoading ? (
           <></>
         ) : (
           <div className="flex flex-col w-full">
-            {messages.map((message, ind) => {
+            {/* Load More Button */}
+            {hasMoreMessages && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex justify-center mb-4"
+              >
+                <button
+                  onClick={loadMoreMessages}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-full transition-colors duration-200 border border-zinc-200 dark:border-zinc-700"
+                >
+                  <ChevronUp className="w-4 h-4" />
+                  {loadMoreLabel}
+                  <span className="text-xs text-zinc-500 dark:text-zinc-500">
+                    ({hiddenCount} {isRtl ? "مخفية" : "hidden"})
+                  </span>
+                </button>
+              </motion.div>
+            )}
+
+            {visibleMessages.map((message, ind) => {
               const isLastMessage =
-                ind === messages.length - 1 && !(isLoading && streamingMessage);
+                ind === visibleMessages.length - 1 && !(isLoading && streamingMessage);
 
               return (
                 <div
