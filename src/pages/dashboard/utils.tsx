@@ -101,7 +101,7 @@ export type Action =
   | { type: "SET_CHAT_INPUT"; input: string }
   | { type: "CLEAR_CHAT" }
   | { type: "SET_CHAT_LOADING"; loading: boolean }
-  | { type: "SET_STREAMING_MESSAGE"; content: string }
+  | { type: "START_STREAMING_MESSAGE" }
   | { type: "ADD_STREAMING_CHUNK"; chunk: string }
   | { type: "COMPLETE_STREAMING_MESSAGE"; content?: string }
   | { type: "SET_WORKSPACE"; workspace: Workspace }
@@ -239,8 +239,8 @@ export const reducer = (state: State, action: any): State => {
     case "SET_CHAT_LOADING":
       return { ...state, chatLoading: action.loading };
 
-    case "SET_STREAMING_MESSAGE":
-      return { ...state, streamingMessage: action.content };
+    case "START_STREAMING_MESSAGE":
+      return { ...state, streamingMessage: "" };
 
     case "ADD_STREAMING_CHUNK":
       return {
@@ -453,3 +453,24 @@ export const QueuedStrip: React.FC = () => (
     `}</style>
   </div>
 );
+
+export const formatFileSize = (bytes?: number) => {
+  if (typeof bytes !== "number" || Number.isNaN(bytes)) return "";
+  if (bytes < 1024) return `${bytes} B`;
+  const kb = bytes / 1024;
+  if (kb < 1024) return `${kb.toFixed(kb > 100 ? 0 : 1)} KB`;
+  const mb = kb / 1024;
+  return `${mb.toFixed(mb > 100 ? 0 : 1)} MB`;
+};
+
+export const formatClock = (d?: Date) => {
+  if (!d) return "";
+  try {
+    return new Date(d).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch {
+    return "";
+  }
+};
