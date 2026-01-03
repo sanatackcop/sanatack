@@ -4,6 +4,7 @@ import React, {
   useRef,
   useCallback,
   useLayoutEffect,
+  useMemo,
 } from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
@@ -16,6 +17,7 @@ import {
   ThumbsDown,
   Copy,
   Brain,
+  ChevronUp,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -244,6 +246,7 @@ const UserMessage: React.FC<{
   return (
     <div
       className={`group relative overflow-hidden rounded-2xl px-4 py-3 transition-colors duration-200 bg-zinc-50/85 text-zinc-900 border border-zinc-200 dark:bg-zinc-900/70 dark:text-zinc-100 dark:border-zinc-800/60 max-w-full`}
+      style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' }}
     >
       <span
         aria-hidden
@@ -254,7 +257,7 @@ const UserMessage: React.FC<{
         className="pointer-events-none absolute -z-10 size-40 blur-2xl opacity-20 rounded-full bg-gradient-to-br from-blue-500/25 via-transparent to-transparent -top-14 -left-14 dark:from-blue-400/15"
       />
 
-      <div className="relative z-10 text-[0.95rem] leading-relaxed break-words whitespace-pre-wrap word-wrap overflow-wrap-break-word">
+      <div className="relative z-10 text-[1rem] leading-relaxed break-words whitespace-pre-wrap word-wrap overflow-wrap-break-word">
         {message.content}
       </div>
 
@@ -387,6 +390,61 @@ const AttachmentItem: React.FC<{
 // Assistant Message Component
 // ============================================================================
 
+const normalizeMarkdownForChat = (input: string) => {
+  if (!input) return input;
+
+  // Preserve fenced code blocks as-is; only normalize outside of them.
+  const parts = input.split(/(```[\s\S]*?```)/g);
+
+  const normalizeOutsideCode = (text: string) => {
+    let out = text.replace(/\r\n?/g, "\n");
+
+    // Remove BOM / bidi control marks at start of lines (can break Markdown heading detection)
+    out = out.replace(/^[\uFEFF\u200E\u200F\u202A-\u202E]+/gm, "");
+
+    // Remove leading invisible spaces that can prevent headings from being recognized
+    // (NBSP, ZWSP, word joiner) and normalize indentation before headings.
+    out = out.replace(/^[\t \u00A0\u200B\u2060]+(?=#{1,6})/gm, "");
+
+    // If a heading is glued to the previous text: "...breakdown## TL;DR"
+    out = out.replace(/(\S)(#{2,6})/g, "$1\n\n$2");
+
+    // If a heading marker appears mid-line ("... text # Title"), move it onto a new paragraph.
+    // Only triggers when hashes are followed by a space, to avoid breaking things like "C#".
+    out = out.replace(/(\S)(#{1,6}\s)/g, "$1\n\n$2");
+
+    // Ensure headings have a space after hashes: "##TL;DR" -> "## TL;DR"
+    out = out.replace(/^(#{1,6})(?=\S)/gm, "$1 ");
+
+    // Force blank lines before headings (but keep heading at line start)
+    out = out.replace(/([^\n])\n(#{1,6} )/g, "$1\n\n$2");
+
+    // Ensure a blank line after any heading line
+    out = out.replace(/^(#{1,6} [^\n]+)\n(?!\n)/gm, "$1\n\n");
+
+    // Common LLM mistake: "# TL;DRDo you..." -> make TL;DR its own heading
+    out = out.replace(/^(#{1,6}\s+TL;DR)(?=\S)/gm, "$1\n\n");
+
+    // Similar for "# Solve2x^2..." -> split after Solve
+    out = out.replace(/^(#{1,6}\s+Solve)(?=\S)/gm, "$1\n\n");
+
+    // If a list starts on the same line as a heading: "## TL;DR- item" -> split line
+    out = out.replace(/^(#{1,6} [^\n]*?)(-\s)/gm, "$1\n\n$2");
+
+    // If a numbered list starts immediately after a heading without spacing: "# Title1." -> split
+    out = out.replace(/^(#{1,6} [^\n]*?)(\d+\.)/gm, "$1\n\n$2");
+
+    // Same for "# Title1)" -> split
+    out = out.replace(/^(#{1,6} [^\n]*?)(\d+\))/gm, "$1\n\n$2");
+
+    return out;
+  };
+
+  return parts
+    .map((part) => (part.startsWith("```") ? part : normalizeOutsideCode(part)))
+    .join("");
+};
+
 const AssistantMessage: React.FC<{
   message: ChatMessage;
   isStreaming: boolean;
@@ -402,133 +460,146 @@ const AssistantMessage: React.FC<{
   uploadingLabel,
   failedLabel,
 }) => {
-  const displayContent = isStreaming ? streamingContent : message.content;
+  // Use content directly without sanitization for performance
+  const displayContentRaw = isStreaming ? streamingContent : message.content;
+  const displayContent = normalizeMarkdownForChat(displayContentRaw);
+
   const attachments: Attachment[] = Array.isArray(message.metadata?.attachments)
     ? (message.metadata?.attachments as Attachment[])
     : [];
 
+  // Memoize markdown components to prevent recreation on every render
+  const markdownComponents = useMemo(
+    () => ({
+      code: ({ inline, className, children }: any) => (
+        <CodeBlock inline={inline} className={className}>
+          {children}
+        </CodeBlock>
+      ),
+      img: ({ src, alt }: { src?: string; alt?: string }) => (
+        <img
+          src={src}
+          alt={alt || ""}
+          className="max-w-full h-auto rounded-lg my-6 border border-zinc-200 dark:border-zinc-700"
+          loading="lazy"
+        />
+      ),
+      a: ({ href, children }: { href?: string; children?: React.ReactNode }) => (
+        <a
+          href={href}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-1 text-blue-600 hover:underline break-words overflow-wrap-break-word"
+        >
+          <span className="break-all">{children}</span>
+          <LinkIcon className="w-3.5 h-3.5 flex-shrink-0" />
+        </a>
+      ),
+      h1: ({ children }: { children?: React.ReactNode }) => (
+        <h1 className="text-xl font-semibold mt-4 mb-2 text-zinc-800 dark:text-zinc-200 break-words max-w-full overflow-wrap-break-word first:mt-0">
+          {children}
+        </h1>
+      ),
+      h2: ({ children }: { children?: React.ReactNode }) => (
+        <h2 className="text-base font-semibold mt-4 mb-2 text-zinc-700 dark:text-zinc-300 break-words max-w-full overflow-wrap-break-word">
+          {children}
+        </h2>
+      ),
+      h3: ({ children }: { children?: React.ReactNode }) => (
+        <h3 className="text-sm font-semibold mt-3 mb-1.5 text-zinc-600 dark:text-zinc-400 break-words max-w-full overflow-wrap-break-word">
+          {children}
+        </h3>
+      ),
+      h4: ({ children }: { children?: React.ReactNode }) => (
+        <h4 className="text-xs font-medium mt-2 mb-1 text-zinc-500 dark:text-zinc-500 break-words max-w-full overflow-wrap-break-word">
+          {children}
+        </h4>
+      ),
+      p: ({ children }: { children?: React.ReactNode }) => (
+        <p className="mb-3 last:mb-0 text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed break-words min-w-0 max-w-full overflow-wrap-break-word font-normal">
+          {children}
+        </p>
+      ),
+      ul: ({ children }: { children?: React.ReactNode }) => (
+        <ul
+          className={`my-2 space-y-2 ${
+            isRtl ? "mr-4" : "ml-4"
+          } list-disc min-w-0 max-w-full`}
+        >
+          {children}
+        </ul>
+      ),
+      ol: ({ children }: { children?: React.ReactNode }) => (
+        <ol
+          className={`my-2 space-y-2 ${
+            isRtl ? "mr-4" : "ml-4"
+          } list-decimal min-w-0 max-w-full`}
+        >
+          {children}
+        </ol>
+      ),
+      li: ({ children }: { children?: React.ReactNode }) => (
+        <li className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed pl-1 break-words min-w-0 max-w-full overflow-wrap-break-word font-normal mb-1">
+          {children}
+        </li>
+      ),
+      strong: ({ children }: { children?: React.ReactNode }) => (
+        <strong className="font-semibold text-zinc-800 dark:text-zinc-200 break-words">
+          {children}
+        </strong>
+      ),
+      em: ({ children }: { children?: React.ReactNode }) => (
+        <em className="italic text-zinc-700 dark:text-zinc-300 break-words">
+          {children}
+        </em>
+      ),
+      blockquote: ({ children }: { children?: React.ReactNode }) => (
+        <blockquote
+          className={`${
+            isRtl ? "border-r-4 pr-5" : "border-l-4 pl-5"
+          } border-blue-500 py-3 my-5 bg-zinc-50 text-zinc-700 italic rounded dark:bg-zinc-900/50 dark:text-zinc-200 break-words min-w-0 max-w-full overflow-wrap-break-word`}
+        >
+          {children}
+        </blockquote>
+      ),
+      hr: () => (
+        <hr className="my-6 border-t border-zinc-200 dark:border-zinc-700" />
+      ),
+      table: ({ children }: { children?: React.ReactNode }) => (
+        <div className="overflow-x-auto my-6 max-w-full rounded-lg border border-zinc-200 dark:border-zinc-700">
+          <table className="min-w-full">{children}</table>
+        </div>
+      ),
+      thead: ({ children }: { children?: React.ReactNode }) => (
+        <thead className="bg-zinc-50 dark:bg-zinc-900/40">{children}</thead>
+      ),
+      th: ({ children }: { children?: React.ReactNode }) => (
+        <th className="px-4 py-3 text-left font-semibold text-zinc-900 dark:text-zinc-100 border-b border-zinc-200 dark:border-zinc-700 break-words min-w-0 max-w-full overflow-wrap-break-word">
+          {children}
+        </th>
+      ),
+      td: ({ children }: { children?: React.ReactNode }) => (
+        <td className="px-4 py-3 text-zinc-800 dark:text-zinc-200 border-b border-zinc-100 dark:border-zinc-800/60 break-words min-w-0 max-w-full overflow-wrap-break-word">
+          {children}
+        </td>
+      ),
+    }),
+    [isRtl]
+  );
+
   return (
     <div className="w-full min-w-0">
       <div
-        className={`text-[0.95rem] leading-relaxed min-w-0 max-w-full overflow-hidden ${
+        className={`text-[0.95rem] leading-relaxed min-w-0 max-w-full overflow-hidden font-sans ${
           isRtl ? "text-right" : "text-left"
         }`}
         dir={isRtl ? "rtl" : "ltr"}
+        style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' }}
       >
         <ReactMarkdown
           remarkPlugins={[remarkGfm, remarkMath]}
           rehypePlugins={[rehypeKatex]}
-          components={{
-            code: ({ inline, className, children }: any) => (
-              <CodeBlock inline={inline} className={className}>
-                {children}
-              </CodeBlock>
-            ),
-            img: ({ src, alt }) => (
-              <img
-                src={src}
-                alt={alt || ""}
-                className="max-w-full h-auto rounded-lg my-4 border border-zinc-200 dark:border-zinc-700"
-                loading="lazy"
-              />
-            ),
-            a: ({ href, children }) => (
-              <a
-                href={href}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1 text-blue-600 hover:underline break-words overflow-wrap-break-word"
-              >
-                <span className="break-all">{children}</span>
-                <LinkIcon className="w-3.5 h-3.5 flex-shrink-0" />
-              </a>
-            ),
-            h1: ({ children }) => (
-              <h1 className="text-lg font-bold mb-3 text-zinc-900 dark:text-zinc-100 border-b border-zinc-200 dark:border-zinc-700 pb-1 break-words max-w-full overflow-wrap-break-word">
-                {children}
-              </h1>
-            ),
-            h2: ({ children }) => (
-              <h2 className="text-base font-bold mb-2 text-zinc-900 dark:text-zinc-100 break-words max-w-full overflow-wrap-break-word">
-                {children}
-              </h2>
-            ),
-            h3: ({ children }) => (
-              <h3 className="text-sm font-bold mb-2 text-zinc-900 dark:text-zinc-100 break-words max-w-full overflow-wrap-break-word">
-                {children}
-              </h3>
-            ),
-            p: ({ children }) => (
-              <p className="mb-3 last:mb-0 text-zinc-800 dark:text-zinc-200 leading-relaxed break-words min-w-0 max-w-full overflow-wrap-break-word">
-                {children}
-              </p>
-            ),
-            ul: ({ children }) => (
-              <ul
-                className={`mb-3 last:mb-0 space-y-1 ${
-                  isRtl ? "mr-4" : "ml-4"
-                } list-disc min-w-0 max-w-full`}
-              >
-                {children}
-              </ul>
-            ),
-            ol: ({ children }) => (
-              <ol
-                className={`mb-3 last:mb-0 space-y-1 ${
-                  isRtl ? "mr-4" : "ml-4"
-                } list-decimal min-w-0 max-w-full`}
-              >
-                {children}
-              </ol>
-            ),
-            li: ({ children }) => (
-              <li className="text-zinc-800 dark:text-zinc-200 leading-relaxed break-words min-w-0 max-w-full overflow-wrap-break-word">
-                {children}
-              </li>
-            ),
-            strong: ({ children }) => (
-              <strong className="font-semibold text-zinc-900 dark:text-zinc-100 break-words">
-                {children}
-              </strong>
-            ),
-            em: ({ children }) => (
-              <em className="italic text-zinc-800 dark:text-zinc-200 break-words">
-                {children}
-              </em>
-            ),
-            blockquote: ({ children }) => (
-              <blockquote
-                className={`${
-                  isRtl ? "border-r-4 pr-4" : "border-l-4 pl-4"
-                } border-blue-500 py-2 my-3 bg-zinc-50 text-zinc-700 italic rounded dark:bg-zinc-900/50 dark:text-zinc-200 break-words min-w-0 max-w-full overflow-wrap-break-word`}
-              >
-                {children}
-              </blockquote>
-            ),
-            hr: () => (
-              <hr className="my-4 border-t border-zinc-200 dark:border-zinc-700" />
-            ),
-            table: ({ children }) => (
-              <div className="overflow-x-auto my-4 max-w-full rounded-lg border border-zinc-200 dark:border-zinc-700">
-                <table className="min-w-full">{children}</table>
-              </div>
-            ),
-            thead: ({ children }) => (
-              <thead className="bg-zinc-50 dark:bg-zinc-900/40">
-                {children}
-              </thead>
-            ),
-            th: ({ children }) => (
-              <th className="px-4 py-2 text-left font-semibold text-zinc-900 dark:text-zinc-100 border-b border-zinc-200 dark:border-zinc-700 break-words min-w-0 max-w-full overflow-wrap-break-word">
-                {children}
-              </th>
-            ),
-            td: ({ children }) => (
-              <td className="px-4 py-2 text-zinc-800 dark:text-zinc-200 border-b border-zinc-100 dark:border-zinc-800/60 break-words min-w-0 max-w-full overflow-wrap-break-word">
-                {children}
-              </td>
-            ),
-          }}
+          components={markdownComponents}
         >
           {displayContent}
         </ReactMarkdown>
@@ -624,7 +695,7 @@ const MessageBubble: React.FC<{
       className={`flex ${containerJustify} mb-5 w-full break-words px-0`}
     >
       <div
-        className={`flex items-start gap-3 max-w-[85%] min-w-0 ${
+        className={`flex items-start gap-3 max-w-[95%] lg:max-w-[90%] min-w-0 ${
           isUser ? "" : "w-full"
         }`}
       >
@@ -649,6 +720,8 @@ const MessageBubble: React.FC<{
 // Main Chat Messages Component
 // ============================================================================
 
+const MESSAGES_PER_PAGE = 20; // Number of messages to show initially and load per page
+
 export default function ChatMessages({
   messages,
   isLoading = false,
@@ -656,15 +729,14 @@ export default function ChatMessages({
 }: ChatMessagesProps) {
   const { t, i18n } = useTranslation();
   const [isRtl, setIsRtl] = useState(false);
-
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
-
   const lockedRef = useRef(false);
 
   useEffect(() => {
     setIsRtl(i18n.language === "ar");
   }, [i18n.language]);
+
 
   const isAtBottom = useCallback((epsPx = 4) => {
     const el = scrollContainerRef.current;
@@ -712,6 +784,9 @@ export default function ChatMessages({
   const uploadingLabel = t("chat.attachment.uploading", "Uploading…");
   const failedLabel = t("chat.attachment.failed", "Failed to upload");
   const thinkingLabel = isRtl ? "جاري التفكير..." : "Thinking...";
+  const loadMoreLabel = isRtl 
+    ? `تحميل ${Math.min(hiddenCount, MESSAGES_PER_PAGE)} رسائل أخرى` 
+    : `Load ${Math.min(hiddenCount, MESSAGES_PER_PAGE)} more messages`;
 
   return (
     <div className="w-full flex-1 flex flex-col overflow-hidden relative">

@@ -24,6 +24,7 @@ import {
   Library,
   ChevronLeft,
   ChevronRight,
+  StickyNote,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -47,6 +48,7 @@ import MindMap from "@/lib/explantion/DeepExplnation";
 import PdfReader from "@/lib/PdfReader";
 import { QuizList } from "@/lib/quizzes/Quiz";
 import { SummaryList } from "@/lib/summary/Summary";
+import { NoteList } from "@/lib/note/Note";
 import {
   ChatMessage,
   TabKey,
@@ -83,6 +85,7 @@ const TABS_CONFIG = [
     icon: BrainCog,
     isSoon: false,
   },
+  { id: "notes", labelKey: "tabs.notes", icon: StickyNote, isSoon: false },
 ] as const;
 
 const LearnPlayground: React.FC = () => {
@@ -787,7 +790,7 @@ const LearnPlayground: React.FC = () => {
               ) : (
                 <div className="flex-1 flex flex-col h-full">
                   <ScrollArea className="flex-1">
-                    <div className="max-w-4xl mx-auto px-4 md:px-6 py-4 md:py-8">
+                    <div className={`mx-auto px-4 md:px-6 py-4 md:py-8 ${fullScreen ? 'max-w-full lg:px-8' : 'max-w-4xl'}`}>
                       <ChatMessages
                         messages={state.chatMessages || []}
                         isLoading={state.chatLoading}
@@ -797,7 +800,7 @@ const LearnPlayground: React.FC = () => {
                     </div>
                   </ScrollArea>
                   <div>
-                    <div className="max-w-4xl mx-auto px-4 md:px-6 py-3 md:py-4">
+                    <div className={`mx-auto px-4 md:px-6 py-3 md:py-4 ${fullScreen ? 'max-w-full lg:px-8' : 'max-w-4xl'}`}>
                       <ChatInput
                         className="w-full"
                         value={state.prompt}
@@ -856,6 +859,8 @@ const LearnPlayground: React.FC = () => {
             </TabsContent>
           )}
 
+
+
           {/* Deep Explanation Tab */}
           {state.tab === "deepExplanation" && (
             <TabsContent value="deepExplanation" className="flex-1 m-0 h-full">
@@ -864,7 +869,16 @@ const LearnPlayground: React.FC = () => {
               </ScrollArea>
             </TabsContent>
           )}
-
+          {/* Notes Tab */}
+          {state.tab === "notes" && (
+            <TabsContent value="notes" className="flex-1 m-0 h-full">
+              <ScrollArea className="h-full">
+                <NoteList
+                  workspaceId={String(workspace && workspace.id) || ""}
+                />
+              </ScrollArea>
+            </TabsContent>
+          )}
           {/* Podcasts Tab */}
           {state.tab === "podcasts" && (
             <TabsContent
