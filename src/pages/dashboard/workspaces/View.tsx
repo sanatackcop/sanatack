@@ -516,8 +516,8 @@ const LearnPlayground: React.FC = () => {
           return;
         }
 
-        const chunkSize = 5;
-        const intervalMs = 18;
+        const chunkSize = 40;
+        const intervalMs = 1;
         let index = 0;
 
         const intervalId = setInterval(() => {
@@ -637,9 +637,9 @@ const LearnPlayground: React.FC = () => {
         if (res.metadata?.error) {
           const errorMessage: ChatMessage = {
             id: Date.now().toString(),
-            type: "assistant",
+            role: "assistant",
             content: res.metadata.error,
-            timestamp: new Date(),
+            created_at: new Date(),
             metadata: { error: res.metadata.error },
           };
           dispatch({ type: "ADD_CHAT_MESSAGE", message: errorMessage });
@@ -790,7 +790,11 @@ const LearnPlayground: React.FC = () => {
               ) : (
                 <div className="flex-1 flex flex-col h-full">
                   <ScrollArea className="flex-1">
-                    <div className={`mx-auto px-4 md:px-6 py-4 md:py-8 ${fullScreen ? 'max-w-full lg:px-8' : 'max-w-4xl'}`}>
+                    <div
+                      className={`mx-auto px-4 md:px-6 py-4 md:py-8 ${
+                        fullScreen ? "max-w-full lg:px-8" : "max-w-4xl"
+                      }`}
+                    >
                       <ChatMessages
                         messages={state.chatMessages || []}
                         isLoading={state.chatLoading}
@@ -800,10 +804,15 @@ const LearnPlayground: React.FC = () => {
                     </div>
                   </ScrollArea>
                   <div>
-                    <div className={`mx-auto px-4 md:px-6 py-3 md:py-4 ${fullScreen ? 'max-w-full lg:px-8' : 'max-w-4xl'}`}>
+                    <div
+                      className={`mx-auto px-4 md:px-6 py-3 md:py-4 ${
+                        fullScreen ? "max-w-full lg:px-8" : "max-w-4xl"
+                      }`}
+                    >
                       <ChatInput
                         className="w-full"
                         value={state.prompt}
+                        isSending={state.chatLoading}
                         hasAutoContext={false}
                         expandSection={true}
                         contexts={selectedContexts}
@@ -858,8 +867,6 @@ const LearnPlayground: React.FC = () => {
               </ScrollArea>
             </TabsContent>
           )}
-
-
 
           {/* Deep Explanation Tab */}
           {state.tab === "deepExplanation" && (
