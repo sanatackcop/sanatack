@@ -286,10 +286,28 @@ export const getAllWorkSpace = async ({
   }
 };
 
-import Storage from "@/lib/Storage";
-
-const getAuth = (): any => Storage.get("auth");
-const access_token = (): any => Storage.get("access_token");
+export interface ChatAttachmentDto {
+  id: string;
+  filename: string;
+  mimetype: string;
+  size: number;
+  type: "text" | "image" | "file";
+  url?: string;
+  contentPreview?: string;
+  dataUrl?: string;
+}
+export interface ChatResponseDto {
+  message: string;
+  messageId?: string;
+  isComplete: boolean;
+  timestamp: Date;
+  metadata?: {
+    totalTokens?: number;
+    error?: string;
+    attachments?: ChatAttachmentDto[];
+    [key: string]: any;
+  };
+}
 
 export const sendWorkspaceChatMessage = async (
   workspaceId: string,
@@ -300,76 +318,28 @@ export const sendWorkspaceChatMessage = async (
     contexts?: WorkspaceContextInput[];
     autoContext?: boolean;
     attachments?: File[];
-  } = {},
-  onChunk?: (chunk: any) => void
-): Promise<void> => {
+  } = {}
+): Promise<ChatResponseDto> => {
   try {
-    const auth: any = await getAuth();
-
     const formData = new FormData();
     formData.append("message", message);
     formData.append("language", language);
     formData.append("autoContext", options.autoContext ? "true" : "false");
 
-    if (options.model) {
-      formData.append("model", options.model);
-    }
-
-    if (options.contexts && options.contexts.length > 0) {
+    if (options.model) formData.append("model", options.model);
+    if (options.contexts?.length)
       formData.append("contexts", JSON.stringify(options.contexts));
+    if (options.attachments?.length) {
+      options.attachments.forEach((file) => formData.append("files", file));
     }
 
-    if (options.attachments && options.attachments.length > 0) {
-      options.attachments.forEach((file) => {
-        formData.append("files", file);
-      });
-    }
+    const res = await Api({
+      method: API_METHODS.POST,
+      url: `${baseURL}/study-ai/workspaces/${workspaceId}/chat`,
+      data: formData,
+    });
 
-    const response = await fetch(
-      `${baseURL}/study-ai/workspaces/${workspaceId}/chat`,
-      {
-        method: "POST",
-        headers: {
-          user_id: auth.user.id,
-          Authorization: `Bearer ${access_token()}`,
-        },
-        body: formData,
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const reader = response.body?.getReader();
-    if (!reader) {
-      throw new Error("No readable stream");
-    }
-
-    const decoder = new TextDecoder();
-    let buffer = "";
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split("\n\n");
-      buffer = lines.pop() || "";
-
-      for (const line of lines) {
-        if (line.startsWith("data: ")) {
-          try {
-            const data = JSON.parse(line.slice(6));
-            if (onChunk) {
-              onChunk(data);
-            }
-          } catch (e) {
-            console.error("Error parsing chunk:", e);
-          }
-        }
-      }
-    }
+    return res.data as unknown as ChatResponseDto;
   } catch (error) {
     console.error("sendWorkspaceChatMessage error:", error);
     throw error;

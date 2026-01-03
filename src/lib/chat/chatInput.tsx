@@ -171,6 +171,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   const [selectedContexts, setSelectedContexts] = useState<Context[]>(
     contexts ?? []
   );
+  const hasMentions = useMemo(() => value.includes("@"), [value]);
   const [contextSearch, setContextSearch] = useState("");
   const [cursorPosition, setCursorPosition] = useState(0);
   const [mentionTriggerPos, setMentionTriggerPos] = useState<number | null>(
@@ -859,6 +860,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                   ${isRTL ? "text-right pr-6 pl-16" : "text-left pl-4 pr-16"}
                   py-4
                 `}
+                style={{ visibility: hasMentions ? "visible" : "hidden" }}
               >
                 {renderHighlightedText()}
               </div>
@@ -891,8 +893,8 @@ const ChatInput: React.FC<ChatInputProps> = ({
                 `}
                 style={{
                   minHeight: "56px",
-                  color: value ? "transparent" : undefined,
-                  caretColor: isFocused ? "rgb(59 130 246)" : "rgb(24 24 27)",
+                  color: hasMentions ? "transparent" : undefined,
+                  caretColor: "rgb(59 130 246)",
                   overflow: "hidden",
                 }}
                 rows={1}

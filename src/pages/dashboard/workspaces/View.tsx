@@ -131,7 +131,6 @@ const LearnPlayground: React.FC = () => {
   const headerContent = useMemo(() => {
     return (
       <div className="flex items-center justify-end w-full gap-2">
-        {/* Tabs - positioned at end */}
         <div className="flex-1 overflow-x-auto scrollbar-hide flex justify-end">
           <Tabs
             value={state.tab}
@@ -464,14 +463,7 @@ const LearnPlayground: React.FC = () => {
       setAppliedContextIds(keys);
       setAutoContextEnabled(contexts.length > 0);
 
-      if (contexts.length > 0) {
-        toast.success(
-          t(
-            "chat.auto_context_success",
-            "Workspace context updated successfully."
-          )
-        );
-      } else {
+      if (contexts.length < 0) {
         toast.info(
           t(
             "chat.auto_context_empty",
@@ -505,6 +497,41 @@ const LearnPlayground: React.FC = () => {
       contextsOverride?: ChatContext[]
     ) => {
       if (!message.trim() || !id) return;
+
+      const streamAssistantMessage = (
+        content: string,
+        metadata?: Record<string, any>
+      ) => {
+        dispatch({ type: "START_STREAMING_MESSAGE" });
+
+        if (!content) {
+          dispatch({
+            type: "COMPLETE_STREAMING_MESSAGE",
+            content: "",
+            metadata,
+          });
+          return;
+        }
+
+        const chunkSize = 5;
+        const intervalMs = 18;
+        let index = 0;
+
+        const intervalId = setInterval(() => {
+          const nextChunk = content.slice(index, index + chunkSize);
+          dispatch({ type: "ADD_STREAMING_CHUNK", chunk: nextChunk });
+          index += chunkSize;
+
+          if (index >= content.length) {
+            clearInterval(intervalId);
+            dispatch({
+              type: "COMPLETE_STREAMING_MESSAGE",
+              content,
+              metadata,
+            });
+          }
+        }, intervalMs);
+      };
 
       const contextsToSend =
         contextsOverride && contextsOverride.length
@@ -547,10 +574,9 @@ const LearnPlayground: React.FC = () => {
 
       dispatch({ type: "ADD_CHAT_MESSAGE", message: userMessage });
       dispatch({ type: "SET_CHAT_LOADING", loading: true });
-      dispatch({ type: "SET_STREAMING_MESSAGE", content: "" });
 
       try {
-        await sendWorkspaceChatMessage(
+        const res = await sendWorkspaceChatMessage(
           id,
           message.trim(),
           i18n.language as "en" | "ar",
@@ -559,77 +585,70 @@ const LearnPlayground: React.FC = () => {
             contexts: contextPayload,
             autoContext: autoContextEnabled,
             attachments: attachmentFiles,
-          },
-          (chunk) => {
-            if (Array.isArray(chunk.metadata?.attachments)) {
-              const uploadedAttachments = chunk.metadata.attachments.map(
-                (attachment: any) => ({
-                  ...attachment,
-                  status: "uploaded",
-                })
-              );
-              dispatch({
-                type: "UPDATE_MESSAGE_ATTACHMENTS",
-                messageId: userMessage.id,
-                attachments: uploadedAttachments,
-              });
-            }
-            if (chunk.chunk) {
-              dispatch({ type: "ADD_STREAMING_CHUNK", chunk: chunk.chunk });
-            }
-            if (chunk.isComplete) {
-              dispatch({
-                type: "COMPLETE_STREAMING_MESSAGE",
-                content: chunk.chunk || "",
-                metadata: chunk.metadata,
-              });
-            }
-            if (
-              chunk.isComplete &&
-              Array.isArray(chunk.metadata?.contextsApplied)
-            ) {
-              const applied = (chunk.metadata.contextsApplied as any[])
-                .map((item) => {
-                  if (typeof item === "string") return item;
-                  if (item && typeof item === "object") {
-                    return (
-                      (item.id as string | undefined) ||
-                      (item.title as string | undefined) ||
-                      ""
-                    );
-                  }
-                  return "";
-                })
-                .filter((value): value is string => Boolean(value));
-              if (applied.length) {
-                setAppliedContextIds(applied);
-              } else {
-                setAppliedContextIds([]);
-              }
-              const hasWorkspaceApplied = (
-                chunk.metadata.contextsApplied as any[]
-              ).some(
-                (item) =>
-                  item && typeof item === "object" && item.scope === "workspace"
-              );
-              setAutoContextEnabled(hasWorkspaceApplied);
-            }
-            if (chunk.metadata?.error) {
-              const errorMessage: ChatMessage = {
-                id: Date.now().toString(),
-                type: "assistant",
-                content: chunk.metadata.error,
-                timestamp: new Date(),
-                metadata: { error: chunk.metadata.error },
-              };
-              dispatch({ type: "ADD_CHAT_MESSAGE", message: errorMessage });
-              dispatch({ type: "SET_CHAT_LOADING", loading: false });
-              dispatch({ type: "SET_STREAMING_MESSAGE", content: "" });
-            }
           }
         );
+
+        // If backend returns attachments in metadata, mark them uploaded
+        if (Array.isArray(res.metadata?.attachments)) {
+          const uploadedAttachments = res.metadata.attachments.map(
+            (attachment: any) => ({
+              ...attachment,
+              status: "uploaded",
+            })
+          );
+          dispatch({
+            type: "UPDATE_MESSAGE_ATTACHMENTS",
+            messageId: userMessage.id,
+            attachments: uploadedAttachments,
+          });
+        }
+
+        // Apply contextsApplied logic (same as before)
+        if (Array.isArray(res.metadata?.contextsApplied)) {
+          const applied = (res.metadata.contextsApplied as any[])
+            .map((item) => {
+              if (typeof item === "string") return item;
+              if (item && typeof item === "object") {
+                return (
+                  (item.id as string | undefined) ||
+                  (item.title as string | undefined) ||
+                  ""
+                );
+              }
+              return "";
+            })
+            .filter((value): value is string => Boolean(value));
+
+          setAppliedContextIds(applied.length ? applied : []);
+
+          const hasWorkspaceApplied = (
+            res.metadata.contextsApplied as any[]
+          ).some(
+            (item) =>
+              item && typeof item === "object" && item.scope === "workspace"
+          );
+          setAutoContextEnabled(hasWorkspaceApplied);
+        }
+
+        // Error returned as metadata (if your backend does that)
+        if (res.metadata?.error) {
+          const errorMessage: ChatMessage = {
+            id: Date.now().toString(),
+            type: "assistant",
+            content: res.metadata.error,
+            timestamp: new Date(),
+            metadata: { error: res.metadata.error },
+          };
+          dispatch({ type: "ADD_CHAT_MESSAGE", message: errorMessage });
+          dispatch({ type: "SET_CHAT_LOADING", loading: false });
+          return;
+        }
+
+        console.log({ res });
+        streamAssistantMessage(res.message || "", res.metadata);
       } catch (error) {
         console.error("Failed to send message:", error);
+
         if (userAttachmentMetadata.length > 0) {
           const failedAttachments = userAttachmentMetadata.map(
             (attachment) => ({
@@ -643,6 +662,7 @@ const LearnPlayground: React.FC = () => {
             attachments: failedAttachments,
           });
         }
+
         const hitLimit = isRateLimitError(error);
         const failureMessage = hitLimit
           ? getRateLimitToastMessage(isRTL)
@@ -650,9 +670,9 @@ const LearnPlayground: React.FC = () => {
               "chat.error_occurred",
               "An error occurred while sending your message."
             );
-        if (hitLimit) {
-          toast.error(failureMessage);
-        }
+
+        if (hitLimit) toast.error(failureMessage);
+
         const errorMessage: any = {
           id: Date.now().toString(),
           type: "assistant",
@@ -661,9 +681,9 @@ const LearnPlayground: React.FC = () => {
           timestamp: new Date(),
           metadata: { error: failureMessage },
         };
+
         dispatch({ type: "ADD_CHAT_MESSAGE", message: errorMessage });
         dispatch({ type: "SET_CHAT_LOADING", loading: false });
-        dispatch({ type: "SET_STREAMING_MESSAGE", content: "" });
         setAppliedContextIds([]);
       }
     },
@@ -755,7 +775,6 @@ const LearnPlayground: React.FC = () => {
           onValueChange={(v) => dispatch({ type: "SET_TAB", tab: v as TabKey })}
           className="h-full flex flex-col"
         >
-          {/* Chat Tab */}
           {state.tab === "chat" && (
             <TabsContent
               value="chat"

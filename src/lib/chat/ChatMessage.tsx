@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useLayoutEffect,
+} from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import {
@@ -22,7 +28,7 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 // Types
 // ============================================================================
 
-type Attachment = {
+export type Attachment = {
   id?: string;
   filename?: string;
   mimetype?: string;
@@ -36,11 +42,9 @@ type Attachment = {
 
 export interface ChatMessage {
   id: string;
-  type: "user" | "assistant" | "system";
   role: "user" | "assistant" | "system";
   content: string;
-  timestamp: Date;
-  isComplete?: boolean;
+  created_at: Date;
   metadata?: {
     workspaceId?: string;
     workspaceName?: string;
@@ -259,7 +263,7 @@ const UserMessage: React.FC<{
           isRtl ? "text-left" : "text-right"
         }`}
       >
-        {formatClock(message.timestamp)}
+        {formatClock(message.created_at)}
         {message.metadata?.workspaceName ? (
           <>
             {" "}
@@ -559,7 +563,7 @@ const AssistantMessage: React.FC<{
           isRtl ? "text-left" : "text-right"
         }`}
       >
-        {formatClock(message.timestamp)}
+        {formatClock(message.created_at)}
         {message.metadata?.workspaceName ? (
           <>
             {" "}
@@ -599,10 +603,7 @@ const MessageBubble: React.FC<{
 }) => {
   if (!message) return null;
 
-  const who = (message.type ?? message.role) as
-    | "user"
-    | "assistant"
-    | undefined;
+  const who = message.role as "user" | "assistant" | "system" | undefined;
   const isUser = who === "user";
   const isAssistant = who === "assistant";
 
@@ -655,21 +656,57 @@ export default function ChatMessages({
 }: ChatMessagesProps) {
   const { t, i18n } = useTranslation();
   const [isRtl, setIsRtl] = useState(false);
-  const lastMessageRef = useRef<HTMLDivElement>(null);
 
-  const scrollToElement = () => {
-    if (lastMessageRef.current) {
-      lastMessageRef.current.scrollIntoView({
-        behavior: "smooth", // For smooth scrolling
-        block: "start", // Aligns the top of the element with the top of the scroll container
-      });
-    }
-  };
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  const lockedRef = useRef(false);
 
   useEffect(() => {
     setIsRtl(i18n.language === "ar");
-    scrollToElement();
   }, [i18n.language]);
+
+  const isAtBottom = useCallback((epsPx = 4) => {
+    const el = scrollContainerRef.current;
+    if (!el) return true;
+    return el.scrollHeight - (el.scrollTop + el.clientHeight) <= epsPx;
+  }, []);
+
+  const scrollToBottom = useCallback(() => {
+    if (!bottomRef.current) return;
+    bottomRef.current.scrollIntoView({ behavior: "auto", block: "end" });
+  }, []);
+
+  useLayoutEffect(() => {
+    if (lockedRef.current) return;
+
+    if (!isAtBottom(6)) return;
+
+    requestAnimationFrame(() => {
+      if (lockedRef.current) return;
+      scrollToBottom();
+    });
+  }, [
+    messages.length,
+    streamingMessage,
+    isLoading,
+    isAtBottom,
+    scrollToBottom,
+  ]);
+
+  useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+
+    const onScroll = () => {
+      lockedRef.current = !isAtBottom(4);
+    };
+
+    el.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+
+    return () => el.removeEventListener("scroll", onScroll);
+  }, [isAtBottom]);
 
   const hasMessages = messages && messages.length > 0;
   const uploadingLabel = t("chat.attachment.uploading", "Uploading…");
@@ -677,43 +714,44 @@ export default function ChatMessages({
   const thinkingLabel = isRtl ? "جاري التفكير..." : "Thinking...";
 
   return (
-    <div className="w-full flex-1 flex flex-col overflow-hidden">
-      <div className="flex-1 overflow-y-auto px-4 py-3">
-        {!hasMessages && !isLoading ? (
-          <></>
-        ) : (
+    <div className="w-full flex-1 flex flex-col overflow-hidden relative">
+      <div
+        ref={scrollContainerRef}
+        className="flex-1 overflow-y-auto px-4 py-3"
+        onWheelCapture={(e) => {
+          if (e.deltaY < 0) lockedRef.current = true;
+        }}
+        onTouchMoveCapture={() => {
+          if (!isAtBottom(4)) lockedRef.current = true;
+        }}
+        style={{ overflowAnchor: "none" }}
+      >
+        {!hasMessages && !isLoading ? null : (
           <div className="flex flex-col w-full">
-            {messages.map((message, ind) => {
-              const isLastMessage =
-                ind === messages.length - 1 && !(isLoading && streamingMessage);
-
-              return (
-                <div
-                  className="mx-6"
-                  key={
-                    message.id || `${message.timestamp}-${message.role}-${ind}`
-                  }
-                >
-                  <MessageBubble
-                    message={message}
-                    isRtl={isRtl}
-                    uploadingLabel={uploadingLabel}
-                    failedLabel={failedLabel}
-                  />
-                  <div ref={isLastMessage ? lastMessageRef : undefined}></div>
-                </div>
-              );
-            })}
+            {messages.map((message, ind) => (
+              <div
+                className="mx-6"
+                key={
+                  message.id || `${message.created_at}-${message.role}-${ind}`
+                }
+              >
+                <MessageBubble
+                  message={message}
+                  isRtl={isRtl}
+                  uploadingLabel={uploadingLabel}
+                  failedLabel={failedLabel}
+                />
+              </div>
+            ))}
 
             {isLoading && streamingMessage && (
-              <div ref={lastMessageRef}>
+              <div className="mx-6">
                 <MessageBubble
                   message={{
                     id: "streaming",
-                    type: "assistant",
                     role: "assistant",
                     content: "",
-                    timestamp: new Date(),
+                    created_at: new Date(),
                   }}
                   isStreaming
                   streamingContent={streamingMessage}
@@ -726,40 +764,35 @@ export default function ChatMessages({
 
             {isLoading && !streamingMessage && (
               <motion.div
-                ref={lastMessageRef}
                 initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -14 }}
                 className={`flex ${
                   isRtl ? "justify-end" : "justify-start"
-                } mt-2`}
+                } mt-2 mx-6`}
               >
-                <div
-                  className={`flex items-start gap-3 ${
-                    isRtl ? "flex-row-reverse" : ""
-                  }`}
-                >
-                  <div className="bg-zinc-50/85 border border-zinc-200 rounded-2xl px-4 py-3 shadow-sm dark:bg-zinc-900/70 dark:border-zinc-800/60 dark:shadow-none max-w-full">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{
-                          duration: 3,
-                          repeat: Infinity,
-                          ease: "linear",
-                        }}
-                        className="flex-shrink-0"
-                      >
-                        <Brain className="w-5 h-5 text-blue-500 dark:text-blue-400" />
-                      </motion.div>
-                      <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300 truncate">
-                        {thinkingLabel}
-                      </span>
-                    </div>
+                <div className="bg-zinc-50/85 border border-zinc-200 rounded-2xl px-4 py-3 shadow-sm dark:bg-zinc-900/70 dark:border-zinc-800/60 dark:shadow-none max-w-full">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{
+                        duration: 3,
+                        repeat: Infinity,
+                        ease: "linear",
+                      }}
+                      className="flex-shrink-0"
+                    >
+                      <Brain className="w-5 h-5 text-blue-500 dark:text-blue-400" />
+                    </motion.div>
+                    <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300 truncate">
+                      {thinkingLabel}
+                    </span>
                   </div>
                 </div>
               </motion.div>
             )}
+
+            <div ref={bottomRef} />
           </div>
         )}
       </div>

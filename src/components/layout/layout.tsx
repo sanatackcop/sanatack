@@ -18,6 +18,7 @@ import LogoLight from "@/assets/logo.svg";
 import LogoDark from "@/assets/dark_logo.svg";
 import UpgradeModal from "@/shared/workspaces/modals/UpgradeModal";
 import { useUserContext } from "@/context/UserContext";
+import { useNavigate } from "react-router-dom";
 
 const CONFIG = {
   AUTO_COLLAPSE_THRESHOLD: 10,
@@ -52,6 +53,7 @@ export default function DashboardLayout({
     return saved === "true";
   });
 
+  const navigate = useNavigate();
   const [isDragging, setIsDragging] = React.useState(false);
 
   const getInitialSize = () => {
@@ -205,7 +207,8 @@ export default function DashboardLayout({
           <img
             src={String(darkMode ? LogoDark : LogoLight)}
             alt="Logo"
-            className="h-6 w-auto"
+            className="h-6 w-auto cursor-pointer"
+            onClick={() => navigate(`/dashboard/overview`)}
           />
         )}
         <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-100 truncate">

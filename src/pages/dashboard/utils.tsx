@@ -101,7 +101,7 @@ export type Action =
   | { type: "SET_CHAT_INPUT"; input: string }
   | { type: "CLEAR_CHAT" }
   | { type: "SET_CHAT_LOADING"; loading: boolean }
-  | { type: "SET_STREAMING_MESSAGE"; content: string }
+  | { type: "START_STREAMING_MESSAGE" }
   | { type: "ADD_STREAMING_CHUNK"; chunk: string }
   | { type: "COMPLETE_STREAMING_MESSAGE"; content?: string }
   | { type: "SET_WORKSPACE"; workspace: Workspace }
@@ -239,8 +239,8 @@ export const reducer = (state: State, action: any): State => {
     case "SET_CHAT_LOADING":
       return { ...state, chatLoading: action.loading };
 
-    case "SET_STREAMING_MESSAGE":
-      return { ...state, streamingMessage: action.content };
+    case "START_STREAMING_MESSAGE":
+      return { ...state, streamingMessage: "" };
 
     case "ADD_STREAMING_CHUNK":
       return {
