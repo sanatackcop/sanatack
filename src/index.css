@@ -263,3 +263,57 @@ html {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }
+
+/* KaTeX Math Styling */
+.katex {
+  font-size: 1.1em !important;
+  color: inherit;
+}
+
+.katex-display {
+  margin: 1.5rem 0 !important;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 1rem 0;
+}
+
+.katex-display > .katex {
+  display: inline-block;
+  text-align: center;
+  width: 100%;
+}
+
+/* Block math equations */
+.katex-display > .katex > .katex-html {
+  display: block;
+  text-align: center;
+}
+
+/* Inline math styling */
+.katex-inline {
+  padding: 0 0.15em;
+}
+
+/* Dark mode support for KaTeX */
+.dark .katex {
+  color: #e4e4e7;
+}
+
+/* Ensure math doesn't overflow containers */
+.katex-html {
+  white-space: nowrap;
+}
+
+/* Math equation scrollbar */
+.katex-display::-webkit-scrollbar {
+  height: 4px;
+}
+
+.katex-display::-webkit-scrollbar-thumb {
+  background: rgba(155, 155, 155, 0.3);
+  border-radius: 2px;
+}
+
+.dark .katex-display::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}

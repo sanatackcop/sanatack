@@ -248,6 +248,29 @@ export const createNewSummaryApi = async ({
   }
 };
 
+export const createNewNoteApi = async ({
+  id,
+  language,
+}: {
+  id: string;
+  language: "ar" | "en";
+}): Promise<GenerationJobResponse> => {
+  try {
+    const response = await Api<GenerationJobResponse>({
+      method: API_METHODS.POST,
+      url: `study-ai/workspaces/${id}/generate/note`,
+      data: {
+        language,
+      },
+    });
+
+    return response.data;
+  } catch (e: any) {
+    console.error("createNewNoteApi error:", e.message);
+    throw e;
+  }
+};
+
 export const getWorkSpace = async (id: string) => {
   try {
     const response = await Api({
@@ -459,6 +482,7 @@ export const getWorkSpaceContent = async (
   quizzes: any;
   explanations: any;
   summaries: any;
+  notes: any;
 }> => {
   try {
     const response = await Api({
@@ -517,6 +541,234 @@ export const submitWorkspaceQuizAttempt = async (attemptId: string) => {
     return response.data as any;
   } catch (e: any) {
     console.error("submitWorkspaceQuizAttempt error:", e.message);
+    throw e;
+  }
+};
+
+// ====== Notes API Functions ======
+
+export interface CreateNotePayload {
+  title: string;
+  content: string;
+  workspaceId?: string;
+}
+
+export interface UpdateNotePayload {
+  title?: string;
+  content?: string;
+}
+
+export interface CreateWorkspaceNotePayload {
+  title: string;
+  content: string;
+}
+
+export interface NoteResponse {
+  id: string;
+  title: string;
+  content: string;
+  user_id: string;
+  workspaceId?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface NotesListResponse {
+  notes: NoteResponse[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface NoteStatsResponse {
+  total: number;
+}
+
+// Create a general note
+export const createNoteApi = async (payload: CreateNotePayload): Promise<any> => {
+  try {
+    const response = await Api({
+      method: API_METHODS.POST,
+      url: `study-ai/notes`,
+      data: {
+        title: payload.title,
+        content: payload.content,
+        ...(payload.workspaceId ? { workspaceId: payload.workspaceId } : {}),
+      },
+    });
+    return response.data;
+  } catch (e: any) {
+    console.error("createNoteApi error:", e.message);
+    throw e;
+  }
+};
+
+// Get all general notes with pagination and filtering
+export const getNotesApi = async (params?: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  workspaceId?: string;
+}): Promise<NotesListResponse> => {
+  try {
+    const response = await Api<NotesListResponse>({
+      method: API_METHODS.GET,
+      url: `study-ai/notes`,
+      params,
+    });
+    return response.data;
+  } catch (e: any) {
+    console.error("getNotesApi error:", e.message);
+    throw e;
+  }
+};
+
+// Get note statistics
+export const getNoteStatsApi = async (): Promise<NoteStatsResponse> => {
+  try {
+    const response = await Api<NoteStatsResponse>({
+      method: API_METHODS.GET,
+      url: `study-ai/notes/stats`,
+    });
+    return response.data;
+  } catch (e: any) {
+    console.error("getNoteStatsApi error:", e.message);
+    throw e;
+  }
+};
+
+// Get a single note by ID
+export const getNoteByIdApi = async (noteId: string): Promise<any> => {
+  try {
+    const response = await Api({
+      method: API_METHODS.GET,
+      url: `study-ai/notes/${noteId}`,
+    });
+    return response.data;
+  } catch (e: any) {
+    console.error("getNoteByIdApi error:", e.message);
+    throw e;
+  }
+};
+
+// Update a note
+export const updateNoteApi = async (
+  noteId: string,
+  payload: UpdateNotePayload
+): Promise<any> => {
+  try {
+    const response = await Api({
+      method: API_METHODS.PUT,
+      url: `study-ai/notes/${noteId}`,
+      data: payload,
+    });
+    return response.data;
+  } catch (e: any) {
+    console.error("updateNoteApi error:", e.message);
+    throw e;
+  }
+};
+
+// Delete a note
+export const deleteNoteApi = async (noteId: string): Promise<any> => {
+  try {
+    const response = await Api({
+      method: API_METHODS.DELETE,
+      url: `study-ai/notes/${noteId}`,
+    });
+    return response.data;
+  } catch (e: any) {
+    console.error("deleteNoteApi error:", e.message);
+    throw e;
+  }
+};
+
+// ====== Workspace Notes API Functions ======
+
+// Create a note in a workspace
+export const createWorkspaceNoteApi = async (
+  workspaceId: string,
+  payload: CreateWorkspaceNotePayload
+): Promise<any> => {
+  try {
+    const response = await Api({
+      method: API_METHODS.POST,
+      url: `study-ai/workspaces/${workspaceId}/notes`,
+      data: payload,
+    });
+    return response.data;
+  } catch (e: any) {
+    console.error("createWorkspaceNoteApi error:", e.message);
+    throw e;
+  }
+};
+
+// Get all notes in a workspace
+export const getWorkspaceNotesApi = async (
+  workspaceId: string
+): Promise<any> => {
+  try {
+    const response = await Api({
+      method: API_METHODS.GET,
+      url: `study-ai/workspaces/${workspaceId}/notes`,
+    });
+    return response.data;
+  } catch (e: any) {
+    console.error("getWorkspaceNotesApi error:", e.message);
+    throw e;
+  }
+};
+
+// Get a single note in a workspace
+export const getWorkspaceNoteByIdApi = async (
+  workspaceId: string,
+  noteId: string
+): Promise<any> => {
+  try {
+    const response = await Api({
+      method: API_METHODS.GET,
+      url: `study-ai/workspaces/${workspaceId}/notes/${noteId}`,
+    });
+    return response.data;
+  } catch (e: any) {
+    console.error("getWorkspaceNoteByIdApi error:", e.message);
+    throw e;
+  }
+};
+
+// Update a note in a workspace
+export const updateWorkspaceNoteApi = async (
+  workspaceId: string,
+  noteId: string,
+  payload: UpdateNotePayload
+): Promise<any> => {
+  try {
+    const response = await Api({
+      method: API_METHODS.PUT,
+      url: `study-ai/workspaces/${workspaceId}/notes/${noteId}`,
+      data: payload,
+    });
+    return response.data;
+  } catch (e: any) {
+    console.error("updateWorkspaceNoteApi error:", e.message);
+    throw e;
+  }
+};
+
+// Delete a note from a workspace
+export const deleteWorkspaceNoteApi = async (
+  workspaceId: string,
+  noteId: string
+): Promise<any> => {
+  try {
+    const response = await Api({
+      method: API_METHODS.DELETE,
+      url: `study-ai/workspaces/${workspaceId}/notes/${noteId}`,
+    });
+    return response.data;
+  } catch (e: any) {
+    console.error("deleteWorkspaceNoteApi error:", e.message);
     throw e;
   }
 };
