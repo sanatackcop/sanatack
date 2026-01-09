@@ -1,5 +1,6 @@
 import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from "axios";
 import Storage from "@/lib/Storage";
+import { LoginResult } from "./auth-apis";
 
 export const baseURL = import.meta.env.VITE_REACT_APP_BASEURL;
 
@@ -13,17 +14,12 @@ const forceLogout = () => {
   if (logoutHandler) logoutHandler();
 };
 
-const getAccessToken = () =>
-  Storage.get("access_token") || Storage.get("accessToken") || "";
+const getAccessToken = () => Storage.get("access_token") || "";
+const getRefreshToken = () => Storage.get("refresh_token") || "";
 
-const getRefreshToken = () =>
-  Storage.get("refresh_token") || Storage.get("refreshToken") || "";
-
-const saveTokens = (accessToken: string, refreshToken: string) => {
+const saveTokens = (accessToken: string, refresh_token: string) => {
   Storage.set("access_token", accessToken);
-  Storage.set("accessToken", accessToken);
-  Storage.set("refresh_token", refreshToken);
-  Storage.set("refreshToken", refreshToken);
+  Storage.set("refresh_token", refresh_token);
 };
 
 const baseApi = axios.create({
@@ -98,25 +94,9 @@ baseApi.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      const refreshToken = getRefreshToken();
-      if (!refreshToken) throw new Error("No refresh token");
+      const data = await refreshTokens();
 
-      const { data }: any = await refreshApi.post("/auth/refresh", {
-        refresh_token: refreshToken,
-      });
-
-      const newAccessToken = data.accessToken || data.access_token;
-      const newRefreshToken = data.refreshToken || data.refresh_token;
-
-      if (!newAccessToken || !newRefreshToken) {
-        throw new Error("Invalid refresh response");
-      }
-
-      saveTokens(newAccessToken, newRefreshToken);
-
-      resolveQueue(newAccessToken);
-
-      originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+      originalRequest.headers.Authorization = `Bearer ${data.access_token}`;
 
       return baseApi(originalRequest);
     } catch (refreshError) {
@@ -183,4 +163,25 @@ export enum API_METHODS {
   GET = "get",
   PUT = "put",
   DELETE = "delete",
+}
+
+export async function refreshTokens(): Promise<LoginResult> {
+  const refresh_token = getRefreshToken();
+  if (!refresh_token) throw new Error("No refresh token");
+
+  const { data } = await refreshApi.post("/auth/refresh", {
+    refresh_token: refresh_token,
+  });
+
+  const newAccessToken = data.access_token;
+  const newRefreshToken = data.refresh_token;
+
+  if (!newAccessToken || !newRefreshToken) {
+    throw new Error("Invalid refresh response");
+  }
+
+  saveTokens(newAccessToken, newRefreshToken);
+
+  resolveQueue(newAccessToken);
+  return data;
 }

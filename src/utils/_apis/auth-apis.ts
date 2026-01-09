@@ -30,7 +30,7 @@ export type User = {
   first_name: string;
   last_name: string;
   role: Roles;
-  isPro: boolean;
+  plan_type: string;
   isVerify: boolean;
   isActive: boolean;
 };
@@ -39,10 +39,9 @@ export type LoginResult = {
   user: string;
   type: ContextType;
   role: "admin" | "student";
-  is_pro: boolean;
+  plan_type: string;
+  access_token?: string;
   refresh_token: string;
-  accessToken?: string;
-  refreshToken?: string;
   message?: string;
 };
 

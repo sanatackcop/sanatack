@@ -41,24 +41,30 @@ export interface Highlight {
   zoom: number;
 }
 
-// Chat Message Interface
-export interface ChatAttachment {
+export type Attachment = {
   id?: string;
   filename?: string;
   mimetype?: string;
   size?: number;
-  type?: 'text' | 'image' | 'file';
+  type?: string;
   url?: string;
   contentPreview?: string;
-  status?: 'uploading' | 'uploaded' | 'failed';
-}
+  status?: any;
+  dataUrl?: string;
+};
 
 export interface ChatMessage {
   id: string;
-  type: 'user' | 'assistant' | 'system' | any;
+  role: "user" | "assistant" | "system";
   content: string;
-  timestamp: Date;
-  metadata?: { [key: string]: any; attachments?: ChatAttachment[] };
+  created_at: Date;
+  metadata?: {
+    workspaceId?: string;
+    workspaceName?: string;
+    chatType?: string;
+    error?: string;
+    attachments?: Attachment[];
+  };
 }
 
 export type WorkspaceContextType =

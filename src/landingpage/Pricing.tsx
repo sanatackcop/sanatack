@@ -12,16 +12,12 @@ interface Feature {
 
 export interface Plan {
   nameKey: string;
-  yearlyPriceUSD: number | string;
-  monthlyPriceUSD: number | string;
-  periodKey: string;
-  subtitleKey?: string;
+  monthlyPriceSAR: number;
   descriptionKey: string;
-  billingToggle?: boolean;
   isPopular?: boolean;
   features: Feature[];
   buttonTextKey: string;
-  plan_type: "free" | "pro";
+  plan_type: "free" | "starter" | "advanced" | "unlimited";
   buttonVariant: "outline" | "primary";
 }
 
@@ -81,74 +77,58 @@ function AnimatedPrice({
 
 export const plans: Plan[] = [
   {
-    nameKey: "pricing.free.name",
-    yearlyPriceUSD: 0,
-    monthlyPriceUSD: 0,
-    periodKey: "pricing.free.period",
-    descriptionKey: "pricing.free.description",
-    billingToggle: false,
+    nameKey: "pricing.starter.name",
+    monthlyPriceSAR: 40,
+    descriptionKey: "pricing.starter.description",
     features: [
-      { key: "pricing.free.features.uploads" },
-      {
-        key: "pricing.free.features.aiChats",
-        boldKeys: ["pricing.free.features.learnPlus"],
-      },
-      { key: "pricing.free.features.quizAnswers" },
-      { key: "pricing.free.features.practiceExams" },
-      { key: "pricing.free.features.podcast" },
-      {
-        key: "pricing.free.features.uploadFiles",
-        boldKeys: ["pricing.free.features.pages", "pricing.free.features.size"],
-      },
+      // { key: "pricing.starter.features.aiQuality" },
+      { key: "pricing.starter.features.contentCredits" },
+      { key: "pricing.starter.features.uploads" },
+      { key: "pricing.starter.features.chatCredits" },
+      { key: "pricing.starter.features.practiceExams" },
+      // { key: "pricing.starter.features.podcast" },
+      { key: "pricing.starter.features.uploadFiles" },
     ],
-    buttonTextKey: "pricing.free.button",
+    buttonTextKey: "pricing.starter.button",
     buttonVariant: "outline",
-    plan_type: "free",
+    plan_type: "starter",
   },
   {
-    nameKey: "pricing.pro.name",
-    yearlyPriceUSD: 10.99,
-    monthlyPriceUSD: 15.99,
-    periodKey: "pricing.pro.period",
-    subtitleKey: "pricing.pro.subtitle",
-    descriptionKey: "pricing.pro.description",
-    billingToggle: true,
+    nameKey: "pricing.advanced.name",
+    monthlyPriceSAR: 60,
+    descriptionKey: "pricing.advanced.description",
     isPopular: true,
     features: [
-      {
-        key: "pricing.pro.features.unlimitedUploads",
-        boldKeys: ["pricing.pro.features.unlimited"],
-      },
-      {
-        key: "pricing.pro.features.unlimitedAI",
-        boldKeys: [
-          "pricing.pro.features.unlimitedText",
-          "pricing.pro.features.aiLimit",
-        ],
-      },
-      {
-        key: "pricing.pro.features.unlimitedQuiz",
-        boldKeys: ["pricing.pro.features.unlimitedText"],
-      },
-      {
-        key: "pricing.pro.features.unlimitedExams",
-        boldKeys: ["pricing.pro.features.unlimitedText"],
-      },
-      {
-        key: "pricing.pro.features.podcasts",
-        boldKeys: ["pricing.pro.features.podcastCount"],
-      },
-      {
-        key: "pricing.pro.features.uploadFilesLarge",
-        boldKeys: [
-          "pricing.pro.features.pagesLarge",
-          "pricing.pro.features.sizeLarge",
-        ],
-      },
+      // { key: "pricing.advanced.features.aiQuality" },
+      { key: "pricing.advanced.features.contentCredits" },
+      { key: "pricing.advanced.features.uploads" },
+      { key: "pricing.advanced.features.chatCredits" },
+      { key: "pricing.advanced.features.practiceExams" },
+      // { key: "pricing.advanced.features.podcast" },
+      { key: "pricing.advanced.features.uploadFiles" },
+      { key: "pricing.advanced.features.speed" },
     ],
-    buttonTextKey: "pricing.pro.button",
+    buttonTextKey: "pricing.advanced.button",
     buttonVariant: "primary",
-    plan_type: "pro",
+    plan_type: "advanced",
+  },
+  {
+    nameKey: "pricing.unlimited.name",
+    monthlyPriceSAR: 80,
+    descriptionKey: "pricing.unlimited.description",
+    features: [
+      // { key: "pricing.unlimited.features.aiQuality" },
+      { key: "pricing.unlimited.features.contentCredits" },
+      { key: "pricing.unlimited.features.uploads" },
+      { key: "pricing.unlimited.features.chatCredits" },
+      { key: "pricing.unlimited.features.practiceExams" },
+      // { key: "pricing.unlimited.features.podcast" },
+      { key: "pricing.unlimited.features.uploadFiles" },
+      { key: "pricing.unlimited.features.priority" },
+    ],
+    buttonTextKey: "pricing.unlimited.button",
+    buttonVariant: "outline",
+    plan_type: "unlimited",
   },
 ];
 
@@ -156,38 +136,16 @@ export function Pricing() {
   const { t } = useTranslation();
   const { isRTL } = useLocaleDirection();
   const navigate = useNavigate();
-  const [isYearly, setIsYearly] = useState(true);
   const [currency, setCurrency] = useState<"SAR" | "USD">("SAR");
 
   const USD_TO_SAR = 3.75;
 
   const getPrice = (plan: Plan) => {
-    const priceInUSD = isYearly ? plan.yearlyPriceUSD : plan.monthlyPriceUSD;
-
-    if (typeof priceInUSD === "string") {
-      return priceInUSD;
+    if (currency === "SAR") {
+      return plan.monthlyPriceSAR;
     }
 
-    if (currency === "USD") {
-      return priceInUSD;
-    } else {
-      return priceInUSD * USD_TO_SAR;
-    }
-  };
-
-  const getSavings = (plan: Plan) => {
-    if (
-      typeof plan.monthlyPriceUSD === "string" ||
-      typeof plan.yearlyPriceUSD === "string"
-    ) {
-      return 0;
-    }
-
-    const monthlyTotal = plan.monthlyPriceUSD * 12;
-    const yearlyTotal = plan.yearlyPriceUSD * 12;
-    const savingsUSD = monthlyTotal - yearlyTotal;
-
-    return currency === "USD" ? savingsUSD : savingsUSD * USD_TO_SAR;
+    return Number((plan.monthlyPriceSAR / USD_TO_SAR).toFixed(2));
   };
 
   const handleCTAClick = () => {
@@ -259,41 +217,6 @@ export function Pricing() {
                 <span>USD</span>
               </button>
             </motion.div>
-
-            {/* Billing Period Toggle */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              viewport={{ once: true }}
-              className="inline-flex items-center gap-2 bg-white dark:bg-zinc-800 rounded-full p-1.5 shadow-lg border border-zinc-200 dark:border-zinc-700"
-            >
-              <button
-                onClick={() => setIsYearly(false)}
-                className={`px-5 py-2.5 rounded-full transition-all duration-300 text-sm font-medium ${
-                  !isYearly
-                    ? "bg-gradient-to-r from-zinc-900 to-zinc-800 dark:from-zinc-100 dark:to-zinc-200 text-white dark:text-zinc-900 shadow-lg scale-105"
-                    : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700/50"
-                }`}
-              >
-                {t("pricing.billedMonthly")}
-              </button>
-              <button
-                onClick={() => setIsYearly(true)}
-                className={`px-5 py-2.5 rounded-full transition-all duration-300 text-sm font-medium flex items-center gap-2 ${
-                  isYearly
-                    ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg scale-105"
-                    : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700/50"
-                }`}
-              >
-                <span>{t("pricing.pro.subtitle")}</span>
-                {isYearly && (
-                  <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full font-semibold">
-                    -20%
-                  </span>
-                )}
-              </button>
-            </motion.div>
           </div>
         </div>
 
@@ -310,7 +233,7 @@ export function Pricing() {
                 className={`relative transform transition-all duration-300 ${
                   plan.isPopular
                     ? "md:scale-110 z-10"
-                    : "md:scale-90 hover:scale-95"
+                    : "md:scale-95 hover:scale-100"
                 }`}
                 style={{ transformOrigin: "center" }}
               >
@@ -348,61 +271,14 @@ export function Pricing() {
                             />
                           </span>
                           <span className="text-base text-zinc-500 dark:text-zinc-400">
-                            {t(plan.periodKey as any)}
+                            {t("pricing.perMonth")}
                           </span>
                         </div>
-                        {plan.billingToggle && isYearly && (
-                          <p className="text-sm text-blue-600 dark:text-blue-500 mt-3 font-medium">
-                            {t("pricing.savingsText", {
-                              defaultValue: `Save ${
-                                currency === "SAR" ? "SR" : "$"
-                              }${getSavings(plan).toFixed(2)} annually`,
-                            })}
-                          </p>
-                        )}
                       </div>
 
                       <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
                         {t(plan.descriptionKey as any)}
                       </p>
-                    </div>
-
-                    {/* Billing Info */}
-                    <div
-                      className={`px-8 py-4 ${
-                        plan.isPopular
-                          ? "bg-blue-50 dark:bg-blue-950/20"
-                          : "bg-zinc-50 dark:bg-zinc-800/50"
-                      }`}
-                    >
-                      {plan.billingToggle ? (
-                        <div className="flex items-center gap-2">
-                          <svg
-                            className={`w-4 h-4 ${
-                              plan.isPopular
-                                ? "text-blue-600 dark:text-blue-500"
-                                : "text-blue-600 dark:text-blue-500"
-                            }`}
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                          <span className="text-sm text-zinc-700 dark:text-zinc-300 font-medium">
-                            {isYearly
-                              ? t(plan.subtitleKey! as any)
-                              : t("pricing.billedMonthly")}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-sm text-zinc-600 dark:text-zinc-400">
-                          {t("pricing.free.freeForEveryone")}
-                        </span>
-                      )}
                     </div>
 
                     {/* Features */}

@@ -1,4 +1,4 @@
-export type RateLimitTier = "free" | "pro" | "team" | "admin";
+import { PlanType } from "@/context/UserContext";
 
 export interface RateLimitUsageItem {
   action: string;
@@ -15,16 +15,6 @@ export interface RateLimitUsageItem {
 }
 
 export interface RateLimitSummaryResponse {
-  tier: RateLimitTier;
+  plan_type: PlanType;
   usage: RateLimitUsageItem[];
-}
-
-export interface RateLimitCatalogItem {
-  action: string;
-  label?: string;
-  description?: string;
-  category?: string;
-  creditsPerUse: number;
-  windowSeconds: number;
-  limits: Partial<Record<RateLimitTier, number | null>>;
 }

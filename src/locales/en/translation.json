@@ -912,67 +912,52 @@
   },
   "pricing": {
     "title": "Pricing",
-    "subtitle": "Choose the perfect plan for your learning journey. Upgrade anytime to unlock more features.",
-    "popularBadge": "Popular",
-    "billedMonthly": "Billed Monthly",
-    "free": {
-      "name": "Free",
-      "period": "/ month",
-      "description": "Start your learning journey here.",
-      "freeForEveryone": "Free for everyone",
-      "button": "Get Started",
+    "subtitle": "Choose the plan that fits your learning goals.",
+    "popularBadge": "Best value",
+    "billedMonthly": "Billed monthly",
+    "perMonth": "/ month",
+    "starter": {
+      "name": "Starter",
+      "description": "For students who learn from documents and videos.",
+      "button": "Choose Starter",
       "features": {
-        "uploads": "3 uploads, pastes, and records / day",
-        "aiChats": "5 AI chats / day (10 / month with Learn+ mode)",
-        "learnPlus": "Learn+",
-        "quizAnswers": "10 quiz answers / day",
-        "practiceExams": "2 practice exams / month",
-        "podcast": "1 podcast / day",
-        "uploadFiles": "Upload files, each up to 100 pages / 10 MB in size",
-        "pages": "100 pages",
-        "size": "10 MB"
+        "aiQuality": "AI Quality: Advanced AI model (latest)",
+        "contentCredits": "150 content generation credits / month",
+        "uploads": "30 uploads / month (PDFs or YouTube videos)",
+        "chatCredits": "600 chat messages / month",
+        "practiceExams": "5 practice exams / month",
+        "podcast": "2 podcasts / day",
+        "uploadFiles": "Upload files up to 300 pages / 30 MB"
       }
     },
-    "pro": {
-      "name": "Pro",
-      "period": "/ month",
-      "subtitle": "Billed Annually",
-      "description": "Learn at the highest level.",
-      "button": "Get Started",
+    "advanced": {
+      "name": "Advanced",
+      "description": "Best value for serious learners.",
+      "button": "Choose Advanced",
       "features": {
-        "unlimitedUploads": "Unlimited uploads, pastes, and records",
-        "unlimited": "Unlimited",
-        "unlimitedAI": "Unlimited AI chats (100 / day with Learn+ mode)",
-        "unlimitedText": "Unlimited",
-        "aiLimit": "100",
-        "unlimitedQuiz": "Unlimited quiz generation",
-        "unlimitedExams": "Unlimited practice exams",
-        "podcasts": "10 podcasts / day",
-        "podcastCount": "10 podcasts",
-        "uploadFilesLarge": "Upload files, each up to 2000 pages / 300 MB in size",
-        "pagesLarge": "2000 pages",
-        "sizeLarge": "300 MB"
+        "aiQuality": "AI Quality: Advanced AI model (latest)",
+        "contentCredits": "400 content generation credits / month",
+        "uploads": "100 uploads / month (PDFs or YouTube videos)",
+        "chatCredits": "2,000 chat messages / month",
+        "practiceExams": "15 practice exams / month",
+        "podcast": "5 podcasts / day",
+        "uploadFiles": "Upload files up to 800 pages / 100 MB",
+        "speed": "Faster AI responses"
       }
     },
-    "team": {
-      "name": "Team",
-      "period": "/ month / seat",
-      "subtitle": "Billed Annually",
-      "description": "For study groups and teams.",
-      "minSeats": "Minimum 3 seats required",
-      "button": "Choose Team",
+    "unlimited": {
+      "name": "Unlimited",
+      "description": "Unlimited learning. No restrictions.",
+      "button": "Choose Unlimited",
       "features": {
-        "everythingPro": "Everything in Pro +",
-        "pro": "Pro",
-        "discounts": "Discounts scale with team size",
-        "teamSize": "team size",
-        "billing": "Centralized team billing",
-        "centralized": "Centralized",
-        "spaces": "Shared spaces",
-        "shared": "Shared spaces",
-        "permissions": "Add, remove and set custom permissions for team members",
-        "custom": "custom permissions",
-        "teamWord": "team"
+        "aiQuality": "AI Quality: Advanced AI model (latest)",
+        "contentCredits": "Unlimited content generation",
+        "uploads": "Unlimited PDF & YouTube uploads",
+        "chatCredits": "Unlimited AI chat",
+        "practiceExams": "Unlimited practice exams",
+        "podcast": "10 podcasts / day",
+        "uploadFiles": "Upload files up to 2000 pages / 300 MB",
+        "priority": "Priority processing"
       }
     }
   },

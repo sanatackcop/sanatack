@@ -100,6 +100,7 @@ export interface ChatInputProps {
   onChange: (value: string) => void;
   onSubmit?: (value: string, model: Model, contexts: Context[]) => void;
   placeholder?: string;
+  isSending?: boolean;
   models?: Model[];
   onModelChange?: (model: Model) => void;
   contexts?: Context[];
@@ -166,11 +167,13 @@ const ChatInput: React.FC<ChatInputProps> = ({
   availableContexts = [],
   onSearchContexts,
   appliedContextIds = [],
+  isSending = false,
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [selectedContexts, setSelectedContexts] = useState<Context[]>(
     contexts ?? []
   );
+  const hasMentions = useMemo(() => value.includes("@"), [value]);
   const [contextSearch, setContextSearch] = useState("");
   const [cursorPosition, setCursorPosition] = useState(0);
   const [mentionTriggerPos, setMentionTriggerPos] = useState<number | null>(
@@ -467,6 +470,15 @@ const ChatInput: React.FC<ChatInputProps> = ({
     setSelectedContexts(contexts);
   }, [contexts]);
 
+  useEffect(() => {
+    if (isSending) {
+      setShowContextMenu(false);
+      setContextMenuOpen(false);
+      setMentionTriggerPos(null);
+      setIsDragging(false);
+    }
+  }, [isSending]);
+
   // Render highlighted text with mentions
   const renderHighlightedText = () => {
     if (!value) return null;
@@ -523,6 +535,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   };
 
   const handleInputChange = (newValue: string) => {
+    if (isSending) return;
     onChange(newValue);
 
     const textarea = textAreaRef.current;
@@ -557,7 +570,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
 
   const submit = () => {
     const trimmed = value?.trim();
-    if (!trimmed) return;
+    if (!trimmed || isSending) return;
 
     // Create a default model if not provided
     const defaultModel: Model = {
@@ -613,6 +626,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
 
     if (e.key === "Enter" && !e.shiftKey && !showContextMenu) {
       e.preventDefault();
+      if (isSending) return;
       submit();
     }
     if (e.key === "Escape") {
@@ -624,10 +638,12 @@ const ChatInput: React.FC<ChatInputProps> = ({
 
   const handleContainerClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (isSending) return;
     textAreaRef.current?.focus();
   };
 
   const handleFocus = () => {
+    if (isSending) return;
     setIsFocused(true);
   };
 
@@ -638,6 +654,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
+    if (isSending) return;
     const files = e.target.files;
     if (!files) return;
     await processFiles(files);
@@ -646,16 +663,19 @@ const ChatInput: React.FC<ChatInputProps> = ({
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
+    if (isSending) return;
     setIsDragging(true);
   };
 
   const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
+    if (isSending) return;
     setIsDragging(false);
   };
 
   const handleDropFiles = async (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
+    if (isSending) return;
     setIsDragging(false);
     const droppedFiles = e.dataTransfer.files;
     if (!droppedFiles || droppedFiles.length === 0) return;
@@ -668,6 +688,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   );
 
   const removeContext = (contextId: string) => {
+    if (isSending) return;
     setSelectedContexts((prev) => {
       const updated = prev.filter((ctx) => getContextKey(ctx) !== contextId);
       onContextsChange?.(updated);
@@ -832,6 +853,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                       e.stopPropagation();
                       removeContext(getContextKey(context));
                     }}
+                    disabled={isSending}
                     className="text-zinc-400 transition-colors hover:text-zinc-700 dark:hover:text-zinc-100"
                     aria-label={isRTL ? "إزالة الملف" : "Remove attachment"}
                   >
@@ -859,6 +881,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                   ${isRTL ? "text-right pr-6 pl-16" : "text-left pl-4 pr-16"}
                   py-4
                 `}
+                style={{ visibility: hasMentions ? "visible" : "hidden" }}
               >
                 {renderHighlightedText()}
               </div>
@@ -874,6 +897,8 @@ const ChatInput: React.FC<ChatInputProps> = ({
                   const target = e.target as HTMLTextAreaElement;
                   setCursorPosition(target.selectionStart);
                 }}
+                readOnly={isSending}
+                aria-disabled={isSending}
                 placeholder={actualPlaceholder}
                 dir={isRTL ? "rtl" : "ltr"}
                 className={`
@@ -888,11 +913,12 @@ const ChatInput: React.FC<ChatInputProps> = ({
                       ? "placeholder:text-zinc-400/80 dark:placeholder:text-zinc-500/80"
                       : "placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
                   }
+                  ${isSending ? "cursor-not-allowed opacity-70" : ""}
                 `}
                 style={{
                   minHeight: "56px",
-                  color: value ? "transparent" : undefined,
-                  caretColor: isFocused ? "rgb(59 130 246)" : "rgb(24 24 27)",
+                  color: hasMentions ? "transparent" : undefined,
+                  caretColor: "rgb(59 130 246)",
                   overflow: "hidden",
                 }}
                 rows={1}
@@ -935,7 +961,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                             }
                           `}
                           size="sm"
-                          disabled={autoContextLoading}
+                          disabled={autoContextLoading || isSending}
                         >
                           <div className="flex items-center gap-1.5 text-zinc-700 dark:text-zinc-300 transition-all duration-100 hover:text-zinc-900 dark:hover:text-zinc-100">
                             {autoContextLoading ? (
@@ -979,7 +1005,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                                 type="button"
                                 variant="ghost"
                                 size="sm"
-                                disabled={autoContextLoading}
+                                disabled={autoContextLoading || isSending}
                                 className="w-full justify-start gap-2 text-xs font-medium text-zinc-700 hover:text-zinc-900 hover:bg-white dark:text-zinc-300 dark:hover:text-white"
                                 onClick={(event) => {
                                   event.stopPropagation();
@@ -1098,15 +1124,16 @@ const ChatInput: React.FC<ChatInputProps> = ({
                     </Popover>
                   )}
 
-                  <Button
-                    variant="outline"
-                    className="rounded-2xl dark:bg-transparent border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-all duration-200"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      fileInputRef.current?.click();
-                    }}
-                  >
+                <Button
+                  variant="outline"
+                  className="rounded-2xl dark:bg-transparent border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-all duration-200"
+                  size="sm"
+                  disabled={isSending}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    fileInputRef.current?.click();
+                  }}
+                >
                     <div className="flex items-center gap-1.5 text-zinc-700 dark:text-zinc-300 transition-all duration-100 hover:text-zinc-900 dark:hover:text-zinc-100">
                       <Paperclip className="size-3.5" />
                     </div>
@@ -1118,18 +1145,22 @@ const ChatInput: React.FC<ChatInputProps> = ({
                     e.stopPropagation();
                     submit();
                   }}
-                  disabled={!value?.trim()}
+                  disabled={!value?.trim() || isSending}
                   size="sm"
                   className={`
                     size-8 rounded-2xl font-medium transition-all duration-300 ease-out
                     ${
-                      value?.trim()
+                      value?.trim() && !isSending
                         ? "bg-zinc-900 hover:bg-black dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 shadow-sm hover:shadow-md hover:scale-105"
                         : "bg-zinc-200 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-600 cursor-not-allowed"
                     }
                   `}
                 >
-                  <ArrowUp className="w-4 h-4" />
+                  {isSending ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <ArrowUp className="w-4 h-4" />
+                  )}
                 </Button>
               </div>
             </div>

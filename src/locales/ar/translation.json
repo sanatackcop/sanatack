@@ -921,68 +921,53 @@
     }
   },
   "pricing": {
-    "title": "الأسعار",
-    "subtitle": "اختر الخطة المثالية لرحلة التعلم الخاصة بك. قم بالترقية في أي وقت لفتح المزيد من الميزات.",
-    "popularBadge": "الأكثر شعبية",
-    "billedMonthly": "الدفع شهرياً",
-    "free": {
-      "name": "مجاني",
-      "period": "/ شهر",
-      "description": "ابدأ رحلة التعلم الخاصة بك هنا.",
-      "freeForEveryone": "مجاني للجميع",
-      "button": "ابدأ الآن",
+    "title": "Pricing",
+    "subtitle": "Choose the plan that fits your learning goals.",
+    "popularBadge": "Best value",
+    "billedMonthly": "Billed monthly",
+    "perMonth": "/ month",
+    "starter": {
+      "name": "Starter",
+      "description": "For students who learn from documents and videos.",
+      "button": "Choose Starter",
       "features": {
-        "uploads": "3 تحميلات ولصق وتسجيلات / يوم",
-        "aiChats": "5 محادثات ذكاء اصطناعي / يوم (10 / شهر مع وضع Learn+)",
-        "learnPlus": "Learn+",
-        "quizAnswers": "10 إجابات اختبار / يوم",
-        "practiceExams": "2 امتحانات تدريبية / شهر",
-        "podcast": "1 بودكاست / يوم",
-        "uploadFiles": "تحميل ملفات، كل منها حتى 100 صفحة / 10 ميجابايت",
-        "pages": "100 صفحة",
-        "size": "10 ميجابايت"
+        "aiQuality": "AI Quality: Advanced AI model (latest)",
+        "contentCredits": "150 content generation credits / month",
+        "uploads": "30 uploads / month (PDFs or YouTube videos)",
+        "chatCredits": "600 chat messages / month",
+        "practiceExams": "5 practice exams / month",
+        "podcast": "2 podcasts / day",
+        "uploadFiles": "Upload files up to 300 pages / 30 MB"
       }
     },
-    "pro": {
-      "name": "احترافي",
-      "period": "/ شهر",
-      "subtitle": "الدفع سنوياً",
-      "description": "تعلم على أعلى مستوى.",
-      "button": "ابدأ الآن",
+    "advanced": {
+      "name": "Advanced",
+      "description": "Best value for serious learners.",
+      "button": "Choose Advanced",
       "features": {
-        "unlimitedUploads": "تحميلات ولصق وتسجيلات غير محدودة",
-        "unlimited": "غير محدودة",
-        "unlimitedAI": "محادثات ذكاء اصطناعي غير محدودة (100 / يوم مع وضع Learn+)",
-        "unlimitedText": "غير محدودة",
-        "aiLimit": "100",
-        "unlimitedQuiz": "إنشاء اختبارات غير محدود",
-        "unlimitedExams": "امتحانات تدريبية غير محدودة",
-        "podcasts": "10 بودكاست / يوم",
-        "podcastCount": "10 بودكاست",
-        "uploadFilesLarge": "تحميل ملفات، كل منها حتى 2000 صفحة / 300 ميجابايت",
-        "pagesLarge": "2000 صفحة",
-        "sizeLarge": "300 ميجابايت"
+        "aiQuality": "AI Quality: Advanced AI model (latest)",
+        "contentCredits": "400 content generation credits / month",
+        "uploads": "100 uploads / month (PDFs or YouTube videos)",
+        "chatCredits": "2,000 chat messages / month",
+        "practiceExams": "15 practice exams / month",
+        "podcast": "5 podcasts / day",
+        "uploadFiles": "Upload files up to 800 pages / 100 MB",
+        "speed": "Faster AI responses"
       }
     },
-    "team": {
-      "name": "فريق",
-      "period": "/ شهر / مقعد",
-      "subtitle": "الدفع سنوياً",
-      "description": "لمجموعات الدراسة والفرق.",
-      "minSeats": "الحد الأدنى 3 مقاعد مطلوبة",
-      "button": "اختر الفريق",
+    "unlimited": {
+      "name": "Unlimited",
+      "description": "Unlimited learning. No restrictions.",
+      "button": "Choose Unlimited",
       "features": {
-        "everythingPro": "كل ما في الخطة الاحترافية +",
-        "pro": "الاحترافية",
-        "discounts": "خصومات متدرجة حسب حجم الفريق",
-        "teamSize": "حجم الفريق",
-        "billing": "فواتير مركزية للفريق",
-        "centralized": "مركزية",
-        "spaces": "مساحات مشتركة",
-        "shared": "مساحات مشتركة",
-        "permissions": "إضافة وإزالة وتعيين أذونات مخصصة لأعضاء الفريق",
-        "custom": "أذونات مخصصة",
-        "teamWord": "الفريق"
+        "aiQuality": "AI Quality: Advanced AI model (latest)",
+        "contentCredits": "Unlimited content generation",
+        "uploads": "Unlimited PDF & YouTube uploads",
+        "chatCredits": "Unlimited AI chat",
+        "practiceExams": "Unlimited practice exams",
+        "podcast": "10 podcasts / day",
+        "uploadFiles": "Upload files up to 2000 pages / 300 MB",
+        "priority": "Priority processing"
       }
     }
   },
