@@ -6,15 +6,17 @@ import {
   PaymentResError,
   PaymentType,
 } from "@/types/payment.types";
+import { refreshTokens } from "@/utils/_apis/api";
+import { useUserContext } from "@/context/UserContext";
 
 // if successful
-  // JWT update
-  // plan: pro 
+// JWT update
+// plan: pro
 
 const PaymentCallback = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-
+  const { login } = useUserContext();
   const payment_id = searchParams.get("id");
 
   const [verifying, setVerifying] = useState(true);
@@ -52,9 +54,11 @@ const PaymentCallback = () => {
         setStatus("failed");
         setMessage(`Payment status: ${data.status}`);
       }
+      const loginRes = await refreshTokens();
+      login(loginRes);
       setTimeout(() => {
         navigate("/dashboard/overview");
-      }, 3000);
+      }, 5000);
     } catch (error) {
       console.error(error);
       setStatus("error");

@@ -4,7 +4,7 @@ import { useEffect } from "react";
 const Moyasar = (window as any).Moyasar;
 
 export type PaymentData = {
-  plan_type: "pro" | "free";
+  plan_type: "free" | "starter" | "advanced" | "unlimited";
   amount: number;
   billing_interval: "monthly" | "yearly";
   currency: "SAR" | "USD";
@@ -18,7 +18,7 @@ export interface PaymentFormProps {
   currency: "SAR" | "USD" | "KWD" | "AED";
   metadata?: {
     user_id: string;
-    plan_type: "pro" | "free";
+    plan_type: "free" | "starter" | "advanced" | "unlimited";
     billing_interval: "monthly" | "yearly";
   };
 }

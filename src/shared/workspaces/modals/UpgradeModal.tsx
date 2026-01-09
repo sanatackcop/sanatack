@@ -56,7 +56,7 @@ export default function UpgradeModal() {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="max-w-5xl w-full max-h-[85vh] p-0 overflow-hidden flex flex-col">
+      <DialogContent className="w-[calc(100vw-2rem)] sm:w-full max-w-4xl p-0 overflow-visible flex flex-col">
         <DialogHeader className="px-6 py-4 border-b border-zinc-200 dark:border-zinc-800">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-lg font-semibold">
@@ -90,7 +90,7 @@ export default function UpgradeModal() {
           </div>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto px-6 py-6">
+        <div className="px-4 sm:px-6 py-4 sm:py-6">
           {step === UpgradeSteps.SELECT_PLAN && (
             <PricingDialog handleGetStarted={handleGetStarted} />
           )}
@@ -151,8 +151,8 @@ export default function UpgradeModal() {
           )}
         </div>
 
-        <div className="px-6 py-4 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
-          {isPaymentStep ? (
+        {isPaymentStep ? (
+          <div className="px-6 py-4 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
             <Button
               variant="ghost"
               size="sm"
@@ -162,10 +162,10 @@ export default function UpgradeModal() {
               <ChevronLeft className="w-4 h-4" />
               {t("common.back", "Back")}
             </Button>
-          ) : (
-            <span />
-          )}
-        </div>
+          </div>
+        ) : (
+          <span />
+        )}
       </DialogContent>
     </Dialog>
   );

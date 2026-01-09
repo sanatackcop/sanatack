@@ -14,7 +14,7 @@ export interface UserProfileDto{
   role: string;
   isActive: boolean;
   isVerify: boolean;
-  isPro: boolean;
+  plan_type: string;
   phone?: string;
   attributes?: {
     topics: string[];

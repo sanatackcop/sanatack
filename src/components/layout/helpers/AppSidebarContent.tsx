@@ -824,7 +824,7 @@ const AppSidebarContent = ({
                   {auth.user.firstName}
                 </p>
                 <p className="text-[11px] text-sidebar-foreground/50 font-normal">
-                  {t("sidebar.freePlan")}
+                  {auth.user.plan_type}
                 </p>
               </div>
               <ChevronDown

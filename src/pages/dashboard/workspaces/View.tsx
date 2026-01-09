@@ -647,7 +647,6 @@ const LearnPlayground: React.FC = () => {
           return;
         }
 
-        console.log({ res });
         streamAssistantMessage(res.message || "", res.metadata);
       } catch (error) {
         console.error("Failed to send message:", error);

@@ -7,15 +7,15 @@ import {
   useEffect,
   useContext,
 } from "react";
-import Storage from "@/lib/Storage";
 import { registerLogout } from "@/utils/_apis/api";
+import Storage from "@/lib/Storage";
 interface User {
   id: string;
   email: string;
   mobile: string;
   firstName: string;
   lastName: string;
-  is_pro: boolean;
+  plan_type: string;
   avatar?: string;
   isVerify?: boolean;
 }
@@ -37,7 +37,7 @@ const initialUserState: User = {
   lastName: "",
   mobile: "",
   email: "",
-  is_pro: false,
+  plan_type: "free",
   isVerify: false,
 };
 
@@ -56,8 +56,15 @@ type LoginPayload = {
   refresh_token: string;
   type: ContextType;
   role: "admin" | "student";
-  is_pro: boolean;
+  plan_type: string;
 };
+
+export enum PlanType {
+  FREE = "free",
+  STARTER = "starter",
+  ADVANCED = "advanced",
+  UNLIMITED = "unlimited",
+}
 
 export type UserContextType = {
   isLoggedIn: () => boolean;
@@ -74,12 +81,10 @@ export const UserContextProvider: FC<Props> = ({ children }: Props) => {
   const [refreshAccess, setRefreshAccess] = useState(false);
   const [auth, setAuth] = useState<Auth>(initialAuth);
 
-  const getTokens = (): { accessToken: string; refreshToken: string } => {
+  const getTokens = (): { access_token: string; refresh_token: string } => {
     return {
-      accessToken:
-        Storage.get("access_token") || Storage.get("accessToken") || "",
-      refreshToken:
-        Storage.get("refresh_token") || Storage.get("refreshToken") || "",
+      access_token: Storage.get("access_token") || "",
+      refresh_token: Storage.get("refresh_token") || "",
     };
   };
 
@@ -106,14 +111,8 @@ export const UserContextProvider: FC<Props> = ({ children }: Props) => {
     return { user: payload, type: type, role: role };
   };
 
-  // const setActiveAccount = ({ userId }: { userId: string }) => {
-  //   Storage.set("userId", userId);
-  //   setRefreshAccess((prevState: boolean) => !prevState);
-  //   window.location.replace("/");
-  // };
-
   const isLoggedIn = () => {
-    return getTokens().accessToken.length ? true : false;
+    return getTokens().access_token.length ? true : false;
   };
 
   const getAuth = () => {
@@ -145,7 +144,13 @@ export const UserContextProvider: FC<Props> = ({ children }: Props) => {
     window.location.replace("/");
   };
 
-  const login = ({ user, type, role, refresh_token, is_pro }: LoginPayload) => {
+  const login = ({
+    user,
+    type,
+    role,
+    refresh_token,
+    plan_type,
+  }: LoginPayload) => {
     try {
       const decodedAuth = decodeJWT(user, type, role);
       const payloadUser: any = decodedAuth?.user || {};
@@ -175,7 +180,7 @@ export const UserContextProvider: FC<Props> = ({ children }: Props) => {
         lastName: derivedLastName,
         mobile: payloadUser.mobile || payloadUser.phone_number || "",
         avatar: payloadUser.avatar || payloadUser.picture || "",
-        is_pro,
+        plan_type: payloadUser.plan_type || plan_type || "free",
         isVerify:
           payloadUser.isVerify ||
           payloadUser.email_verified ||
@@ -183,16 +188,14 @@ export const UserContextProvider: FC<Props> = ({ children }: Props) => {
           false,
       };
 
-      Storage.set("refreshToken", refresh_token);
       Storage.set("refresh_token", refresh_token);
       Storage.set("access_token", user);
-      Storage.set("accessToken", user);
       Storage.set("auth", {
         user: normalizedUser,
         role: role || "student",
         type: type as ContextType,
       });
-      Storage.set("is_pro", is_pro);
+      Storage.set("plan_type", normalizedUser.plan_type);
 
       setAuth({
         user: normalizedUser,
@@ -207,7 +210,11 @@ export const UserContextProvider: FC<Props> = ({ children }: Props) => {
   };
 
   const isPro = (): boolean => {
-    return auth?.user?.is_pro || Storage.get("is_pro") === "true" || false;
+    const plan = (auth?.user?.plan_type ??
+      Storage.get("plan_type") ??
+      PlanType.FREE) as string;
+    const planType = String(plan).toLowerCase();
+    return planType !== PlanType.FREE;
   };
 
   useEffect(() => {

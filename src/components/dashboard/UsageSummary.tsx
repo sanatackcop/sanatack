@@ -8,14 +8,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import {
-  fetchRateLimitCatalog,
-  fetchRateLimitSummary,
-} from "@/utils/_apis/rate-limit-api";
-import type {
-  RateLimitCatalogItem,
-  RateLimitSummaryResponse,
-} from "@/types/rateLimit";
+import { fetchRateLimitSummary } from "@/utils/_apis/rate-limit-api";
+import type { RateLimitSummaryResponse } from "@/types/rateLimit";
 
 type UsageMap = Record<string, RateLimitSummaryResponse["usage"]>;
 
@@ -54,7 +48,6 @@ export default function UsageSummary() {
   const translate = (key: string, options?: Record<string, unknown>) =>
     t(key as any, options as any) as string;
   const [summary, setSummary] = useState<RateLimitSummaryResponse | null>(null);
-  const [, setCatalog] = useState<RateLimitCatalogItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -63,14 +56,10 @@ export default function UsageSummary() {
     setLoading(true);
     (async () => {
       try {
-        const [summaryResponse, catalogResponse] = await Promise.all([
-          fetchRateLimitSummary(),
-          fetchRateLimitCatalog(),
-        ]);
+        const summaryResponse = await fetchRateLimitSummary();
 
         if (!mounted) return;
         setSummary(summaryResponse);
-        setCatalog(catalogResponse);
       } catch (err) {
         console.error("Failed to load usage data", err);
         if (mounted) setError(translate("dashboard.usage.error"));
@@ -102,17 +91,17 @@ export default function UsageSummary() {
 
   const tierLabel = useMemo(() => {
     if (!summary) return "";
-    switch (summary.tier) {
+    switch (summary.plan_type) {
       case "free":
         return translate("pricing.free.name");
-      case "pro":
-        return translate("pricing.pro.name");
-      case "team":
-        return translate("pricing.team.name");
-      case "admin":
-        return translate("common.admin", { defaultValue: "Admin" });
+      case "starter":
+        return translate("pricing.starter.name");
+      case "advanced":
+        return translate("pricing.advanced.name");
+      case "unlimited":
+        return translate("pricing.unlimited.name");
       default:
-        return summary.tier;
+        return summary.plan_type;
     }
   }, [summary, translate]);
 

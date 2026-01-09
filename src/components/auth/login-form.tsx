@@ -154,7 +154,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ useSignup = false }) => {
       type: result.type,
       user: result.user,
       refresh_token: result.refresh_token,
-      is_pro: result.is_pro,
+      plan_type: result.plan_type,
     });
 
     navigate("/dashboard", { replace: true });
