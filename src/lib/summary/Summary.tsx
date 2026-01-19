@@ -222,6 +222,10 @@ export function SummaryList({ workspaceId }: SummaryListProps) {
                   summary.status === GenerationStatus.PROCESSING;
                 const failed = summary.status === GenerationStatus.FAILED;
                 const completed = summary.status === GenerationStatus.COMPLETED;
+                const createdLabel = t("explanations.list.createdAt", {
+                  date: new Date(summary.created_at).toLocaleString(),
+                  defaultValue: "Created {{date}}",
+                });
 
                 return (
                   <Card
@@ -245,7 +249,7 @@ export function SummaryList({ workspaceId }: SummaryListProps) {
                     <div className="flex justify-between items-start gap-2 sm:gap-3 min-w-0 w-full">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-2 flex-wrap">
-                          <h3 className="font-semibold text-base sm:text-lg text-gray-900 dark:text-white break-words min-w-0 flex-1">
+                          <h3 className="font-semibold text-sm text-gray-900 dark:text-white   min-w-0 flex-1">
                             {summary.payload?.title ??
                               t(
                                 "summary.list.generating",
@@ -258,6 +262,9 @@ export function SummaryList({ workspaceId }: SummaryListProps) {
                               isRTL={isRTL}
                             />
                           </div>
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          {createdLabel}
                         </div>
                       </div>
                     </div>

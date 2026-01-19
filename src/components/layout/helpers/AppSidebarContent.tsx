@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
-  Crown,
   Box,
   BoxIcon,
   ChevronDown,
@@ -53,6 +52,7 @@ import {
   RecentWorkspaceEntry,
   SectionHeader,
 } from "./sidehelp";
+import UpgradeModal from "@/shared/workspaces/modals/UpgradeModal";
 
 type MenuItem =
   | {
@@ -120,7 +120,7 @@ const AppSidebarContent = ({
   const [openCreate, setOpenCreate] = useState(false);
   const [showAllSpaces, setShowAllSpaces] = useState(false);
   const [isLogoHovered, setIsLogoHovered] = useState(false);
-  const { logout, auth, isPro } = useUserContext();
+  const { logout, auth } = useUserContext();
   const [showAllRecent, setShowAllRecent] = useState(false);
   const navigate = useNavigate();
   const [openSerach, setOpenSearch] = useState(false);
@@ -135,7 +135,9 @@ const AppSidebarContent = ({
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      if (showUserDropdown && !target.closest(".user-dropdown-container")) {
+      const isDropdown = target.closest(".user-dropdown-container");
+      const isUpgradeModal = target.closest("[data-upgrade-modal]");
+      if (showUserDropdown && !isDropdown && !isUpgradeModal) {
         setShowUserDropdown(false);
       }
     };
@@ -229,13 +231,13 @@ const AppSidebarContent = ({
         ],
       },
     ],
-    [t]
+    [t],
   );
 
   useEffect(() => {
     try {
       const saved = JSON.parse(
-        localStorage.getItem("sidebar.openGroups") || "{}"
+        localStorage.getItem("sidebar.openGroups") || "{}",
       );
       const withDefaults: Record<string, boolean> = { ...saved };
       topItemGroups.forEach((g) => {
@@ -274,12 +276,12 @@ const AppSidebarContent = ({
   const overallUsage = useMemo(() => {
     if (!rateLimitSummary) return null;
     const finite = rateLimitSummary.usage.filter(
-      (item) => typeof item.limit === "number" && item.limit !== null
+      (item) => typeof item.limit === "number" && item.limit !== null,
     );
     const totalLimit = finite.reduce((sum, item) => sum + (item.limit ?? 0), 0);
     const totalUsed = finite.reduce(
       (sum, item) => sum + (item.usedCredits ?? 0),
-      0
+      0,
     );
 
     if (totalLimit <= 0) {
@@ -346,7 +348,7 @@ const AppSidebarContent = ({
       const sortedWorkspaces =
         fetchedWorkspaces?.sort(
           (a: Workspace, b: Workspace) =>
-            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
         ) || [];
       setWorkspaces(sortedWorkspaces);
     } catch {
@@ -376,7 +378,7 @@ const AppSidebarContent = ({
       document.documentElement.setAttribute("dir", newDir);
       document.documentElement.setAttribute("lang", newLang);
       toast.success(
-        t("languages.changed", { lang: t(`languages.${newLang}`) })
+        t("languages.changed", { lang: t(`languages.${newLang}`) }),
       );
     } catch {
       const newDir = newLang === "ar" ? "rtl" : "ltr";
@@ -403,7 +405,7 @@ const AppSidebarContent = ({
         <div className="flex items-center justify-between mb-2">
           <div
             className={clsx(
-              "h-[30px] flex items-center overflow-hidden w-full justify-between group relative"
+              "h-[30px] flex items-center overflow-hidden w-full justify-between group relative",
             )}
             onMouseEnter={() => setIsLogoHovered(true)}
             onMouseLeave={() => setIsLogoHovered(false)}
@@ -428,7 +430,7 @@ const AppSidebarContent = ({
                 className={clsx(
                   "p-1.5 rounded-md transition-all duration-200",
                   "hover:bg-sidebar-accent/50 text-sidebar-foreground/60 hover:text-sidebar-accent-foreground",
-                  isRTL ? "ml-2" : "mr-2"
+                  isRTL ? "ml-2" : "mr-2",
                 )}
                 aria-label="Close sidebar"
               >
@@ -444,7 +446,7 @@ const AppSidebarContent = ({
                   "p-1.5 rounded-md transition-all duration-200",
                   "hover:bg-sidebar-accent/50 text-sidebar-foreground/60 hover:text-sidebar-accent-foreground",
                   isLogoHovered ? "opacity-100 visible" : "opacity-0 invisible",
-                  isRTL ? "ml-2" : "mr-2"
+                  isRTL ? "ml-2" : "mr-2",
                 )}
                 aria-label={t("sidebar.collapse", "Collapse sidebar")}
               >
@@ -488,7 +490,7 @@ const AppSidebarContent = ({
                     key={i}
                     className={clsx(
                       "flex items-center gap-2 px-2 py-1.5",
-                      getFlexDirection()
+                      getFlexDirection(),
                     )}
                   >
                     <Skeleton
@@ -517,7 +519,7 @@ const AppSidebarContent = ({
                 <div
                   className={clsx(
                     "px-2 py-1.5 text-[13px] text-sidebar-foreground/50",
-                    getTextAlignment()
+                    getTextAlignment(),
                   )}
                 >
                   {t("sidebar.noRecentWorkspaces", "No recent workspaces")}
@@ -530,14 +532,14 @@ const AppSidebarContent = ({
                         key={workspace.id}
                         workspace={workspace}
                       />
-                    )
+                    ),
                   )}
                   {workspaces.length > 5 && (
                     <button
                       onClick={() => setShowAllRecent((prev) => !prev)}
                       className={clsx(
                         "w-full px-2 py-1.5 text-[12px] text-sidebar-foreground/60 hover:text-sidebar-accent-foreground rounded-md hover:bg-sidebar-accent/50 transition-colors font-normal",
-                        getTextAlignment()
+                        getTextAlignment(),
                       )}
                     >
                       {showAllRecent
@@ -591,7 +593,7 @@ const AppSidebarContent = ({
                       <p
                         className={clsx(
                           "text-sm text-red-600 dark:text-red-400",
-                          getTextAlignment()
+                          getTextAlignment(),
                         )}
                       >
                         {spacesError}
@@ -601,7 +603,7 @@ const AppSidebarContent = ({
                     <DialogFooter
                       className={clsx(
                         "gap-2 sm:gap-2",
-                        isRTL ? "flex-row-reverse" : "flex-row"
+                        isRTL ? "flex-row-reverse" : "flex-row",
                       )}
                     >
                       <Button
@@ -632,7 +634,7 @@ const AppSidebarContent = ({
                     key={i}
                     className={clsx(
                       "flex items-center gap-2 px-2 py-1.5",
-                      getFlexDirection()
+                      getFlexDirection(),
                     )}
                   >
                     <Skeleton
@@ -661,7 +663,7 @@ const AppSidebarContent = ({
                 <div
                   className={clsx(
                     "px-2 py-1.5 text-[13px] text-red-600 dark:text-red-400",
-                    getTextAlignment()
+                    getTextAlignment(),
                   )}
                 >
                   {spacesError}
@@ -670,7 +672,7 @@ const AppSidebarContent = ({
                 <div
                   className={clsx(
                     "px-2 py-1.5 text-[13px] text-sidebar-foreground/50",
-                    getTextAlignment()
+                    getTextAlignment(),
                   )}
                 >
                   {t("sidebar.noSpacesYet")}
@@ -686,7 +688,7 @@ const AppSidebarContent = ({
                           "w-full flex items-center gap-2 px-2 py-1.5 rounded-md transition-colors duration-150 group",
                           isActive
                             ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                            : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                            : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
                         )
                       }
                     >
@@ -698,7 +700,7 @@ const AppSidebarContent = ({
                       <span
                         className={clsx(
                           "text-[13px] font-normal flex-1 truncate",
-                          getTextAlignment()
+                          getTextAlignment(),
                         )}
                       >
                         {item.title}
@@ -711,7 +713,7 @@ const AppSidebarContent = ({
                       onClick={() => setShowAllSpaces((prev) => !prev)}
                       className={clsx(
                         "w-full px-2 py-1.5 text-[12px] text-sidebar-foreground/60 hover:text-sidebar-accent-foreground rounded-md hover:bg-sidebar-accent/50 transition-colors font-normal",
-                        getTextAlignment()
+                        getTextAlignment(),
                       )}
                     >
                       {showAllSpaces
@@ -724,85 +726,79 @@ const AppSidebarContent = ({
             </div>
           </div>
 
-          {!isPro?.() && (
-            <div>
-              <SectionHeader
-                title={t("sidebar.limits.title", { defaultValue: "Usage" })}
-              />
-              <div
-                className="space-y-3 rounded-xl border border-zinc-200/70 bg-white p-3 
+          <div>
+            <SectionHeader
+              title={t("sidebar.limits.title", { defaultValue: "Usage" })}
+            />
+            <div
+              className="space-y-3 rounded-xl border border-zinc-200/70 bg-white p-3 
               shadow-sm dark:border-zinc-800/60 dark:bg-zinc-900"
-              >
-                {loadingRateLimits ? (
-                  <div className="space-y-3">
-                    <Skeleton
-                      variant="rounded"
-                      width="100%"
-                      height={12}
-                      sx={{
-                        bgcolor: darkMode
-                          ? "rgb(55 65 81)"
-                          : "rgb(229 231 235)",
-                      }}
-                    />
-                    <Skeleton
-                      variant="rounded"
-                      width="100%"
-                      height={12}
-                      sx={{
-                        bgcolor: darkMode
-                          ? "rgb(55 65 81)"
-                          : "rgb(229 231 235)",
-                      }}
+            >
+              {loadingRateLimits ? (
+                <div className="space-y-3">
+                  <Skeleton
+                    variant="rounded"
+                    width="100%"
+                    height={12}
+                    sx={{
+                      bgcolor: darkMode ? "rgb(55 65 81)" : "rgb(229 231 235)",
+                    }}
+                  />
+                  <Skeleton
+                    variant="rounded"
+                    width="100%"
+                    height={12}
+                    sx={{
+                      bgcolor: darkMode ? "rgb(55 65 81)" : "rgb(229 231 235)",
+                    }}
+                  />
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <div
+                      className={clsx(
+                        "flex items-center justify-between text-[12px] font-medium text-sidebar-foreground",
+                        getFlexDirection(),
+                      )}
+                    >
+                      <span>
+                        {t("sidebar.limits.title", { defaultValue: "Usage" })}
+                      </span>
+                      <span className="text-[11px] text-sidebar-foreground/60">
+                        {overallUsage?.limit === null
+                          ? t("sidebar.limits.unlimited", {
+                              defaultValue: t("dashboard.usage.unlimited", {
+                                defaultValue: "Unlimited",
+                              }),
+                            })
+                          : t("dashboard.usage.usageSummary", {
+                              used: overallUsage?.used ?? 0,
+                              limit: overallUsage?.limit ?? 0,
+                            })}
+                      </span>
+                    </div>
+                    <Progress
+                      value={overallUsage?.progress ?? 0}
+                      className="h-2"
                     />
                   </div>
-                ) : (
-                  <>
-                    <div className="space-y-2">
-                      <div
-                        className={clsx(
-                          "flex items-center justify-between text-[12px] font-medium text-sidebar-foreground",
-                          getFlexDirection()
-                        )}
-                      >
-                        <span>
-                          {t("sidebar.limits.title", { defaultValue: "Usage" })}
-                        </span>
-                        <span className="text-[11px] text-sidebar-foreground/60">
-                          {overallUsage?.limit === null
-                            ? t("sidebar.limits.unlimited", {
-                                defaultValue: t("dashboard.usage.unlimited", {
-                                  defaultValue: "Unlimited",
-                                }),
-                              })
-                            : t("dashboard.usage.usageSummary", {
-                                used: overallUsage?.used ?? 0,
-                                limit: overallUsage?.limit ?? 0,
-                              })}
-                        </span>
-                      </div>
-                      <Progress
-                        value={overallUsage?.progress ?? 0}
-                        className="h-2"
-                      />
-                    </div>
-                  </>
-                )}
+                </>
+              )}
 
-                <Button
-                  type="button"
-                  onClick={() => window.open("/#pricing", "_blank")}
-                  className={clsx(
-                    "w-full gap-2 rounded-lg dark:bg-[#0FB27C] dark:text-white bg-[#0FB27C] text-white shadow-sm hover:bg-[#003926]",
-                    getFlexDirection()
-                  )}
-                >
-                  <Zap size={16} strokeWidth={2} />
-                  <span>{t("sidebar.limits.seePricing")}</span>
-                </Button>
-              </div>
+              <Button
+                type="button"
+                onClick={() => window.open("/#pricing", "_blank")}
+                className={clsx(
+                  "w-full gap-2 rounded-lg dark:bg-[#0FB27C] dark:text-white bg-[#0FB27C] text-white shadow-sm hover:bg-[#003926]",
+                  getFlexDirection(),
+                )}
+              >
+                <Zap size={16} strokeWidth={2} />
+                <span>{t("sidebar.limits.seePricing")}</span>
+              </Button>
             </div>
-          )}
+          </div>
         </div>
 
         <div className="flex-shrink-0">
@@ -832,7 +828,7 @@ const AppSidebarContent = ({
                 strokeWidth={2}
                 className={clsx(
                   "text-sidebar-foreground/50 transition-transform duration-200 flex-shrink-0",
-                  showUserDropdown && "rotate-180"
+                  showUserDropdown && "rotate-180",
                 )}
               />
             </button>
@@ -847,7 +843,7 @@ const AppSidebarContent = ({
                   className={clsx(
                     "w-full flex items-center gap-2 px-2 py-2 hover:bg-sidebar-accent/50 rounded-md text-[13px] transition-colors text-sidebar-foreground font-normal",
                     getFlexDirection(),
-                    getTextAlignment()
+                    getTextAlignment(),
                   )}
                 >
                   {darkMode ? (
@@ -867,7 +863,7 @@ const AppSidebarContent = ({
                   className={clsx(
                     "w-full flex items-center gap-2 px-2 py-2 hover:bg-sidebar-accent/50 rounded-md text-[13px] transition-colors text-sidebar-foreground font-normal",
                     getFlexDirection(),
-                    getTextAlignment()
+                    getTextAlignment(),
                   )}
                 >
                   <Languages size={16} strokeWidth={2} />
@@ -887,36 +883,21 @@ const AppSidebarContent = ({
                   className={clsx(
                     "w-full flex items-center gap-2 px-2 py-2 hover:bg-sidebar-accent/50 rounded-md text-[13px] transition-colors text-sidebar-foreground font-normal",
                     getFlexDirection(),
-                    getTextAlignment()
+                    getTextAlignment(),
                   )}
                 >
                   <Settings size={16} strokeWidth={2} />
                   <span className="flex-1">{t("sidebar.settings")}</span>
                 </button>
 
-                <button
-                  className={clsx(
-                    "w-full flex items-center gap-2 px-2 py-2 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 rounded-md text-[13px] transition-colors font-normal",
-                    getFlexDirection(),
-                    getTextAlignment()
-                  )}
-                >
-                  <Crown
-                    size={16}
-                    strokeWidth={2}
-                    className="text-yellow-600 dark:text-yellow-500"
-                  />
-                  <span className="flex-1 text-sidebar-foreground">
-                    {t("sidebar.upgrade")}
-                  </span>
-                </button>
+                <UpgradeModal />
 
                 <button
                   onClick={() => logout()}
                   className={clsx(
                     "w-full flex items-center gap-2 px-2 py-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md text-[13px] text-red-600 dark:text-red-400 transition-colors font-normal",
                     getFlexDirection(),
-                    getTextAlignment()
+                    getTextAlignment(),
                   )}
                 >
                   <LogOut size={16} strokeWidth={2} />

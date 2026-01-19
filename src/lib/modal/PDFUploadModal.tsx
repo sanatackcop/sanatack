@@ -24,6 +24,8 @@ import { Button } from "@/components/ui/button";
 import { formatFileSize } from "../chat/chatInput";
 import { Progress } from "@/components/ui/progress";
 import { Document, pdfjs } from "react-pdf";
+import "react-pdf/dist/Page/TextLayer.css";
+import "react-pdf/dist/Page/AnnotationLayer.css";
 import LazyPage from "./document/LazyPage";
 import {
   Accordion,

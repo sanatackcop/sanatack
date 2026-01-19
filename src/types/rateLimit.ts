@@ -1,6 +1,6 @@
 import { PlanType } from "@/context/UserContext";
 
-export interface RateLimitUsageItem {
+export interface RateLimitUsageSummaryItem {
   action: string;
   label?: string;
   description?: string;
@@ -16,5 +16,5 @@ export interface RateLimitUsageItem {
 
 export interface RateLimitSummaryResponse {
   plan_type: PlanType;
-  usage: RateLimitUsageItem[];
+  usage: RateLimitUsageSummaryItem[];
 }

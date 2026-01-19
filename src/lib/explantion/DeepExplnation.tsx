@@ -65,7 +65,7 @@ export type ExplanationPayload = {
 
 const POLL_MS = 2000;
 
-export default function MindMap({ workspaceId }: { workspaceId: string }) {
+export default function DeepExplanation({ workspaceId }: { workspaceId: string }) {
   const [items, setItems] = useState<Explanation[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -199,7 +199,7 @@ export default function MindMap({ workspaceId }: { workspaceId: string }) {
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-2">
-                              <h3 className="font-semibold text-lg text-gray-900 dark:text-white truncate max-w-[50vw]">
+                              <h3 className="font-semibold text-sm w-10 text-gray-900 dark:text-white truncate flex-1 min-w-0">
                                 {it.payload?.title ||
                                   t(
                                     "explanations.list.untitled",

@@ -29,7 +29,7 @@ function AnimatedPrice({
   currency?: string;
 }) {
   const [displayValue, setDisplayValue] = useState(
-    typeof value === "number" ? value : 0
+    typeof value === "number" ? value : 0,
   );
   const prevValueRef = useRef(typeof value === "number" ? value : 0);
 
@@ -81,13 +81,13 @@ export const plans: Plan[] = [
     monthlyPriceSAR: 40,
     descriptionKey: "pricing.starter.description",
     features: [
-      // { key: "pricing.starter.features.aiQuality" },
-      { key: "pricing.starter.features.contentCredits" },
-      { key: "pricing.starter.features.uploads" },
       { key: "pricing.starter.features.chatCredits" },
-      { key: "pricing.starter.features.practiceExams" },
-      // { key: "pricing.starter.features.podcast" },
+      { key: "pricing.starter.features.flashcards" },
+      { key: "pricing.starter.features.quizzes" },
+      { key: "pricing.starter.features.summaries" },
+      { key: "pricing.starter.features.explanations" },
       { key: "pricing.starter.features.uploadFiles" },
+      { key: "pricing.starter.features.uploads" },
     ],
     buttonTextKey: "pricing.starter.button",
     buttonVariant: "outline",
@@ -99,14 +99,13 @@ export const plans: Plan[] = [
     descriptionKey: "pricing.advanced.description",
     isPopular: true,
     features: [
-      // { key: "pricing.advanced.features.aiQuality" },
-      { key: "pricing.advanced.features.contentCredits" },
-      { key: "pricing.advanced.features.uploads" },
       { key: "pricing.advanced.features.chatCredits" },
-      { key: "pricing.advanced.features.practiceExams" },
-      // { key: "pricing.advanced.features.podcast" },
+      { key: "pricing.advanced.features.flashcards" },
+      { key: "pricing.advanced.features.quizzes" },
+      { key: "pricing.advanced.features.summaries" },
+      { key: "pricing.advanced.features.explanations" },
       { key: "pricing.advanced.features.uploadFiles" },
-      { key: "pricing.advanced.features.speed" },
+      { key: "pricing.advanced.features.uploads" },
     ],
     buttonTextKey: "pricing.advanced.button",
     buttonVariant: "primary",
@@ -117,14 +116,13 @@ export const plans: Plan[] = [
     monthlyPriceSAR: 80,
     descriptionKey: "pricing.unlimited.description",
     features: [
-      // { key: "pricing.unlimited.features.aiQuality" },
-      { key: "pricing.unlimited.features.contentCredits" },
-      { key: "pricing.unlimited.features.uploads" },
       { key: "pricing.unlimited.features.chatCredits" },
-      { key: "pricing.unlimited.features.practiceExams" },
-      // { key: "pricing.unlimited.features.podcast" },
+      { key: "pricing.unlimited.features.flashcards" },
+      { key: "pricing.unlimited.features.quizzes" },
+      { key: "pricing.unlimited.features.summaries" },
+      { key: "pricing.unlimited.features.explanations" },
       { key: "pricing.unlimited.features.uploadFiles" },
-      { key: "pricing.unlimited.features.priority" },
+      { key: "pricing.unlimited.features.uploads" },
     ],
     buttonTextKey: "pricing.unlimited.button",
     buttonVariant: "outline",
@@ -232,7 +230,7 @@ export function Pricing() {
                 viewport={{ once: true }}
                 className={`relative transform transition-all duration-300 ${
                   plan.isPopular
-                    ? "md:scale-110 z-10"
+                    ? "-translate-y-4 md:translate-y-0 md:scale-110 z-10"
                     : "md:scale-95 hover:scale-100"
                 }`}
                 style={{ transformOrigin: "center" }}
