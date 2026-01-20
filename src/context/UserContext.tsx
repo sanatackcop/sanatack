@@ -6,6 +6,8 @@ import {
   ReactNode,
   useEffect,
   useContext,
+  useCallback,
+  useMemo,
 } from "react";
 import { registerLogout } from "@/utils/_apis/api";
 import Storage from "@/lib/Storage";
@@ -81,14 +83,14 @@ export const UserContextProvider: FC<Props> = ({ children }: Props) => {
   const [refreshAccess, setRefreshAccess] = useState(false);
   const [auth, setAuth] = useState<Auth>(initialAuth);
 
-  const getTokens = (): { access_token: string; refresh_token: string } => {
+  const getTokens = useCallback((): { access_token: string; refresh_token: string } => {
     return {
       access_token: Storage.get("access_token") || "",
       refresh_token: Storage.get("refresh_token") || "",
     };
-  };
+  }, []);
 
-  const decodeJWT = (
+  const decodeJWT = useCallback((
     jwt: string,
     type: ContextType,
     role: "admin" | "student"
@@ -109,11 +111,11 @@ export const UserContextProvider: FC<Props> = ({ children }: Props) => {
 
     const payload = JSON.parse(jsonPayload);
     return { user: payload, type: type, role: role };
-  };
+  }, []);
 
-  const isLoggedIn = () => {
+  const isLoggedIn = useCallback(() => {
     return getTokens().access_token.length ? true : false;
-  };
+  }, [getTokens]);
 
   const getAuth = () => {
     const auth = Storage.get("auth");
@@ -138,13 +140,13 @@ export const UserContextProvider: FC<Props> = ({ children }: Props) => {
     return auth;
   };
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.clear();
     setRefreshAccess((prevState) => !prevState);
     window.location.replace("/");
-  };
+  }, []);
 
-  const login = ({
+  const login = useCallback(({
     user,
     type,
     role,
@@ -207,15 +209,15 @@ export const UserContextProvider: FC<Props> = ({ children }: Props) => {
     } catch (error) {
       console.error("Login failed", error);
     }
-  };
+  }, [decodeJWT]);
 
-  const isPro = (): boolean => {
+  const isPro = useCallback((): boolean => {
     const plan = (auth?.user?.plan_type ??
       Storage.get("plan_type") ??
       PlanType.FREE) as string;
     const planType = String(plan).toLowerCase();
     return planType !== PlanType.FREE;
-  };
+  }, [auth?.user?.plan_type]);
 
   useEffect(() => {
     getAuth();
@@ -223,18 +225,18 @@ export const UserContextProvider: FC<Props> = ({ children }: Props) => {
 
   useEffect(() => {
     registerLogout(logout);
-  }, []);
+  }, [logout]);
+
+  const contextValue = useMemo(() => ({
+    isLoggedIn,
+    auth,
+    logout,
+    login,
+    isPro,
+  }), [isLoggedIn, auth, logout, login, isPro]);
 
   return (
-    <UserContext.Provider
-      value={{
-        isLoggedIn,
-        auth,
-        logout,
-        login,
-        isPro,
-      }}
-    >
+    <UserContext.Provider value={contextValue}>
       {children}
     </UserContext.Provider>
   );

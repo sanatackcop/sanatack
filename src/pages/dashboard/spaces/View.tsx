@@ -1,4 +1,4 @@
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState, memo } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -120,9 +120,9 @@ export default function SpaceView() {
     fetchSpace();
   }, [fetchSpace]);
 
-  const refreshComponent = () => {
+  const refreshComponent = useCallback(() => {
     fetchSpace();
-  };
+  }, [fetchSpace]);
 
   const handleIconUpdate = async (emoji: string) => {
     if (!space) return;

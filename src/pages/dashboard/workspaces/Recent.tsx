@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { getAllWorkSpace } from "@/utils/_apis/learnPlayground-api";
 import { Loader2 } from "lucide-react";
 import Button from "@mui/material/Button";
@@ -22,7 +22,7 @@ export default function Recent({
   const [error, setError] = useState<string | null>(null);
   const isRTL = i18n.language === "ar";
 
-  const fetchRecent = async () => {
+  const fetchRecent = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -38,12 +38,12 @@ export default function Recent({
     } finally {
       setLoading(false);
     }
-  };
+  }, [spaceId, t]);
 
-  const refreshComponent = () => {
-    setRefresh(!refresh);
-    setParentRefresh(!refreshParent);
-  };
+  const refreshComponent = useCallback(() => {
+    setRefresh(prev => !prev);
+    setParentRefresh?.((prev: boolean) => !prev);
+  }, [setParentRefresh]);
 
   useEffect(() => {
     fetchRecent();

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, memo } from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui/card";
@@ -41,7 +41,7 @@ type WorkspaceFolderItemProps = {
 
 type Space = { id: string; name: string };
 
-export default function WorkspaceFolderItem({
+function WorkspaceFolderItem({
   workspace,
   onClick,
   refreshParentComponent,
@@ -118,7 +118,7 @@ export default function WorkspaceFolderItem({
     );
   }
 
-  const fetchSpaces = async () => {
+  const fetchSpaces = useCallback(async () => {
     try {
       const spaces = await getAllSpaces();
       setSpaces(spaces);
@@ -130,9 +130,9 @@ export default function WorkspaceFolderItem({
       });
       console.error("Error fetching available spaces:", err);
     }
-  };
+  }, [t]);
 
-  const handleLinkWorkspaceToSpace = async (
+  const handleLinkWorkspaceToSpace = useCallback(async (
     space_id: string,
     workspace_id: string
   ) => {
@@ -150,9 +150,9 @@ export default function WorkspaceFolderItem({
     } finally {
       setMenuOpen(false);
     }
-  };
+  }, [t, refreshParentComponent]);
 
-  const handleUnlinkWorkspacefromSpace = async (workspace_id: string) => {
+  const handleUnlinkWorkspacefromSpace = useCallback(async (workspace_id: string) => {
     try {
       await unlinkWorkspaceFromSpace(workspace_id);
       toast.success(t("dashboard.workspaces.success.unlinked"), {
@@ -167,9 +167,9 @@ export default function WorkspaceFolderItem({
     } finally {
       setMenuOpen(false);
     }
-  };
+  }, [t, refreshParentComponent]);
 
-  const handleWorkspaceDeletion = async (workspace_id: string) => {
+  const handleWorkspaceDeletion = useCallback(async (workspace_id: string) => {
     try {
       await deleteWorkspace(workspace_id);
       toast.success(t("dashboard.workspaces.success.deleted"), {
@@ -184,15 +184,11 @@ export default function WorkspaceFolderItem({
     } finally {
       setMenuOpen(false);
     }
-  };
-
-  const fetchData = async () => {
-    await Promise.all([fetchSpaces()]);
-  };
+  }, [t, refreshParentComponent]);
 
   useEffect(() => {
-    fetchData();
-  }, [refreshParentComponent]);
+    fetchSpaces();
+  }, []);
 
   return (
     <motion.div
@@ -368,10 +364,12 @@ export default function WorkspaceFolderItem({
                 <Trash2 className="h-4 w-4 group-hover/trash:text-red-500 duration-200 transition-all ease-linear" />
                 <span>{t("common.delete")}</span>
               </DropdownMenuItem>
-            </DropdownMenuContent>
+              </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </Card>
     </motion.div>
   );
 }
+
+export default memo(WorkspaceFolderItem);

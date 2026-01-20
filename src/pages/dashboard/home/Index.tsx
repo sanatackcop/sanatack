@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import Recent from "@/pages/dashboard/workspaces/Recent";
 import Spaces from "@/pages/dashboard/spaces/Index";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback, memo } from "react";
 import { getLearningHabitsApi } from "@/utils/_apis/dashboard-api";
 import {
   LearningHabitKey,
@@ -47,7 +47,7 @@ export default function LearningDashboard() {
     [t]
   );
 
-  const fetchHabits = async () => {
+  const fetchHabits = useCallback(async () => {
     try {
       setHabitsLoading(true);
       setHabitsError(null);
@@ -61,9 +61,9 @@ export default function LearningDashboard() {
     } finally {
       setHabitsLoading(false);
     }
-  };
+  }, [t]);
 
-  const fetchReport = async () => {
+  const fetchReport = useCallback(async () => {
     try {
       setReportLoading(true);
       setReportError(null);
@@ -77,7 +77,7 @@ export default function LearningDashboard() {
     } finally {
       setReportLoading(false);
     }
-  };
+  }, [t]);
 
   useEffect(() => {
     fetchHabits();
@@ -316,7 +316,7 @@ export default function LearningDashboard() {
   );
 }
 
-function MetricTile({
+const MetricTile = memo(function MetricTile({
   label,
   value,
   helper,
@@ -332,4 +332,4 @@ function MetricTile({
       <div className="text-xs text-white/70">{helper}</div>
     </div>
   );
-}
+});

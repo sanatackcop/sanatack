@@ -8,7 +8,6 @@ import {
   Brain,
   CalendarDaysIcon,
   CheckCircle,
-  Zap,
   Clock10,
   MapIcon,
   Moon,
@@ -148,8 +147,8 @@ const AppSidebarContent = ({
   const nextLanguage = language === "ar" ? "en" : "ar";
   const nextLanguageLabel = t(`languages.${nextLanguage}`);
 
-  const getTextAlignment = () => (isRTL ? "text-right" : "text-left");
-  const getFlexDirection = () => (isRTL ? "flex-row-reverse" : "flex-row");
+  const getTextAlignment = useCallback(() => (isRTL ? "text-right" : "text-left"), [isRTL]);
+  const getFlexDirection = useCallback(() => (isRTL ? "flex-row-reverse" : "flex-row"), [isRTL]);
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
 
@@ -294,10 +293,11 @@ const AppSidebarContent = ({
       progress: Math.min((totalUsed / totalLimit) * 100, 100),
     };
   }, [rateLimitSummary]);
-  const toggleGroup = (id: string) =>
-    setOpenGroups((prev) => ({ ...prev, [id]: !prev[id] }));
 
-  const doCreateSpace = async () => {
+  const toggleGroup = useCallback((id: string) =>
+    setOpenGroups((prev) => ({ ...prev, [id]: !prev[id] })), []);
+
+  const doCreateSpace = useCallback(async () => {
     setCreating(true);
     setSpacesError(null);
     try {
@@ -317,7 +317,7 @@ const AppSidebarContent = ({
     } finally {
       setCreating(false);
     }
-  };
+  }, [newName, t, navigate]);
 
   const [spaces, setSpaces] = useState<SpaceItem[]>([]);
   const [loadingSpaces, setLoadingSpaces] = useState<boolean>(true);
@@ -369,7 +369,7 @@ const AppSidebarContent = ({
     onRefreshersChange?.({ refreshWorkspace, refreshSpace });
   }, [onRefreshersChange, refreshWorkspace, refreshSpace]);
 
-  const toggleLanguage = async () => {
+  const toggleLanguage = useCallback(async () => {
     const newLang = language === "ar" ? "en" : "ar";
     try {
       await i18n.changeLanguage(newLang);
@@ -385,7 +385,7 @@ const AppSidebarContent = ({
       document.documentElement.setAttribute("dir", newDir);
       document.documentElement.setAttribute("lang", newLang);
     }
-  };
+  }, [language, i18n, setLanguage, t]);
 
   return (
     <>
@@ -786,17 +786,7 @@ const AppSidebarContent = ({
                 </>
               )}
 
-              <Button
-                type="button"
-                onClick={() => window.open("/#pricing", "_blank")}
-                className={clsx(
-                  "w-full gap-2 rounded-lg dark:bg-[#0FB27C] dark:text-white bg-[#0FB27C] text-white shadow-sm hover:bg-[#003926]",
-                  getFlexDirection(),
-                )}
-              >
-                <Zap size={16} strokeWidth={2} />
-                <span>{t("sidebar.limits.seePricing")}</span>
-              </Button>
+              {!isPro() && <UpgradeModal />}
             </div>
           </div>
         </div>
@@ -889,8 +879,6 @@ const AppSidebarContent = ({
                   <Settings size={16} strokeWidth={2} />
                   <span className="flex-1">{t("sidebar.settings")}</span>
                 </button>
-
-                {!isPro() && <UpgradeModal />}
 
                 <button
                   onClick={() => logout()}

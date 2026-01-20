@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "../../../components/ui/button";
 import { Skeleton } from "../../../components/ui/skeleton";
 import { FileText, ImageIcon, Loader2, Telescope, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, memo } from "react";
 import {
   createSpacesApi,
   deleteSpacesApi,
@@ -42,7 +42,7 @@ export default function Spaces({
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [spaceToDelete, setSpaceToDelete] = useState<Space | null>(null);
 
-  const fetchAllSpaces = async () => {
+  const fetchAllSpaces = useCallback(async () => {
     try {
       const { data } = await getAllSpacesApi();
       const validSpaces = data.filter(
@@ -54,7 +54,7 @@ export default function Spaces({
       console.error("Failed to fetch spaces:", error);
       setSpaces([]);
     }
-  };
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -65,7 +65,7 @@ export default function Spaces({
     fetchData();
   }, [refreshParent]);
 
-  async function handleCreateSpace() {
+  const handleCreateSpace = useCallback(async () => {
     if (creating) return;
 
     try {
@@ -91,14 +91,14 @@ export default function Spaces({
     } finally {
       setCreating(false);
     }
-  }
+  }, [creating, newSpaceName, t, spaces.length, description, fetchAllSpaces, setParentRefresh, refreshParent, refreshSpace]);
 
-  function requestDelete(space: Space) {
+  const requestDelete = useCallback((space: Space) => {
     setSpaceToDelete(space);
     setDeleteOpen(true);
-  }
+  }, []);
 
-  async function confirmDelete() {
+  const confirmDelete = useCallback(async () => {
     if (!spaceToDelete || deleting) return;
 
     try {
@@ -112,11 +112,11 @@ export default function Spaces({
     } finally {
       setDeleting(false);
     }
-  }
+  }, [spaceToDelete, deleting]);
 
-  function openSpace(id: string) {
+  const openSpace = useCallback((id: string) => {
     navigate(`/dashboard/spaces/${id}`);
-  }
+  }, [navigate]);
 
   return (
     <>
@@ -347,7 +347,7 @@ function SpaceItemSkeleton() {
   );
 }
 
-function SpaceItem({
+const SpaceItem = memo(function SpaceItem({
   space,
   onOpen,
   onDeleteRequest,
@@ -437,4 +437,4 @@ function SpaceItem({
       </div>
     </div>
   );
-}
+});

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { getSingleCoursesApi } from "@/utils/_apis/courses-apis";
 import { MaterialType } from "@/utils/types/adminTypes";
 import { CourseDetailsContext, MaterialContext } from "@/types/courses";
@@ -139,35 +139,46 @@ export const useCourseData = (courseId: string) => {
 
   const materialsCount = sortedMaterials.length;
 
-  const completedMaterials = sortedMaterials.filter(
-    (_, i: number) => i < curIndex
-  ).length;
+  const completedMaterials = useMemo(() => 
+    sortedMaterials.filter((_, i: number) => i < curIndex).length,
+    [sortedMaterials, curIndex]
+  );
 
-  const materialsDuration = Math.floor(
-    sortedMaterials.reduce(
-      (sum, material) => sum + Number(material.duration || 0),
-      0
-    ) /
-      (1000 * 60)
-  ); // Convert milliseconds to minutes
+  const materialsDuration = useMemo(() => 
+    Math.floor(
+      sortedMaterials.reduce(
+        (sum, material) => sum + Number(material.duration || 0),
+        0
+      ) / (1000 * 60)
+    ),
+    [sortedMaterials]
+  );
 
-  const currentIndex = currentMaterial
-    ? sortedMaterials.findIndex((m) => m.id === currentMaterial.id)
-    : -1;
+  const currentIndex = useMemo(() => 
+    currentMaterial
+      ? sortedMaterials.findIndex((m) => m.id === currentMaterial.id)
+      : -1,
+    [currentMaterial, sortedMaterials]
+  );
 
-  const nextMaterial =
-    currentIndex > -1 ? sortedMaterials[currentIndex + 1] : null;
-  const prevMaterial =
-    currentIndex > 0 ? sortedMaterials[currentIndex - 1] : null;
+  const nextMaterial = useMemo(() => 
+    currentIndex > -1 ? sortedMaterials[currentIndex + 1] : null,
+    [currentIndex, sortedMaterials]
+  );
 
-  const getTotalLessons = () => {
+  const prevMaterial = useMemo(() => 
+    currentIndex > 0 ? sortedMaterials[currentIndex - 1] : null,
+    [currentIndex, sortedMaterials]
+  );
+
+  const getTotalLessons = useCallback(() => {
     return course?.modules?.reduce(
       (total: number, module) => total + (module?.lessons?.length || 0),
       0
     );
-  };
+  }, [course?.modules]);
 
-  const getCompletedLessonsCount = () => {
+  const getCompletedLessonsCount = useCallback(() => {
     let completedCount = 0;
     course?.modules?.forEach((module) => {
       module?.lessons?.forEach((lesson) => {
@@ -179,9 +190,9 @@ export const useCourseData = (courseId: string) => {
       });
     });
     return completedCount;
-  };
+  }, [course?.modules, course?.current_material]);
 
-  const getTotalDuration = () => {
+  const getTotalDuration = useCallback(() => {
     const totalMs = course?.modules?.reduce((total: number, module) => {
       return (
         total +
@@ -198,7 +209,7 @@ export const useCourseData = (courseId: string) => {
     }, 0);
 
     return Math.floor(totalMs ? totalMs / (1000 * 60) : 0);
-  };
+  }, [course?.modules]);
 
   return {
     course,
