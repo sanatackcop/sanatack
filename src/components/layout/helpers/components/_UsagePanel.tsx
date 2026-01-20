@@ -221,14 +221,6 @@ export default function UsagePanel() {
                               ? ` ${t("settings.usage.credits", "credits")}`
                               : ` / ${item.limit}`}
                           </span>
-                          <p className="text-xs text-neutral-500">
-                            {item.hits}{" "}
-                            {item.hits === 1
-                              ? t("settings.usage.use", "use")
-                              : t("settings.usage.uses", "uses")}{" "}
-                            × {item.creditsPerUse}{" "}
-                            {t("settings.usage.creditsEach", "credits each")}
-                          </p>
                         </div>
                       </div>
                       {!isUnlimited && (

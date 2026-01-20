@@ -5,7 +5,6 @@ export interface RateLimitUsageSummaryItem {
   label?: string;
   description?: string;
   category?: string;
-  creditsPerUse: number;
   usedCredits: number;
   remainingCredits: number | null;
   limit: number | null;
