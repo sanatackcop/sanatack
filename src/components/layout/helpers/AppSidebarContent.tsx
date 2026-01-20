@@ -120,7 +120,7 @@ const AppSidebarContent = ({
   const [openCreate, setOpenCreate] = useState(false);
   const [showAllSpaces, setShowAllSpaces] = useState(false);
   const [isLogoHovered, setIsLogoHovered] = useState(false);
-  const { logout, auth } = useUserContext();
+  const { logout, auth, isPro } = useUserContext();
   const [showAllRecent, setShowAllRecent] = useState(false);
   const navigate = useNavigate();
   const [openSerach, setOpenSearch] = useState(false);
@@ -890,7 +890,7 @@ const AppSidebarContent = ({
                   <span className="flex-1">{t("sidebar.settings")}</span>
                 </button>
 
-                <UpgradeModal />
+                {!isPro() && <UpgradeModal />}
 
                 <button
                   onClick={() => logout()}
