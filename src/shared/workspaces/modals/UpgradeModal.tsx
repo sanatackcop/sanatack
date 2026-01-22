@@ -6,7 +6,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Crown } from "lucide-react";
 import { useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { PaymentData } from "./PaymentForm";
@@ -24,6 +24,8 @@ export default function UpgradeModal() {
   const { t, i18n } = useTranslation();
   const userContext = useContext(UserContext);
 
+  const isRTL = i18n.dir() === "rtl";
+
   const [step, setStep] = useState<UpgradeSteps>(UpgradeSteps.SELECT_PLAN);
   const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
 
@@ -37,6 +39,7 @@ export default function UpgradeModal() {
     setPaymentData(finalData);
     setStep(UpgradeSteps.PAY_SUBSCRIPTION);
   }
+
   function goBack() {
     setStep(UpgradeSteps.SELECT_PLAN);
   }
@@ -47,16 +50,30 @@ export default function UpgradeModal() {
     <Dialog>
       <DialogTrigger asChild>
         <Button
-          variant="secondary"
-          className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200
-                     dark:bg-emerald-900/60 dark:text-emerald-100
-                     dark:hover:bg-emerald-800/80"
+          variant="ghost"
+          className={`w-full flex ${
+            isRTL ? "justify-between" : "justify-start"
+          } p-2 m-0 hover:bg-yellow-50 dark:hover:bg-yellow-900/20`}
         >
-          {t("payment.upgrade", "Upgrade")}
+          {!isRTL && (
+            <Crown
+              size={16}
+              strokeWidth={2}
+              className="text-yellow-600 dark:text-yellow-500"
+            />
+          )}
+          <p>{t("payment.upgrade", "Upgrade")}</p>
+          {isRTL && (
+            <Crown
+              size={16}
+              strokeWidth={2}
+              className="text-yellow-600 dark:text-yellow-500"
+            />
+          )}
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="w-[calc(100vw-2rem)] sm:w-full max-w-4xl p-0 overflow-visible flex flex-col">
+      <DialogContent className="w-[calc(100vw-2rem)] sm:w-full max-w-4xl max-h-[90vh] p-0 overflow-hidden flex flex-col">
         <DialogHeader className="px-6 py-4 border-b border-zinc-200 dark:border-zinc-800">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-lg font-semibold">
@@ -90,7 +107,7 @@ export default function UpgradeModal() {
           </div>
         </DialogHeader>
 
-        <div className="px-4 sm:px-6 py-4 sm:py-6">
+        <div className="px-4 sm:px-6 py-4 sm:py-6 flex-1 overflow-y-auto">
           {step === UpgradeSteps.SELECT_PLAN && (
             <PricingDialog handleGetStarted={handleGetStarted} />
           )}

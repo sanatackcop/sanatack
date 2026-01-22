@@ -279,6 +279,24 @@
     "contrast": "التباين",
     "brightness": "السطوع"
   },
+  "plans": {
+    "free": "مجاني",
+    "starter": "مبتدئ",
+    "advanced": "متقدم",
+    "unlimited": "غير محدود"
+  },
+  "usageCategories": {
+    "ai": "ميزات الذكاء الاصطناعي",
+    "content": "توليد المحتوى",
+    "ingest": "معالجة المستندات",
+    "other": "أخرى"
+  },
+  "navItems": {
+    "general": "عام",
+    "subscription": "الاشتراك",
+    "usage": "الاستخدام",
+    "account": "الحساب"
+  },
   "sidebar": {
     "comminty": "المجتماع",
     "leaderboard": "المتصدرين",
@@ -921,53 +939,70 @@
     }
   },
   "pricing": {
-    "title": "Pricing",
-    "subtitle": "Choose the plan that fits your learning goals.",
-    "popularBadge": "Best value",
-    "billedMonthly": "Billed monthly",
-    "perMonth": "/ month",
-    "starter": {
-      "name": "Starter",
-      "description": "For students who learn from documents and videos.",
-      "button": "Choose Starter",
+    "title": "الأسعار",
+    "subtitle": "اختر الخطة التي تناسب أهدافك التعليمية.",
+    "popularBadge": "الأفضل قيمة",
+    "billedMonthly": "الفواتير شهرية",
+    "perMonth": "/ الشهر",
+    "moreFeatures": "ميزات إضافية",
+    "free": {
+      "name": "مجاني",
+      "description": "ابدأ مع الميزات الأساسية.",
+      "button": "ابدأ مجاناً",
       "features": {
-        "aiQuality": "AI Quality: Advanced AI model (latest)",
-        "contentCredits": "150 content generation credits / month",
-        "uploads": "30 uploads / month (PDFs or YouTube videos)",
-        "chatCredits": "600 chat messages / month",
-        "practiceExams": "5 practice exams / month",
-        "podcast": "2 podcasts / day",
-        "uploadFiles": "Upload files up to 300 pages / 30 MB"
+        "chatCredits": "40 رسالة محادثة ذكاء اصطناعي",
+        "flashcards": "10 توليد بطاقات تعليمية",
+        "quizzes": "8 توليد اختبارات",
+        "summaries": "20 توليد ملخصات",
+        "explanations": "15 شرح عميق",
+        "uploads": "10 رفع مستندات"
+      }
+    },
+    "starter": {
+      "name": "مبتدئ",
+      "description": "للطلاب الذين يتعلمون من المستندات ومقاطع الفيديو.",
+      "button": "اختر مبتدئ",
+      "features": {
+        "aiQuality": "جودة الذكاء الاصطناعي: نموذج ذكاء اصطناعي متقدم (الأحدث)",
+        "chatCredits": "400 رسالة محادثة ذكاء اصطناعي",
+        "flashcards": "100 توليد بطاقات تعليمية",
+        "quizzes": "100 توليد اختبارات",
+        "summaries": "240 توليد ملخصات",
+        "explanations": "180 شرح عميق",
+        "uploads": "80 رفع مستندات",
+        "uploadFiles": "رفع ملفات تصل إلى 300 صفحة / 30 ميجابايت"
       }
     },
     "advanced": {
-      "name": "Advanced",
-      "description": "Best value for serious learners.",
-      "button": "Choose Advanced",
+      "name": "متقدم",
+      "description": "الأفضل قيمة للمتعلمين الجادين.",
+      "button": "اختر متقدم",
       "features": {
-        "aiQuality": "AI Quality: Advanced AI model (latest)",
-        "contentCredits": "400 content generation credits / month",
-        "uploads": "100 uploads / month (PDFs or YouTube videos)",
-        "chatCredits": "2,000 chat messages / month",
-        "practiceExams": "15 practice exams / month",
-        "podcast": "5 podcasts / day",
-        "uploadFiles": "Upload files up to 800 pages / 100 MB",
-        "speed": "Faster AI responses"
+        "aiQuality": "جودة الذكاء الاصطناعي: نموذج ذكاء اصطناعي متقدم (الأحدث)",
+        "chatCredits": "2,000 رسالة محادثة ذكاء اصطناعي",
+        "flashcards": "300 توليد بطاقات تعليمية",
+        "quizzes": "300 توليد اختبارات",
+        "summaries": "600 توليد ملخصات",
+        "explanations": "500 شرح عميق",
+        "uploads": "240 رفع مستندات",
+        "uploadFiles": "رفع ملفات تصل إلى 800 صفحة / 100 ميجابايت",
+        "speed": "ردود ذكاء اصطناعي أسرع"
       }
     },
     "unlimited": {
-      "name": "Unlimited",
-      "description": "Unlimited learning. No restrictions.",
-      "button": "Choose Unlimited",
+      "name": "غير محدود",
+      "description": "تعلم غير محدود. بلا قيود.",
+      "button": "اختر غير محدود",
       "features": {
-        "aiQuality": "AI Quality: Advanced AI model (latest)",
-        "contentCredits": "Unlimited content generation",
-        "uploads": "Unlimited PDF & YouTube uploads",
-        "chatCredits": "Unlimited AI chat",
-        "practiceExams": "Unlimited practice exams",
-        "podcast": "10 podcasts / day",
-        "uploadFiles": "Upload files up to 2000 pages / 300 MB",
-        "priority": "Priority processing"
+        "aiQuality": "جودة الذكاء الاصطناعي: نموذج ذكاء اصطناعي متقدم (الأحدث)",
+        "chatCredits": "9,999 رسالة محادثة ذكاء اصطناعي",
+        "flashcards": "999 توليد بطاقات تعليمية",
+        "quizzes": "999 توليد اختبارات",
+        "summaries": "999 توليد ملخصات",
+        "explanations": "899 شرح عميق",
+        "uploads": "500 رفع مستندات",
+        "uploadFiles": "رفع ملفات تصل إلى 2000 صفحة / 300 ميجابايت",
+        "priority": "معالجة ذات أولوية"
       }
     }
   },
@@ -1008,7 +1043,173 @@
   },
   "settings": {
     "lightMode": "الوضع النهاري",
-    "darkMode": "الوضع الليلي"
+    "darkMode": "الوضع الليلي",
+    "description": "إدارة تفضيلاتك والفواتير والاستخدام في مكان واحد.",
+    "categories": "الأقسام",
+    "search": {
+      "placeholder": "بحث في الإعدادات",
+      "label": "بحث في الإعدادات"
+    },
+    "common": {
+      "saving": "جارٍ الحفظ...",
+      "saveChanges": "حفظ التغييرات",
+      "reset": "إعادة تعيين",
+      "cancel": "إلغاء"
+    },
+    "general": {
+      "title": "عام",
+      "description": "تفضيلات المظهر واللغة.",
+      "saved": "تم حفظ الإعدادات العامة.",
+      "error": "تعذر تحديث الإعدادات العامة.",
+      "errorTitle": "الإعدادات غير متاحة",
+      "appearance": {
+        "title": "المظهر",
+        "description": "اختر كيف يجب أن تبدو الواجهة."
+      },
+      "compactMode": {
+        "label": "الوضع المضغوط",
+        "description": "تقليل المسافات لعرض المزيد على الشاشة."
+      },
+      "language": {
+        "title": "اللغة",
+        "description": "اختر اللغة المستخدمة في الواجهة.",
+        "label": "اللغة",
+        "placeholder": "اختر اللغة",
+        "current": "اللغة الحالية"
+      }
+    },
+    "subscription": {
+      "title": "الاشتراك",
+      "description": "إدارة خطتك وتفاصيل الفوترة.",
+      "errorTitle": "الفوترة غير متاحة",
+      "currentPlan": "الخطة الحالية",
+      "upgrade": "ترقية الخطة",
+      "upgrading": "جارٍ الترقية...",
+      "upgraded": "تمت ترقية الاشتراك.",
+      "upgradeError": "تعذر ترقية الاشتراك.",
+      "cancel": "إلغاء الاشتراك",
+      "canceled": "تم إلغاء الاشتراك.",
+      "cancelError": "تعذر إلغاء الاشتراك.",
+      "cancelTitle": "إلغاء الاشتراك",
+      "cancelDescription": "سيتوقف التجديد في نهاية فترة الفوترة.",
+      "cancelConfirm": "نعم، إلغاء",
+      "cancelKeep": "الاحتفاظ بالخطة",
+      "billing": {
+        "title": "تفاصيل الفوترة",
+        "description": "تحديث طرق الدفع والفواتير.",
+        "paymentMethod": "طريقة الدفع",
+        "email": "البريد الإلكتروني للفوترة",
+        "address": "عنوان الفوترة",
+        "manage": "إدارة الفوترة"
+      }
+    },
+    "usage": {
+      "title": "الاستخدام",
+      "description": "تتبع استخدامك لدورة الفوترة الحالية.",
+      "error": "تعذر تحميل إحصائيات الاستخدام.",
+      "errorTitle": "بيانات الاستخدام غير متاحة",
+      "refresh": "تحديث",
+      "refreshing": "جارٍ التحديث...",
+      "totalCredits": "إجمالي الأرصدة المستخدمة",
+      "actionsUsed": "الإجراءات المستخدمة",
+      "nearLimit": "قريب من الحد",
+      "credits": "أرصدة",
+      "use": "استخدام",
+      "uses": "استخدامات",
+      "noUsage": "لا يوجد استخدام بعد",
+      "noUsageDescription": "سيظهر الاستخدام بمجرد تسجيل النشاط.",
+      "category": {
+        "ai": "استخدام ميزات الذكاء الاصطناعي",
+        "content": "استخدام ميزات توليد المحتوى",
+        "ingest": "استخدام ميزات معالجة المستندات",
+        "other": "استخدام آخر"
+      },
+      "actions": {
+        "workspace.chat.message": {
+          "label": "رسائل الدردشة الذكية",
+          "description": "المحادثات مع المساعد الذكي داخل مساحات العمل"
+        },
+        "workspace.flashcards.generate": {
+          "label": "توليد البطاقات التعليمية",
+          "description": "مجموعات بطاقات تعليمية مُولّدة بالذكاء الاصطناعي"
+        },
+        "workspace.quiz.generate": {
+          "label": "توليد الاختبارات",
+          "description": "اختبارات تكيفية مُولّدة من موادك التعليمية"
+        },
+        "workspace.summary.generate": {
+          "label": "توليد الملخصات",
+          "description": "ملخصات موجزة للمواضيع بالذكاء الاصطناعي"
+        },
+        "workspace.explanation.generate": {
+          "label": "الشرح المفصّل",
+          "description": "شروحات تفصيلية للمواضيع المعقدة"
+        },
+        "document.upload": {
+          "label": "رفع المستندات",
+          "description": "الملفات المرفوعة والمعالجة داخل مساحات العمل"
+        }
+      }
+    },
+    "account": {
+      "title": "الحساب",
+      "description": "تحديث ملفك الشخصي والبريد الإلكتروني وإعدادات الأمان.",
+      "saved": "تم تحديث إعدادات الحساب.",
+      "error": "تعذر تحديث إعدادات الحساب.",
+      "errorTitle": "بيانات الحساب غير متاحة",
+      "profile": {
+        "title": "الملف الشخصي",
+        "description": "المعلومات الشخصية الأساسية.",
+        "name": "الاسم",
+        "company": "الشركة",
+        "phone": "الهاتف",
+        "save": "حفظ الملف الشخصي"
+      },
+      "email": {
+        "title": "البريد الإلكتروني",
+        "description": "تحديث عنوان بريدك الإلكتروني.",
+        "current": "البريد الإلكتروني الحالي",
+        "new": "البريد الإلكتروني الجديد",
+        "change": "تغيير البريد الإلكتروني",
+        "sending": "جارٍ الإرسال...",
+        "sendConfirmation": "إرسال التأكيد",
+        "sentTitle": "تم إرسال التأكيد",
+        "sentDescription": "يرجى التحقق من بريدك الوارد لتأكيد البريد الإلكتروني الجديد."
+      },
+      "password": {
+        "title": "كلمة المرور",
+        "description": "قم بتحديث كلمة المرور بانتظام.",
+        "current": "كلمة المرور الحالية",
+        "new": "كلمة المرور الجديدة",
+        "confirm": "تأكيد كلمة المرور",
+        "update": "تحديث كلمة المرور",
+        "updating": "جارٍ التحديث..."
+      },
+      "security": {
+        "title": "الأمان",
+        "description": "إجراءات إضافية لسلامة الحساب.",
+        "signOutAll": "تسجيل الخروج من جميع الأجهزة",
+        "signOutTitle": "تسجيل الخروج من كل مكان",
+        "signOutDescription": "سيتم تسجيل خروجك من جميع الأجهزة فورًا.",
+        "signOut": "تسجيل الخروج"
+      }
+    },
+    "email": {
+      "sent": "تم إرسال التأكيد إلى {{email}}.",
+      "error": "تعذر تحديث البريد الإلكتروني."
+    },
+    "password": {
+      "updated": "تم تحديث كلمة المرور.",
+      "error": "تعذر تحديث كلمة المرور.",
+      "error.allFields": "يرجى ملء جميع حقول كلمة المرور.",
+      "error.minLength": "يجب أن تتكون كلمة المرور الجديدة من 8 أحرف على الأقل.",
+      "error.mismatch": "كلمتا المرور غير متطابقتين.",
+      "error.weak": "يجب أن تحتوي كلمة المرور على حرف كبير وحرف صغير ورقم واحد على الأقل."
+    },
+    "security": {
+      "signedOut": "تم تسجيل الخروج من جميع الأجهزة.",
+      "signOutError": "تعذر تسجيل الخروج."
+    }
   },
   "workspace": {
     "comingSoon": "قريبًا"
@@ -1281,5 +1482,46 @@
     "paymentPrompt": "أكمل عملية الدفع الآمنة لتفعيل اشتراكك.",
     "completePayment": "أكمل دفعتك",
     "secureSubscription": "تأمين دفع الاشتراك"
+  },
+  "paymentCallback": {
+    "header": {
+      "verifying": {
+        "title": "جارٍ التحقق من الدفع",
+        "subtitle": "يرجى عدم إغلاق هذه الصفحة."
+      },
+      "success": {
+        "title": "تم الدفع بنجاح",
+        "subtitle": "اشتراكك مفعل الآن."
+      },
+      "failed": {
+        "title": "لم يكتمل الدفع",
+        "subtitle": "يبدو أن عملية الدفع لم تكتمل."
+      },
+      "error": {
+        "title": "حدث خطأ ما",
+        "subtitle": "تعذر التحقق من عملية الدفع."
+      }
+    },
+    "messages": {
+      "verifying": "جارٍ التحقق من دفعتك...",
+      "missingId": "معرّف الدفع غير موجود في رابط الرجوع.",
+      "verificationFailed": "فشل التحقق من الدفع.",
+      "confirmed": "شكرًا لك! تم تأكيد الدفع.",
+      "status": "حالة الدفع: {{status}}",
+      "verifyError": "تعذر التحقق من الدفع. الرجاء المحاولة مرة أخرى."
+    },
+    "details": {
+      "amount": "المبلغ",
+      "date": "التاريخ",
+      "description": "الوصف",
+      "paymentId": "معرّف الدفع"
+    },
+    "actions": {
+      "goDashboard": "الذهاب إلى لوحة التحكم",
+      "tryAgain": "أعد المحاولة",
+      "backToDashboard": "العودة إلى لوحة التحكم"
+    },
+    "redirecting": "سيتم التحويل خلال {{seconds}} ثانية",
+    "secureVerification": "التحقق الآمن من الدفع"
   }
 }

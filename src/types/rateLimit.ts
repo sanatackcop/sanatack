@@ -1,11 +1,10 @@
 import { PlanType } from "@/context/UserContext";
 
-export interface RateLimitUsageItem {
+export interface RateLimitUsageSummaryItem {
   action: string;
   label?: string;
   description?: string;
   category?: string;
-  creditsPerUse: number;
   usedCredits: number;
   remainingCredits: number | null;
   limit: number | null;
@@ -16,5 +15,5 @@ export interface RateLimitUsageItem {
 
 export interface RateLimitSummaryResponse {
   plan_type: PlanType;
-  usage: RateLimitUsageItem[];
+  usage: RateLimitUsageSummaryItem[];
 }

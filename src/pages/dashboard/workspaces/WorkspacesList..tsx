@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { FolderPlusIcon } from "lucide-react";
 import { AddContentModal } from "@/lib/modal/AddContantModal";
@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import WorkspaceFolderItem from "./WorkspaceFolderItem";
 import { useSidebarRefresh } from "@/context/SidebarRefreshContext";
 
-export default function WorkspacesList({
+function WorkspacesList({
   workspaces,
   refreshParentComponent,
 }: {
@@ -19,23 +19,19 @@ export default function WorkspacesList({
   const navigate = useNavigate();
   const { refreshWorkspace } = useSidebarRefresh();
 
-  const handleWorkspaceClick = (workspaceId: string) => {
+  const handleWorkspaceClick = useCallback((workspaceId: string) => {
     navigate(`/dashboard/learn/workspace/${workspaceId}`);
-  };
+  }, [navigate]);
 
-  const refreshComponent = () => {
-    refreshParentComponent();
-  };
-
-  const handleReset = async (update?: boolean) => {
+  const handleReset = useCallback(async (update?: boolean) => {
     setOpen(false);
     if (update) {
-      refreshComponent();
+      refreshParentComponent();
       await refreshWorkspace().catch((error) => {
         console.error("Failed to refresh sidebar workspaces", error);
       });
     }
-  };
+  }, [refreshParentComponent, refreshWorkspace]);
 
   return (
     <>
@@ -74,7 +70,7 @@ export default function WorkspacesList({
         {workspaces.length !== 0 &&
           workspaces.map((workspace) => (
             <WorkspaceFolderItem
-              refreshParentComponent={refreshComponent}
+              refreshParentComponent={refreshParentComponent}
               key={workspace.id}
               workspace={workspace}
               onClick={() => handleWorkspaceClick(workspace.id)}
@@ -86,3 +82,5 @@ export default function WorkspacesList({
     </>
   );
 }
+
+export default memo(WorkspacesList);

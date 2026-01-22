@@ -1,5 +1,6 @@
 import { verifyPayment } from "@/utils/_apis/payment.api";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   PaymentRes,
@@ -22,14 +23,21 @@ const BRAND = "#0EB981";
 type UIStatus = "verifying" | "success" | "failed" | "error";
 
 const PaymentCallback = () => {
+  const { t, i18n } = useTranslation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { login } = useUserContext();
+  const isRTL = i18n.dir() === "rtl";
+  const locale = i18n.language || "en";
 
   const payment_id = searchParams.get("id");
 
   const [status, setStatus] = useState<UIStatus>("verifying");
-  const [message, setMessage] = useState<string>("Verifying your payment…");
+  const [message, setMessage] = useState<string>(() =>
+    t("paymentCallback.messages.verifying", {
+      defaultValue: "Verifying your payment...",
+    }),
+  );
   const [paymentData, setPaymentData] = useState<PaymentRes | null>(null);
 
   const [redirectIn, setRedirectIn] = useState<number>(5);
@@ -40,28 +48,44 @@ const PaymentCallback = () => {
     switch (status) {
       case "verifying":
         return {
-          title: "Verifying payment",
-          subtitle: "Please don’t close this tab.",
+          title: t("paymentCallback.header.verifying.title", {
+            defaultValue: "Verifying payment",
+          }),
+          subtitle: t("paymentCallback.header.verifying.subtitle", {
+            defaultValue: "Please don't close this tab.",
+          }),
         };
       case "success":
         return {
-          title: "Payment successful",
-          subtitle: "Your subscription is now active.",
+          title: t("paymentCallback.header.success.title", {
+            defaultValue: "Payment successful",
+          }),
+          subtitle: t("paymentCallback.header.success.subtitle", {
+            defaultValue: "Your subscription is now active.",
+          }),
         };
       case "failed":
         return {
-          title: "Payment not completed",
-          subtitle: "It looks like the payment didn’t go through.",
+          title: t("paymentCallback.header.failed.title", {
+            defaultValue: "Payment not completed",
+          }),
+          subtitle: t("paymentCallback.header.failed.subtitle", {
+            defaultValue: "It looks like the payment didn't go through.",
+          }),
         };
       case "error":
         return {
-          title: "Something went wrong",
-          subtitle: "We couldn’t verify your payment.",
+          title: t("paymentCallback.header.error.title", {
+            defaultValue: "Something went wrong",
+          }),
+          subtitle: t("paymentCallback.header.error.subtitle", {
+            defaultValue: "We couldn't verify your payment.",
+          }),
         };
       default:
         return { title: "", subtitle: "" };
     }
-  }, [status]);
+  }, [status, t]);
 
   const tone = useMemo(() => {
     // Tailwind classes chosen to be clean in light & dark mode
@@ -123,12 +147,20 @@ const PaymentCallback = () => {
   const verify = async () => {
     clearTimers();
     setStatus("verifying");
-    setMessage("Verifying your payment…");
+    setMessage(
+      t("paymentCallback.messages.verifying", {
+        defaultValue: "Verifying your payment...",
+      }),
+    );
     setPaymentData(null);
 
     if (!payment_id) {
       setStatus("error");
-      setMessage("Missing payment ID in the callback URL.");
+      setMessage(
+        t("paymentCallback.messages.missingId", {
+          defaultValue: "Missing payment ID in the callback URL.",
+        }),
+      );
       return;
     }
 
@@ -139,14 +171,23 @@ const PaymentCallback = () => {
       // API error shape
       if ("type" in data) {
         setStatus("error");
-        setMessage(data.message || "Payment verification failed.");
+        setMessage(
+          data.message ||
+            t("paymentCallback.messages.verificationFailed", {
+              defaultValue: "Payment verification failed.",
+            }),
+        );
         return;
       }
 
       // Business status
       if (data.status === PaymentType.PAID) {
         setStatus("success");
-        setMessage("Thanks! Your payment was confirmed.");
+        setMessage(
+          t("paymentCallback.messages.confirmed", {
+            defaultValue: "Thanks! Your payment was confirmed.",
+          }),
+        );
         setPaymentData(data);
 
         // Refresh auth ONLY on success (cleaner + avoids overriding session on failed payments)
@@ -159,11 +200,20 @@ const PaymentCallback = () => {
       }
 
       setStatus("failed");
-      setMessage(`Payment status: ${data.status}`);
+      setMessage(
+        t("paymentCallback.messages.status", {
+          status: data.status,
+          defaultValue: `Payment status: ${data.status}`,
+        }),
+      );
     } catch (e) {
       console.error(e);
       setStatus("error");
-      setMessage("We couldn’t verify your payment. Please try again.");
+      setMessage(
+        t("paymentCallback.messages.verifyError", {
+          defaultValue: "We couldn't verify your payment. Please try again.",
+        }),
+      );
     }
   };
 
@@ -190,7 +240,10 @@ const PaymentCallback = () => {
       : undefined;
 
   return (
-    <div className="min-h-screen px-4 flex items-center justify-center bg-gradient-to-b from-zinc-50 via-white to-zinc-50 dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900">
+    <div
+      dir={isRTL ? "rtl" : "ltr"}
+      className={`min-h-screen px-4 flex items-center justify-center bg-gradient-to-b from-zinc-50 via-white to-zinc-50 dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900 ${isRTL ? "text-right" : "text-left"}`}
+    >
       <div className="w-full max-w-md">
         {/* Brand top glow */}
         <div
@@ -232,28 +285,44 @@ const PaymentCallback = () => {
               <div className="mt-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/40 p-4">
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div>
-                    <div className="text-xs text-zinc-500">Amount</div>
+                    <div className="text-xs text-zinc-500">
+                      {t("paymentCallback.details.amount", {
+                        defaultValue: "Amount",
+                      })}
+                    </div>
                     <div className="font-medium text-zinc-900 dark:text-zinc-100">
                       {paymentData.amount_formatted}
                     </div>
                   </div>
 
                   <div>
-                    <div className="text-xs text-zinc-500">Date</div>
+                    <div className="text-xs text-zinc-500">
+                      {t("paymentCallback.details.date", {
+                        defaultValue: "Date",
+                      })}
+                    </div>
                     <div className="font-medium text-zinc-900 dark:text-zinc-100">
-                      {new Date(paymentData.created_at).toLocaleString()}
+                      {new Date(paymentData.created_at).toLocaleString(locale)}
                     </div>
                   </div>
 
                   <div className="col-span-2">
-                    <div className="text-xs text-zinc-500">Description</div>
+                    <div className="text-xs text-zinc-500">
+                      {t("paymentCallback.details.description", {
+                        defaultValue: "Description",
+                      })}
+                    </div>
                     <div className="font-medium text-zinc-900 dark:text-zinc-100 break-words">
                       {paymentData.description}
                     </div>
                   </div>
 
                   <div className="col-span-2">
-                    <div className="text-xs text-zinc-500">Payment ID</div>
+                    <div className="text-xs text-zinc-500">
+                      {t("paymentCallback.details.paymentId", {
+                        defaultValue: "Payment ID",
+                      })}
+                    </div>
                     <div className="font-mono text-xs text-zinc-800 dark:text-zinc-200 break-all">
                       {paymentData.payment_id}
                     </div>
@@ -267,32 +336,43 @@ const PaymentCallback = () => {
                 <>
                   <button
                     onClick={goDashboard}
-                    className="w-full rounded-2xl py-3 text-sm font-semibold text-white flex items-center justify-center gap-2 transition"
+                    className={`w-full rounded-2xl py-3 text-sm font-semibold text-white flex items-center justify-center gap-2 transition ${isRTL ? "flex-row-reverse" : ""}`}
                     style={primaryButtonStyle}
                   >
-                    Go to Dashboard <ArrowRight className="h-4 w-4" />
+                    {t("paymentCallback.actions.goDashboard", {
+                      defaultValue: "Go to Dashboard",
+                    })}
+                    <ArrowRight
+                      className={`h-4 w-4 ${isRTL ? "rotate-180" : ""}`}
+                    />
                   </button>
 
                   <div className="text-xs text-zinc-500 dark:text-zinc-400 text-center">
-                    Redirecting in{" "}
-                    <span className="font-semibold">{redirectIn}s</span>…
+                    {t("paymentCallback.redirecting", {
+                      seconds: redirectIn,
+                      defaultValue: "Redirecting in {{seconds}}s",
+                    })}
                   </div>
                 </>
               ) : (
                 <>
                   <button
                     onClick={verify}
-                    className="w-full rounded-2xl py-3 text-sm font-semibold border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition flex items-center justify-center gap-2"
+                    className={`w-full rounded-2xl py-3 text-sm font-semibold border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition flex items-center justify-center gap-2 ${isRTL ? "flex-row-reverse" : ""}`}
                   >
                     <RotateCcw className="h-4 w-4" />
-                    Try again
+                    {t("paymentCallback.actions.tryAgain", {
+                      defaultValue: "Try again",
+                    })}
                   </button>
 
                   <button
                     onClick={goDashboard}
                     className="w-full rounded-2xl py-3 text-sm font-semibold text-zinc-700 dark:text-zinc-200 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition"
                   >
-                    Back to Dashboard
+                    {t("paymentCallback.actions.backToDashboard", {
+                      defaultValue: "Back to Dashboard",
+                    })}
                   </button>
                 </>
               )}
@@ -305,7 +385,9 @@ const PaymentCallback = () => {
                 className="inline-block h-1.5 w-1.5 rounded-full"
                 style={{ background: BRAND }}
               />
-              Secure payment verification
+              {t("paymentCallback.secureVerification", {
+                defaultValue: "Secure payment verification",
+              })}
             </div>
           </div>
         </div>

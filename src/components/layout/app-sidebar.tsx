@@ -1,14 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { useSettings } from "@/context/SettingsContexts";
 import type { SidebarRefreshContextValue } from "@/context/SidebarRefreshContext";
 import clsx from "clsx";
-import Modal from "@/components/Modal";
 import AppSidebarContent from "./helpers/AppSidebarContent";
+import SettingsModal from "./helpers/SettingsModal";
 
 type MenuItem =
   | {
@@ -62,7 +60,7 @@ export function AppSidebar({
         setInternalIsMobileMenuOpen(open);
       }
     },
-    [onMobileMenuChange]
+    [onMobileMenuChange],
   );
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -105,7 +103,7 @@ export function AppSidebar({
     if (lng === language) return;
     setLanguage(lng);
     toast.success(
-      t("languages.changed", { lang: t(`languages.${lng}` as any) })
+      t("languages.changed", { lang: t(`languages.${lng}` as any) }),
     );
   };
 
@@ -152,9 +150,9 @@ export function AppSidebar({
             isMobileMenuOpen
               ? "translate-x-0"
               : isRTL
-              ? "translate-x-full"
-              : "-translate-x-full",
-            isRTL ? "right-0" : "left-0"
+                ? "translate-x-full"
+                : "-translate-x-full",
+            isRTL ? "right-0" : "left-0",
           )}
         >
           <AppSidebarContent
@@ -173,76 +171,10 @@ export function AppSidebar({
         </div>
       )}
 
-      <Modal
-        open={isSettingsOpen}
-        onOpenChange={setIsSettingsOpen}
-        title={t("sidebar.settingsModal.title")}
-        description={t("sidebar.settingsModal.description")}
-        confirmLabel={t("common.close")}
-        showCancel={false}
-        onConfirm={() => setIsSettingsOpen(false)}
-        dir={isRTL ? "rtl" : "ltr"}
-        className="rounded-2xl"
-      >
-        <div className="space-y-6">
-          <div
-            className={clsx(
-              "flex items-start justify-between gap-3",
-              isRTL ? "flex-row-reverse" : "flex-row"
-            )}
-          >
-            <div className="space-y-1">
-              <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                {t("sidebar.settingsModal.appearance.title")}
-              </p>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                {t("sidebar.settingsModal.appearance.description")}
-              </p>
-            </div>
-            <Switch
-              checked={darkMode}
-              onCheckedChange={() => toggleDarkMode()}
-              aria-label={t("sidebar.settingsModal.appearance.ariaLabel")}
-            />
-          </div>
-
-          <div className="space-y-3">
-            <div className="space-y-1">
-              <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                {t("sidebar.settingsModal.language.title")}
-              </p>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                {t("sidebar.settingsModal.language.description")}
-              </p>
-            </div>
-            <div
-              className={clsx(
-                "flex gap-2",
-                isRTL ? "flex-row-reverse" : "flex-row"
-              )}
-            >
-              <Button
-                type="button"
-                size="sm"
-                variant={language === "ar" ? "default" : "outline"}
-                className="flex-1"
-                onClick={() => handleLanguageSelect("ar")}
-              >
-                {t("languages.ar")}
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant={language === "en" ? "default" : "outline"}
-                className="flex-1"
-                onClick={() => handleLanguageSelect("en")}
-              >
-                {t("languages.en")}
-              </Button>
-            </div>
-          </div>
-        </div>
-      </Modal>
+      <SettingsModal
+        isSettingsOpen={isSettingsOpen}
+        setIsSettingsOpen={setIsSettingsOpen}
+      />
     </>
   );
 }

@@ -54,7 +54,18 @@ export default function LazyPage({
             className="relative block rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 dark:focus-visible:ring-zinc-600"
           >
             {isVisible ? (
-              <Page pageNumber={pageNumber} width={180} />
+              <div
+                className="w-[180px] h-[230px] overflow-hidden rounded-md relative"
+                style={{ contain: "strict" }}
+              >
+                <Page
+                  pageNumber={pageNumber}
+                  width={180}
+                  renderTextLayer={false}
+                  renderAnnotationLayer={false}
+                  className="[&_canvas]:!block"
+                />
+              </div>
             ) : (
               <div className="h-[230px] w-[180px] rounded-md bg-zinc-200 dark:bg-zinc-800 animate-pulse" />
             )}

@@ -279,6 +279,24 @@
     "contrast": "Contrast",
     "brightness": "Brightness"
   },
+  "plans": {
+    "free": "Free",
+    "starter": "Starter",
+    "advanced": "Advanced",
+    "unlimited": "Unlimited"
+  },
+  "usageCategories": {
+    "ai": "AI Features",
+    "content": "Content Generation",
+    "ingest": "Document Processing",
+    "other": "Other"
+  },
+  "navItems": {
+    "general": "General",
+    "subscription": "Subscription",
+    "usage": "Usage",
+    "account": "Account"
+  },
   "sidebar": {
     "comminty": "comminty",
     "leaderboard": "leaderboard",
@@ -916,17 +934,32 @@
     "popularBadge": "Best value",
     "billedMonthly": "Billed monthly",
     "perMonth": "/ month",
+    "moreFeatures": "more features",
+    "free": {
+      "name": "Free",
+      "description": "Get started with basic features.",
+      "button": "Get Started Free",
+      "features": {
+        "chatCredits": "40 AI chat messages",
+        "flashcards": "10 flashcard generations",
+        "quizzes": "8 quiz generations",
+        "summaries": "20 summary generations",
+        "explanations": "15 deep explanations",
+        "uploads": "10 document uploads"
+      }
+    },
     "starter": {
       "name": "Starter",
       "description": "For students who learn from documents and videos.",
       "button": "Choose Starter",
       "features": {
         "aiQuality": "AI Quality: Advanced AI model (latest)",
-        "contentCredits": "150 content generation credits / month",
-        "uploads": "30 uploads / month (PDFs or YouTube videos)",
-        "chatCredits": "600 chat messages / month",
-        "practiceExams": "5 practice exams / month",
-        "podcast": "2 podcasts / day",
+        "chatCredits": "400 AI chat messages",
+        "flashcards": "100 flashcard generations",
+        "quizzes": "100 quiz generations",
+        "summaries": "240 summary generations",
+        "explanations": "180 deep explanations",
+        "uploads": "80 document uploads",
         "uploadFiles": "Upload files up to 300 pages / 30 MB"
       }
     },
@@ -936,11 +969,12 @@
       "button": "Choose Advanced",
       "features": {
         "aiQuality": "AI Quality: Advanced AI model (latest)",
-        "contentCredits": "400 content generation credits / month",
-        "uploads": "100 uploads / month (PDFs or YouTube videos)",
-        "chatCredits": "2,000 chat messages / month",
-        "practiceExams": "15 practice exams / month",
-        "podcast": "5 podcasts / day",
+        "chatCredits": "2,000 AI chat messages",
+        "flashcards": "300 flashcard generations",
+        "quizzes": "300 quiz generations",
+        "summaries": "600 summary generations",
+        "explanations": "500 deep explanations",
+        "uploads": "240 document uploads",
         "uploadFiles": "Upload files up to 800 pages / 100 MB",
         "speed": "Faster AI responses"
       }
@@ -951,11 +985,12 @@
       "button": "Choose Unlimited",
       "features": {
         "aiQuality": "AI Quality: Advanced AI model (latest)",
-        "contentCredits": "Unlimited content generation",
-        "uploads": "Unlimited PDF & YouTube uploads",
-        "chatCredits": "Unlimited AI chat",
-        "practiceExams": "Unlimited practice exams",
-        "podcast": "10 podcasts / day",
+        "chatCredits": "9,999 AI chat messages",
+        "flashcards": "999 flashcard generations",
+        "quizzes": "999 quiz generations",
+        "summaries": "999 summary generations",
+        "explanations": "899 deep explanations",
+        "uploads": "500 document uploads",
         "uploadFiles": "Upload files up to 2000 pages / 300 MB",
         "priority": "Priority processing"
       }
@@ -1003,7 +1038,169 @@
   },
   "settings": {
     "lightMode": "Light Mode",
-    "darkMode": "Dark Mode"
+    "darkMode": "Dark Mode",
+    "description": "Manage your preferences, billing, and usage in one place.",
+    "categories": "Categories",
+    "search": {
+      "placeholder": "Search settings",
+      "label": "Search settings"
+    },
+    "common": {
+      "saving": "Saving...",
+      "saveChanges": "Save changes",
+      "reset": "Reset",
+      "cancel": "Cancel"
+    },
+    "general": {
+      "title": "General",
+      "description": "Appearance and language preferences.",
+      "saved": "General settings saved.",
+      "error": "Unable to update general settings.",
+      "errorTitle": "Settings not available",
+      "appearance": {
+        "title": "Appearance",
+        "description": "Choose how the interface should look."
+      },
+      "language": {
+        "title": "Language",
+        "description": "Pick the language used across the interface.",
+        "label": "Language",
+        "placeholder": "Select language",
+        "current": "Current language"
+      }
+    },
+    "subscription": {
+      "title": "Subscription",
+      "description": "Manage your plan and billing details.",
+      "errorTitle": "Billing unavailable",
+      "currentPlan": "Current plan",
+      "upgrade": "Upgrade plan",
+      "upgrading": "Upgrading...",
+      "upgraded": "Subscription upgraded.",
+      "upgradeError": "Unable to upgrade subscription.",
+      "cancel": "Cancel subscription",
+      "canceled": "Subscription canceled.",
+      "cancelError": "Unable to cancel subscription.",
+      "cancelTitle": "Cancel subscription",
+      "cancelDescription": "This will stop your renewal at the end of the billing period.",
+      "cancelConfirm": "Yes, cancel",
+      "cancelKeep": "Keep plan",
+      "billing": {
+        "title": "Billing details",
+        "description": "Update payment methods and invoices.",
+        "paymentMethod": "Payment method",
+        "email": "Billing email",
+        "address": "Billing address",
+        "manage": "Manage billing"
+      }
+    },
+    "usage": {
+      "title": "Usage",
+      "description": "Track your usage for the current billing cycle.",
+      "error": "Unable to load usage stats.",
+      "errorTitle": "Usage data unavailable",
+      "refresh": "Refresh",
+      "refreshing": "Refreshing...",
+      "totalCredits": "Total Credits Used",
+      "actionsUsed": "Actions Used",
+      "nearLimit": "Near limit",
+      "credits": "credits",
+      "use": "use",
+      "uses": "uses",
+      "noUsage": "No usage yet",
+      "noUsageDescription": "Usage will appear once activity is recorded.",
+      "category": {
+        "ai": "Usage for AI features",
+        "content": "Usage for content generation features",
+        "ingest": "Usage for document processing features",
+        "other": "Other usage"
+      },
+      "actions": {
+        "workspace.chat.message": {
+          "label": "AI Chat Messages",
+          "description": "Conversations with the AI assistant inside workspaces"
+        },
+        "workspace.flashcards.generate": {
+          "label": "Flashcards Generation",
+          "description": "AI generated flashcard decks from workspaces"
+        },
+        "workspace.quiz.generate": {
+          "label": "Quiz Generation",
+          "description": "Adaptive quizzes generated from your materials"
+        },
+        "workspace.summary.generate": {
+          "label": "Summary Generation",
+          "description": "Concise topic summaries powered by AI"
+        },
+        "workspace.explanation.generate": {
+          "label": "Deep Explanation",
+          "description": "Detailed explanations for complex topics"
+        },
+        "document.upload": {
+          "label": "Document Uploads",
+          "description": "Uploaded files processed inside workspaces"
+        }
+      }
+    },
+    "account": {
+      "title": "Account",
+      "description": "Update your profile, email, and security settings.",
+      "saved": "Account settings updated.",
+      "error": "Unable to update account settings.",
+      "errorTitle": "Account data unavailable",
+      "profile": {
+        "title": "Profile",
+        "description": "Basic personal information.",
+        "name": "Name",
+        "company": "Company",
+        "phone": "Phone",
+        "save": "Save profile"
+      },
+      "email": {
+        "title": "Email",
+        "description": "Update your email address.",
+        "current": "Current email",
+        "new": "New email",
+        "change": "Change email",
+        "sending": "Sending...",
+        "sendConfirmation": "Send confirmation",
+        "sentTitle": "Confirmation sent",
+        "sentDescription": "Please check your inbox to confirm the new email."
+      },
+      "password": {
+        "title": "Password",
+        "description": "Update your password regularly.",
+        "current": "Current password",
+        "new": "New password",
+        "confirm": "Confirm password",
+        "update": "Update password",
+        "updating": "Updating..."
+      },
+      "security": {
+        "title": "Security",
+        "description": "Additional actions for account safety.",
+        "signOutAll": "Sign out of all devices",
+        "signOutTitle": "Sign out everywhere",
+        "signOutDescription": "This will sign you out on all devices immediately.",
+        "signOut": "Sign out"
+      }
+    },
+    "email": {
+      "sent": "Confirmation sent to {{email}}.",
+      "error": "Unable to update email."
+    },
+    "password": {
+      "updated": "Password updated.",
+      "error": "Unable to update password.",
+      "error.allFields": "Please fill out all password fields.",
+      "error.minLength": "New password must be at least 8 characters.",
+      "error.mismatch": "Passwords do not match.",
+      "error.weak": "Password must contain at least one uppercase letter, one lowercase letter, and one number."
+    },
+    "security": {
+      "signedOut": "Signed out on all devices.",
+      "signOutError": "Unable to sign out."
+    }
   },
   "workspace": {
     "untitled": "Untitled",
@@ -1278,5 +1475,46 @@
     "paymentPrompt": "Complete your secure payment to activate your subscription.",
     "completePayment": "Complete your payment",
     "secureSubscription": "Secure subscription payment"
+  },
+  "paymentCallback": {
+    "header": {
+      "verifying": {
+        "title": "Verifying payment",
+        "subtitle": "Please don't close this tab."
+      },
+      "success": {
+        "title": "Payment successful",
+        "subtitle": "Your subscription is now active."
+      },
+      "failed": {
+        "title": "Payment not completed",
+        "subtitle": "It looks like the payment didn't go through."
+      },
+      "error": {
+        "title": "Something went wrong",
+        "subtitle": "We couldn't verify your payment."
+      }
+    },
+    "messages": {
+      "verifying": "Verifying your payment...",
+      "missingId": "Missing payment ID in the callback URL.",
+      "verificationFailed": "Payment verification failed.",
+      "confirmed": "Thanks! Your payment was confirmed.",
+      "status": "Payment status: {{status}}",
+      "verifyError": "We couldn't verify your payment. Please try again."
+    },
+    "details": {
+      "amount": "Amount",
+      "date": "Date",
+      "description": "Description",
+      "paymentId": "Payment ID"
+    },
+    "actions": {
+      "goDashboard": "Go to Dashboard",
+      "tryAgain": "Try again",
+      "backToDashboard": "Back to Dashboard"
+    },
+    "redirecting": "Redirecting in {{seconds}}s",
+    "secureVerification": "Secure payment verification"
   }
 }

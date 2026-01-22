@@ -6,8 +6,9 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function DateDisplay(date: string) {
-  return new Date(date).toLocaleDateString("ar-EG", {
-    year: "2-digit",
+  const dateObj = new Date(date);
+  return dateObj.toLocaleDateString("en-US", {
+    year: "numeric",
     month: "short",
     day: "numeric",
   });
@@ -15,7 +16,7 @@ export function DateDisplay(date: string) {
 
 export function formatRelativeDate(
   dateString: string | number | Date,
-  lang: "ar" | "en" = "en"
+  lang: "ar" | "en" = "en",
 ): string {
   const now = new Date();
   const date = new Date(dateString);
@@ -34,10 +35,10 @@ export function formatRelativeDate(
       return minutes === 1
         ? "منذ دقيقة"
         : minutes === 2
-        ? "منذ دقيقتين"
-        : minutes < 11
-        ? `منذ ${minutes} دقائق`
-        : `منذ ${minutes} دقيقة`;
+          ? "منذ دقيقتين"
+          : minutes < 11
+            ? `منذ ${minutes} دقائق`
+            : `منذ ${minutes} دقيقة`;
   }
 
   if (diffInSeconds < 86400) {
@@ -47,10 +48,10 @@ export function formatRelativeDate(
       return hours === 1
         ? "منذ ساعة"
         : hours === 2
-        ? "منذ ساعتين"
-        : hours < 11
-        ? `منذ ${hours} ساعات`
-        : `منذ ${hours} ساعة`;
+          ? "منذ ساعتين"
+          : hours < 11
+            ? `منذ ${hours} ساعات`
+            : `منذ ${hours} ساعة`;
   }
 
   if (diffInSeconds < 30 * 86400) {
@@ -59,10 +60,10 @@ export function formatRelativeDate(
       return days === 1
         ? "منذ يوم"
         : days === 2
-        ? "منذ يومين"
-        : days < 11
-        ? `منذ ${days} أيام`
-        : `منذ ${days} يوم`;
+          ? "منذ يومين"
+          : days < 11
+            ? `منذ ${days} أيام`
+            : `منذ ${days} يوم`;
   }
 
   return date.toLocaleDateString(lang === "ar" ? "ar" : "en", {

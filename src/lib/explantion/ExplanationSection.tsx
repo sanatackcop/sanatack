@@ -22,7 +22,7 @@ export default function ExplanationSections({
 
   return (
     <div
-      className="space-y-8 h-full mt-5"
+      className="space-y-8 h-full mt-5 break-words"
       dir={language == "ar" ? "rtl" : "ltr"}
     >
       {/* Header Section */}
