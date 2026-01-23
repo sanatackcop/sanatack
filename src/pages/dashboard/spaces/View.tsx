@@ -1,4 +1,4 @@
-import { FormEvent, useCallback, useEffect, useMemo, useState, memo } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -109,7 +109,7 @@ export default function SpaceView() {
     } catch (e: any) {
       setError(
         e?.message ??
-          t("dashboard.spaceView.errors.load", "Failed to load the space")
+        t("dashboard.spaceView.errors.load", "Failed to load the space")
       );
     } finally {
       setLoading(false);
@@ -141,9 +141,9 @@ export default function SpaceView() {
       setSpace((prev: Space | null) =>
         prev
           ? {
-              ...prev,
-              icon: updated?.icon ?? emoji,
-            }
+            ...prev,
+            icon: updated?.icon ?? emoji,
+          }
           : prev
       );
       setOpenEmojiPicker(false);
@@ -171,17 +171,17 @@ export default function SpaceView() {
       setSpace((prev: Space | null) =>
         prev
           ? {
-              ...prev,
-              name: updated?.name ?? payload.name ?? "",
-              description:
-                updated?.description ?? (payload.description as string),
-              coverImageUrl:
-                updated?.coverImageUrl ??
-                (payload.coverImageUrl as string | null) ??
-                null,
-              icon:
-                updated?.icon ?? (payload.icon as string | null) ?? prev.icon,
-            }
+            ...prev,
+            name: updated?.name ?? payload.name ?? "",
+            description:
+              updated?.description ?? (payload.description as string),
+            coverImageUrl:
+              updated?.coverImageUrl ??
+              (payload.coverImageUrl as string | null) ??
+              null,
+            icon:
+              updated?.icon ?? (payload.icon as string | null) ?? prev.icon,
+          }
           : prev
       );
 
@@ -190,10 +190,10 @@ export default function SpaceView() {
     } catch (e: any) {
       setError(
         e?.message ??
-          t(
-            "dashboard.spaceView.errors.save",
-            "Failed to save the latest changes."
-          )
+        t(
+          "dashboard.spaceView.errors.save",
+          "Failed to save the latest changes."
+        )
       );
     } finally {
       setSaving(false);
@@ -220,13 +220,13 @@ export default function SpaceView() {
         const trimmedQuery = query?.trim();
         const response = trimmedQuery
           ? await unsplashApi.search.getPhotos({
-              query: trimmedQuery,
-              perPage: 24,
-              orientation: "landscape",
-            })
+            query: trimmedQuery,
+            perPage: 24,
+            orientation: "landscape",
+          })
           : await unsplashApi.photos.list({
-              perPage: 24,
-            });
+            perPage: 24,
+          });
 
         const payload = Array.isArray(response.response)
           ? response.response
@@ -240,10 +240,10 @@ export default function SpaceView() {
       } catch (e: any) {
         setUnsplashError(
           e?.message ??
-            t(
-              "dashboard.spaceView.coverPicker.loadError",
-              "Failed to load images. Please try again."
-            )
+          t(
+            "dashboard.spaceView.coverPicker.loadError",
+            "Failed to load images. Please try again."
+          )
         );
       } finally {
         setUnsplashLoading(false);
@@ -292,9 +292,9 @@ export default function SpaceView() {
         setSpace((prev: Space | null) =>
           prev
             ? {
-                ...prev,
-                coverImageUrl: coverUrl,
-              }
+              ...prev,
+              coverImageUrl: coverUrl,
+            }
             : prev
         );
         setEditCoverImage(coverUrl ?? "");
@@ -302,10 +302,10 @@ export default function SpaceView() {
       } catch (e: any) {
         setUnsplashError(
           e?.message ??
-            t(
-              "dashboard.spaceView.coverPicker.applyError",
-              "Failed to update the cover. Please try again."
-            )
+          t(
+            "dashboard.spaceView.coverPicker.applyError",
+            "Failed to update the cover. Please try again."
+          )
         );
       } finally {
         setCoverSaving(false);
@@ -488,13 +488,13 @@ export default function SpaceView() {
                     title={
                       !unsplashAccessKey
                         ? t(
-                            "dashboard.spaceView.coverPicker.missingKey",
-                            "Unsplash access key is missing. Please set VITE_UNSPLASH_ACCESS_KEY."
-                          )
+                          "dashboard.spaceView.coverPicker.missingKey",
+                          "Unsplash access key is missing. Please set VITE_UNSPLASH_ACCESS_KEY."
+                        )
                         : t(
-                            "dashboard.spaceView.actions.changeCover",
-                            "Change cover"
-                          )
+                          "dashboard.spaceView.actions.changeCover",
+                          "Change cover"
+                        )
                     }
                     aria-label={t(
                       "dashboard.spaceView.actions.changeCover",
@@ -754,8 +754,8 @@ export default function SpaceView() {
                 date: space?.lastActivity
                   ? formatRelativeDate(space.lastActivity, language)
                   : space?.updated_at
-                  ? formatRelativeDate(space.updated_at, language)
-                  : t("dashboard.spaceView.meta.unknown", "recently"),
+                    ? formatRelativeDate(space.updated_at, language)
+                    : t("dashboard.spaceView.meta.unknown", "recently"),
               })}
             </span>
           </div>
