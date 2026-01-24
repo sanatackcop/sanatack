@@ -52,9 +52,8 @@ export default function Recent({
       <section>
         <div className="flex items-center justify-between mb-3">
           <h2
-            className={`text-lg font-semibold ${
-              isRTL ? "text-right" : "text-left"
-            }`}
+            className={`text-lg font-semibold ${isRTL ? "text-right" : "text-left"
+              }`}
           >
             {t("sidebar.recent")}
           </h2>
@@ -81,9 +80,8 @@ export default function Recent({
       <section>
         <div className="flex items-center justify-between mb-3">
           <h2
-            className={`text-lg font-semibold ${
-              isRTL ? "text-right" : "text-left"
-            }`}
+            className={`text-lg font-semibold ${isRTL ? "text-right" : "text-left"
+              }`}
           >
             {t("sidebar.recent")}
           </h2>
