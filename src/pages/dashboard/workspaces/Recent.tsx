@@ -9,11 +9,9 @@ import WorkspacesList from "./WorkspacesList.";
 export default function Recent({
   spaceId,
   setParentRefresh,
-  refreshParent,
 }: {
   spaceId?: string;
   setParentRefresh?: any;
-  refreshParent?: boolean;
 }) {
   const { t, i18n } = useTranslation();
   const [workspaces, setWorkspaces] = useState<Workspace[] | null>(null);

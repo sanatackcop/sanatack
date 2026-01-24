@@ -38,17 +38,17 @@ export function NoteView({ note, onClose, onSave, onDelete }: NoteViewProps) {
   return (
     <div dir={direction} className="w-full h-full bg-background flex flex-col">
       {/* Header */}
-      <div className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="flex items-center gap-4 p-4 sm:p-6">
           <button
             onClick={onClose}
-            className="shrink-0 p-2 hover:bg-accent rounded-lg transition-colors"
+            className="shrink-0 p-2 hover:bg-accent dark:hover:bg-zinc-800 rounded-lg transition-colors"
             aria-label={t("common.back", "Go back")}
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-5 w-5 text-foreground" />
           </button>
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-bold truncate">{title}</h1>
+            <h1 className="text-2xl font-bold truncate text-foreground">{title}</h1>
             <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2 flex-wrap">
               <span className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
@@ -102,15 +102,16 @@ export function NoteView({ note, onClose, onSave, onDelete }: NoteViewProps) {
       <style>{`
         .ql-editor {
           padding: 0;
+          color: hsl(var(--foreground));
         }
-        .ql-editor h1 { font-size: 2em; font-weight: bold; margin: 0.67em 0; }
-        .ql-editor h2 { font-size: 1.5em; font-weight: bold; margin: 0.75em 0; }
-        .ql-editor h3 { font-size: 1.17em; font-weight: bold; margin: 0.83em 0; }
-        .ql-editor h4 { font-size: 1em; font-weight: bold; margin: 1.12em 0; }
-        .ql-editor h5 { font-size: 0.83em; font-weight: bold; margin: 1.5em 0; }
-        .ql-editor h6 { font-size: 0.67em; font-weight: bold; margin: 1.67em 0; }
-        .ql-editor p { margin: 1em 0; }
-        .ql-editor ul, .ql-editor ol { padding-left: 1.5em; margin: 1em 0; }
+        .ql-editor h1 { font-size: 2em; font-weight: bold; margin: 0.67em 0; color: hsl(var(--foreground)); }
+        .ql-editor h2 { font-size: 1.5em; font-weight: bold; margin: 0.75em 0; color: hsl(var(--foreground)); }
+        .ql-editor h3 { font-size: 1.17em; font-weight: bold; margin: 0.83em 0; color: hsl(var(--foreground)); }
+        .ql-editor h4 { font-size: 1em; font-weight: bold; margin: 1.12em 0; color: hsl(var(--foreground)); }
+        .ql-editor h5 { font-size: 0.83em; font-weight: bold; margin: 1.5em 0; color: hsl(var(--foreground)); }
+        .ql-editor h6 { font-size: 0.67em; font-weight: bold; margin: 1.67em 0; color: hsl(var(--foreground)); }
+        .ql-editor p { margin: 1em 0; color: hsl(var(--foreground)); }
+        .ql-editor ul, .ql-editor ol { padding-left: 1.5em; margin: 1em 0; color: hsl(var(--foreground)); }
         .ql-editor li { margin: 0.5em 0; }
         .ql-editor blockquote {
           border-left: 4px solid hsl(var(--border));
@@ -123,21 +124,47 @@ export function NoteView({ note, onClose, onSave, onDelete }: NoteViewProps) {
           padding: 1em;
           border-radius: 0.5em;
           overflow-x: auto;
+          color: hsl(var(--foreground));
         }
         .ql-editor code {
           background: hsl(var(--muted));
           padding: 0.2em 0.4em;
           border-radius: 0.25em;
           font-family: monospace;
+          color: hsl(var(--foreground));
         }
         .ql-editor a {
           color: hsl(var(--primary));
           text-decoration: underline;
         }
+        .ql-editor a:hover {
+          opacity: 0.8;
+        }
         .ql-editor img {
           max-width: 100%;
           height: auto;
           border-radius: 0.5em;
+        }
+        .ql-editor strong, .ql-editor b {
+          color: hsl(var(--foreground));
+        }
+        .ql-editor em, .ql-editor i {
+          color: hsl(var(--foreground));
+        }
+        .ql-editor hr {
+          border-color: hsl(var(--border));
+        }
+        .ql-editor table {
+          border-collapse: collapse;
+          width: 100%;
+        }
+        .ql-editor th, .ql-editor td {
+          border: 1px solid hsl(var(--border));
+          padding: 0.5em;
+          color: hsl(var(--foreground));
+        }
+        .ql-editor th {
+          background: hsl(var(--muted));
         }
       `}</style>
     </div>

@@ -22,6 +22,7 @@ export default function PricingDialog({
 }) {
   const { t } = useTranslation();
   const [currency, setCurrency] = useState<"SAR" | "USD">("SAR");
+  const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">("monthly");
   const [activeIndex, setActiveIndex] = useState(1);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const isInitialized = useRef(false);
@@ -34,8 +35,11 @@ export default function PricingDialog({
   }, []);
 
   const price = (plan: Plan): number => {
-    const sar = plan.monthlyPriceSAR;
-    return currency === "SAR" ? sar : Number((sar / USD_TO_SAR).toFixed(2));
+    const monthlyPrice = plan.monthlyPriceSAR;
+    const basePrice = billingInterval === "yearly" 
+      ? monthlyPrice * 10 / 12
+      : monthlyPrice;
+    return currency === "SAR" ? basePrice : Number((basePrice / USD_TO_SAR).toFixed(2));
   };
 
   const scrollToCard = useCallback((index: number) => {
@@ -118,33 +122,64 @@ export default function PricingDialog({
 
   return (
     <div className="flex flex-col gap-3 sm:gap-4">
-      <div className="flex items-center justify-between">
-        <div className="flex rounded-xl bg-zinc-100 dark:bg-zinc-800 p-1">
-          <button
-            onClick={() => setCurrency("SAR")}
-            className={[
-              "px-3 py-2 text-xs sm:text-sm rounded-lg flex items-center gap-1.5 transition-all duration-200",
-              currency === "SAR"
-                ? "bg-white dark:bg-zinc-900 shadow-sm text-zinc-900 dark:text-zinc-50 font-medium"
-                : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100",
-            ].join(" ")}
-          >
-            <SaudiRiyal className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            <span>SAR</span>
-          </button>
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex gap-2">
+          <div className="flex rounded-xl bg-zinc-100 dark:bg-zinc-800 p-1">
+            <button
+              onClick={() => setCurrency("SAR")}
+              className={[
+                "px-3 py-2 text-xs sm:text-sm rounded-lg flex items-center gap-1.5 transition-all duration-200",
+                currency === "SAR"
+                  ? "bg-white dark:bg-zinc-900 shadow-sm text-zinc-900 dark:text-zinc-50 font-medium"
+                  : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100",
+              ].join(" ")}
+            >
+              <SaudiRiyal className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span>SAR</span>
+            </button>
 
-          <button
-            onClick={() => setCurrency("USD")}
-            className={[
-              "px-3 py-2 text-xs sm:text-sm rounded-lg flex items-center gap-1.5 transition-all duration-200",
-              currency === "USD"
-                ? "bg-white dark:bg-zinc-900 shadow-sm text-zinc-900 dark:text-zinc-50 font-medium"
-                : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100",
-            ].join(" ")}
-          >
-            <DollarSign className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            <span>USD</span>
-          </button>
+            <button
+              onClick={() => setCurrency("USD")}
+              className={[
+                "px-3 py-2 text-xs sm:text-sm rounded-lg flex items-center gap-1.5 transition-all duration-200",
+                currency === "USD"
+                  ? "bg-white dark:bg-zinc-900 shadow-sm text-zinc-900 dark:text-zinc-50 font-medium"
+                  : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100",
+              ].join(" ")}
+            >
+              <DollarSign className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span>USD</span>
+            </button>
+          </div>
+
+          <div className="flex rounded-xl bg-zinc-100 dark:bg-zinc-800 p-1">
+            <button
+              onClick={() => setBillingInterval("monthly")}
+              className={[
+                "px-3 py-2 text-xs sm:text-sm rounded-lg transition-all duration-200",
+                billingInterval === "monthly"
+                  ? "bg-white dark:bg-zinc-900 shadow-sm text-zinc-900 dark:text-zinc-50 font-medium"
+                  : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100",
+              ].join(" ")}
+            >
+              {t("pricing.monthly", "Monthly")}
+            </button>
+
+            <button
+              onClick={() => setBillingInterval("yearly")}
+              className={[
+                "px-3 py-2 text-xs sm:text-sm rounded-lg transition-all duration-200 flex items-center gap-1.5",
+                billingInterval === "yearly"
+                  ? "bg-white dark:bg-zinc-900 shadow-sm text-zinc-900 dark:text-zinc-50 font-medium"
+                  : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100",
+              ].join(" ")}
+            >
+              {t("pricing.yearly", "Yearly")}
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 font-medium">
+                {t("pricing.save", "Save")} 17%
+              </span>
+            </button>
+          </div>
         </div>
 
         <div className="flex items-center gap-2 lg:hidden">
@@ -203,6 +238,7 @@ export default function PricingDialog({
               plan={plan}
               price={price(plan)}
               currency={currency}
+              billingInterval={billingInterval}
               handleGetStarted={handleGetStarted}
               t={t}
             />
@@ -217,6 +253,7 @@ export default function PricingDialog({
               plan={plan}
               price={price(plan)}
               currency={currency}
+              billingInterval={billingInterval}
               handleGetStarted={handleGetStarted}
               t={t}
             />
@@ -231,12 +268,14 @@ function PlanCard({
   plan,
   price,
   currency,
+  billingInterval,
   handleGetStarted,
   t,
 }: {
   plan: Plan;
   price: number;
   currency: "SAR" | "USD";
+  billingInterval: "monthly" | "yearly";
   handleGetStarted: (data: PaymentData) => void;
   t: any;
 }) {
@@ -314,7 +353,9 @@ function PlanCard({
                   background: `${BRAND}10`,
                 }}
               >
-                {t("pricing.perMonth")}
+                {billingInterval === "yearly" 
+                  ? t("pricing.billedYearly", "Billed yearly") 
+                  : t("pricing.perMonth")}
               </span>
             </div>
 
@@ -357,7 +398,7 @@ function PlanCard({
                   handleGetStarted({
                     plan_type: plan.plan_type,
                     amount: price,
-                    billing_interval: "monthly",
+                    billing_interval: billingInterval,
                     currency,
                   })
                 }
