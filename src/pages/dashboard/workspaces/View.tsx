@@ -4,6 +4,8 @@ import React, {
   useReducer,
   useState,
   useMemo,
+  useRef,
+  useLayoutEffect,
 } from "react";
 import {
   ResizablePanelGroup,
@@ -12,6 +14,12 @@ import {
 } from "@/components/ui/resizable";
 import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   BookOpen,
   MessageCircle,
@@ -25,6 +33,7 @@ import {
   ChevronLeft,
   ChevronRight,
   StickyNote,
+  MoreHorizontal,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -107,11 +116,17 @@ const LearnPlayground: React.FC = () => {
 
   // Responsive states
   const [isMobile, setIsMobile] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
   const [showMobileContent, setShowMobileContent] = useState(true);
+
+  const hasContent = state.type === "document" || state.type === "video";
 
   const isRTL = i18n.dir() === "rtl";
   const [isResizing, setIsResizing] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [visibleTabCount, setVisibleTabCount] = useState<number>(TABS_CONFIG.length);
+  const tabsContainerRef = useRef<HTMLDivElement>(null);
+  const measureContainerRef = useRef<HTMLDivElement>(null);
 
   const getDisplayTitle = useCallback(() => {
     return (
@@ -131,10 +146,119 @@ const LearnPlayground: React.FC = () => {
     setFullScreen((prev) => !prev);
   }, []);
 
+  const calculateVisibleTabs = useCallback(() => {
+    const container = tabsContainerRef.current;
+    const measureContainer = measureContainerRef.current;
+    if (!container || !measureContainer) return;
+
+    const buttons = measureContainer.querySelectorAll('button');
+    if (buttons.length === 0) return;
+
+    const widths: number[] = [];
+    buttons.forEach((btn) => {
+      widths.push(btn.getBoundingClientRect().width);
+    });
+
+    const containerWidth = container.getBoundingClientRect().width;
+    const overflowButtonWidth = 40;
+    const gap = 6;
+    let totalWidth = 0;
+    let count = 0;
+
+    for (let i = 0; i < widths.length; i++) {
+      const tabWidth = widths[i] + gap;
+      const needsOverflow = i < widths.length - 1;
+      const availableWidth = needsOverflow 
+        ? containerWidth - overflowButtonWidth - gap 
+        : containerWidth;
+      
+      if (totalWidth + tabWidth <= availableWidth) {
+        totalWidth += tabWidth;
+        count++;
+      } else {
+        break;
+      }
+    }
+
+    setVisibleTabCount((prev) => {
+      const newCount = Math.max(1, count);
+      return prev !== newCount ? newCount : prev;
+    });
+  }, []);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(calculateVisibleTabs, 50);
+    return () => clearTimeout(timeoutId);
+  }, [calculateVisibleTabs]);
+
+  useLayoutEffect(() => {
+    calculateVisibleTabs();
+    
+    let rafId: number;
+    const resizeObserver = new ResizeObserver(() => {
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(calculateVisibleTabs);
+    });
+    
+    if (tabsContainerRef.current) {
+      resizeObserver.observe(tabsContainerRef.current);
+    }
+    
+    window.addEventListener('resize', calculateVisibleTabs);
+    
+    return () => {
+      resizeObserver.disconnect();
+      cancelAnimationFrame(rafId);
+      window.removeEventListener('resize', calculateVisibleTabs);
+    };
+  }, [calculateVisibleTabs]);
+
+  const visibleTabs = useMemo(
+    () => TABS_CONFIG.slice(0, visibleTabCount),
+    [visibleTabCount]
+  );
+  const hiddenTabs = useMemo(
+    () => TABS_CONFIG.slice(visibleTabCount),
+    [visibleTabCount]
+  );
+
   const headerContent = useMemo(() => {
     return (
-      <div className="flex items-center justify-end w-full gap-2">
-        <div className="flex-1 overflow-x-auto scrollbar-hide flex justify-end">
+      <div className="flex items-center justify-end w-full gap-1 sm:gap-2 min-w-0">
+        {/* Hidden container for measuring all tab widths */}
+        <div
+          ref={measureContainerRef}
+          style={{
+            position: 'fixed',
+            visibility: 'hidden',
+            pointerEvents: 'none',
+            top: -9999,
+            left: -9999,
+          }}
+          aria-hidden="true"
+        >
+          <div className="inline-flex h-8 sm:h-9 items-center gap-1 sm:gap-1.5 p-0">
+            {TABS_CONFIG.map((tab) => {
+              const IconComponent = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  className="inline-flex items-center justify-center rounded-lg sm:rounded-xl font-medium text-xs sm:text-sm h-8 sm:h-9 px-2 sm:px-3 gap-1 sm:gap-2 border"
+                >
+                  <IconComponent className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                  <span className="hidden md:inline whitespace-nowrap">
+                    {t(tab.labelKey as any)}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div
+          ref={tabsContainerRef}
+          className="flex-1 min-w-0 overflow-hidden flex justify-start sm:justify-end"
+        >
           <Tabs
             value={state.tab}
             onValueChange={(v) =>
@@ -143,11 +267,11 @@ const LearnPlayground: React.FC = () => {
           >
             <TabsList
               className={clsx(
-                "inline-flex h-9 items-center gap-1.5 rounded-none bg-transparent border-none p-0",
-                isRTL ? "flex-row-reverse" : "",
+                "inline-flex h-8 sm:h-9 items-center gap-1 sm:gap-1.5 rounded-none bg-transparent border-none p-0",
+                isRTL ? "flex-row-reverse" : ""
               )}
             >
-              {TABS_CONFIG.map((tab) => {
+              {visibleTabs.map((tab) => {
                 const IconComponent = tab.icon;
                 const isActive = state.tab === tab.id;
 
@@ -157,17 +281,17 @@ const LearnPlayground: React.FC = () => {
                     value={tab.id}
                     disabled={tab.isSoon}
                     className={clsx(
-                      "inline-flex items-center justify-center rounded-xl font-medium text-sm transition-all duration-200 flex-shrink-0",
-                      "h-9 px-3 gap-2",
+                      "inline-flex items-center justify-center rounded-lg sm:rounded-xl font-medium text-xs sm:text-sm transition-all duration-200 flex-shrink-0",
+                      "h-8 sm:h-9 px-2 sm:px-3 gap-1 sm:gap-2",
                       isActive
                         ? "bg-[#179E7E] !text-white border-2 border-[#58CC02] shadow-sm dark:!text-white"
-                        : " dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700",
+                        : "dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700",
                       "hover:bg-zinc-50 dark:hover:bg-zinc-750 hover:!text-black",
-                      "disabled:opacity-40 disabled:cursor-not-allowed",
+                      "disabled:opacity-40 disabled:cursor-not-allowed"
                     )}
                   >
-                    <IconComponent className="h-4 w-4 flex-shrink-0" />
-                    <span className="hidden sm:inline whitespace-nowrap">
+                    <IconComponent className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                    <span className="hidden md:inline whitespace-nowrap">
                       {t(tab.labelKey as any)}
                     </span>
                   </TabsTrigger>
@@ -184,27 +308,68 @@ const LearnPlayground: React.FC = () => {
                   </Tooltip>
                 );
               })}
+
+              {hiddenTabs.length > 0 && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className={clsx(
+                        "h-8 w-8 sm:h-9 sm:w-9 rounded-lg sm:rounded-xl border flex-shrink-0",
+                        hiddenTabs.some((tab) => state.tab === tab.id)
+                          ? "bg-[#179E7E] !text-white border-[#58CC02]"
+                          : "dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700"
+                      )}
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="min-w-[160px] z-50">
+                    {hiddenTabs.map((tab) => {
+                      const IconComponent = tab.icon;
+                      const isActive = state.tab === tab.id;
+                      return (
+                        <DropdownMenuItem
+                          key={tab.id}
+                          disabled={tab.isSoon}
+                          onClick={() =>
+                            dispatch({ type: "SET_TAB", tab: tab.id as TabKey })
+                          }
+                          className={clsx(
+                            "flex items-center gap-2 cursor-pointer",
+                            isActive && "bg-[#179E7E]/10 text-[#179E7E]"
+                          )}
+                        >
+                          <IconComponent className="h-4 w-4" />
+                          <span>{t(tab.labelKey as any)}</span>
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </TabsList>
           </Tabs>
         </div>
 
-        {!isMobile && (
+        {!isMobile && !isTablet && (
           <div className="flex items-center gap-1.5 flex-shrink-0">
             <Tooltip title={t("workspace.fullScreen", "Full Screen")}>
               <Button
                 variant="outline"
                 size="icon"
                 onClick={handleToggleFullScreen}
-                className="h-9 w-9 rounded-xl border border-zinc-200 dark:border-zinc-700  dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-750"
+                className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg sm:rounded-xl border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-750"
               >
-                <Scan className="h-4 w-4 text-zinc-600 dark:text-zinc-300" />
+                <Scan className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-zinc-600 dark:text-zinc-300" />
               </Button>
             </Tooltip>
           </div>
         )}
       </div>
     );
-  }, [state.tab, t, handleToggleFullScreen, isMobile]);
+  }, [state.tab, t, handleToggleFullScreen, isMobile, isTablet, visibleTabs, hiddenTabs, isRTL]);
 
   useEffect(() => {
     setTitleContent(headerContent);
@@ -214,15 +379,15 @@ const LearnPlayground: React.FC = () => {
   // Responsive detection
   useEffect(() => {
     handleAutoContext();
-    console.log("Auto generatubg");
-    const checkMobile = () => {
-      const mobile = window.innerWidth < 1024;
-      setIsMobile(mobile);
+    const checkScreenSize = () => {
+      const width = window.innerWidth;
+      setIsMobile(width < 768);
+      setIsTablet(width >= 768 && width < 1024);
     };
 
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
+    checkScreenSize();
+    window.addEventListener("resize", checkScreenSize);
+    return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
   const autoContextCount = useMemo(() => {
@@ -783,16 +948,17 @@ const LearnPlayground: React.FC = () => {
               className="flex-1 m-0 flex flex-col h-full"
             >
               {state.isLoading ? (
-                <div className="p-4 md:p-6">
+                <div className="p-3 sm:p-4 md:p-6">
                   <ChatSkeleton />
                 </div>
               ) : (
                 <div className="flex-1 flex flex-col h-full">
                   <ScrollArea className="flex-1">
                     <div
-                      className={`mx-auto px-4 md:px-6 py-4 md:py-8 ${
-                        fullScreen ? "max-w-full lg:px-8" : "max-w-4xl"
-                      }`}
+                      className={clsx(
+                        "mx-auto px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-8",
+                        fullScreen || isMobile || isTablet ? "max-w-full lg:px-8" : "max-w-4xl"
+                      )}
                     >
                       <ChatMessages
                         messages={state.chatMessages || []}
@@ -804,16 +970,17 @@ const LearnPlayground: React.FC = () => {
                   </ScrollArea>
                   <div>
                     <div
-                      className={`mx-auto px-4 md:px-6 py-3 md:py-4 ${
-                        fullScreen ? "max-w-full lg:px-8" : "max-w-4xl"
-                      }`}
+                      className={clsx(
+                        "mx-auto px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4",
+                        fullScreen || isMobile || isTablet ? "max-w-full lg:px-8" : "max-w-4xl"
+                      )}
                     >
                       <ChatInput
                         className="w-full"
                         value={state.prompt}
                         isSending={state.chatLoading}
                         hasAutoContext={false}
-                        expandSection={true}
+                        expandSection={!isMobile}
                         contexts={selectedContexts}
                         availableContexts={availableContexts}
                         autoContextCount={autoContextCount}
@@ -828,7 +995,6 @@ const LearnPlayground: React.FC = () => {
                           handleSendMessage(value, model, contexts)
                         }
                         onContextsChange={handleContextsChange}
-                        // onAutoContextClick={handleAutoContext}
                         appliedContextIds={appliedContextIds}
                         placeholder={t("aiActions.chatPlaceholder")}
                         optionsToHide={{
@@ -893,13 +1059,13 @@ const LearnPlayground: React.FC = () => {
               value="podcasts"
               className="flex-1 m-0 h-full flex items-center justify-center"
             >
-              <div className="text-center p-6">
-                <Mic className="h-12 w-12 md:h-16 md:w-16 mx-auto mb-4 text-zinc-400 dark:text-zinc-500" />
-                <h3 className="text-lg md:text-xl font-semibold mb-2 text-zinc-900 dark:text-zinc-100">
-                  Podcasts Coming Soon
+              <div className="text-center p-4 sm:p-6">
+                <Mic className="h-10 w-10 sm:h-12 sm:w-12 md:h-16 md:w-16 mx-auto mb-3 sm:mb-4 text-zinc-400 dark:text-zinc-500" />
+                <h3 className="text-base sm:text-lg md:text-xl font-semibold mb-1.5 sm:mb-2 text-zinc-900 dark:text-zinc-100">
+                  {t("workspace.podcastsComingSoon", "Podcasts Coming Soon")}
                 </h3>
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                  This feature is under development
+                <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">
+                  {t("workspace.featureInDevelopment", "This feature is under development")}
                 </p>
               </div>
             </TabsContent>
@@ -909,33 +1075,33 @@ const LearnPlayground: React.FC = () => {
           {state.tab === "sources" && (
             <TabsContent value="sources" className="flex-1 m-0 h-full">
               <ScrollArea className="h-full">
-                <div className="max-w-5xl mx-auto px-4 md:px-6 py-4 md:py-8">
-                  <h2 className="text-xl md:text-2xl font-semibold text-zinc-900 dark:text-zinc-100 mb-4 md:mb-6">
-                    Sources
+                <div className="max-w-5xl mx-auto px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-8">
+                  <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-zinc-900 dark:text-zinc-100 mb-3 sm:mb-4 md:mb-6">
+                    {t("workspace.sources", "Sources")}
                   </h2>
-                  <div className="grid gap-3 md:gap-4">
+                  <div className="grid gap-2 sm:gap-3 md:gap-4">
                     {workspaceContexts.length === 0 ? (
-                      <div className="text-center py-12">
-                        <Library className="h-12 w-12 mx-auto mb-4 text-zinc-400 dark:text-zinc-500" />
-                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                          No sources available
+                      <div className="text-center py-8 sm:py-12">
+                        <Library className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 text-zinc-400 dark:text-zinc-500" />
+                        <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">
+                          {t("workspace.noSources", "No sources available")}
                         </p>
                       </div>
                     ) : (
                       workspaceContexts.map((context) => (
                         <div
                           key={context.id}
-                          className="p-4 rounded-lg border border-zinc-200 dark:border-zinc-800  hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors"
+                          className="p-3 sm:p-4 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors"
                         >
-                          <h3 className="font-medium text-zinc-900 dark:text-zinc-100 mb-2 text-sm md:text-base">
-                            {context.title || "Untitled Source"}
+                          <h3 className="font-medium text-zinc-900 dark:text-zinc-100 mb-1.5 sm:mb-2 text-xs sm:text-sm md:text-base">
+                            {context.title || t("workspace.untitledSource", "Untitled Source")}
                           </h3>
-                          <p className="text-xs md:text-sm text-zinc-600 dark:text-zinc-400 line-clamp-3">
+                          <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 line-clamp-2 sm:line-clamp-3">
                             {context.content?.slice(0, 200)}
                             {(context.content?.length || 0) > 200 && "..."}
                           </p>
                           {context.type && (
-                            <span className="inline-block mt-2 px-2 py-1 text-xs rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
+                            <span className="inline-block mt-1.5 sm:mt-2 px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
                               {context.type}
                             </span>
                           )}
@@ -955,12 +1121,12 @@ const LearnPlayground: React.FC = () => {
   if (workspaceLoading) {
     return (
       <section
-        className="h-[calc(100vh-3rem)] flex items-center justify-center"
+        className="h-[calc(100vh-3rem)] flex items-center justify-center px-4"
         dir={isRTL ? "rtl" : "ltr"}
       >
-        <div className="flex flex-col items-center space-y-4">
-          <Loader2 className="h-8 w-8 animate-spin text-zinc-600 dark:text-zinc-400" />
-          <p className="text-sm text-zinc-600 dark:text-zinc-300">
+        <div className="flex flex-col items-center space-y-3 sm:space-y-4">
+          <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 animate-spin text-zinc-600 dark:text-zinc-400" />
+          <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-300 text-center">
             {t("loading.workspace", "Loading workspace...")}
           </p>
         </div>
@@ -968,7 +1134,7 @@ const LearnPlayground: React.FC = () => {
     );
   }
 
-  if (fullScreen) {
+  if (fullScreen && !isMobile && !isTablet) {
     return (
       <section
         className="h-[calc(93vh)] min-h-0 min-w-0 overflow-hidden"
@@ -986,7 +1152,25 @@ const LearnPlayground: React.FC = () => {
     );
   }
 
-  if (isMobile) {
+  if (isMobile || isTablet) {
+    if (!hasContent) {
+      return (
+        <section
+          className="h-[calc(93vh)] min-h-0 min-w-0 overflow-hidden"
+          dir={isRTL ? "rtl" : "ltr"}
+        >
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+            className="h-full min-h-0 min-w-0 overflow-hidden"
+          >
+            {renderTabsContent()}
+          </motion.div>
+        </section>
+      );
+    }
+
     return (
       <section
         className="h-[calc(93vh)] min-h-0 min-w-0 flex flex-col overflow-hidden"
@@ -998,27 +1182,27 @@ const LearnPlayground: React.FC = () => {
             size="sm"
             onClick={() => setShowMobileContent(true)}
             className={clsx(
-              "flex-1 h-9",
+              "flex-1 h-8 sm:h-9 text-sm",
               showMobileContent
                 ? "bg-[#179E7E] text-white hover:bg-[#15896d]"
                 : "dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700",
             )}
           >
             <ChevronLeft className="h-4 w-4 mr-1" />
-            Content
+            {t("workspace.content", "Content")}
           </Button>
           <Button
             variant={!showMobileContent ? "default" : "outline"}
             size="sm"
             onClick={() => setShowMobileContent(false)}
             className={clsx(
-              "flex-1 h-9",
+              "flex-1 h-8 sm:h-9 text-sm",
               !showMobileContent
                 ? "bg-[#179E7E] text-white hover:bg-[#15896d]"
                 : "dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700",
             )}
           >
-            Tools
+            {t("workspace.tools", "Tools")}
             <ChevronRight className="h-4 w-4 ml-1" />
           </Button>
         </div>
@@ -1032,7 +1216,7 @@ const LearnPlayground: React.FC = () => {
             className="h-full min-h-0 min-w-0 overflow-hidden"
           >
             {showMobileContent ? (
-              <div className="h-full min-h-0 min-w-0 overflow-hidden p-2">
+              <div className="h-full min-h-0 min-w-0 overflow-hidden p-1 sm:p-2">
                 {renderContent()}
               </div>
             ) : (

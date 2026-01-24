@@ -6,7 +6,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["MuseoModerno", "Montserrat"],
+        sans: ["IBM Plex Sans Arabic", "sans-serif"],
         rubik: ["Rubik", "sans-serif"],
       },
       borderRadius: {

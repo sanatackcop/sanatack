@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -12,6 +12,7 @@ import {
 import PlanTypeBadge from "./_PlanTypeLabelKeys";
 import Api, { API_METHODS } from "@/utils/_apis/api";
 import { PlanType } from "@/context/UserContext";
+import { RATE_LIMIT_PRESET_LIST } from "@/types/rate.limit.presets";
 
 const CATEGORY_LABEL_KEYS: Record<string, string> = {
   ai: "usageCategories.ai",
@@ -36,6 +37,41 @@ const fetchUsageStats = async (): Promise<RateLimitSummaryResponse> => {
     console.error("Failed to fetch usage stats:", error);
     return DEFAULT_USAGE;
   }
+};
+
+const buildUsageWithDefaults = (
+  response_usage: RateLimitUsageSummaryItem[],
+  plan_type: PlanType,
+): RateLimitUsageSummaryItem[] => {
+  const usage_map = new Map(response_usage.map((item) => [item.action, item]));
+
+  return RATE_LIMIT_PRESET_LIST.map((preset) => {
+    const existing = usage_map.get(preset.action);
+    const limit = preset.limits[plan_type] ?? null;
+
+    if (existing) {
+      return {
+        ...existing,
+        label: existing.label || preset.label,
+        description: existing.description || preset.description,
+        category: existing.category || preset.category,
+        limit: existing.limit ?? limit,
+      };
+    }
+
+    return {
+      action: preset.action,
+      label: preset.label,
+      description: preset.description,
+      category: preset.category,
+      usedCredits: 0,
+      remainingCredits: limit,
+      limit,
+      hits: 0,
+      windowEndsAt: "",
+      windowSeconds: 0,
+    };
+  });
 };
 
 export default function UsagePanel() {
@@ -77,31 +113,36 @@ export default function UsagePanel() {
     };
   }, []);
 
+  const usage_with_defaults = useMemo(() => {
+    if (!data) return [];
+    return buildUsageWithDefaults(data.usage, data.plan_type);
+  }, [data]);
+
+  const groupedUsage = useMemo(() => {
+    return usage_with_defaults.reduce(
+      (acc, item) => {
+        const category = item.category || "other";
+        if (!acc[category]) {
+          acc[category] = [];
+        }
+        acc[category].push(item);
+        return acc;
+      },
+      {} as Record<string, RateLimitUsageSummaryItem[]>,
+    );
+  }, [usage_with_defaults]);
+
+  const totalCreditsUsed = useMemo(() => {
+    return usage_with_defaults.reduce((sum, item) => sum + item.usedCredits, 0);
+  }, [usage_with_defaults]);
+
+  const totalCreditsLimit = useMemo(() => {
+    return usage_with_defaults.reduce((sum, item) => sum + (item.limit ?? 0), 0);
+  }, [usage_with_defaults]);
+
   if (isLoading || !data) {
     return <PanelSkeleton />;
   }
-
-  const groupedUsage = data.usage.reduce(
-    (acc, item) => {
-      const category = item.category || "other";
-      if (!acc[category]) {
-        acc[category] = [];
-      }
-      acc[category].push(item);
-      return acc;
-    },
-    {} as Record<string, RateLimitUsageSummaryItem[]>,
-  );
-
-  const totalCreditsUsed = data.usage.reduce(
-    (sum, item) => sum + item.usedCredits,
-    0,
-  );
-  const totalCreditsLimit = data.usage.reduce(
-    (sum, item) => sum + (item.limit ?? 0),
-    0,
-  );
-  const hasUsage = data.usage.length > 0;
 
   return (
     <div className="space-y-6">
@@ -122,137 +163,112 @@ export default function UsagePanel() {
         />
       ) : null}
 
-      {hasUsage ? (
-        <>
-          <PanelCard>
-            <div className="flex items-center justify-between rtl:flex-row-reverse">
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-neutral-600 dark:text-neutral-300">
-                  {t("settings.usage.totalCredits", "Total Credits Used")}
-                </p>
-                <p className="text-2xl font-semibold text-neutral-900 dark:text-neutral-50">
-                  {totalCreditsUsed.toLocaleString()}
-                  <span className="text-base font-normal text-neutral-500">
-                    {" "}
-                    / {totalCreditsLimit.toLocaleString()}
-                  </span>
-                </p>
-              </div>
-              <div className="rtl:text-left text-right">
-                <p className="text-sm text-neutral-500">
-                  {t("settings.usage.actionsUsed", "Actions Used")}
-                </p>
-                <p className="text-lg font-medium text-neutral-900 dark:text-neutral-50">
-                  {data.usage.reduce((sum, item) => sum + item.hits, 0)}
-                </p>
-              </div>
-            </div>
-            <Progress
-              value={
-                totalCreditsLimit > 0
-                  ? Math.min(
-                      100,
-                      Math.round((totalCreditsUsed / totalCreditsLimit) * 100),
-                    )
-                  : 0
-              }
-              className="h-2"
-            />
-          </PanelCard>
+      <PanelCard>
+        <div className="flex items-center justify-between rtl:flex-row-reverse">
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-neutral-600 dark:text-neutral-300">
+              {t("settings.usage.totalCredits", "Total Credits Used")}
+            </p>
+            <p className="text-2xl font-semibold text-neutral-900 dark:text-neutral-50">
+              {totalCreditsUsed.toLocaleString()}
+              <span className="text-base font-normal text-neutral-500">
+                {" "}
+                / {totalCreditsLimit.toLocaleString()}
+              </span>
+            </p>
+          </div>
+          <div className="rtl:text-left text-right">
+            <p className="text-sm text-neutral-500">
+              {t("settings.usage.actionsUsed", "Actions Used")}
+            </p>
+            <p className="text-lg font-medium text-neutral-900 dark:text-neutral-50">
+              {usage_with_defaults.reduce((sum, item) => sum + item.hits, 0)}
+            </p>
+          </div>
+        </div>
+        <Progress
+          value={
+            totalCreditsLimit > 0
+              ? Math.min(
+                  100,
+                  Math.round((totalCreditsUsed / totalCreditsLimit) * 100),
+                )
+              : 0
+          }
+          className="h-2"
+        />
+      </PanelCard>
 
-          {Object.entries(groupedUsage).map(([category, items]) => (
-            <PanelCard key={category}>
-              <PanelHeader
-                title={t(
-                  CATEGORY_LABEL_KEYS[category] ||
-                    `usageCategories.${category}`,
-                  category,
-                )}
-                description={t(
-                  `settings.usage.category.${category}`,
-                  `Usage for ${category} features`,
-                )}
-              />
-              <div className="space-y-4">
-                {items.map((item) => {
-                  const percent =
-                    item.limit !== null && item.limit > 0
-                      ? Math.min(
-                          100,
-                          Math.round((item.usedCredits / item.limit) * 100),
-                        )
-                      : 0;
-                  const isUnlimited = item.limit === null;
-                  const isNearLimit = percent >= 80;
+      {Object.entries(groupedUsage).map(([category, items]) => (
+        <PanelCard key={category}>
+          <PanelHeader
+            title={t(
+              CATEGORY_LABEL_KEYS[category] ||
+                `usageCategories.${category}`,
+              category,
+            )}
+            description={t(
+              `settings.usage.category.${category}`,
+              `Usage for ${category} features`,
+            )}
+          />
+          <div className="space-y-4">
+            {items.map((item) => {
+              const limit = item.limit ?? 0;
+              const percent =
+                limit > 0
+                  ? Math.min(100, Math.round((item.usedCredits / limit) * 100))
+                  : 0;
+              const isNearLimit = percent >= 80;
 
-                  const actionLabel = t(
-                    `settings.usage.actions.${item.action}.label`,
-                    item.label || item.action,
-                  );
-                  const actionDescription = t(
-                    `settings.usage.actions.${item.action}.description`,
-                    item.description || "",
-                  );
+              const actionLabel = t(
+                `settings.usage.actions.${item.action}.label`,
+                item.label || item.action,
+              );
+              const actionDescription = t(
+                `settings.usage.actions.${item.action}.description`,
+                item.description || "",
+              );
 
-                  return (
-                    <div key={item.action} className="space-y-2">
-                      <div className="flex items-start justify-between gap-2 rtl:flex-row-reverse">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 rtl:flex-row-reverse">
-                            <span className="text-sm font-medium text-neutral-900 dark:text-neutral-50 truncate">
-                              {actionLabel}
-                            </span>
-                            {isNearLimit && !isUnlimited && (
-                              <Badge variant="destructive" className="text-xs">
-                                {t("settings.usage.nearLimit", "Near limit")}
-                              </Badge>
-                            )}
-                          </div>
-                          {actionDescription && (
-                            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 truncate">
-                              {actionDescription}
-                            </p>
-                          )}
-                        </div>
-                        <div className="text-right shrink-0">
-                          <span className="text-sm font-medium text-neutral-900 dark:text-neutral-50">
-                            {item.usedCredits}
-                            {isUnlimited
-                              ? ` ${t("settings.usage.credits", "credits")}`
-                              : ` / ${item.limit}`}
-                          </span>
-                        </div>
+              return (
+                <div key={item.action} className="space-y-2">
+                  <div className="flex items-start justify-between gap-2 rtl:flex-row-reverse">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 rtl:flex-row-reverse">
+                        <span className="text-sm font-medium text-neutral-900 dark:text-neutral-50 truncate">
+                          {actionLabel}
+                        </span>
+                        {isNearLimit && (
+                          <Badge variant="destructive" className="text-xs">
+                            {t("settings.usage.nearLimit", "Near limit")}
+                          </Badge>
+                        )}
                       </div>
-                      {!isUnlimited && (
-                        <Progress
-                          value={percent}
-                          className={cn(
-                            "h-1.5",
-                            isNearLimit && "[&>div]:bg-red-500",
-                          )}
-                        />
-                      )}
-                      {isUnlimited && (
-                        <div className="h-1.5 rounded-full bg-neutral-200 dark:bg-neutral-800 overflow-hidden">
-                          <div className="h-full w-full bg-gradient-to-r from-emerald-500 to-emerald-400 opacity-30" />
-                        </div>
+                      {actionDescription && (
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 truncate">
+                          {actionDescription}
+                        </p>
                       )}
                     </div>
-                  );
-                })}
-              </div>
-            </PanelCard>
-          ))}
-        </>
-      ) : (
-        <SettingsNotification
-          title={t("settings.usage.noUsage", "No usage yet")}
-          description={t(
-            "settings.usage.noUsageDescription",
-            "Usage will appear once activity is recorded.",
-          )}
-        />
-      )}
+                    <div className="text-right shrink-0">
+                      <span className="text-sm font-medium text-neutral-900 dark:text-neutral-50">
+                        {item.usedCredits} / {limit}
+                      </span>
+                    </div>
+                  </div>
+                  <Progress
+                    value={percent}
+                    className={cn(
+                      "h-1.5",
+                      isNearLimit && "[&>div]:bg-red-500",
+                    )}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </PanelCard>
+      ))}
     </div>
   );
 }

@@ -241,35 +241,92 @@ export default function SubscriptionPanel() {
             {data.status.charAt(0).toUpperCase() + data.status.slice(1)}
           </Badge>
         </div>
-        <p className="text-sm text-neutral-500 dark:text-neutral-400">
-          {data.status === SubscriptionStatus.CANCELED
-            ? `Access ends on ${DateDisplay(data.renewalDate)}`
-            : `Renews on ${DateDisplay(data.renewalDate)}`}
-        </p>
-        <div className="flex flex-wrap items-center gap-3 pt-2 rtl:flex-row-reverse">
+
+        <div className="space-y-2 text-sm text-neutral-600 dark:text-neutral-300 pt-3">
+          {data.plan_type !== PlanType.FREE && (
+            <>
+              <div className="flex items-center justify-between rtl:flex-row-reverse">
+                <span>{t("settings.subscription.billingInterval", "Billing interval")}</span>
+                <span className="font-medium text-neutral-900 dark:text-neutral-50">
+                  {t(`settings.subscription.interval.${data.billing_interval}`, data.billing_interval)}
+                </span>
+              </div>
+              <div className="flex items-center justify-between rtl:flex-row-reverse">
+                <span>{t("settings.subscription.amount", "Amount")}</span>
+                <span className="font-medium text-neutral-900 dark:text-neutral-50">
+                  {data.amount} {data.currency}
+                </span>
+              </div>
+            </>
+          )}
+
+          {data.status === SubscriptionStatus.CANCELED && data.canceled_at && (
+            <div className="flex items-center justify-between rtl:flex-row-reverse">
+              <span>{t("settings.subscription.canceledAt", "Canceled at")}</span>
+              <span className="font-medium text-neutral-900 dark:text-neutral-50">
+                {DateDisplay(data.canceled_at)}
+              </span>
+            </div>
+          )}
+
+          {data.current_period_end && (
+            <div className="flex items-center justify-between rtl:flex-row-reverse">
+              <span>
+                {data.status === SubscriptionStatus.CANCELED
+                  ? t("settings.subscription.accessEnds", "Access ends")
+                  : t("settings.subscription.currentPeriodEnd", "Current period ends")}
+              </span>
+              <span className="font-medium text-neutral-900 dark:text-neutral-50">
+                {DateDisplay(data.current_period_end)}
+              </span>
+            </div>
+          )}
+
+          {data.status === SubscriptionStatus.ACTIVE && data.next_billing_at && (
+            <div className="flex items-center justify-between rtl:flex-row-reverse">
+              <span>{t("settings.subscription.nextBilling", "Next billing")}</span>
+              <span className="font-medium text-neutral-900 dark:text-neutral-50">
+                {DateDisplay(data.next_billing_at)}
+              </span>
+            </div>
+          )}
+
+          {data.last_payment_at && (
+            <div className="flex items-center justify-between rtl:flex-row-reverse">
+              <span>{t("settings.subscription.lastPayment", "Last payment")}</span>
+              <span className="font-medium text-neutral-900 dark:text-neutral-50">
+                {DateDisplay(data.last_payment_at)}
+              </span>
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3 pt-4 rtl:flex-row-reverse">
           <UpgradeModal />
-          <ConfirmDialog
-            triggerLabel={t(
-              "settings.subscription.cancel",
-              "Cancel subscription",
-            )}
-            triggerVariant="destructive"
-            title={t(
-              "settings.subscription.cancelTitle",
-              "Cancel subscription",
-            )}
-            description={t(
-              "settings.subscription.cancelDescription",
-              "This will stop your renewal at the end of the billing period.",
-            )}
-            confirmLabel={t(
-              "settings.subscription.cancelConfirm",
-              "Yes, cancel",
-            )}
-            cancelLabel={t("settings.subscription.cancelKeep", "Keep plan")}
-            onConfirm={handleCancel}
-            dataTestId="settings-cancel-subscription"
-          />
+          {data.plan_type !== PlanType.FREE && data.status !== SubscriptionStatus.CANCELED && (
+            <ConfirmDialog
+              triggerLabel={t(
+                "settings.subscription.cancel",
+                "Cancel subscription",
+              )}
+              triggerVariant="destructive"
+              title={t(
+                "settings.subscription.cancelTitle",
+                "Cancel subscription",
+              )}
+              description={t(
+                "settings.subscription.cancelDescription",
+                "This will stop your renewal at the end of the billing period.",
+              )}
+              confirmLabel={t(
+                "settings.subscription.cancelConfirm",
+                "Yes, cancel",
+              )}
+              cancelLabel={t("settings.subscription.cancelKeep", "Keep plan")}
+              onConfirm={handleCancel}
+              dataTestId="settings-cancel-subscription"
+            />
+          )}
         </div>
       </PanelCard>
 
