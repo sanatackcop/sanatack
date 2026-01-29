@@ -1,13 +1,11 @@
-import { PlanType } from '@/context/UserContext';
-import { RateLimitOptions } from './../../../core/src/modules/rate-limiter/rate-limit.types';
+import { PlanType } from "@/context/UserContext";
 
-
-export const RATE_LIMITS: Record<string, RateLimitOptions> = {
+export const RATE_LIMITS: Record<string, any> = {
   WORKSPACE_CHAT: {
-    action: 'workspace.chat.message',
-    label: 'AI Chat Messages',
-    description: 'Conversations with the AI assistant inside workspaces.',
-    category: 'ai',
+    action: "workspace.chat.message",
+    label: "AI Chat Messages",
+    description: "Conversations with the AI assistant inside workspaces.",
+    category: "ai",
     limits: {
       [PlanType.FREE]: 40,
       [PlanType.STARTER]: 400,
@@ -16,10 +14,10 @@ export const RATE_LIMITS: Record<string, RateLimitOptions> = {
     },
   },
   FLASHCARDS_GENERATION: {
-    action: 'workspace.flashcards.generate',
-    label: 'Flashcards Generation',
-    description: 'AI generated flashcard decks from workspaces.',
-    category: 'content',
+    action: "workspace.flashcards.generate",
+    label: "Flashcards Generation",
+    description: "AI generated flashcard decks from workspaces.",
+    category: "content",
     limits: {
       [PlanType.FREE]: 10,
       [PlanType.STARTER]: 100,
@@ -28,10 +26,10 @@ export const RATE_LIMITS: Record<string, RateLimitOptions> = {
     },
   },
   QUIZ_GENERATION: {
-    action: 'workspace.quiz.generate',
-    label: 'Quiz Generation',
-    description: 'Adaptive quizzes generated from your materials.',
-    category: 'content',
+    action: "workspace.quiz.generate",
+    label: "Quiz Generation",
+    description: "Adaptive quizzes generated from your materials.",
+    category: "content",
     limits: {
       [PlanType.FREE]: 8,
       [PlanType.STARTER]: 100,
@@ -40,10 +38,10 @@ export const RATE_LIMITS: Record<string, RateLimitOptions> = {
     },
   },
   SUMMARY_GENERATION: {
-    action: 'workspace.summary.generate',
-    label: 'Summary Generation',
-    description: 'Concise topic summaries powered by AI.',
-    category: 'content',
+    action: "workspace.summary.generate",
+    label: "Summary Generation",
+    description: "Concise topic summaries powered by AI.",
+    category: "content",
     limits: {
       [PlanType.FREE]: 20,
       [PlanType.STARTER]: 240,
@@ -52,10 +50,10 @@ export const RATE_LIMITS: Record<string, RateLimitOptions> = {
     },
   },
   EXPLANATION_GENERATION: {
-    action: 'workspace.explanation.generate',
-    label: 'Deep Explanation',
-    description: 'Detailed explanations for complex topics.',
-    category: 'content',
+    action: "workspace.explanation.generate",
+    label: "Deep Explanation",
+    description: "Detailed explanations for complex topics.",
+    category: "content",
     limits: {
       [PlanType.FREE]: 15,
       [PlanType.STARTER]: 180,
@@ -64,10 +62,10 @@ export const RATE_LIMITS: Record<string, RateLimitOptions> = {
     },
   },
   DOCUMENT_UPLOAD: {
-    action: 'document.upload',
-    label: 'Document Uploads',
-    description: 'Uploaded files processed inside workspaces.',
-    category: 'ingest',
+    action: "document.upload",
+    label: "Document Uploads",
+    description: "Uploaded files processed inside workspaces.",
+    category: "ingest",
     limits: {
       [PlanType.FREE]: 10,
       [PlanType.STARTER]: 80,
@@ -77,5 +75,4 @@ export const RATE_LIMITS: Record<string, RateLimitOptions> = {
   },
 };
 
-export const RATE_LIMIT_PRESET_LIST: RateLimitOptions[] =
-  Object.values(RATE_LIMITS);
+export const RATE_LIMIT_PRESET_LIST: any[] = Object.values(RATE_LIMITS);

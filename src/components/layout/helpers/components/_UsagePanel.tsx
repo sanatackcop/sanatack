@@ -45,7 +45,7 @@ const buildUsageWithDefaults = (
 ): RateLimitUsageSummaryItem[] => {
   const usage_map = new Map(response_usage.map((item) => [item.action, item]));
 
-  return RATE_LIMIT_PRESET_LIST.map((preset) => {
+  return RATE_LIMIT_PRESET_LIST.map((preset: any) => {
     const existing = usage_map.get(preset.action);
     const limit = preset.limits[plan_type] ?? null;
 
@@ -190,9 +190,9 @@ export default function UsagePanel() {
           value={
             totalCreditsLimit > 0
               ? Math.min(
-                  100,
-                  Math.round((totalCreditsUsed / totalCreditsLimit) * 100),
-                )
+                100,
+                Math.round((totalCreditsUsed / totalCreditsLimit) * 100),
+              )
               : 0
           }
           className="h-2"
@@ -204,7 +204,7 @@ export default function UsagePanel() {
           <PanelHeader
             title={t(
               CATEGORY_LABEL_KEYS[category] ||
-                `usageCategories.${category}`,
+              `usageCategories.${category}`,
               category,
             )}
             description={t(
